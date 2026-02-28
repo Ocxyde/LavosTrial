@@ -1,7 +1,0 @@
-@echo off set UnityExe="D:\travaux_Unity\6000.3.7f1\Editor\Unity.exe" set ProjectPath="D:\travaux_Unity\PeuImporte" set OutputRoot="D:\travaux_Unity\Builds" set LogDir="D:\travaux_Unity\BuildLogs" set BuildTargetWindows=Win64 set BuildTargetMacOS=OSX set BuildTargetLinux=Linux64
-if not exist %OutputRoot% mkdir %OutputRoot% if not exist %LogDir% mkdir %LogDir%
-rem 1) Batch quick check echo Testing Unity batch mode... %UnityExe% -batchmode -quit -nographics -logFile "%LogDir%\unity_batch_test.txt" -version echo Batch test done.
-rem 2) Build Windows set OutputWin=%OutputRoot%\LavosTrial_Win64 echo Building Windows 64-bit... %UnityExe% -batchmode -quit -projectPath %ProjectPath% -logFile "%LogDir%\unity_build_win.txt" -buildTarget %BuildTargetWindows% -executeMethod BuildScript.PerformBuild -buildOutputPath "%OutputWin%\LavosTrial.exe"
-rem 3) Build macOS set OutputMac=%OutputRoot%\LavosTrial_macOS echo Building macOS... %UnityExe% -batchmode -quit -projectPath %ProjectPath% -logFile "%LogDir%\unity_build_mac.txt" -buildTarget %BuildTargetMacOS% -executeMethod BuildScript.PerformBuild -buildOutputPath "%OutputMac%/LavosTrial.app"
-rem 4) Build Linux set OutputLinux=%OutputRoot%\LavosTrial_linux echo Building Linux... %UnityExe% -batchmode -quit -projectPath %ProjectPath% -logFile "%LogDir%\unity_build_linux.txt" -buildTarget %BuildTargetLinux% -executeMethod BuildScript.PerformBuild -buildOutputPath "%OutputLinux%/LavosTrial.x86_64"
-echo Builds terminés. Logs dans %LogDir% pause
