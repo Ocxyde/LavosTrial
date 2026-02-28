@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DrawingPool : MonoBehaviour
+namespace Code.Lavos
 {
+    public class DrawingPool : MonoBehaviour
+    {
     private static DrawingPool _instance;
     public static DrawingPool Instance => _instance ??= FindFirstObjectByType<DrawingPool>();
 
@@ -289,4 +291,5 @@ public class DrawingPool : MonoBehaviour
         }
         Debug.Log($"[DrawingPool] Exported {_texturePool.Count} textures to: {folderPath}");
     }
+}
 }

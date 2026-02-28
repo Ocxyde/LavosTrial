@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public static class PixelArtTextureFactory
+namespace Code.Lavos
 {
+    public static class PixelArtTextureFactory
+    {
     private static Texture2D _wallTex, _floorTex, _ceilTex, _handleTex;
     private static Texture2D[] _flameFrames;
 
@@ -188,4 +190,5 @@ public static class PixelArtTextureFactory
         }
         return canvas.ToTexture();
     }
+}
 }

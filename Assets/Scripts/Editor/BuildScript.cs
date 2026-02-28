@@ -3,10 +3,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-#if UNITY_INPUT_SYSTEM_ENABLED
-using UnityEngine.InputSystem;
-#endif
-
 namespace Unity6.LavosTrial.Build
 {
     /// <summary>

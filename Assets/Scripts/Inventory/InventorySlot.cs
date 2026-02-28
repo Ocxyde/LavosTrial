@@ -1,52 +1,55 @@
-[System.Serializable]
-public class InventorySlot
+namespace Code.Lavos
 {
-    public ItemData item;
-    public int quantity;
-    public int slotIndex;
-
-    public bool IsEmpty => item == null || quantity <= 0;
-    public bool CanStack => item != null && quantity < item.maxStack;
-    public bool IsFull => item != null && quantity >= item.maxStack;
-
-    public InventorySlot()
+    [System.Serializable]
+    public class InventorySlot
     {
-        item = null;
-        quantity = 0;
-    }
+        public ItemData item;
+        public int quantity;
+        public int slotIndex;
 
-    public InventorySlot(ItemData itemData, int qty = 1)
-    {
-        item = itemData;
-        quantity = qty;
-    }
+        public bool IsEmpty => item == null || quantity <= 0;
+        public bool CanStack => item != null && quantity < item.maxStack;
+        public bool IsFull => item != null && quantity >= item.maxStack;
 
-    public void Clear()
-    {
-        item = null;
-        quantity = 0;
-    }
-
-    public void Add(int amount = 1)
-    {
-        if (item != null)
-            quantity += amount;
-    }
-
-    public bool Remove(int amount = 1)
-    {
-        if (item != null && quantity >= amount)
+        public InventorySlot()
         {
-            quantity -= amount;
-            if (quantity <= 0)
-                Clear();
-            return true;
+            item = null;
+            quantity = 0;
         }
-        return false;
-    }
 
-    public InventorySlot Clone()
-    {
-        return new InventorySlot(item, quantity);
+        public InventorySlot(ItemData itemData, int qty = 1)
+        {
+            item = itemData;
+            quantity = qty;
+        }
+
+        public void Clear()
+        {
+            item = null;
+            quantity = 0;
+        }
+
+        public void Add(int amount = 1)
+        {
+            if (item != null)
+                quantity += amount;
+        }
+
+        public bool Remove(int amount = 1)
+        {
+            if (item != null && quantity >= amount)
+            {
+                quantity -= amount;
+                if (quantity <= 0)
+                    Clear();
+                return true;
+            }
+            return false;
+        }
+
+        public InventorySlot Clone()
+        {
+            return new InventorySlot(item, quantity);
+        }
     }
 }

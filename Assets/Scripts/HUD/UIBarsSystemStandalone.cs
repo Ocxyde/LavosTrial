@@ -11,6 +11,7 @@
 // The bars will automatically update via PlayerStats (unified health, mana, stamina system).
 
 using UnityEngine;
+using Code.Lavos;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -82,15 +83,6 @@ namespace Unity6.LavosTrial.HUD
                     Debug.LogWarning("[UIBarsSystemStandalone] No PlayerStats found - bars won't update automatically");
             }
 
-            // Subscribe to PlayerController events as fallback
-            if (_playerController != null)
-            {
-                PlayerController.OnStaminaChanged += OnStaminaChanged;
-                PlayerController.OnManaChanged += OnManaChanged;
-                if (showDebugLogs)
-                    Debug.Log($"[UIBarsSystemStandalone] Linked to PlayerController as fallback on '{player.name}'");
-            }
-
             // Set initial values
             SetInitialValues();
         }
@@ -149,12 +141,6 @@ namespace Unity6.LavosTrial.HUD
                 PlayerStats.OnHealthChanged -= OnHealthChanged;
                 _playerStats.OnManaChanged -= OnManaChanged;
                 _playerStats.OnStaminaChanged -= OnStaminaChanged;
-            }
-
-            if (_playerController != null)
-            {
-                PlayerController.OnStaminaChanged -= OnStaminaChanged;
-                PlayerController.OnManaChanged -= OnManaChanged;
             }
         }
     }

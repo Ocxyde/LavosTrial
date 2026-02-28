@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class AnimatedFlame : MonoBehaviour
+namespace Code.Lavos
 {
+    public class AnimatedFlame : MonoBehaviour
+    {
     [Header("Animation")]
     [SerializeField] private float frameRate = 8f;
     [SerializeField] private bool autoStart = true;
@@ -208,4 +210,5 @@ public static class FlameGenerator
             _ => new Color32(255, 255, (byte)(200 + rng.Next(-10, 11)), alpha)
         };
     }
+}
 }

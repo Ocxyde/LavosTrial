@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class ItemPickup : MonoBehaviour
+namespace Code.Lavos
 {
+    public class ItemPickup : MonoBehaviour
+    {
     [Header("Item Settings")]
     [SerializeField] private ItemData item;
     [SerializeField] private int quantity = 1;
@@ -125,4 +127,5 @@ public class ItemPickup : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, pickupRadius);
     }
+}
 }

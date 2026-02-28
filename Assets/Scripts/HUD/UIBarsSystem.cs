@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Code.Lavos;
+using Code.Lavos.Status;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -25,9 +27,9 @@ namespace Unity6.LavosTrial.HUD
         public static UIBarsSystem Instance { get; private set; }
 
         [Header("Bar Settings")]
-        [SerializeField] private float barThickness = 180f;
+        [SerializeField] private float barThickness = 25f;
         [SerializeField] private float barMargin = 20f;
-        [SerializeField][Range(0.5f, 0.95f)] private float barSizePercent = 0.50f;
+        [SerializeField][Range(0.5f, 0.95f)] private float barSizePercent = 0.75f;
 
         [Header("Colors")]
         [SerializeField] private Color healthColorHigh = new Color(0.2f, 0.85f, 0.3f);
@@ -46,9 +48,9 @@ namespace Unity6.LavosTrial.HUD
         [SerializeField] private float effectRowMargin = 15f;
 
         [Header("Text Settings")]
-        [SerializeField] private int barTextFontSize = 27;
-        [SerializeField] private Color textColor = Color.white;
-        [SerializeField] private bool showTextOutline = true;
+        [SerializeField] private int barTextFontSize = 36;
+        [SerializeField] private Color textColor = Color.black;
+        [SerializeField] private bool showTextOutline = false;
         [SerializeField] private Color outlineColor = Color.black;
         [SerializeField] private float outlineWidth = 4f;
 
@@ -114,17 +116,21 @@ namespace Unity6.LavosTrial.HUD
 
         private void SubscribeToEvents()
         {
-            // OnHealthChanged is static
+            // OnHealthChanged is static - always subscribe
             PlayerStats.OnHealthChanged += OnHealthChanged;
 
-            // Others are instance events
-            if (PlayerStats.Instance != null)
+            // Others are instance events - subscribe if PlayerStats exists
+            if (PlayerStats.Instance == null)
             {
-                PlayerStats.Instance.OnManaChanged += OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
-                PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
-                PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+                // Retry after a short delay - PlayerStats might not be initialized yet
+                Invoke(nameof(SubscribeToEvents), 0.1f);
+                return;
             }
+
+            PlayerStats.Instance.OnManaChanged += OnManaChanged;
+            PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
+            PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
+            PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
         }
 
         private void UnsubscribeFromEvents()
@@ -145,8 +151,8 @@ namespace Unity6.LavosTrial.HUD
         private void OnHealthChanged(float current, float max) => SetHealth(current, max);
         private void OnManaChanged(float current, float max) => SetMana(current, max);
         private void OnStaminaChanged(float current, float max) => SetStamina(current, max);
-        private void OnEffectAdded(StatusEffect effect) => AddStatusEffect(effect);
-        private void OnEffectRemoved(StatusEffect effect) => RemoveStatusEffect(effect);
+        private void OnEffectAdded(StatusEffectData effect) => AddStatusEffect(effect);
+        private void OnEffectRemoved(StatusEffectData effect) => RemoveStatusEffect(effect);
 
         /// <summary>
         /// Update bar positions based on screen resolution.
@@ -156,21 +162,28 @@ namespace Unity6.LavosTrial.HUD
         {
             if (_canvas == null) return;
 
-            Rect canvasRect = _canvas.GetComponent<RectTransform>().rect;
-            float screenWidth = canvasRect.width;
-            float screenHeight = canvasRect.height;
+            var canvasRect = _canvas.GetComponent<RectTransform>();
+            if (canvasRect == null) return;
+
+            float screenWidth = canvasRect.rect.width;
+            float screenHeight = canvasRect.rect.height;
 
             // Calculate bar dimensions
-            float verticalBarLength = barSizePercent * screenHeight;
-            float horizontalBarWidth = barSizePercent * screenWidth;
+            // Health & Mana: 3% width, 55% height (vertical bars on edges)
+            float verticalBarWidth = screenWidth * 0.03f;    // 3% of screen width
+            float verticalBarHeight = screenHeight * 0.55f;  // 55% of screen height
+            
+            // Stamina: 55% width, 3% height (horizontal bar at bottom)
+            float horizontalBarWidth = screenWidth * 0.55f;  // 55% of screen width
+            float horizontalBarHeight = screenHeight * 0.03f; // 3% of screen height
 
             // Health Bar (Left edge - vertical)
             // Position: left edge, centered vertically
             if (_healthBarRoot != null)
             {
-                _healthBarRoot.sizeDelta = new Vector2(barThickness, verticalBarLength);
+                _healthBarRoot.sizeDelta = new Vector2(verticalBarWidth, verticalBarHeight);
                 _healthBarRoot.anchoredPosition = new Vector2(
-                    -screenWidth / 2 + barMargin + barThickness / 2,
+                    -screenWidth / 2 + barMargin + verticalBarWidth / 2,
                     0
                 );
             }
@@ -179,9 +192,9 @@ namespace Unity6.LavosTrial.HUD
             // Position: right edge, centered vertically
             if (_manaBarRoot != null)
             {
-                _manaBarRoot.sizeDelta = new Vector2(barThickness, verticalBarLength);
+                _manaBarRoot.sizeDelta = new Vector2(verticalBarWidth, verticalBarHeight);
                 _manaBarRoot.anchoredPosition = new Vector2(
-                    screenWidth / 2 - barMargin - barThickness / 2,
+                    screenWidth / 2 - barMargin - verticalBarWidth / 2,
                     0
                 );
             }
@@ -190,10 +203,10 @@ namespace Unity6.LavosTrial.HUD
             // Position: bottom edge, centered horizontally
             if (_staminaBarRoot != null)
             {
-                _staminaBarRoot.sizeDelta = new Vector2(horizontalBarWidth, barThickness);
+                _staminaBarRoot.sizeDelta = new Vector2(horizontalBarWidth, horizontalBarHeight);
                 _staminaBarRoot.anchoredPosition = new Vector2(
                     0,
-                    -screenHeight / 2 + barMargin + barThickness / 2
+                    -screenHeight / 2 + barMargin + horizontalBarHeight / 2
                 );
             }
 
@@ -359,7 +372,7 @@ namespace Unity6.LavosTrial.HUD
         }
 
         /// <summary>
-        /// Create text label for bar values with outline for visibility.
+        /// Create text label for bar values with uppercase bold black font.
         /// </summary>
         private TextMeshProUGUI CreateBarText(RectTransform parent, string name)
         {
@@ -376,7 +389,7 @@ namespace Unity6.LavosTrial.HUD
             tmp.fontSize = barTextFontSize;
             tmp.color = textColor;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.fontStyle = FontStyles.Bold;
+            tmp.fontStyle = FontStyles.Bold | FontStyles.UpperCase;
             tmp.textWrappingMode = TextWrappingModes.NoWrap;
             tmp.overflowMode = TextOverflowModes.Overflow;
 
@@ -480,7 +493,8 @@ namespace Unity6.LavosTrial.HUD
 
             if (_healthText != null)
             {
-                _healthText.text = $"{Mathf.CeilToInt(_currentHealth)} / {Mathf.CeilToInt(_maxHealth)}";
+                float percent = (_currentHealth / _maxHealth) * 100f;
+                _healthText.text = $"{percent:F0}%".ToUpper();
                 _healthText.enabled = true;
             }
             else
@@ -490,7 +504,7 @@ namespace Unity6.LavosTrial.HUD
         }
 
         /// <summary>
-        /// Set mana bar value with color interpolation and display current stats.
+        /// Set mana bar value with color interpolation and display current stats as percentage.
         /// </summary>
         public void SetMana(float current, float max)
         {
@@ -506,13 +520,14 @@ namespace Unity6.LavosTrial.HUD
 
             if (_manaText != null)
             {
-                _manaText.text = $"{Mathf.CeilToInt(_currentMana)} / {Mathf.CeilToInt(_maxMana)}";
+                float percent = (_currentMana / _maxMana) * 100f;
+                _manaText.text = $"{percent:F0}%".ToUpper();
                 _manaText.enabled = true;
             }
         }
 
         /// <summary>
-        /// Set stamina bar value with color interpolation and display current stats.
+        /// Set stamina bar value with color interpolation and display current stats as percentage.
         /// </summary>
         public void SetStamina(float current, float max)
         {
@@ -528,7 +543,8 @@ namespace Unity6.LavosTrial.HUD
 
             if (_staminaText != null)
             {
-                _staminaText.text = $"{Mathf.CeilToInt(_currentStamina)} / {Mathf.CeilToInt(_maxStamina)}";
+                float percent = (_currentStamina / _maxStamina) * 100f;
+                _staminaText.text = $"{percent:F0}%".ToUpper();
                 _staminaText.enabled = true;
             }
         }
@@ -540,7 +556,7 @@ namespace Unity6.LavosTrial.HUD
         /// <summary>
         /// Add a status effect icon.
         /// </summary>
-        public void AddStatusEffect(StatusEffect effect)
+        public void AddStatusEffect(StatusEffectData effect)
         {
             if (effect == null || _effectIcons.ContainsKey(effect.id)) return;
 
@@ -551,7 +567,7 @@ namespace Unity6.LavosTrial.HUD
         /// <summary>
         /// Remove a status effect icon.
         /// </summary>
-        public void RemoveStatusEffect(StatusEffect effect)
+        public void RemoveStatusEffect(StatusEffectData effect)
         {
             if (effect == null || !_effectIcons.TryGetValue(effect.id, out var data)) return;
 
@@ -588,7 +604,7 @@ namespace Unity6.LavosTrial.HUD
         /// <summary>
         /// Build a status effect icon.
         /// </summary>
-        private EffectIconData BuildEffectIcon(StatusEffect effect)
+        private EffectIconData BuildEffectIcon(StatusEffectData effect)
         {
             Color iconColor = GetEffectColor(effect);
 
@@ -598,8 +614,9 @@ namespace Unity6.LavosTrial.HUD
             var rootRT = root.AddComponent<RectTransform>();
             rootRT.sizeDelta = new Vector2(effectIconSize, effectIconSize + 14f);
 
-            // Border
+            // Border (variable used for potential future customization)
             var border = CreateEffectBorder(root.transform);
+            _ = border; // Suppress unused variable warning
 
             // Background
             var bg = new GameObject("BG");
@@ -704,12 +721,12 @@ namespace Unity6.LavosTrial.HUD
             return border;
         }
 
-        private Color GetEffectColor(StatusEffect effect)
+        private Color GetEffectColor(StatusEffectData effect)
         {
-            if (effect.type == StatusEffectType.Debuff)
-                return new Color(0.9f, 0.25f, 0.1f);
-            else
-                return new Color(0.2f, 0.85f, 0.5f);
+            // Default colors based on effect type
+            return effect.effectType == EffectType.Debuff
+                ? new Color(0.9f, 0.25f, 0.1f)  // Red/Orange for debuffs
+                : new Color(0.2f, 0.85f, 0.5f);  // Green for buffs
         }
 
         #endregion

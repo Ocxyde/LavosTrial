@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using Code.Lavos;
+using Code.Lavos.Status;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -225,7 +227,7 @@ public class DatabaseManager : MonoBehaviour
     #region Player Data Operations
 
     /// <summary>
-    /// Update current player data in memory.
+    /// Update current player data in memory from PersistentPlayerData.
     /// </summary>
     public void SetPlayerData(PersistentPlayerData playerData, Vector3 position, Quaternion rotation)
     {
@@ -251,13 +253,13 @@ public class DatabaseManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get current player data.
+    /// Get current player data as PersistentPlayerData with position/rotation.
     /// </summary>
     public PersistentPlayerData GetPlayerData()
     {
         if (!_isInitialized) return null;
 
-        return new PersistentPlayerData
+        PersistentPlayerData data = new PersistentPlayerData
         {
             currentHealth = _currentPlayerData.currentHealth,
             maxHealth = _currentPlayerData.maxHealth,
@@ -268,8 +270,21 @@ public class DatabaseManager : MonoBehaviour
             level = _currentPlayerData.level,
             experience = _currentPlayerData.experience,
             movementSpeed = _currentPlayerData.movementSpeed,
-            jumpForce = _currentPlayerData.jumpForce
+            jumpForce = _currentPlayerData.jumpForce,
+            lastPosition = new Vector3(
+                _currentPlayerData.positionX,
+                _currentPlayerData.positionY,
+                _currentPlayerData.positionZ
+            ),
+            lastRotation = new Quaternion(
+                _currentPlayerData.rotationX,
+                _currentPlayerData.rotationY,
+                _currentPlayerData.rotationZ,
+                _currentPlayerData.rotationW
+            )
         };
+
+        return data;
     }
 
     /// <summary>
@@ -319,7 +334,9 @@ public class DatabaseManager : MonoBehaviour
                     slotIndex = slot.slotIndex,
                     itemName = slot.item.itemName,
                     quantity = slot.quantity,
-                    itemType = slot.item.itemType.ToString()
+                    itemType = slot.item.itemType.ToString(),
+                    itemValue = slot.item.value,
+                    maxStack = slot.item.maxStack
                 });
             }
         }
@@ -384,9 +401,9 @@ public class DatabaseManager : MonoBehaviour
     #region Status Effects
 
     /// <summary>
-    /// Set active status effects.
+    /// Set active status effects from PlayerStats.
     /// </summary>
-    public void SetStatusEffects(List<StatusEffectData> effects)
+    public void SetStatusEffects(List<StatusEffect> effects)
     {
         if (!_isInitialized || effects == null) return;
 
@@ -394,21 +411,48 @@ public class DatabaseManager : MonoBehaviour
 
         foreach (var effect in effects)
         {
-            // Convert StatusEffectData to record (implementation depends on your StatusEffectData structure)
-            // This is a placeholder - adjust based on your actual StatusEffectData class
+            if (effect != null)
+            {
+                _currentStatusEffects.Add(new StatusEffectRecord
+                {
+                    effectName = effect.effectName,
+                    duration = effect.duration,
+                    stacks = effect.currentStacks,
+                    isActive = !effect.IsExpired
+                });
+            }
         }
     }
 
     /// <summary>
-    /// Get active status effects.
+    /// Get active status effects as StatusEffectData for PlayerStats.
     /// </summary>
     public List<StatusEffectData> GetStatusEffects()
     {
         if (!_isInitialized) return new List<StatusEffectData>();
 
-        // Convert records back to StatusEffectData
-        // Implementation depends on your StatusEffectData class
-        return new List<StatusEffectData>();
+        List<StatusEffectData> effects = new List<StatusEffectData>();
+
+        foreach (var record in _currentStatusEffects)
+        {
+            if (record != null && record.isActive)
+            {
+                StatusEffectData effectData = new StatusEffectData
+                {
+                    id = record.effectName?.ToLowerInvariant().Replace(" ", "_") ?? "unknown",
+                    effectName = record.effectName,
+                    effectType = EffectType.Buff, // Default to buff, can be extended
+                    duration = record.duration,
+                    intensity = 1f, // Default intensity
+                    currentStacks = record.stacks,
+                    remainingTime = record.duration,
+                    tickRate = 1f // Default tick rate
+                };
+                effects.Add(effectData);
+            }
+        }
+
+        return effects;
     }
 
     #endregion
@@ -461,6 +505,53 @@ public class DatabaseManager : MonoBehaviour
     {
         string value = GetSetting(key, defaultValue.ToString());
         return bool.TryParse(value, out bool result) ? result : defaultValue;
+    }
+
+    #endregion
+
+    #region Data Application Helpers
+
+    /// <summary>
+    /// Apply loaded player data to PlayerStats component.
+    /// </summary>
+    public void ApplyPlayerDataToStats(PlayerStats stats)
+    {
+        if (!_isInitialized || stats == null) return;
+
+        // PlayerStats controls its own max values, so we just ensure it's healthy
+        stats.FullHeal();
+    }
+
+    /// <summary>
+    /// Apply loaded inventory data to Inventory component.
+    /// </summary>
+    public void ApplyInventoryData(Inventory inventory, List<InventorySlot> loadedSlots)
+    {
+        if (!_isInitialized || inventory == null || loadedSlots == null) return;
+
+        inventory.Clear();
+
+        foreach (var slot in loadedSlots)
+        {
+            if (slot != null && !slot.IsEmpty)
+            {
+                inventory.AddItem(slot.item, slot.quantity);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Apply loaded status effects to PlayerStats.
+    /// </summary>
+    public void ApplyStatusEffects(PlayerStats stats)
+    {
+        if (!_isInitialized || stats == null) return;
+
+        List<StatusEffectData> effects = GetStatusEffects();
+        foreach (var effectData in effects)
+        {
+            stats.AddEffect(effectData);
+        }
     }
 
     #endregion
@@ -570,6 +661,8 @@ public class InventoryRecord
     public string itemName;
     public int quantity = 1;
     public string itemType;
+    public int itemValue;
+    public int maxStack = 1;
 }
 
 /// <summary>
@@ -582,6 +675,9 @@ public class StatusEffectRecord
     public float duration;
     public int stacks = 1;
     public bool isActive = true;
+    public float intensity = 1f;
+    public float remainingTime;
+    public float tickRate = 1f;
 }
 
 /// <summary>

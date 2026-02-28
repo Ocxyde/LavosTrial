@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class TorchController : MonoBehaviour
+namespace Code.Lavos
 {
+    public class TorchController : MonoBehaviour
+    {
     [Header("Animation")]
     [SerializeField] private float frameRate = 8f;
     [SerializeField] private float bobAmplitude = 0.04f;
@@ -155,4 +157,5 @@ public class TorchController : MonoBehaviour
             _light.shadows = LightShadows.None;
         }
     }
+}
 }

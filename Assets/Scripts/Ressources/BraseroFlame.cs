@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class BraseroFlame : MonoBehaviour
+namespace Code.Lavos
 {
+    public class BraseroFlame : MonoBehaviour
+    {
     [Header("Particle Settings")]
     [SerializeField] private int maxParticles = 100;
     [SerializeField] private float particleSize = 0.15f;
@@ -118,4 +120,5 @@ public class BraseroFlame : MonoBehaviour
         var emission = _particleSystem.emission;
         emission.rateOverTime = emissionRate * Mathf.Clamp01(intensity);
     }
+}
 }

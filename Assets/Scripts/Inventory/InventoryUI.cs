@@ -1,8 +1,10 @@
 using TMPro;
 using UnityEngine;
 
-public class InventoryUI : MonoBehaviour
+namespace Code.Lavos
 {
+    public class InventoryUI : MonoBehaviour
+    {
     [Header("References")]
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private Transform slotsContainer;
@@ -154,4 +156,5 @@ public class InventoryUI : MonoBehaviour
         if (Inventory.Instance != null)
             Inventory.Instance.OnInventoryChanged -= UpdateUI;
     }
+}
 }

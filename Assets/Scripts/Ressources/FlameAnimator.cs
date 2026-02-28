@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class FlameAnimator : MonoBehaviour
+namespace Code.Lavos
 {
+    public class FlameAnimator : MonoBehaviour
+    {
     [Header("Settings")]
     public float frameRate = 10f;
     [SerializeField] private bool playOnAwake = true;
@@ -162,4 +164,5 @@ public class FlameAnimator : MonoBehaviour
         _mpb.SetTexture("_MainTex", _frames[_frameIndex]);
         _renderer.SetPropertyBlock(_mpb);
     }
+}
 }

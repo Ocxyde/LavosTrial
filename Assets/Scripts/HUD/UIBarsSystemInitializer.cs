@@ -10,6 +10,7 @@
 // Optional: Link PlayerHealth and PlayerController for automatic bar updates
 
 using UnityEngine;
+using Code.Lavos;
 
 namespace Unity6.LavosTrial.HUD
 {

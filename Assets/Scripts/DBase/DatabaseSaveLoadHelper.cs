@@ -6,6 +6,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Code.Lavos;
 
 /// <summary>
 /// Provides convenient save/load operations with progress tracking.

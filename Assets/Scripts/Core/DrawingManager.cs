@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
 
-public static class DrawingManager
+namespace Code.Lavos
 {
+    public static class DrawingManager
+    {
     public static readonly Color32[] EGA_PALETTE = new Color32[16]
     {
         new(0x00, 0x00, 0x00, 0xFF),
@@ -398,4 +400,5 @@ public class PixelCanvas
 
     public Texture2D ToTexture(FilterMode filterMode = FilterMode.Point)
         => DrawingManager.CreateTexture(Width, Height, Pixels, filterMode);
+}
 }

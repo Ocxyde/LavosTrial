@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ParticlePreset
+namespace Code.Lavos
 {
+    public enum ParticlePreset
+    {
     None,
     CampfireFlame,
     AmbientFog,
@@ -581,4 +583,5 @@ public static class ParticleGenerator
         MaterialCache.Clear();
         ShaderCache.Clear();
     }
+}
 }

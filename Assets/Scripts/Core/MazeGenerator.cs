@@ -4,8 +4,10 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 
-public class MazeGenerator : MonoBehaviour
+namespace Code.Lavos
 {
+    public class MazeGenerator : MonoBehaviour
+    {
     [System.Flags]
     public enum Wall : byte { None = 0, North = 1, East = 2, South = 4, West = 8, All = 15 }
 
@@ -108,4 +110,5 @@ public class MazeGenerator : MonoBehaviour
     }
 
     public bool HasWall(int x, int y, Wall wall) => (Grid[x, y] & wall) != 0;
+}
 }

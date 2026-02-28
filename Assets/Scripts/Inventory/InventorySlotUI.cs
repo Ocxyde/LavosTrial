@@ -2,8 +2,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InventorySlotUI : MonoBehaviour
+namespace Code.Lavos
 {
+    public class InventorySlotUI : MonoBehaviour
+    {
     [Header("References")]
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI quantityText;
@@ -86,4 +88,5 @@ public class InventorySlotUI : MonoBehaviour
     {
         _onHoverEnd?.Invoke();
     }
+}
 }

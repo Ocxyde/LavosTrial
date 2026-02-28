@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class Door : MonoBehaviour
+namespace Code.Lavos
 {
+    public class Door : MonoBehaviour
+    {
     [Header("Door Settings")]
     [SerializeField] private float cellSize = 4f;
     [SerializeField] private float wallHeight = 3f;
@@ -240,4 +242,5 @@ public class DoorPixelCanvas
         tex.Apply();
         return tex;
     }
+}
 }

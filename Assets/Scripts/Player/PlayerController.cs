@@ -2,20 +2,22 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// PLAYERCONTROLLER — Mouvement 3D, regard souris, stamina, interaction, bob caméra.
-///
-/// SETUP Unity :
-///  1. CharacterController sur le GameObject joueur
-///  2. Ce script sur le même GameObject
-///  3. Assigner playerCamera dans l'Inspector (caméra enfant du joueur)
-///  4. La caméra sera auto-positionnée à hauteur des yeux — ne pas la bouger manuellement.
-///
-/// Contrôles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | E = interaction
-/// </summary>
-[RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+namespace Code.Lavos
 {
+    /// <summary>
+    /// PLAYERCONTROLLER — Mouvement 3D, regard souris, stamina, interaction, bob caméra.
+    ///
+    /// SETUP Unity :
+    ///  1. CharacterController sur le GameObject joueur
+    ///  2. Ce script sur le même GameObject
+    ///  3. Assigner playerCamera dans l'Inspector (caméra enfant du joueur)
+    ///  4. La caméra sera auto-positionnée à hauteur des yeux — ne pas la bouger manuellement.
+    ///
+    /// Contrôles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | E = interaction
+    /// </summary>
+    [RequireComponent(typeof(CharacterController))]
+    public class PlayerController : MonoBehaviour
+    {
     // ─── Déplacement ─────────────────────────────────────────────────────────
     [Header("Déplacement")]
     [SerializeField] private float walkSpeed = 5f;
@@ -39,18 +41,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float bobAmplitudeX = 0.025f; // oscillation latérale (tangage)
     [SerializeField] private float bobSmoothing = 10f;   // lissage retour au repos
 
-    // ─── Stamina ─────────────────────────────────────────────────────────────
-    [Header("Stamina")]
-    [SerializeField] private float maxStamina = 100f;
-    [SerializeField] private float staminaRegen = 10f;
-    // Note: staminaDrain removed - now uses 1% of current stamina per frame while sprinting
-
-    // ─── Mana ────────────────────────────────────────────────────────────────
-    [Header("Mana")]
-    [SerializeField] private float maxMana = 100f;
-    [SerializeField] private float manaRegen = 5f;
-    [SerializeField] private float manaRegenDelay = 2f; // Delay before mana starts regenerating
-
     // ─── Interaction ─────────────────────────────────────────────────────────
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3f;
@@ -61,6 +51,7 @@ public class PlayerController : MonoBehaviour
     // ─── Composants ──────────────────────────────────────────────────────────
     private CharacterController _controller;
     private Inventory _inventory;
+    private PlayerStats _playerStats;
 
     // ─── Input ───────────────────────────────────────────────────────────────
     private Keyboard _kb;
@@ -72,11 +63,6 @@ public class PlayerController : MonoBehaviour
     private bool _isGrounded;
     private bool _isMoving;
     private bool _isSprinting;
-    private float _currentStamina;
-
-    // ─── État Mana ───────────────────────────────────────────────────────────
-    private float _currentMana;
-    private float _lastManaUseTime;
 
     // ─── Head Bob interne ────────────────────────────────────────────────────
     private float _bobTimer;                    // accumulateur de phase
@@ -90,8 +76,6 @@ public class PlayerController : MonoBehaviour
     private IInteractable _highlightedInteractable;
 
     // ─── Événements ──────────────────────────────────────────────────────────
-    public static event System.Action<float, float> OnStaminaChanged;
-    public static event System.Action<float, float> OnManaChanged;
     public static event System.Action<string> OnInteractableChanged;
 
     // ─── Propriétés ──────────────────────────────────────────────────────────
@@ -100,28 +84,13 @@ public class PlayerController : MonoBehaviour
     public bool HasInteractable => _currentInteractable != null;
     public bool IsGrounded => _isGrounded;
 
-    // Mana Properties
-    public float CurrentMana => _currentMana;
-    public float MaxMana => maxMana;
-    public float CurrentManaPercent => maxMana > 0 ? _currentMana / maxMana : 0f;
-
-    // Mana Methods
-    public bool UseMana(float amount)
+    /// <summary>
+    /// Attempts to cast a spell by consuming mana. Returns false if insufficient mana.
+    /// </summary>
+    public bool TryCastSpell(float manaCost)
     {
-        if (_currentMana >= amount)
-        {
-            _currentMana -= amount;
-            _lastManaUseTime = Time.time;
-            OnManaChanged?.Invoke(_currentMana, maxMana);
-            return true;
-        }
-        return false;
-    }
-
-    public void RestoreMana(float amount)
-    {
-        _currentMana = Mathf.Min(_currentMana + amount, maxMana);
-        OnManaChanged?.Invoke(_currentMana, maxMana);
+        if (PlayerStats.Instance == null) return false;
+        return PlayerStats.Instance.UseMana(manaCost);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -131,9 +100,8 @@ public class PlayerController : MonoBehaviour
         if (_controller == null) { Debug.LogError("[PlayerController] CharacterController manquant !"); enabled = false; return; }
 
         _inventory = GetComponent<Inventory>() ?? gameObject.AddComponent<Inventory>();
+        _playerStats = GetComponent<PlayerStats>();
 
-        _currentStamina = maxStamina;
-        _currentMana = maxMana;
         _controller.skinWidth = 0.08f;
         _controller.minMoveDistance = 0.001f;
 
@@ -166,8 +134,6 @@ public class PlayerController : MonoBehaviour
         HandleCursorInput();
         HandleMouseLook();
         HandleMovement();
-        HandleStamina();
-        HandleMana();
         HandleHeadBob();
         HandleInteraction();
     }
@@ -228,10 +194,16 @@ public class PlayerController : MonoBehaviour
                 - (_kb.sKey.isPressed || _kb.downArrowKey.isPressed ? 1f : 0f);
 
         _isMoving = (h != 0f || v != 0f);
-        _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded && _currentStamina > 0f;
+        
+        // Check sprint condition: shift held + moving + grounded + has stamina
+        _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded &&
+                       PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 0f;
 
         Vector3 moveDir = (transform.right * h + transform.forward * v).normalized;
-        float speed = _isSprinting ? sprintSpeed : walkSpeed;
+        
+        // Calculate speed with sprint bonus (+5% base movement speed)
+        float baseSpeed = _isSprinting ? sprintSpeed : walkSpeed;
+        float speed = _isSprinting ? baseSpeed * 1.05f : baseSpeed; // +5% speed bonus while sprinting
 
         if (_kb.spaceKey.wasPressedThisFrame && _isGrounded)
             _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -239,37 +211,16 @@ public class PlayerController : MonoBehaviour
         _velocity.y += gravity * Time.deltaTime;
 
         _controller.Move(moveDir * speed * Time.deltaTime + _velocity * Time.deltaTime);
-    }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  STAMINA
-    // ─────────────────────────────────────────────────────────────────────────
-    private void HandleStamina()
-    {
-        if (_isSprinting)
+        // Consume stamina while sprinting (1% of current stamina per second)
+        if (_isSprinting && PlayerStats.Instance != null)
         {
-            // Drain 1% of current stamina per frame while sprinting
-            float drainAmount = _currentStamina * 0.01f;
-            _currentStamina = Mathf.Max(_currentStamina - drainAmount, 0f);
-        }
-        else
-        {
-            _currentStamina = Mathf.Min(_currentStamina + staminaRegen * Time.deltaTime, maxStamina);
-        }
-
-        OnStaminaChanged?.Invoke(_currentStamina, maxStamina);
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  MANA
-    // ─────────────────────────────────────────────────────────────────────────
-    private void HandleMana()
-    {
-        // Regenerate mana if not used recently
-        if (Time.time - _lastManaUseTime > manaRegenDelay)
-        {
-            _currentMana = Mathf.Min(_currentMana + manaRegen * Time.deltaTime, maxMana);
-            OnManaChanged?.Invoke(_currentMana, maxMana);
+            float drainAmount = PlayerStats.Instance.CurrentStamina * 0.01f * Time.deltaTime;
+            bool success = PlayerStats.Instance.UseStamina(drainAmount);
+            if (!success)
+            {
+                Debug.LogWarning($"[PlayerController] Failed to consume stamina! Current: {PlayerStats.Instance.CurrentStamina}, Requested: {drainAmount}");
+            }
         }
     }
 
@@ -375,4 +326,5 @@ public class PlayerController : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
     public void LockCursor() { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
     public void UnlockCursor() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
+}
 }

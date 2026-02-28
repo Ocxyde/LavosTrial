@@ -1,20 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// TORCHPOOL â€” Pool d'objets pour les torches.
-///
-/// FONCTIONNEMENT :
-///  - Les GameObjects de torche sont crÃ©Ã©s une fois puis dÃ©sactivÃ©s (pas dÃ©truits).
-///  - Ã€ la rÃ©gÃ©nÃ©ration, ils sont rÃ©activÃ©s et repositionnÃ©s â†’ zÃ©ro allocation.
-///  - Si le nouveau labyrinthe a besoin de plus de torches que le pool,
-///    il crÃ©e les manquantes et les ajoute au pool.
-///  - ReleaseAll() remet toutes les torches en rÃ©serve sans les dÃ©truire.
-///
-/// SETUP : Attache sur le mÃªme GameObject que MazeRenderer.
-/// </summary>
-public class TorchPool : MonoBehaviour
+namespace Code.Lavos
 {
+    /// <summary>
+    /// TORCHPOOL â€" Pool d'objets pour les torches.
+    ///
+    /// FONCTIONNEMENT :
+    ///  - Les GameObjects de torche sont crÃ©Ã©s une fois puis dÃ©sactivÃ©s (pas dÃ©truits).
+    ///  - Ã€ la rÃ©gÃ©nÃ©ration, ils sont rÃ©activÃ©s et repositionnÃ©s â†' zÃ©ro allocation.
+    ///  - Si le nouveau labyrinthe a besoin de plus de torches que le pool,
+    ///    il crÃ©e les manquantes et les ajoute au pool.
+    ///  - ReleaseAll() remet toutes les torches en rÃ©serve sans les dÃ©truire.
+    ///
+    /// SETUP : Attache sur le mÃªme GameObject que MazeRenderer.
+    /// </summary>
+    public class TorchPool : MonoBehaviour
+    {
     // â”€â”€â”€ Pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private readonly List<GameObject> _pool = new List<GameObject>();
     private readonly List<TorchController> _active = new List<TorchController>();
@@ -246,7 +248,8 @@ public class TorchPool : MonoBehaviour
         return torchGO;
     }
 
-    // â”€â”€â”€ Stats (debug) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â"€â"€â"€ Stats (debug) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
     public int ActiveCount => _active.Count;
     public int PooledCount => _pool.Count;
+}
 }

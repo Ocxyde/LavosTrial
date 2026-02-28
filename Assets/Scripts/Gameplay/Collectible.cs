@@ -1,17 +1,19 @@
-using Unity6.LavosTrial.HUD;
 using UnityEngine;
+using Unity6.LavosTrial.HUD;
 
-/// <summary>
-/// COLLECTIBLE â€” Objet ramassable (piÃ¨ce, potion, bonusâ€¦)
-///
-/// SETUP dans Unity :
-///  1. CrÃ©e un GameObject (ex: une sphÃ¨re)
-///  2. Attache ce script dessus
-///  3. Ajoute un Collider en mode "Is Trigger"
-///  4. Choisis le type dans l'Inspector
-/// </summary>
-public class Collectible : MonoBehaviour
+namespace Code.Lavos
 {
+    /// <summary>
+    /// COLLECTIBLE â€" Objet ramassable (piÃ¨ce, potion, bonusâ€¦)
+    ///
+    /// SETUP dans Unity :
+    ///  1. CrÃ©e un GameObject (ex: une sphÃ¨re)
+    ///  2. Attache ce script dessus
+    ///  3. Ajoute un Collider en mode "Is Trigger"
+    ///  4. Choisis le type dans l'Inspector
+    /// </summary>
+    public class Collectible : MonoBehaviour
+    {
     public enum CollectibleType { Score, Health, Mana, Stamina }
 
     [Header("Type et valeur")]
@@ -76,4 +78,5 @@ public class Collectible : MonoBehaviour
         Debug.Log($"[Collectible] RamassÃ© : {type} +{value}");
         Destroy(gameObject);
     }
+}
 }

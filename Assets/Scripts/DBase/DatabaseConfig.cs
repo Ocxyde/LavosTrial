@@ -5,8 +5,10 @@
 using System.IO;
 using UnityEngine;
 
-public static class DatabaseConfig
+namespace Code.Lavos
 {
+    public static class DatabaseConfig
+    {
     // Relative path within Unity project for the SQLite database
     public static string DbFolder => Path.Combine(Application.persistentDataPath, "DB_SQLite");
     public static string DbPath => Path.Combine(DbFolder, "GameData.db");
@@ -32,4 +34,5 @@ public static class DatabaseConfig
             Debug.Log($"[DatabaseConfig] Created editor database folder: {editorFolder}");
         }
     }
+}
 }

@@ -3,8 +3,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MazeRenderer : MonoBehaviour
+namespace Code.Lavos
 {
+    public class MazeRenderer : MonoBehaviour
+    {
     [Header("Dimensions")]
     [SerializeField] private float cellSize = 4f;
     [SerializeField] private float wallHeight = 3f;
@@ -283,4 +285,5 @@ public class MazeRenderer : MonoBehaviour
         // RuntimeStatusUI type not required for Unity6 baseline; no runtime dependency added here.
         // If you plan to re-enable, add a proper using/import and a small placeholder class.
     }
+}
 }

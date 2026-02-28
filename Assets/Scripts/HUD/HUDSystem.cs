@@ -5,9 +5,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-#if UNITY_INPUT_SYSTEM_ENABLED
-using UnityEngine.InputSystem;
-#endif
+using Code.Lavos;
+using Code.Lavos.Status;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -472,7 +471,7 @@ namespace Unity6.LavosTrial.HUD
         // ------------
         //  STATUS EFFECTS
         // ------------
-        private void OnEffectAdded(StatusEffect effect)
+        private void OnEffectAdded(StatusEffectData effect)
         {
             if (_effectIcons.ContainsKey(effect.id)) return;
 
@@ -480,7 +479,7 @@ namespace Unity6.LavosTrial.HUD
             _effectIcons[effect.id] = icon;
         }
 
-        private void OnEffectRemoved(StatusEffect effect)
+        private void OnEffectRemoved(StatusEffectData effect)
         {
             if (!_effectIcons.TryGetValue(effect.id, out var data)) return;
             Destroy(data.Root);
@@ -503,9 +502,9 @@ namespace Unity6.LavosTrial.HUD
             }
         }
 
-        private EffectIconData BuildEffectIcon(StatusEffect effect)
+        private EffectIconData BuildEffectIcon(StatusEffectData effect)
         {
-            Color iconColor = effect.type == StatusEffectType.Debuff
+            Color iconColor = effect.effectType == EffectType.Debuff
                 ? new Color(0.9f, 0.25f, 0.1f)
                 : new Color(0.2f, 0.85f, 0.5f);
 

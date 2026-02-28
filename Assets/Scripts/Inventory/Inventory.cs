@@ -1,17 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Inventory : MonoBehaviour
+namespace Code.Lavos
 {
-    public static Inventory Instance { get; private set; }
+    public class Inventory : MonoBehaviour
+    {
+        public static Inventory Instance { get; private set; }
 
-    [Header("Settings")]
-    [SerializeField] private int capacity = 20;
+        [Header("Settings")]
+        [SerializeField] private int capacity = 20;
 
-    [Header("Events")]
-    public System.Action OnInventoryChanged;
+        [Header("Events")]
+        public System.Action OnInventoryChanged;
 
-    private List<InventorySlot> _slots = new List<InventorySlot>();
+        private List<InventorySlot> _slots = new List<InventorySlot>();
 
     public int Capacity => capacity;
     public int Count => _slots.Count;
@@ -176,4 +178,5 @@ public class Inventory : MonoBehaviour
     {
         return new List<InventorySlot>(_slots);
     }
+}
 }

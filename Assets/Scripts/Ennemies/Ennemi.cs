@@ -1,7 +1,9 @@
 using UnityEngine;
 
-public class Ennemi : MonoBehaviour
+namespace Code.Lavos
 {
+    public class Ennemi : MonoBehaviour
+    {
     [Header("Combat")]
     [SerializeField] private float damage = 20f;
 
@@ -17,4 +19,5 @@ public class Ennemi : MonoBehaviour
         }
         stats.TakeDamage(damage);
     }
+}
 }

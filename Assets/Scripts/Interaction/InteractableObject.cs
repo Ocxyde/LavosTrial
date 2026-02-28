@@ -1,33 +1,36 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
-public abstract class InteractableObject : MonoBehaviour, IInteractable
+namespace Code.Lavos
 {
-    [Header("Interaction Settings")]
-    [SerializeField] protected string interactionPrompt = "Interact";
-    [SerializeField] protected bool canInteract = true;
-
-    public virtual string InteractionPrompt => interactionPrompt;
-
-    public virtual bool CanInteract(PlayerController player)
+    [RequireComponent(typeof(Collider))]
+    public abstract class InteractableObject : MonoBehaviour, IInteractable
     {
-        return canInteract && player != null;
-    }
+        [Header("Interaction Settings")]
+        [SerializeField] protected string interactionPrompt = "Interact";
+        [SerializeField] protected bool canInteract = true;
 
-    public abstract void OnInteract(PlayerController player);
+        public virtual string InteractionPrompt => interactionPrompt;
 
-    public virtual void OnHighlightEnter(PlayerController player)
-    {
-    }
+        public virtual bool CanInteract(PlayerController player)
+        {
+            return canInteract && player != null;
+        }
 
-    public virtual void OnHighlightExit(PlayerController player)
-    {
-    }
+        public abstract void OnInteract(PlayerController player);
 
-    protected virtual void Awake()
-    {
-        Collider collider = GetComponent<Collider>();
-        if (collider != null && !collider.isTrigger)
-            collider.isTrigger = true;
+        public virtual void OnHighlightEnter(PlayerController player)
+        {
+        }
+
+        public virtual void OnHighlightExit(PlayerController player)
+        {
+        }
+
+        protected virtual void Awake()
+        {
+            Collider collider = GetComponent<Collider>();
+            if (collider != null && !collider.isTrigger)
+                collider.isTrigger = true;
+        }
     }
 }

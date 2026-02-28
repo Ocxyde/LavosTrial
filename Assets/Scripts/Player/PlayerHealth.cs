@@ -1,15 +1,17 @@
 using UnityEngine;
 
-/// <summary>
-/// PLAYERHEALTH â€” Gestion de la vie du joueur
-/// 
-/// SETUP dans Unity :
-///  1. Attache ce script sur ton GameObject joueur
-///  2. Configure maxHealth dans l'Inspector
-///  3. Appelle TakeDamage(float) depuis n'importe quel ennemi ou piÃ¨ge
-/// </summary>
-public class PlayerHealth : MonoBehaviour
+namespace Code.Lavos
 {
+    /// <summary>
+    /// PLAYERHEALTH â€" Gestion de la vie du joueur
+    ///
+    /// SETUP dans Unity :
+    ///  1. Attache ce script sur ton GameObject joueur
+    ///  2. Configure maxHealth dans l'Inspector
+    ///  3. Appelle TakeDamage(float) depuis n'importe quel ennemi ou piÃ¨ge
+    /// </summary>
+    public class PlayerHealth : MonoBehaviour
+    {
     // â”€â”€â”€ ParamÃ¨tres Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     [Header("Vie")]
     [SerializeField] private float maxHealth = 100f;
@@ -114,4 +116,5 @@ public class PlayerHealth : MonoBehaviour
         var controller = GetComponent<PlayerController>();
         if (controller != null) controller.enabled = false;
     }
+}
 }
