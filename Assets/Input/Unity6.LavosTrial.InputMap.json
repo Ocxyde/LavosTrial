@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "name": "Unity6.LavosTrial.InputMap",
+  "description": "Global keyboard mapping for LavosTrial - US QWERTY default, adaptable to any keyboard layout",
+  "locale": "en-US",
+  "layout": "QWERTY",
+  "actions": {
+    "MoveUp": ["W", "UpArrow"],
+    "MoveDown": ["S", "DownArrow"],
+    "MoveLeft": ["A", "LeftArrow"],
+    "MoveRight": ["D", "RightArrow"],
+    "Jump": ["Space"],
+    "Fire": ["LeftCtrl", "Mouse0"],
+    "Aim": ["Mouse1"],
+    "Reload": ["R"],
+    "Interact": ["E"],
+    "Inventory": ["I"],
+    "Pause": ["Escape"],
+    "Sprint": ["LeftShift"],
+    "Crouch": ["C"]
+  },
+  "fallback": {
+    "enabled": true,
+    "layout": "AZERTY",
+    "actions": {
+      "MoveUp": ["Z"],
+      "MoveDown": ["S"],
+      "MoveLeft": ["Q"],
+      "MoveRight": ["D"]
+    }
+  }
+}
