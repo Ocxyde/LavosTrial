@@ -1,8 +1,7 @@
 // Clean, Unity6-compatible MazeRenderer: final consolidated class
+// Unity6-era compatibility note: this file follows Unity6 patterns and uses the New Input System placeholder guidance.
 using UnityEngine;
 using Unity6.LavosTrial.HUD;
-// Unity6-compatible input system placeholder note
-// NOTE: Ensure Unity's New Input System namespace usage is aligned with Unity 6 era patterns.
 using System.Collections.Generic;
 using UnityEngine.Rendering;
 
