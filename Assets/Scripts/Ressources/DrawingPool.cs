@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     public class DrawingPool : MonoBehaviour
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     public class Ennemi : MonoBehaviour
     {
@@ -19,5 +19,4 @@ namespace Code.Lavos
         }
         stats.TakeDamage(damage);
     }
-}
 }

@@ -2,15 +2,13 @@
 // Central item management system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Architecture:
-//   ItemEngine (central manager)
-//   ├── ItemBehavior (base class for all items)
-//   │   ├── DoubleDoor (doors with glow/halo)
-//   │   ├── ChestBehavior (treasure chests)
-//   │   ├── ItemPickupBehavior (collectible items)
-//   │   ├── SwitchBehavior (pressure plates, levers)
-//   │   └── Custom items...
-//   └── SpawnPlacerEngine (procedural placement)
+// CORE SYSTEM: All item behaviors plug into this central manager
+// - BehaviorEngine (base class in Core/Base/)
+//   ├── DoubleDoor
+//   ├── ChestBehavior
+//   ├── ItemPickup
+//   ├── SwitchBehavior
+//   └── Custom items...
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,8 +17,7 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// Central item management engine.
-    /// Handles item registration, interaction, and lifecycle.
-    /// Designed for plug-in-and-out modularity.
+    /// All items plug into this system via BehaviorEngine base class.
     /// </summary>
     public class ItemEngine : MonoBehaviour
     {
@@ -31,7 +28,7 @@ namespace Code.Lavos.Core
             {
                 if (_instance == null)
                 {
-                    _instance = FindObject<ItemEngine>();
+                    _instance = FindAnyObjectByType<ItemEngine>();
                     if (_instance == null)
                     {
                         GameObject go = new GameObject("ItemEngine");
@@ -49,27 +46,19 @@ namespace Code.Lavos.Core
         [SerializeField] private float interactionRange = 3f;
 
         [Header("Item Registry")]
-        private List<ItemBehavior> _registeredItems;
-        private Dictionary<Vector3, ItemBehavior> _itemLocations;
-        private Dictionary<ItemType, List<ItemBehavior>> _itemsByType;
+        private List<BehaviorEngine> _registeredItems;
+        private Dictionary<Vector3, BehaviorEngine> _itemLocations;
+        private Dictionary<ItemType, List<BehaviorEngine>> _itemsByType;
 
         // Events
-        public System.Action<ItemBehavior> OnItemRegistered;
-        public System.Action<ItemBehavior> OnItemUnregistered;
-        public System.Action<ItemBehavior, GameObject> OnItemInteracted;
-        public System.Action<ItemBehavior> OnItemCollected;
+        public System.Action<BehaviorEngine> OnItemRegistered;
+        public System.Action<BehaviorEngine> OnItemUnregistered;
+        public System.Action<BehaviorEngine, GameObject> OnItemInteracted;
+        public System.Action<BehaviorEngine> OnItemCollected;
 
+        // Properties
         public bool EnableItems => enableItems;
         public int TotalItemCount => _registeredItems?.Count ?? 0;
-
-        private static T FindObject<T>() where T : UnityEngine.Object
-        {
-#if UNITY_6000_0_OR_NEWER
-            return UnityEngine.Object.FindFirstObjectByType<T>();
-#else
-            return UnityEngine.Object.FindObjectOfType<T>();
-#endif
-        }
 
         private void Awake()
         {
@@ -81,24 +70,20 @@ namespace Code.Lavos.Core
 
             _instance = this;
             DontDestroyOnLoad(gameObject);
-            Initialize();
-        }
 
-        private void Initialize()
-        {
-            _registeredItems = new List<ItemBehavior>();
-            _itemLocations = new Dictionary<Vector3, ItemBehavior>();
-            _itemsByType = new Dictionary<ItemType, List<ItemBehavior>>();
+            _registeredItems = new List<BehaviorEngine>();
+            _itemLocations = new Dictionary<Vector3, BehaviorEngine>();
+            _itemsByType = new Dictionary<ItemType, List<BehaviorEngine>>();
 
-            Debug.Log("[ItemEngine] Initialized");
+            Debug.Log("[ItemEngine] Initialized - Ready for plug-in items");
         }
 
         #region Item Management
 
         /// <summary>
-        /// Register an item with the engine.
+        /// Register an item with the engine (called automatically by BehaviorEngine.Awake).
         /// </summary>
-        public void RegisterItem(ItemBehavior item)
+        public void RegisterItem(BehaviorEngine item)
         {
             if (item == null || _registeredItems.Contains(item))
             {
@@ -118,7 +103,7 @@ namespace Code.Lavos.Core
             // Add to type dictionary
             if (!_itemsByType.ContainsKey(item.ItemType))
             {
-                _itemsByType[item.ItemType] = new List<ItemBehavior>();
+                _itemsByType[item.ItemType] = new List<BehaviorEngine>();
             }
             _itemsByType[item.ItemType].Add(item);
 
@@ -131,9 +116,9 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Unregister an item from the engine.
+        /// Unregister an item from the engine (called automatically by BehaviorEngine.OnDestroy).
         /// </summary>
-        public void UnregisterItem(ItemBehavior item)
+        public void UnregisterItem(BehaviorEngine item)
         {
             if (item == null || !_registeredItems.Contains(item))
             {
@@ -167,16 +152,16 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Get item at position.
         /// </summary>
-        public ItemBehavior GetItemAt(Vector3 position)
+        public BehaviorEngine GetItemAt(Vector3 position)
         {
-            _itemLocations.TryGetValue(position, out ItemBehavior item);
+            _itemLocations.TryGetValue(position, out BehaviorEngine item);
             return item;
         }
 
         /// <summary>
         /// Get all items of a specific type.
         /// </summary>
-        public List<T> GetItemsOfType<T>() where T : ItemBehavior
+        public List<T> GetItemsOfType<T>() where T : BehaviorEngine
         {
             var result = new List<T>();
             foreach (var item in _registeredItems)
@@ -192,9 +177,9 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Get all items within range of a position.
         /// </summary>
-        public List<ItemBehavior> GetItemsInRange(Vector3 position, float range)
+        public List<BehaviorEngine> GetItemsInRange(Vector3 position, float range)
         {
-            var result = new List<ItemBehavior>();
+            var result = new List<BehaviorEngine>();
             foreach (var item in _registeredItems)
             {
                 if (Vector3.Distance(position, item.transform.position) <= range)
@@ -208,9 +193,9 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Get nearest interactable item from position.
         /// </summary>
-        public ItemBehavior GetNearestInteractable(Vector3 position, float maxRange)
+        public BehaviorEngine GetNearestInteractable(Vector3 position, float maxRange)
         {
-            ItemBehavior nearest = null;
+            BehaviorEngine nearest = null;
             float nearestDist = maxRange;
 
             foreach (var item in _registeredItems)
@@ -288,13 +273,13 @@ namespace Code.Lavos.Core
 
         #region Event Handlers
 
-        private void HandleItemInteract(ItemBehavior item, GameObject interactor)
+        private void HandleItemInteract(BehaviorEngine item, GameObject interactor)
         {
             OnItemInteracted?.Invoke(item, interactor);
             Debug.Log($"[ItemEngine] Item interacted: {item.ItemType} by {interactor.name}");
         }
 
-        private void HandleItemCollect(ItemBehavior item, GameObject collector)
+        private void HandleItemCollect(BehaviorEngine item, GameObject collector)
         {
             OnItemCollected?.Invoke(item);
             Debug.Log($"[ItemEngine] Item collected: {item.ItemType} by {collector.name}");

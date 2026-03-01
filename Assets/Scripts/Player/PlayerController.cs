@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// PLAYERCONTROLLER — Mouvement 3D, regard souris, stamina, interaction, bob caméra.

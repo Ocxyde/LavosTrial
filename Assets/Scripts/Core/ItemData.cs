@@ -1,8 +1,12 @@
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
-    public enum ItemType { Consumable, Equipment, Quest, Key, Resource }
+    /// <summary>
+    /// Inventory-specific item type enum.
+    /// (Different from Core.ItemType used for maze/spawning system)
+    /// </summary>
+    public enum InventoryItemType { Consumable, Equipment, Quest, Key, Resource }
     public enum ItemRarity { Common, Uncommon, Rare, Epic, Legendary }
 
     [CreateAssetMenu(fileName = "NewItem", menuName = "Game/Item")]
@@ -12,7 +16,7 @@ namespace Code.Lavos
         public string id;
         public string itemName;
         [TextArea] public string description;
-        public ItemType itemType;
+        public InventoryItemType itemType;
         public ItemRarity rarity = ItemRarity.Common;
         public Sprite icon;
         public GameObject prefab;
@@ -44,14 +48,28 @@ namespace Code.Lavos
         {
             Debug.Log($"[Item] Using {itemName}");
 
-            if (itemType != ItemType.Consumable) return;
+            if (itemType != InventoryItemType.Consumable) return;
 
-            var stats = user.GetComponent<PlayerStats>();
+            // Use dynamic lookup to avoid assembly dependency
+            var stats = user.GetComponent("PlayerStats") as MonoBehaviour;
             if (stats == null) return;
 
-            if (healthRestore > 0f) stats.Heal(healthRestore);
-            if (manaRestore > 0f) stats.RestoreMana(manaRestore);
-            if (staminaRestore > 0f) stats.RestoreStamina(staminaRestore);
+            // Use reflection to call heal/restore methods
+            if (healthRestore > 0f)
+            {
+                var healMethod = stats.GetType().GetMethod("Heal");
+                healMethod?.Invoke(stats, new object[] { healthRestore });
+            }
+            if (manaRestore > 0f)
+            {
+                var restoreManaMethod = stats.GetType().GetMethod("RestoreMana");
+                restoreManaMethod?.Invoke(stats, new object[] { manaRestore });
+            }
+            if (staminaRestore > 0f)
+            {
+                var restoreStaminaMethod = stats.GetType().GetMethod("RestoreStamina");
+                restoreStaminaMethod?.Invoke(stats, new object[] { staminaRestore });
+            }
         }
 
         public virtual void OnPickup(GameObject picker) => Debug.Log($"[Item] Picked up {itemName}");

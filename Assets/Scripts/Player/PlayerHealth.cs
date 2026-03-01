@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// PLAYERHEALTH - Player health management
-    /// 
+    ///
     /// SETUP:
     ///  1. Attach to player GameObject
     ///  2. Set maxHealth in Inspector

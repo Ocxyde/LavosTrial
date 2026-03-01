@@ -1,13 +1,13 @@
 using UnityEngine;
 using Unity6.LavosTrial.HUD;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
-    /// COLLECTIBLE â€" Objet ramassable (piÃ¨ce, potion, bonusâ€¦)
+    /// COLLECTIBLE — Objet ramassable (pièce, potion, bonus…)
     ///
     /// SETUP dans Unity :
-    ///  1. CrÃ©e un GameObject (ex: une sphÃ¨re)
+    ///  1. Crée un GameObject (ex: une sphère)
     ///  2. Attache ce script dessus
     ///  3. Ajoute un Collider en mode "Is Trigger"
     ///  4. Choisis le type dans l'Inspector

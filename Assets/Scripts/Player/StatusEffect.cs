@@ -1,5 +1,5 @@
 ﻿// Backward compatibility wrappers for Status namespace types
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// Backward compatibility: StatusEffectType alias (includes Curse)

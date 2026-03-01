@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
-    /// GAMEMANAGER â€" Cerveau central du jeu (Singleton)
-    /// Attache ce script Ã  un GameObject vide nommÃ© "GameManager" dans ta scÃ¨ne.
-    /// Coche "Don't Destroy On Load" pour qu'il persiste entre les scÃ¨nes.
+    /// GAMEMANAGER — Cerveau central du jeu (Singleton)
+    /// Attache ce script à un GameObject vide nommé "GameManager" dans ta scène.
+    /// Coche "Don't Destroy On Load" pour qu'il persiste entre les scènes.
     /// </summary>
     public class GameManager : MonoBehaviour
     {

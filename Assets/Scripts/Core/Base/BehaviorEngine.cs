@@ -1,17 +1,19 @@
-﻿// ItemBehavior.cs
-// Base class for all items in ItemEngine system
+﻿// BehaviorEngine.cs
+// Base class for all items in ItemEngine system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// All item behaviors should inherit from this class and plug into ItemEngine
 
 using UnityEngine;
 using Code.Lavos.Core;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// Base class for all interactable items.
-    /// All items (doors, chests, pickups, switches) should inherit from this class.
+    /// Inherit from this class to create plug-in items for ItemEngine.
     /// </summary>
-    public abstract class ItemBehavior : MonoBehaviour
+    public abstract class BehaviorEngine : MonoBehaviour
     {
         [Header("Item Settings")]
         [SerializeField] protected ItemType itemType = ItemType.Generic;
@@ -34,8 +36,8 @@ namespace Code.Lavos
         protected bool _isEnabled = true;
 
         // Events
-        public System.Action<ItemBehavior, GameObject> OnInteract;
-        public System.Action<ItemBehavior, GameObject> OnCollect;
+        public System.Action<BehaviorEngine, GameObject> OnInteract;
+        public System.Action<BehaviorEngine, GameObject> OnCollect;
 
         // Properties
         public ItemType ItemType => itemType;
@@ -59,7 +61,7 @@ namespace Code.Lavos
         {
             if (!CanInteract)
             {
-                Debug.LogWarning($"[ItemBehavior] Cannot interact with {itemType}");
+                Debug.LogWarning($"[BehaviorEngine] Cannot interact with {itemType}");
                 return;
             }
 
@@ -79,7 +81,7 @@ namespace Code.Lavos
             }
 
             OnInteract?.Invoke(this, interactor);
-            Debug.Log($"[ItemBehavior] Interacted with {itemType}");
+            Debug.Log($"[BehaviorEngine] Interacted with {itemType}");
         }
 
         /// <summary>
@@ -90,7 +92,7 @@ namespace Code.Lavos
         {
             if (!CanCollect)
             {
-                Debug.LogWarning($"[ItemBehavior] Cannot collect {itemType}");
+                Debug.LogWarning($"[BehaviorEngine] Cannot collect {itemType}");
                 return;
             }
 
@@ -109,7 +111,7 @@ namespace Code.Lavos
             }
 
             OnCollect?.Invoke(this, collector);
-            Debug.Log($"[ItemBehavior] Collected {itemType}");
+            Debug.Log($"[BehaviorEngine] Collected {itemType}");
 
             // Destroy if set
             if (destroyOnCollect)

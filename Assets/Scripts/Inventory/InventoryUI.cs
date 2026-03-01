@@ -1,7 +1,8 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     public class InventoryUI : MonoBehaviour
     {
@@ -15,14 +16,16 @@ namespace Code.Lavos
     [SerializeField] private TextMeshProUGUI quantityText;
 
     [Header("Settings")]
-    [SerializeField] private KeyCode toggleKey = KeyCode.I;
+    [SerializeField] private Key toggleKey = Key.I;
     [SerializeField] private bool showOnStart = false;
 
     private GameObject[] _slotObjects;
     private bool _isOpen = false;
+    private Keyboard _keyboard;
 
     private void Start()
     {
+        _keyboard = Keyboard.current;
         if (Inventory.Instance == null)
         {
             Debug.LogWarning("[InventoryUI] No Inventory found!");
@@ -44,7 +47,7 @@ namespace Code.Lavos
 
     private void Update()
     {
-        if (Input.GetKeyDown(toggleKey))
+        if (_keyboard != null && _keyboard[toggleKey].wasPressedThisFrame)
         {
             ToggleInventory();
         }
@@ -106,7 +109,7 @@ namespace Code.Lavos
         InventorySlot slot = Inventory.Instance.GetSlot(slotIndex);
         if (slot == null || slot.IsEmpty) return;
 
-        if (slot.item.itemType == ItemType.Consumable)
+        if (slot.item.itemType == InventoryItemType.Consumable)
         {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)

@@ -1,6 +1,8 @@
 using UnityEngine;
-using Code.Lavos;
+using Code.Lavos.Core;
 
+namespace Code.Lavos.Core
+{
 // Lightweight runtime diagnostics for the TorchPool system
 // Logs counts of active torches and pooled torches to help verify pool behavior.
 public class TorchDiagnostics : MonoBehaviour

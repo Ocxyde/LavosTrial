@@ -1,4 +1,4 @@
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     [System.Serializable]
     public class InventorySlot

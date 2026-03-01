@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     public static class DrawingManager
     {

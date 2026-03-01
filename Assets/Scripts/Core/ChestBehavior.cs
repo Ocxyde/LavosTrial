@@ -1,18 +1,18 @@
 ﻿// ChestBehavior.cs
 // Treasure chest with 8-bit pixel art style and glowing effects
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
-// Inherits from ItemBehavior for ItemEngine integration
+// Inherits from BehaviorEngine for ItemEngine integration
 
 using UnityEngine;
-using Code.Lavos;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// Procedural treasure chest with 8-bit pixel art style.
     /// Features: Glowing aura, randomized contents, open/close animation.
+    /// Inherits from BehaviorEngine for ItemEngine integration.
     /// </summary>
-    public class ChestBehavior : ItemBehavior
+    public class ChestBehavior : BehaviorEngine
     {
         [Header("Chest Settings")]
         [SerializeField] private float chestWidth = 1.5f;
@@ -415,49 +415,6 @@ namespace Code.Lavos
             tex.SetPixels32(_pixels);
             tex.Apply();
             return tex;
-        }
-    }
-
-    /// <summary>
-    /// Loot table for chest rewards.
-    /// </summary>
-    [System.Serializable]
-    public class LootTable
-    {
-        [System.Serializable]
-        public class LootEntry
-        {
-            public ItemData item;
-            public float weight = 1f;
-            public int minQuantity = 1;
-            public int maxQuantity = 1;
-        }
-
-        public LootEntry[] entries;
-
-        public ItemData GetRandomLoot()
-        {
-            if (entries == null || entries.Length == 0) return null;
-
-            float totalWeight = 0f;
-            foreach (var entry in entries)
-            {
-                totalWeight += entry.weight;
-            }
-
-            float roll = Random.Range(0f, totalWeight);
-            float cumulative = 0f;
-
-            foreach (var entry in entries)
-            {
-                cumulative += entry.weight;
-                if (roll <= cumulative)
-                {
-                    return entry.item;
-                }
-            }
-
-            return null;
         }
     }
 }

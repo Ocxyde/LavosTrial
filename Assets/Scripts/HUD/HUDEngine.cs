@@ -83,15 +83,6 @@ namespace Unity6.LavosTrial.HUD
         public RectTransform CanvasRect => _canvasRect;
         public int ModuleCount => _modules?.Count ?? 0;
 
-        private static T FindObject<T>() where T : UnityEngine.Object
-        {
-#if UNITY_6000_0_OR_NEWER
-            return UnityEngine.Object.FindFirstObjectByType<T>();
-#else
-            return UnityEngine.Object.FindObjectOfType<T>();
-#endif
-        }
-
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -127,7 +118,11 @@ namespace Unity6.LavosTrial.HUD
         private void CreateCanvas()
         {
             // Try to find existing canvas
+#if UNITY_6000_0_OR_NEWER
             _canvas = FindFirstObjectByType<Canvas>();
+#else
+            _canvas = FindObjectOfType<Canvas>();
+#endif
 
             if (_canvas == null)
             {

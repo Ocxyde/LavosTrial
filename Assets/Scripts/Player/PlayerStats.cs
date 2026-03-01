@@ -3,7 +3,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using Code.Lavos.Status;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// PlayerStats - MonoBehaviour wrapper for StatsEngine system.

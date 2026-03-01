@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     public class Inventory : MonoBehaviour
     {
@@ -97,7 +97,7 @@ namespace Code.Lavos
         ItemData item = slot.item;
         item.OnUse(user);
 
-        if (item.itemType == ItemType.Consumable)
+        if (item.itemType == InventoryItemType.Consumable)
         {
             slot.Remove(1);
             OnInventoryChanged?.Invoke();

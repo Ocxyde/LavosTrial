@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     [RequireComponent(typeof(Collider))]
     public abstract class InteractableObject : MonoBehaviour, IInteractable

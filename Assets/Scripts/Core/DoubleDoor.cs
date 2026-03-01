@@ -1,19 +1,19 @@
 ﻿// DoubleDoor.cs
 // Double-sided door with glowing halo/aura and 8-bit pixel art flame style
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
-// Inherits from ItemBehavior for ItemEngine integration
+// Inherits from BehaviorEngine for ItemEngine integration
 
 using UnityEngine;
-using Code.Lavos;
+using Code.Lavos.Core;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// Procedural double-sided door with 8-bit pixel art style.
     /// Features: Glowing halo/aura, flame decorations, randomized appearance.
-    /// Inherits from ItemBehavior for ItemEngine integration.
+    /// Inherits from BehaviorEngine for ItemEngine integration.
     /// </summary>
-    public class DoubleDoor : ItemBehavior
+    public class DoubleDoor : BehaviorEngine
     {
         [Header("Door Settings")]
         [SerializeField] private float cellSize = 4f;
@@ -58,12 +58,12 @@ namespace Code.Lavos
         public DoorType DoorType => doorType;
         public bool IsOpen { get; private set; }
 
-        private void Awake()
+        private new void Awake()
         {
             // Set item type
             SetItemType(ItemType.Door);
             interactionRange = 3f;
-            
+
             InitShaders();
         }
 
@@ -367,7 +367,7 @@ namespace Code.Lavos
             _haloLight.color = haloColor;
             _haloLight.intensity = haloIntensity * luminanceMultiplier;
             _haloLight.range = haloRadius;
-            _haloLight.lightmappingMode = LightmappingMode.Realtime;
+            _haloLight.lightmapBakeType = LightmapBakeType.Realtime;
         }
 
         private Mesh CreateHaloMesh()
@@ -558,10 +558,10 @@ namespace Code.Lavos
                 Open();
         }
 
-        private void OnDestroy()
+        private new void OnDestroy()
         {
             base.OnDestroy();
-            
+
             if (_doorLeftMat != null) Destroy(_doorLeftMat);
             if (_doorRightMat != null) Destroy(_doorRightMat);
             if (_frameMat != null) Destroy(_frameMat);
@@ -577,8 +577,58 @@ namespace Code.Lavos
 
             // Draw door bounds
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireCube(transform.position + Vector3.up * doorHeight / 2f, 
+            Gizmos.DrawWireCube(transform.position + Vector3.up * doorHeight / 2f,
                 new Vector3(doorWidth, doorHeight, 0.5f));
+        }
+    }
+
+    /// <summary>
+    /// Pixel canvas helper for procedural door texture generation.
+    /// </summary>
+    public class DoorPixelCanvas
+    {
+        private readonly Color32[] _pixels;
+        public int Width { get; }
+        public int Height { get; }
+        public Color32 DefaultColor { get; set; } = new Color32(0, 0, 0, 255);
+
+        public DoorPixelCanvas(int width, int height)
+        {
+            Width = width;
+            Height = height;
+            _pixels = new Color32[width * height];
+            for (int i = 0; i < _pixels.Length; i++)
+            {
+                _pixels[i] = DefaultColor;
+            }
+        }
+
+        public void SetPixel(int x, int y, Color32 color)
+        {
+            if (x >= 0 && x < Width && y >= 0 && y < Height)
+            {
+                _pixels[y * Width + x] = color;
+            }
+        }
+
+        public void FillRect(int x, int y, int w, int h, Color32 color)
+        {
+            for (int dy = 0; dy < h; dy++)
+            {
+                for (int dx = 0; dx < w; dx++)
+                {
+                    SetPixel(x + dx, y + dy, color);
+                }
+            }
+        }
+
+        public Texture2D ToTexture()
+        {
+            var tex = new Texture2D(Width, Height, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point;
+            tex.SetPixels32(_pixels);
+            tex.Apply();
+            return tex;
         }
     }
 }

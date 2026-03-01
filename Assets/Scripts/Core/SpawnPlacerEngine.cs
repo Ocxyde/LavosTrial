@@ -7,7 +7,7 @@ using UnityEngine;
 using Code.Lavos.Core;
 using System.Collections.Generic;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// Places items (doors, chests, etc.) procedurally in the maze.

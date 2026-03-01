@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 using Code.Lavos;
 
 namespace Unity6.LavosTrial.HUD
@@ -11,15 +12,17 @@ namespace Unity6.LavosTrial.HUD
     {
         [Header("Debug Settings")]
         [SerializeField] private bool showDebugInfo = true;
-        [SerializeField] private KeyCode toggleKey = KeyCode.F1;
+        [SerializeField] private Key toggleKey = Key.F1;
 
         private Rect _windowRect;
         private string _healthInfo = "N/A";
         private string _manaInfo = "N/A";
         private string _staminaInfo = "N/A";
+        private Keyboard _keyboard;
 
         void Awake()
         {
+            _keyboard = Keyboard.current;
             _windowRect = new Rect(10, 10, 300, 150);
             SubscribeToEvents();
             UpdateInfo();
@@ -27,24 +30,27 @@ namespace Unity6.LavosTrial.HUD
 
         void Update()
         {
-            if (Input.GetKeyDown(toggleKey))
+            if (_keyboard != null && _keyboard[toggleKey].wasPressedThisFrame)
             {
                 showDebugInfo = !showDebugInfo;
             }
-            
+
             UpdateInfo();
-            
+
             // Test input
-            if (Input.GetKeyDown(KeyCode.Alpha1)) TestHealth(1.0f);
-            if (Input.GetKeyDown(KeyCode.Alpha5)) TestHealth(0.5f);
-            if (Input.GetKeyDown(KeyCode.Alpha9)) TestHealth(0.1f);
-            
-            if (PlayerStats.Instance != null)
+            if (_keyboard != null)
             {
-                if (Input.GetKeyDown(KeyCode.Q)) PlayerStats.Instance.RestoreMana(100f);
-                if (Input.GetKeyDown(KeyCode.E)) PlayerStats.Instance.UseMana(50f);
-                if (Input.GetKeyDown(KeyCode.A)) PlayerStats.Instance.RestoreStamina(100f);
-                if (Input.GetKeyDown(KeyCode.D)) PlayerStats.Instance.UseStamina(50f);
+                if (_keyboard[Key.Digit1].wasPressedThisFrame) TestHealth(1.0f);
+                if (_keyboard[Key.Digit5].wasPressedThisFrame) TestHealth(0.5f);
+                if (_keyboard[Key.Digit9].wasPressedThisFrame) TestHealth(0.1f);
+
+                if (PlayerStats.Instance != null)
+                {
+                    if (_keyboard[Key.Q].wasPressedThisFrame) PlayerStats.Instance.RestoreMana(100f);
+                    if (_keyboard[Key.E].wasPressedThisFrame) PlayerStats.Instance.UseMana(50f);
+                    if (_keyboard[Key.A].wasPressedThisFrame) PlayerStats.Instance.RestoreStamina(100f);
+                    if (_keyboard[Key.D].wasPressedThisFrame) PlayerStats.Instance.UseStamina(50f);
+                }
             }
         }
 

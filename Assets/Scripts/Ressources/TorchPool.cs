@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Lavos
+namespace Code.Lavos.Core
 {
     /// <summary>
     /// TORCHPOOL - Object pool for torch objects in the maze.
-    /// 
+    ///
     /// FEATURES:
     /// - Torches are created once and disabled (not destroyed) for zero allocation on reuse
     /// - Automatically creates new torches if pool is exhausted
     /// - Supports both BraseroFlame (particle) and sprite-based flame modes
     /// - Shared materials to reduce memory footprint
-    /// 
+    ///
     /// SETUP: Attach to the same GameObject as MazeRenderer.
     /// </summary>
     public class TorchPool : MonoBehaviour
