@@ -1,0 +1,16 @@
+﻿{
+    "name": "Code.Lavos.Status",
+    "rootNamespace": "Code.Lavos.Status",
+    "references": [
+        "Code.Lavos.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -9,27 +9,49 @@ namespace Code.Lavos.Status
     /// </summary>
     public enum ModifierType
     {
-        Additive,       // Flat addition (+10 health)
-        Multiplicative, // Percentage (+20% health)
-        Override        // Set exact value
+        /// <summary>Flat addition (+10 health)</summary>
+        Additive,
+        /// <summary>Percentage (+20% health)</summary>
+        Multiplicative,
+        /// <summary>Set exact value</summary>
+        Override
     }
 
     /// <summary>
-    /// A modifier applied to a specific stat
+    /// A modifier applied to a specific stat with duration tracking
     /// </summary>
     [Serializable]
     public class StatModifier
     {
-        public string statName;      // Which stat this modifies
-        public string id;            // Unique modifier ID
-        public string sourceId;      // Source effect/item ID
+        /// <summary>Name of the stat being modified (e.g., "health", "mana", "damage")</summary>
+        public string statName;
+        /// <summary>Unique identifier for this modifier instance</summary>
+        public string id;
+        /// <summary>Source effect or item that created this modifier</summary>
+        public string sourceId;
+        /// <summary>Type of modification (additive, multiplicative, or override)</summary>
         public ModifierType type;
+        /// <summary>Value of the modification</summary>
         public float value;
-        public float duration;       // 0 = permanent
+        /// <summary>Duration in seconds (0 = permanent)</summary>
+        public float duration;
+        /// <summary>Whether this is a percentage-based modifier</summary>
         public bool isPercentage;
 
+        /// <summary>
+        /// Creates a new StatModifier with default values
+        /// </summary>
         public StatModifier() { }
 
+        /// <summary>
+        /// Creates a new StatModifier with specified values
+        /// </summary>
+        /// <param name="statName">Name of the stat to modify</param>
+        /// <param name="id">Unique modifier ID</param>
+        /// <param name="sourceId">Source effect/item ID</param>
+        /// <param name="type">Type of modification</param>
+        /// <param name="value">Modifier value</param>
+        /// <param name="duration">Duration in seconds (0 = permanent)</param>
         public StatModifier(string statName, string id, string sourceId, ModifierType type, float value, float duration = 0f)
         {
             this.statName = statName;
@@ -41,33 +63,64 @@ namespace Code.Lavos.Status
             this.isPercentage = type == ModifierType.Multiplicative;
         }
 
+        /// <summary>
+        /// Checks if this modifier has expired
+        /// </summary>
+        /// <param name="timeSinceApplied">Time elapsed since the modifier was applied</param>
+        /// <returns>True if the modifier has expired (only for timed modifiers)</returns>
         public bool IsExpired(float timeSinceApplied) => duration > 0 && timeSinceApplied >= duration;
 
+        /// <summary>
+        /// Creates a copy of this modifier
+        /// </summary>
+        /// <returns>A new StatModifier with identical values</returns>
         public StatModifier Clone() => new StatModifier(statName, id, sourceId, type, value, duration);
     }
 
     /// <summary>
-    /// Collection of stat modifiers with calculation logic
+    /// Collection of stat modifiers with calculation logic.
+    /// Applies modifiers in order: Base → Additive → Multiplicative → Override
     /// </summary>
     [Serializable]
     public class StatModifierCollection
     {
         [SerializeField] private List<StatModifier> _modifiers = new();
 
+        /// <summary>Read-only list of all modifiers</summary>
         public IReadOnlyList<StatModifier> Modifiers => _modifiers.AsReadOnly();
+        /// <summary>Number of modifiers in this collection</summary>
         public int Count => _modifiers.Count;
 
+        /// <summary>
+        /// Adds a modifier to the collection
+        /// </summary>
+        /// <param name="modifier">The modifier to add</param>
         public void Add(StatModifier modifier) => _modifiers.Add(modifier);
 
+        /// <summary>
+        /// Removes all modifiers with the specified ID
+        /// </summary>
+        /// <param name="id">The modifier ID to remove</param>
         public void RemoveById(string id) => _modifiers.RemoveAll(m => m.id == id);
 
+        /// <summary>
+        /// Removes all modifiers from the specified source
+        /// </summary>
+        /// <param name="sourceId">The source ID to remove</param>
         public void RemoveBySource(string sourceId) => _modifiers.RemoveAll(m => m.sourceId == sourceId);
 
+        /// <summary>
+        /// Removes all modifiers from the collection
+        /// </summary>
         public void Clear() => _modifiers.Clear();
 
         /// <summary>
-        /// Calculate final value: Base → Additive → Multiplicative → Override
+        /// Calculate final value after applying all valid modifiers
+        /// Order: Base → Additive → Multiplicative → Override
         /// </summary>
+        /// <param name="baseValue">The base stat value</param>
+        /// <param name="currentTime">Current game time for duration checks</param>
+        /// <returns>The final calculated stat value</returns>
         public float Calculate(float baseValue, float currentTime)
         {
             float additive = 0f;
@@ -96,6 +149,11 @@ namespace Code.Lavos.Status
             return overrideVal.HasValue ? overrideVal.Value : result;
         }
 
+        /// <summary>
+        /// Gets the total additive bonus for a specific stat
+        /// </summary>
+        /// <param name="statName">The stat name to sum bonuses for</param>
+        /// <returns>Total additive bonus value</returns>
         public float GetTotalBonus(string statName)
         {
             float total = 0f;
@@ -107,6 +165,11 @@ namespace Code.Lavos.Status
             return total;
         }
 
+        /// <summary>
+        /// Gets the total multiplier for a specific stat
+        /// </summary>
+        /// <param name="statName">The stat name to calculate multiplier for</param>
+        /// <returns>Total multiplier (1.0 = no change)</returns>
         public float GetTotalMultiplier(string statName)
         {
             float mult = 1f;

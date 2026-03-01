@@ -59,10 +59,14 @@ namespace Unity6.LavosTrial.HUD
         [SerializeField] private GameObject victoryPanel;
 
         [Header("Couleurs barres")]
-        [SerializeField] private Color colorHealthHigh = new Color(0.2f, 0.85f, 0.3f);
-        [SerializeField] private Color colorHealthLow = new Color(0.85f, 0.15f, 0.1f);
-        [SerializeField] private Color colorMana = new Color(0.2f, 0.5f, 1f);
-        [SerializeField] private Color colorStamina = new Color(1f, 0.75f, 0.1f);
+        // 8-bit style colors - no alpha, brightness indicates resource level
+        [SerializeField] private Color colorHealthHigh = new Color(0.2f, 0.9f, 0.3f);    // Bright green (100%)
+        [SerializeField] private Color colorHealthLow = new Color(0.9f, 0.7f, 0.1f);     // Yellow-orange (50%)
+        [SerializeField] private Color colorHealthCritical = new Color(0.9f, 0.1f, 0.1f); // Red (0%)
+        [SerializeField] private Color colorMana = new Color(0.2f, 0.5f, 1.0f);          // Bright blue (100%)
+        [SerializeField] private Color colorManaLow = new Color(0.1f, 0.25f, 0.5f);      // Dark blue (0%)
+        [SerializeField] private Color colorStamina = new Color(1.0f, 0.8f, 0.2f);       // Bright yellow (100%)
+        [SerializeField] private Color colorStaminaLow = new Color(0.5f, 0.4f, 0.1f);    // Dark yellow/brown (0%)
 
         [Header("Hotbar")]
         [SerializeField] private int hotbarSlotCount = 5;
@@ -411,7 +415,7 @@ namespace Unity6.LavosTrial.HUD
         }
 
         // ------------
-        //  CALLBACKS â€” BARRES
+        //  CALLBACKS — BARRES
         // ------------
         private void OnHealthChanged(float current, float max)
         {
@@ -419,22 +423,65 @@ namespace Unity6.LavosTrial.HUD
             {
                 float t = max > 0f ? current / max : 0f;
                 healthFill.fillAmount = t;
-                healthFill.color = Color.Lerp(colorHealthLow, colorHealthHigh, t);
+                
+                // Smooth color interpolation: full health = bright green, low health = dark red
+                if (t >= 0.6f)
+                {
+                    float localT = (t - 0.6f) / 0.4f;
+                    healthFill.color = Color.Lerp(colorHealthLow, colorHealthHigh, localT);
+                }
+                else if (t >= 0.3f)
+                {
+                    float localT = (t - 0.3f) / 0.3f;
+                    healthFill.color = Color.Lerp(colorHealthCritical, colorHealthLow, localT);
+                }
+                else
+                {
+                    float dimFactor = t / 0.3f;
+                    healthFill.color = new Color(
+                        colorHealthCritical.r * dimFactor,
+                        colorHealthCritical.g * dimFactor,
+                        colorHealthCritical.b * dimFactor
+                    );
+                }
             }
             if (healthText != null)
-                healthText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            {
+                float percent = (current / max) * 100f;
+                healthText.text = $"{percent:F0}%";
+            }
         }
 
         private void OnManaChanged(float current, float max)
         {
-            if (manaFill != null) manaFill.fillAmount = max > 0f ? current / max : 0f;
-            if (manaText != null) manaText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+            if (manaFill != null)
+            {
+                float t = max > 0f ? current / max : 0f;
+                manaFill.fillAmount = t;
+                // Smooth interpolation: full = bright blue, empty = dark blue
+                manaFill.color = Color.Lerp(colorManaLow, colorMana, t);
+            }
+            if (manaText != null)
+            {
+                float percent = (current / max) * 100f;
+                manaText.text = $"{percent:F0}%";
+            }
         }
 
         private void OnStaminaChanged(float current, float max)
         {
-            if (staminaFill != null) staminaFill.fillAmount = max > 0f ? current / max : 0f;
-            if (staminaText != null) staminaText.text = $"{Mathf.CeilToInt(current)}";
+            if (staminaFill != null)
+            {
+                float t = max > 0f ? current / max : 0f;
+                staminaFill.fillAmount = t;
+                // Smooth interpolation: full = bright yellow, empty = dark yellow
+                staminaFill.color = Color.Lerp(colorStaminaLow, colorStamina, t);
+            }
+            if (staminaText != null)
+            {
+                float percent = (current / max) * 100f;
+                staminaText.text = $"{percent:F0}%";
+            }
         }
 
         private void OnScoreChanged(int score)

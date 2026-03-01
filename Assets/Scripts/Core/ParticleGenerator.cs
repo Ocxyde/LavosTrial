@@ -466,6 +466,9 @@ public static class ParticleGenerator
         renderer.material = GetOrCreateMaterial(config.shaderName, config.enableEmissionKeyword, config.emissionColor);
     }
 
+    private static Shader _fallbackShader;
+    private static bool _fallbackShaderInitialized;
+
     private static Material GetOrCreateMaterial(string shaderName, bool enableEmission, Color emissionColor)
     {
         string key = $"{shaderName}_{enableEmission}";
@@ -476,38 +479,18 @@ public static class ParticleGenerator
             return cachedMaterial;
         }
 
-        Shader shader = null;
+        Shader shader = GetShader(shaderName);
 
-        if (ShaderCache.TryGetValue(shaderName, out var cachedShader))
+        if (shader == null)
         {
-            shader = cachedShader;
-        }
-        else
-        {
-            shader = Shader.Find(shaderName);
-            if (shader != null)
-            {
-                ShaderCache[shaderName] = shader;
-            }
+            Debug.LogWarning($"ParticleGenerator: Shader '{shaderName}' not found. Using fallback shader.");
+            shader = GetFallbackShader();
         }
 
         if (shader == null)
         {
-            Debug.LogWarning($"ParticleGenerator: Shader '{shaderName}' not found. Trying fallback shaders.");
-            shader = Shader.Find("Particles/Standard Surface");
-            if (shader == null)
-            {
-                shader = Shader.Find("Legacy Shaders/Particles/Alpha Blended");
-            }
-            if (shader == null)
-            {
-                shader = Shader.Find("Sprites/Default");
-            }
-            if (shader == null)
-            {
-                Debug.LogError("ParticleGenerator: No valid particle shader found.");
-                return null;
-            }
+            Debug.LogError("ParticleGenerator: No valid particle shader found. Creating material with default shader.");
+            return null;
         }
 
         var material = new Material(shader);
@@ -519,6 +502,51 @@ public static class ParticleGenerator
 
         MaterialCache[key] = material;
         return material;
+    }
+
+    private static Shader GetShader(string shaderName)
+    {
+        if (string.IsNullOrEmpty(shaderName)) return null;
+
+        if (ShaderCache.TryGetValue(shaderName, out var cachedShader))
+        {
+            return cachedShader;
+        }
+
+        var shader = Shader.Find(shaderName);
+        if (shader != null)
+        {
+            ShaderCache[shaderName] = shader;
+        }
+        return shader;
+    }
+
+    private static Shader GetFallbackShader()
+    {
+        if (_fallbackShaderInitialized) return _fallbackShader;
+
+        string[] fallbacks = new[]
+        {
+            "Particles/Standard Unlit",
+            "Particles/Standard Surface",
+            "Legacy Shaders/Particles/Alpha Blended",
+            "Sprites/Default",
+            "Unlit/Transparent"
+        };
+
+        foreach (var fallback in fallbacks)
+        {
+            var shader = Shader.Find(fallback);
+            if (shader != null)
+            {
+                _fallbackShader = shader;
+                Debug.Log($"[ParticleGenerator] Using fallback shader: {fallback}");
+                break;
+            }
+        }
+
+        _fallbackShaderInitialized = true;
+        return _fallbackShader;
     }
 
     public static AnimationCurve CreateSmoothCurve(float start, float mid, float end)

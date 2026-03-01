@@ -8,11 +8,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos;
 
-/// <summary>
-/// Provides convenient save/load operations with progress tracking.
-/// Attach to a GameObject or use via DatabaseManager.Instance.
-/// </summary>
-public class DatabaseSaveLoadHelper : MonoBehaviour
+namespace Code.Lavos.DB
+{
+    /// <summary>
+    /// Provides convenient save/load operations with progress tracking.
+    /// Attach to a GameObject or use via DatabaseManager.Instance.
+    /// </summary>
+    public class DatabaseSaveLoadHelper : MonoBehaviour
 {
     private static DatabaseSaveLoadHelper _instance;
     public static DatabaseSaveLoadHelper Instance
@@ -288,4 +290,5 @@ public class DatabaseSaveLoadHelper : MonoBehaviour
 
         return $"Save from: {DatabaseManager.Instance.GetLastSaveTimestamp()}";
     }
+}
 }

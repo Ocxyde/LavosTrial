@@ -640,28 +640,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b137ca828a1dd640a0dd52e8fb20ad7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::Unity6.LavosTrial.HUD.UIBarsSystem
-  barThickness: 10
+  barThickness: 25
   barMargin: 20
   barSizePercent: 0.75
-  healthColorHigh: {r: 0.2, g: 0.85, b: 0.3, a: 1}
-  healthColorLow: {r: 0.85, g: 0.15, b: 0.1, a: 1}
-  healthColorCritical: {r: 0.9, g: 0.05, b: 0.05, a: 1}
-  manaColor: {r: 0.2, g: 0.5, b: 1, a: 1}
-  manaColorLow: {r: 0.1, g: 0.3, b: 0.6, a: 1}
-  staminaColor: {r: 1, g: 0.75, b: 0.1, a: 1}
-  staminaColorLow: {r: 0.8, g: 0.5, b: 0.1, a: 1}
-  borderColor: {r: 0.2, g: 0.2, b: 0.25, a: 0.9}
-  backgroundColor: {r: 0.05, g: 0.05, b: 0.08, a: 0.9}
+  healthColorHigh: {r: 0.2, g: 0.9, b: 0.3, a: 0}
+  healthColorLow: {r: 0.9, g: 0.7, b: 0.1, a: 0}
+  healthColorCritical: {r: 0.9, g: 0.1, b: 0.1, a: 0}
+  manaColor: {r: 0.2, g: 0.5, b: 1, a: 0}
+  manaColorLow: {r: 0.1, g: 0.25, b: 0.5, a: 0}
+  staminaColor: {r: 1, g: 0.8, b: 0.2, a: 0}
+  staminaColorLow: {r: 0.5, g: 0.4, b: 0.1, a: 0}
+  borderColor: {r: 0.3, g: 0.3, b: 0.35, a: 0}
+  backgroundColor: {r: 0.1, g: 0.1, b: 0.12, a: 0}
   effectIconSize: 48
   effectSpacing: 8
   effectRowMargin: 15
-  barTextFontSize: 14
+  barTextFontSize: 36
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  showTextOutline: 1
+  showTextOutline: 0
   outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineWidth: 3
+  outlineWidth: 4
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

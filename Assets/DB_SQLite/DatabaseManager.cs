@@ -1,7 +1,7 @@
 ﻿// DatabaseManager.cs
 // SQLite-like Database Manager for Unity 6
 // Cross-platform: Windows, Linux, macOS
-// Uses SQLitePCL.raw for native SQLite support
+// Uses JSON serialization for data persistence
 // UTF-8 encoding - Unix line endings
 
 using System;
@@ -15,11 +15,13 @@ using Code.Lavos.Status;
 using UnityEditor;
 #endif
 
-/// <summary>
-/// Manages database operations for game data persistence.
-/// Provides SQLite-like interface for saving/loading game state.
-/// </summary>
-public class DatabaseManager : MonoBehaviour
+namespace Code.Lavos.DB
+{
+    /// <summary>
+    /// Manages database operations for game data persistence.
+    /// Provides JSON-based interface for saving/loading game state.
+    /// </summary>
+    public class DatabaseManager : MonoBehaviour
 {
     private static DatabaseManager _instance;
     public static DatabaseManager Instance
@@ -381,19 +383,19 @@ public class DatabaseManager : MonoBehaviour
         if (string.IsNullOrEmpty(itemName)) return null;
 
         // Try to load from Resources/Items folder
-        ItemData item = Resources.Load<ItemData>($"Items/{itemName}");
-        if (item == null)
+        ItemData itemData = Resources.Load<ItemData>($"Items/{itemName}");
+        if (itemData == null)
         {
             // Try direct load from Resources
-            item = Resources.Load<ItemData>(itemName);
+            itemData = Resources.Load<ItemData>(itemName);
         }
 
-        if (item == null)
+        if (itemData == null)
         {
             Debug.LogWarning($"[DatabaseManager] Item not found: {itemName}");
         }
 
-        return item;
+        return itemData;
     }
 
     #endregion
@@ -441,12 +443,12 @@ public class DatabaseManager : MonoBehaviour
                 {
                     id = record.effectName?.ToLowerInvariant().Replace(" ", "_") ?? "unknown",
                     effectName = record.effectName,
-                    effectType = EffectType.Buff, // Default to buff, can be extended
+                    effectType = EffectType.Buff,
                     duration = record.duration,
-                    intensity = 1f, // Default intensity
+                    intensity = 1f,
                     currentStacks = record.stacks,
                     remainingTime = record.duration,
-                    tickRate = 1f // Default tick rate
+                    tickRate = 1f
                 };
                 effects.Add(effectData);
             }
@@ -518,7 +520,6 @@ public class DatabaseManager : MonoBehaviour
     {
         if (!_isInitialized || stats == null) return;
 
-        // PlayerStats controls its own max values, so we just ensure it's healthy
         stats.FullHeal();
     }
 
@@ -705,3 +706,5 @@ public class GameSaveDataWrapper
 }
 
 #endregion
+
+}

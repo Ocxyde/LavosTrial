@@ -32,15 +32,16 @@ namespace Unity6.LavosTrial.HUD
         [SerializeField][Range(0.5f, 0.95f)] private float barSizePercent = 0.75f;
 
         [Header("Colors")]
-        [SerializeField] private Color healthColorHigh = new Color(0.2f, 0.85f, 0.3f);
-        [SerializeField] private Color healthColorLow = new Color(0.85f, 0.15f, 0.1f);
-        [SerializeField] private Color healthColorCritical = new Color(0.9f, 0.05f, 0.05f);
-        [SerializeField] private Color manaColor = new Color(0.2f, 0.5f, 1f);
-        [SerializeField] private Color manaColorLow = new Color(0.1f, 0.3f, 0.6f);
-        [SerializeField] private Color staminaColor = new Color(1f, 0.75f, 0.1f);
-        [SerializeField] private Color staminaColorLow = new Color(0.8f, 0.5f, 0.1f);
-        [SerializeField] private Color borderColor = new Color(0.2f, 0.2f, 0.25f, 0.9f);
-        [SerializeField] private Color backgroundColor = new Color(0.05f, 0.05f, 0.08f, 0.9f);
+        // 8-bit style colors - no alpha, brightness indicates resource level
+        [SerializeField] private Color healthColorHigh = new Color(0.2f, 0.9f, 0.3f);    // Bright green (100%)
+        [SerializeField] private Color healthColorLow = new Color(0.9f, 0.7f, 0.1f);     // Yellow-orange (50%)
+        [SerializeField] private Color healthColorCritical = new Color(0.9f, 0.1f, 0.1f); // Red (0%)
+        [SerializeField] private Color manaColor = new Color(0.2f, 0.5f, 1.0f);          // Bright blue (100%)
+        [SerializeField] private Color manaColorLow = new Color(0.1f, 0.25f, 0.5f);      // Dark blue (0%)
+        [SerializeField] private Color staminaColor = new Color(1.0f, 0.8f, 0.2f);       // Bright yellow (100%)
+        [SerializeField] private Color staminaColorLow = new Color(0.5f, 0.4f, 0.1f);    // Dark yellow/brown (0%)
+        [SerializeField] private Color borderColor = new Color(0.3f, 0.3f, 0.35f);       // Dark gray border
+        [SerializeField] private Color backgroundColor = new Color(0.1f, 0.1f, 0.12f);   // Dark background
 
         [Header("Status Effects")]
         [SerializeField] private float effectIconSize = 48f;
@@ -101,6 +102,48 @@ namespace Unity6.LavosTrial.HUD
             BuildBars();
             SubscribeToEvents();
             Debug.Log($"[UIBarsSystem] Bars built - Health: {_healthFill != null}, Mana: {_manaFill != null}, Stamina: {_staminaFill != null}");
+            
+            // Set initial values after a short delay to ensure everything is initialized
+            Invoke(nameof(SetInitialValues), 0.2f);
+        }
+        
+        void SetInitialValues()
+        {
+            Debug.Log("[UIBarsSystem] Setting initial values...");
+            
+            // Try PlayerStats first
+            if (PlayerStats.Instance != null)
+            {
+                SetHealth(PlayerStats.Instance.CurrentHealth, PlayerStats.Instance.MaxHealth);
+                SetMana(PlayerStats.Instance.CurrentMana, PlayerStats.Instance.MaxMana);
+                SetStamina(PlayerStats.Instance.CurrentStamina, PlayerStats.Instance.MaxStamina);
+                Debug.Log($"[UIBarsSystem] Initial values from PlayerStats - HP: {PlayerStats.Instance.CurrentHealth}/{PlayerStats.Instance.MaxHealth}");
+            }
+            else
+            {
+                // Fallback to PlayerHealth
+                var playerHealth = FindFirstObjectByType<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    // Use reflection to get maxHealth since it's a private field
+                    var maxHealthField = playerHealth.GetType().GetField("maxHealth",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    float maxHp = maxHealthField != null ? (float)maxHealthField.GetValue(playerHealth) : 100f;
+                    
+                    SetHealth(playerHealth.CurrentHealth, maxHp);
+                    SetMana(100f, 100f);
+                    SetStamina(100f, 100f);
+                    Debug.Log($"[UIBarsSystem] Initial values from PlayerHealth - HP: {playerHealth.CurrentHealth}/{maxHp}");
+                }
+                else
+                {
+                    // Default values
+                    SetHealth(1000f, 1000f);
+                    SetMana(100f, 100f);
+                    SetStamina(100f, 100f);
+                    Debug.Log("[UIBarsSystem] Using default values");
+                }
+            }
         }
 
         void OnDestroy()
@@ -116,43 +159,71 @@ namespace Unity6.LavosTrial.HUD
 
         private void SubscribeToEvents()
         {
-            // OnHealthChanged is static - always subscribe
-            PlayerStats.OnHealthChanged += OnHealthChanged;
-
-            // Others are instance events - subscribe if PlayerStats exists
-            if (PlayerStats.Instance == null)
+            // Subscribe to PlayerStats events (unified system)
+            if (PlayerStats.Instance != null)
             {
-                // Retry after a short delay - PlayerStats might not be initialized yet
-                Invoke(nameof(SubscribeToEvents), 0.1f);
-                return;
+                PlayerStats.OnHealthChanged += OnHealthChanged;
+                PlayerStats.Instance.OnManaChanged += OnManaChanged;
+                PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
+                PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
+                PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+                Debug.Log("[UIBarsSystem] Subscribed to PlayerStats events");
+                return; // Exit early - no need to retry
             }
-
-            PlayerStats.Instance.OnManaChanged += OnManaChanged;
-            PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
-            PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
-            PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+            
+            // Fallback to PlayerHealth (legacy system)
+            var playerHealth = FindFirstObjectByType<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                PlayerHealth.OnHealthChanged += OnHealthChangedLegacy;
+                PlayerHealth.OnPlayerDied += OnPlayerDied;
+                Debug.Log("[UIBarsSystem] Subscribed to PlayerHealth events (legacy mode)");
+                return; // Exit early - no need to retry
+            }
+            
+            Debug.LogWarning("[UIBarsSystem] No PlayerStats or PlayerHealth found! Will retry...");
+            // Retry after a short delay in case components haven't initialized yet
+            Invoke(nameof(SubscribeToEvents), 0.5f);
         }
 
         private void UnsubscribeFromEvents()
         {
-            // OnHealthChanged is static
-            PlayerStats.OnHealthChanged -= OnHealthChanged;
-
-            // Others are instance events
+            // Unsubscribe from PlayerStats
             if (PlayerStats.Instance != null)
             {
+                PlayerStats.OnHealthChanged -= OnHealthChanged;
                 PlayerStats.Instance.OnManaChanged -= OnManaChanged;
                 PlayerStats.Instance.OnStaminaChanged -= OnStaminaChanged;
                 PlayerStats.Instance.OnEffectAdded -= OnEffectAdded;
                 PlayerStats.Instance.OnEffectRemoved -= OnEffectRemoved;
             }
+            
+            // Unsubscribe from PlayerHealth
+            var playerHealth = FindFirstObjectByType<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                PlayerHealth.OnHealthChanged -= OnHealthChangedLegacy;
+                PlayerHealth.OnPlayerDied -= OnPlayerDied;
+            }
         }
 
+        // PlayerStats event handlers
         private void OnHealthChanged(float current, float max) => SetHealth(current, max);
         private void OnManaChanged(float current, float max) => SetMana(current, max);
         private void OnStaminaChanged(float current, float max) => SetStamina(current, max);
         private void OnEffectAdded(StatusEffectData effect) => AddStatusEffect(effect);
         private void OnEffectRemoved(StatusEffectData effect) => RemoveStatusEffect(effect);
+        
+        // PlayerHealth legacy event handler (converts to PlayerStats-like format)
+        private void OnHealthChangedLegacy(float current, float max)
+        {
+            SetHealth(current, max);
+            // Set default mana and stamina for legacy mode
+            SetMana(100f, 100f);
+            SetStamina(100f, 100f);
+        }
+        
+        private void OnPlayerDied() { /* Handle player death */ }
 
         /// <summary>
         /// Update bar positions based on screen resolution.
@@ -472,7 +543,8 @@ namespace Unity6.LavosTrial.HUD
         #region Public API - Bar Updates
 
         /// <summary>
-        /// Set health bar value with color interpolation and display current stats.
+        /// Set health bar value with color interpolation based on remaining percentage.
+        /// As health is spent, color dims from bright green to dark red.
         /// </summary>
         public void SetHealth(float current, float max)
         {
@@ -484,11 +556,30 @@ namespace Unity6.LavosTrial.HUD
                 float t = _currentHealth / _maxHealth;
                 _healthFill.fillAmount = t;
 
-                // Color interpolation based on health percentage
-                if (t > 0.5f)
-                    _healthFill.color = Color.Lerp(healthColorLow, healthColorHigh, (t - 0.5f) * 2);
+                // Smooth color interpolation: full health = bright green, low health = dark red
+                // Using 3 thresholds for 8-bit style color steps
+                if (t >= 0.6f)
+                {
+                    // High health: interpolate between mid-green and bright green
+                    float localT = (t - 0.6f) / 0.4f;
+                    _healthFill.color = Color.Lerp(healthColorLow, healthColorHigh, localT);
+                }
+                else if (t >= 0.3f)
+                {
+                    // Medium health: interpolate between critical red and mid-green
+                    float localT = (t - 0.3f) / 0.3f;
+                    _healthFill.color = Color.Lerp(healthColorCritical, healthColorLow, localT);
+                }
                 else
-                    _healthFill.color = Color.Lerp(healthColorCritical, healthColorLow, t * 2);
+                {
+                    // Low health: stay at critical red, dim slightly as it approaches zero
+                    float dimFactor = t / 0.3f;
+                    _healthFill.color = new Color(
+                        healthColorCritical.r * dimFactor,
+                        healthColorCritical.g * dimFactor,
+                        healthColorCritical.b * dimFactor
+                    );
+                }
             }
 
             if (_healthText != null)
@@ -504,7 +595,8 @@ namespace Unity6.LavosTrial.HUD
         }
 
         /// <summary>
-        /// Set mana bar value with color interpolation and display current stats as percentage.
+        /// Set mana bar value with smooth color diminishing as mana is spent.
+        /// Full mana = bright blue, empty mana = dark blue/gray.
         /// </summary>
         public void SetMana(float current, float max)
         {
@@ -515,7 +607,10 @@ namespace Unity6.LavosTrial.HUD
             {
                 float t = _currentMana / _maxMana;
                 _manaFill.fillAmount = t;
-                _manaFill.color = t < 0.25f ? manaColorLow : manaColor;
+                
+                // Smooth color interpolation: full = bright blue, empty = dark blue
+                // Interpolate between dark and bright based on remaining mana
+                _manaFill.color = Color.Lerp(manaColorLow, manaColor, t);
             }
 
             if (_manaText != null)
@@ -527,7 +622,8 @@ namespace Unity6.LavosTrial.HUD
         }
 
         /// <summary>
-        /// Set stamina bar value with color interpolation and display current stats as percentage.
+        /// Set stamina bar value with smooth color diminishing as stamina is spent.
+        /// Full stamina = bright yellow, empty = dark yellow/brown.
         /// </summary>
         public void SetStamina(float current, float max)
         {
@@ -538,7 +634,10 @@ namespace Unity6.LavosTrial.HUD
             {
                 float t = _currentStamina / _maxStamina;
                 _staminaFill.fillAmount = t;
-                _staminaFill.color = t < 0.25f ? staminaColorLow : staminaColor;
+                
+                // Smooth color interpolation: full = bright yellow, empty = dark yellow
+                // Interpolate between dark and bright based on remaining stamina
+                _staminaFill.color = Color.Lerp(staminaColorLow, staminaColor, t);
             }
 
             if (_staminaText != null)

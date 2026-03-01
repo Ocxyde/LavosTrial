@@ -1,0 +1,17 @@
+﻿{
+    "name": "Code.Lavos.DB",
+    "rootNamespace": "Code.Lavos.DB",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Status"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}
