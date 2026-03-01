@@ -1,53 +1,43 @@
 ﻿@echo off
-REM ============================================================
-REM  apply-patches-and-backup.bat - Apply all patches and backup
-REM  1. Clean diff_tmp files older than 2 days
-REM  2. Run backup.ps1
-REM ============================================================
+REM apply-patches-and-backup.bat
+REM Applies all critical patches and runs backup
+REM Unity 6 compatible - UTF-8 encoding - Unix line endings
 
-cd /d "%~dp0"
-
+echo ========================================
+echo   Apply Patches and Backup Script
+echo ========================================
 echo.
-echo ============================================
-echo   Apply Patches ^& Backup
-echo ============================================
+echo This script will:
+echo   1. Clean up old diff files (older than 2 days)
+echo   2. Show summary of patches to apply
+echo   3. Run backup.ps1
 echo.
-
-REM Check if PowerShell is available
-where powershell >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: PowerShell not found!
-    pause
-    exit /b 1
-)
-
-echo [1/3] Cleaning old diff files...
+echo NOTE: The patches have already been applied to the files.
+echo       This script just cleans up and creates a backup.
 echo.
-powershell -ExecutionPolicy Bypass -File "%~dp0cleanup-diff-files.ps1"
+pause
 
 echo.
-echo [2/3] Running backup.ps1...
-echo.
-powershell -ExecutionPolicy Bypass -File "%~dp0backup.ps1"
-if %ERRORLEVEL% NEQ 0 (
-    echo Backup completed with warnings.
-)
+echo [1/3] Cleaning up old diff files...
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0cleanup-old-diffs.ps1"
 
 echo.
-echo [3/3] Summary...
+echo [2/3] Listing current diff files...
+dir /b "%~dp0diff_tmp\*.diff" 2>nul
+if %errorlevel% neq 0 echo No diff files found.
+
 echo.
-echo   Patches applied:
-echo     - Ennemi.cs (fixed extra closing brace)
-echo     - TorchController.cs (fixed extra closing brace)
+echo [3/3] Running backup...
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0backup.ps1"
+
 echo.
-echo   Diffs saved in: diff_tmp\
-echo     - Ennemi.cs.diff
-echo     - TorchController.cs.diff
-echo     - patch_summary.md
-echo     - scan_report_2026-03-01.md
+echo ========================================
+echo   Complete!
+echo ========================================
 echo.
-echo ============================================
-echo   Done!
-echo ============================================
+echo Next steps:
+echo   1. Open Unity 6 (6000.3.7f1)
+echo   2. Check Console for any errors
+echo   3. Test in Play Mode
 echo.
 pause

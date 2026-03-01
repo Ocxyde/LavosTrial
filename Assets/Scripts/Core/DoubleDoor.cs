@@ -13,6 +13,7 @@ namespace Code.Lavos.Core
     /// Features: Glowing halo/aura, flame decorations, randomized appearance.
     /// Inherits from BehaviorEngine for ItemEngine integration.
     /// </summary>
+    [RequireComponent(typeof(BoxCollider))]
     public class DoubleDoor : BehaviorEngine
     {
         [Header("Door Settings")]
@@ -31,6 +32,7 @@ namespace Code.Lavos.Core
         [SerializeField] private Color flameCoreColor = new Color(1f, 0.9f, 0.5f);
         [SerializeField] private Color flameOuterColor = new Color(1f, 0.4f, 0.1f);
         [SerializeField] private float flameFlickerSpeed = 8f;
+        [Range(0, 20)]
         [SerializeField] private int flamePixelCount = 12;
 
         [Header("Luminance")]
@@ -39,6 +41,12 @@ namespace Code.Lavos.Core
 
         [Header("Door Type")]
         [SerializeField] private DoorType doorType = DoorType.Start;
+
+        [Header("Animation Settings")]
+        [Range(0.1f, 5f)]
+        [SerializeField] private float openSpeed = 1f;
+        [Range(0.1f, 5f)]
+        [SerializeField] private float closeSpeed = 1f;
 
         private Material _doorLeftMat;
         private Material _doorRightMat;
@@ -567,6 +575,26 @@ namespace Code.Lavos.Core
             if (_frameMat != null) Destroy(_frameMat);
             if (_haloMat != null) Destroy(_haloMat);
             if (_flameMat != null) Destroy(_flameMat);
+            
+            // Fix memory leak: Destroy dynamically created GameObjects
+            if (_haloEffect != null) Destroy(_haloEffect);
+            if (_haloLight != null) Destroy(_haloLight.gameObject);
+            
+            // Destroy flame pixel GameObjects
+            if (_leftFlamePixels != null)
+            {
+                foreach (var flame in _leftFlamePixels)
+                {
+                    if (flame != null) Destroy(flame);
+                }
+            }
+            if (_rightFlamePixels != null)
+            {
+                foreach (var flame in _rightFlamePixels)
+                {
+                    if (flame != null) Destroy(flame);
+                }
+            }
         }
 
         private void OnDrawGizmos()

@@ -370,6 +370,9 @@ namespace Code.Lavos.Core
 
             if (_chestMat != null) Destroy(_chestMat);
             if (_glowMat != null) Destroy(_glowMat);
+            
+            // Fix memory leak: Destroy dynamically created GameObjects
+            if (_glowLight != null) Destroy(_glowLight.gameObject);
         }
 
         protected override void OnDrawGizmosSelected()

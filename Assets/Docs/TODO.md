@@ -79,6 +79,16 @@
 - [x] New Input System (100% compatible)
 - [x] URP Standard (100% compatible)
 
+### SFX/VFX System (NEW - 2026-03-01)
+- [x] SFXVFXEngine (centralized SFX/VFX management)
+- [x] Particle presets (10+ combat/environment effects)
+- [x] Event-driven VFX (auto-spawn on game events)
+- [x] Object pooling (audio sources, particle systems)
+- [x] Tetrahedral VFX integration
+- [x] Volume controls (master, SFX, music)
+- [x] Particle culling (performance optimization)
+
+
 ### Automation
 - [x] Backup system (backup.ps1)
 - [x] Error scanner (scan-project-errors.ps1)

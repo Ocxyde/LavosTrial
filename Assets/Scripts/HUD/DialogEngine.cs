@@ -95,6 +95,15 @@ namespace Code.Lavos.HUD
             _dialogParent = dialogGO.AddComponent<RectTransform>().transform;
         }
 
+        private void OnDestroy()
+        {
+            // Clean up dynamically created GameObjects
+            if (_floatingTextParent != null)
+                Destroy(_floatingTextParent.gameObject);
+            if (_dialogParent != null)
+                Destroy(_dialogParent.gameObject);
+        }
+
         #region Floating Combat Text
 
         /// <summary>

@@ -106,7 +106,7 @@ namespace Unity6.LavosTrial.HUD
         private Keyboard _kb;
         private Mouse _mouse;
         private InputMapConfig _inputConfig;
-        private Dictionary<string, string[]> _actionKeyMap;
+        private Dictionary<string, string[]> _actionKeyMap = new();
 
         // â€” Status Effects â€”
         private Transform _effectRow;

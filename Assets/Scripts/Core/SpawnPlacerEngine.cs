@@ -51,7 +51,10 @@ namespace Code.Lavos.Core
         [SerializeField] private TrapType[] availableTrapTypes;
 
         [Header("Excluded Cells")]
-        [SerializeField] private List<Vector2Int> excludedCells;
+        [SerializeField] private List<Vector2Int> excludedCells = new();
+
+        [Header("Require Components")]
+        [SerializeField] private bool requireMazeGenerator = true;
 
         [Header("Dimensions")]
         [SerializeField] protected float cellSize = 4f;
@@ -59,14 +62,15 @@ namespace Code.Lavos.Core
 
         private MazeGenerator _mazeGenerator;
         private ItemEngine _itemEngine;
-        private List<PlacedItemInfo> _placedItems;
+        [SerializeField] private List<PlacedItemInfo> _placedItems = new();
 
         public int PlacedItemCount => _placedItems?.Count ?? 0;
         public List<PlacedItemInfo> PlacedItems => _placedItems;
 
         private void Awake()
         {
-            _placedItems = new List<PlacedItemInfo>();
+            if (_placedItems == null)
+                _placedItems = new List<PlacedItemInfo>();
         }
 
         private void Start()
@@ -124,8 +128,8 @@ namespace Code.Lavos.Core
         [ContextMenu("Place Doors")]
         public void PlaceDoors()
         {
-            // Place start door
-            PlaceDoorAtCell(Vector2Int.zero, startDoorType, doorLuminanceMax);
+            // Place start door - DISABLED FOR NOW
+            // PlaceDoorAtCell(Vector2Int.zero, startDoorType, doorLuminanceMax);
 
             // Place exit door
             Vector2Int exitCell = new Vector2Int(_mazeGenerator.Width - 1, _mazeGenerator.Height - 1);

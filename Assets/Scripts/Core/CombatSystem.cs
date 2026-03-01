@@ -194,7 +194,16 @@ namespace Code.Lavos.Core
             finalDamage = Mathf.Max(0f, finalDamage);
 
             // Apply damage to target's health
-            targetStats?.ModifyHealth(-finalDamage);
+            if (targetStats != null)
+            {
+                targetStats.ModifyHealth(-finalDamage);
+            }
+            else
+            {
+                // Fallback: try to find PlayerHealth component
+                var playerHealth = target.GetComponent<PlayerHealth>();
+                playerHealth?.TakeDamage(finalDamage);
+            }
 
             // Update combat state
             _lastDamageTime = Time.time;

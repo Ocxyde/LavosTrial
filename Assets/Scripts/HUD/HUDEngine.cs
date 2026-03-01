@@ -59,8 +59,8 @@ namespace Unity6.LavosTrial.HUD
         [SerializeField] private bool autoRegisterModules = true;
 
         // Module registry
-        private Dictionary<System.Type, HUDModule> _modules;
-        private List<HUDModule> _activeModules;
+        private Dictionary<System.Type, HUDModule> _modules = new();
+        private List<HUDModule> _activeModules = new();
 
         // Canvas
         private Canvas _canvas;

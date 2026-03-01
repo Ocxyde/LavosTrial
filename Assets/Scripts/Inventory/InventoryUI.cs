@@ -32,9 +32,25 @@ namespace Code.Lavos.Core
     private void Start()
     {
         _keyboard = Keyboard.current;
+        
+        // Validate required references
         if (Inventory.Instance == null)
         {
             Debug.LogWarning("[InventoryUI] No Inventory found!");
+            return;
+        }
+        
+        if (slotsContainer == null)
+        {
+            Debug.LogError("[InventoryUI] slotsContainer is not assigned!");
+            enabled = false;
+            return;
+        }
+        
+        if (slotPrefab == null)
+        {
+            Debug.LogError("[InventoryUI] slotPrefab is not assigned!");
+            enabled = false;
             return;
         }
 

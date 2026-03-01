@@ -48,9 +48,9 @@ namespace Code.Lavos.DB
 
     // In-memory data storage
     private PlayerDataRecord _currentPlayerData;
-    private List<InventoryRecord> _currentInventory;
-    private List<StatusEffectRecord> _currentStatusEffects;
-    private Dictionary<string, string> _gameSettings;
+    private List<InventoryRecord> _currentInventory = new();
+    private List<StatusEffectRecord> _currentStatusEffects = new();
+    private Dictionary<string, string> _gameSettings = new();
 
     // Events
     public event Action OnDatabaseInitialized;

@@ -97,13 +97,29 @@ namespace Code.Lavos.Core
 
             // Auto-find references if not assigned
             if (playerController == null)
+            {
                 playerController = FindFirstObjectByType<PlayerController>();
+                if (playerController == null)
+                    Debug.LogWarning("[InteractionSystem] PlayerController not found!");
+            }
             if (playerStats == null)
+            {
                 playerStats = FindFirstObjectByType<PlayerStats>();
+                if (playerStats == null)
+                    Debug.LogWarning("[InteractionSystem] PlayerStats not found!");
+            }
             if (combatSystem == null)
+            {
                 combatSystem = FindFirstObjectByType<CombatSystem>();
+                if (combatSystem == null)
+                    Debug.LogWarning("[InteractionSystem] CombatSystem not found!");
+            }
             if (inventory == null)
+            {
                 inventory = FindFirstObjectByType<Inventory>();
+                if (inventory == null)
+                    Debug.LogWarning("[InteractionSystem] Inventory not found!");
+            }
 
             _interactionCamera = Camera.main;
 

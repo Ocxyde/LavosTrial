@@ -1,4 +1,4 @@
-// ItemEngine.cs
+﻿// ItemEngine.cs
 // Central item management system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -46,9 +46,9 @@ namespace Code.Lavos.Core
         [SerializeField] private float interactionRange = 3f;
 
         [Header("Item Registry")]
-        private List<BehaviorEngine> _registeredItems;
-        private Dictionary<Vector3, BehaviorEngine> _itemLocations;
-        private Dictionary<ItemType, List<BehaviorEngine>> _itemsByType;
+        private List<BehaviorEngine> _registeredItems = new();
+        private Dictionary<Vector3, BehaviorEngine> _itemLocations = new();
+        private Dictionary<ItemType, List<BehaviorEngine>> _itemsByType = new();
 
         // Events
         public System.Action<BehaviorEngine> OnItemRegistered;

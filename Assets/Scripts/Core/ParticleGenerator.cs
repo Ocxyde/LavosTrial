@@ -622,5 +622,263 @@ public static class ParticleGenerator
         MaterialCache.Clear();
         ShaderCache.Clear();
     }
+
+    #region Additional Particle Presets
+
+    public static ParticleConfig CreateBloodSplatter()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Sparks,
+            startLifetime = 0.5f,
+            startSpeed = 2f,
+            startSize = 0.1f,
+            startColor = new Color(0.8f, 0.1f, 0.1f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 30f,
+            shapeType = ParticleSystemShapeType.Cone,
+            shapeAngle = 45f,
+            maxParticles = 50
+        };
+    }
+
+    public static ParticleConfig CreateFireHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.CampfireFlame,
+            startLifetime = 0.6f,
+            startSpeed = 1.5f,
+            startSize = 0.3f,
+            startColor = new Color(1f, 0.7f, 0.2f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 50f,
+            maxParticles = 80
+        };
+    }
+
+    public static ParticleConfig CreateIceHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Snow,
+            startLifetime = 0.8f,
+            startSpeed = 1f,
+            startSize = 0.15f,
+            startColor = new Color(0.7f, 0.9f, 1f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 40f,
+            maxParticles = 60
+        };
+    }
+
+    public static ParticleConfig CreateHealEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Dust,
+            startLifetime = 1f,
+            startSpeed = 0.5f,
+            startSize = 0.2f,
+            startColor = new Color(0.3f, 1f, 0.5f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 30f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.green, Color.white },
+                new[] { 0f, 1f },
+                new[] { 1f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 50
+        };
+    }
+
+    public static ParticleConfig CreateDeathEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Smoke,
+            startLifetime = 1.5f,
+            startSpeed = 0.8f,
+            startSize = 0.4f,
+            startColor = new Color(0.3f, 0.3f, 0.3f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 20f,
+            maxParticles = 40
+        };
+    }
+
+    public static ParticleConfig CreatePickupEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Sparks,
+            startLifetime = 0.7f,
+            startSpeed = 1.2f,
+            startSize = 0.15f,
+            startColor = Color.yellow,
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 40f,
+            maxParticles = 50
+        };
+    }
+
+    public static ParticleConfig CreateItemUseEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Dust,
+            startLifetime = 0.8f,
+            startSpeed = 0.6f,
+            startSize = 0.2f,
+            startColor = Color.cyan,
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 35f,
+            maxParticles = 45
+        };
+    }
+
+    public static ParticleConfig CreateJumpEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Dust,
+            startLifetime = 0.5f,
+            startSpeed = 1f,
+            startSize = 0.25f,
+            startColor = new Color(0.8f, 0.7f, 0.6f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 25f,
+            maxParticles = 30
+        };
+    }
+
+    public static ParticleConfig CreateLandEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Dust,
+            startLifetime = 0.4f,
+            startSpeed = 0.8f,
+            startSize = 0.3f,
+            startColor = new Color(0.7f, 0.6f, 0.5f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 30f,
+            maxParticles = 35
+        };
+    }
+
+    public static ParticleConfig CreateArcaneHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Sparks,
+            startLifetime = 0.7f,
+            startSpeed = 1.5f,
+            startSize = 0.2f,
+            startColor = new Color(0.8f, 0.3f, 1f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 50f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.purple, Color.blue, Color.white },
+                new[] { 0f, 0.5f, 1f },
+                new[] { 1f, 0.5f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 70
+        };
+    }
+
+    public static ParticleConfig CreateHolyHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Dust,
+            startLifetime = 0.9f,
+            startSpeed = 1f,
+            startSize = 0.25f,
+            startColor = new Color(1f, 0.9f, 0.5f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 45f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.gold, Color.white },
+                new[] { 0f, 1f },
+                new[] { 1f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 60
+        };
+    }
+
+    public static ParticleConfig CreateShadowHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Smoke,
+            startLifetime = 1f,
+            startSpeed = 0.5f,
+            startSize = 0.3f,
+            startColor = new Color(0.3f, 0.1f, 0.5f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 40f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.black, Color.purple },
+                new[] { 0f, 1f },
+                new[] { 0.8f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 50
+        };
+    }
+
+    public static ParticleConfig CreatePoisonHit()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Smoke,
+            startLifetime = 1.2f,
+            startSpeed = 0.6f,
+            startSize = 0.2f,
+            startColor = new Color(0.3f, 0.8f, 0.3f),
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 35f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.green, Color.yellow },
+                new[] { 0f, 1f },
+                new[] { 1f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 50
+        };
+    }
+
+    public static ParticleConfig CreateLevelUpEffect()
+    {
+        return new ParticleConfig
+        {
+            preset = ParticlePreset.Sparks,
+            startLifetime = 1.5f,
+            startSpeed = 2f,
+            startSize = 0.4f,
+            startColor = Color.gold,
+            simulationSpace = ParticleSystemSimulationSpace.World,
+            emissionRate = 60f,
+            useColorOverLifetime = true,
+            colorGradient = CreateGradient(
+                new[] { Color.gold, Color.white, Color.yellow },
+                new[] { 0f, 0.5f, 1f },
+                new[] { 1f, 0.5f, 0f },
+                new[] { 0f, 1f }
+            ),
+            maxParticles = 100
+        };
+    }
+
+    #endregion
 }
 }

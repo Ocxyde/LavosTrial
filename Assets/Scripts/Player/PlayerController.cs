@@ -155,17 +155,35 @@ namespace Code.Lavos.Core
         HandleMouseLook();
         HandleMovement();
         HandleHeadBob();
-        
+
         // Delegate interaction handling to InteractionSystem if available
         if (_interactionSystem != null)
         {
             // Sync interaction prompt UI with InteractionSystem
-            InteractionSystem.OnInteractableChangedStatic += UpdateInteractionPromptUI;
+            // Note: Event is subscribed once in Start, not every frame
         }
         else
         {
             // Fallback to legacy interaction handling
             HandleInteraction();
+        }
+    }
+
+    private void Start()
+    {
+        // Subscribe to interaction event once
+        if (_interactionSystem != null)
+        {
+            InteractionSystem.OnInteractableChangedStatic += UpdateInteractionPromptUI;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        if (_interactionSystem != null)
+        {
+            InteractionSystem.OnInteractableChangedStatic -= UpdateInteractionPromptUI;
         }
     }
 
