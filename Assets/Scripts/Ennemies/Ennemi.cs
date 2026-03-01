@@ -19,4 +19,5 @@ namespace Code.Lavos.Core
         }
         stats.TakeDamage(damage);
     }
+    }
 }

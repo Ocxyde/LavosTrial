@@ -3,7 +3,9 @@
     "rootNamespace": "Code.Lavos.HUD",
     "references": [
         "Code.Lavos.Core",
-        "Code.Lavos.Status"
+        "Code.Lavos.Status",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

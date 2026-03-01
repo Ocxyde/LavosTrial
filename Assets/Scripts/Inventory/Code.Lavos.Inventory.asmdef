@@ -2,7 +2,9 @@
     "name": "Code.Lavos.Inventory",
     "rootNamespace": "Code.Lavos",
     "references": [
-        "Code.Lavos.Core"
+        "Code.Lavos.Core",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

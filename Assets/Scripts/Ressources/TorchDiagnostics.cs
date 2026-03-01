@@ -32,4 +32,5 @@ public class TorchDiagnostics : MonoBehaviour
             }
         }
     }
+    }
 }

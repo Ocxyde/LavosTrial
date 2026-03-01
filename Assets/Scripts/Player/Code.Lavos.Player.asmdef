@@ -5,7 +5,9 @@
         "Code.Lavos.Core",
         "Code.Lavos.Status",
         "Code.Lavos.Inventory",
-        "Code.Lavos.HUD"
+        "Code.Lavos.HUD",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -157,4 +157,5 @@ namespace Code.Lavos.Core
             _light.shadows = LightShadows.None;
         }
     }
+    }
 }
