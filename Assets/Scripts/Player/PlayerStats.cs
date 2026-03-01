@@ -81,12 +81,28 @@ namespace Code.Lavos.Core
             _statsEngine = new StatsEngine();
             _statsEngine.SetBaseStats(maxHealth, maxMana, maxStamina, healthRegen, manaRegen, staminaRegen);
 
-            // Subscribe to StatsEngine events
-            _statsEngine.OnHealthChanged += (current, max) => OnHealthChanged?.Invoke(current, max);
-            _statsEngine.OnManaChanged += (current, max) => OnManaChanged?.Invoke(current, max);
-            _statsEngine.OnStaminaChanged += (current, max) => OnStaminaChanged?.Invoke(current, max);
-            _statsEngine.OnEffectAdded += (effect) => OnEffectAdded?.Invoke(effect);
-            _statsEngine.OnEffectRemoved += (effect) => OnEffectRemoved?.Invoke(effect);
+            // Subscribe to StatsEngine events and relay through EventHandler
+            _statsEngine.OnHealthChanged += (current, max) => {
+                OnHealthChanged?.Invoke(current, max);
+                if (Core.EventHandler.Instance != null)
+                    Core.EventHandler.Instance.InvokePlayerHealthChanged(current, max);
+            };
+            _statsEngine.OnManaChanged += (current, max) => {
+                OnManaChanged?.Invoke(current, max);
+                if (Core.EventHandler.Instance != null)
+                    Core.EventHandler.Instance.InvokePlayerManaChanged(current, max);
+            };
+            _statsEngine.OnStaminaChanged += (current, max) => {
+                OnStaminaChanged?.Invoke(current, max);
+                if (Core.EventHandler.Instance != null)
+                    Core.EventHandler.Instance.InvokePlayerStaminaChanged(current, max);
+            };
+            _statsEngine.OnEffectAdded += (effect) => {
+                OnEffectAdded?.Invoke(effect);
+            };
+            _statsEngine.OnEffectRemoved += (effect) => {
+                OnEffectRemoved?.Invoke(effect);
+            };
 
             SpawnUIBars();
 
@@ -134,7 +150,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Take damage with type and resistance calculation
         /// </summary>
-        public void TakeDamage(DamageInfo damageInfo)
+        public void TakeDamage(Status.DamageInfo damageInfo)
         {
             if (_isDead || _isInvincible) return;
 
@@ -156,7 +172,7 @@ namespace Code.Lavos.Core
         /// </summary>
         public void TakeDamage(float amount, DamageType type = DamageType.Physical)
         {
-            TakeDamage(new DamageInfo(amount, type));
+            TakeDamage(new Status.DamageInfo(amount, type));
         }
 
         // ─── Healing ───────────────────────────────────────────────────────────

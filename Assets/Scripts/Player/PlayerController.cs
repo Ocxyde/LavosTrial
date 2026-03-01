@@ -215,28 +215,40 @@ namespace Code.Lavos.Core
         // Jump with stamina cost (1% of current stamina per jump)
         if (_kb.spaceKey.wasPressedThisFrame && _isGrounded)
         {
-            // Check if we have enough stamina to jump (minimum 1 stamina)
-            if (PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 1f)
+            // Check if PlayerStats exists and is initialized
+            if (PlayerStats.Instance != null && PlayerStats.Instance.Engine != null)
             {
-                // Consume 1% of current stamina for the jump
-                float jumpCost = PlayerStats.Instance.CurrentStamina * 0.01f;
-                jumpCost = Mathf.Max(jumpCost, 0.5f); // Minimum cost to prevent free jumps at very low stamina
+                float currentStamina = PlayerStats.Instance.CurrentStamina;
                 
-                bool success = PlayerStats.Instance.UseStamina(jumpCost);
-                if (success)
+                // Check if we have enough stamina to jump (minimum 1 stamina)
+                if (currentStamina > 1f)
                 {
-                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    // Consume 1% of current stamina for the jump
+                    float jumpCost = currentStamina * 0.01f;
+                    jumpCost = Mathf.Max(jumpCost, 0.5f); // Minimum cost to prevent free jumps at very low stamina
+                    
+                    bool success = PlayerStats.Instance.UseStamina(jumpCost);
+                    if (success)
+                    {
+                        _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    }
+                    else
+                    {
+                        // Not enough stamina to jump
+                        Debug.LogWarning($"[PlayerController] Cannot jump - UseStamina failed! Current: {currentStamina}");
+                    }
                 }
                 else
                 {
-                    // Not enough stamina to jump
-                    Debug.LogWarning($"[PlayerController] Cannot jump - insufficient stamina! Current: {PlayerStats.Instance.CurrentStamina}");
+                    // Too little stamina to jump
+                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {currentStamina}");
                 }
             }
             else
             {
-                // Too little stamina to jump
-                Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low!");
+                // PlayerStats not initialized yet - allow jump anyway
+                Debug.LogWarning("[PlayerController] PlayerStats not initialized - jumping without cost");
+                _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
         }
 

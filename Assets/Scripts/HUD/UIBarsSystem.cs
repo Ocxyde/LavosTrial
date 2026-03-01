@@ -110,9 +110,18 @@ namespace Unity6.LavosTrial.HUD
             BuildBars();
             SubscribeToEvents();
             Debug.Log($"[UIBarsSystem] Bars built - Health: {_healthFill != null}, Mana: {_manaFill != null}, Stamina: {_staminaFill != null}");
-            
+
             // Set initial values after a short delay to ensure everything is initialized
             Invoke(nameof(SetInitialValues), 0.2f);
+
+            // Subscribe to EventHandler for centralized event management
+            if (EventHandler.Instance != null)
+            {
+                EventHandler.Instance.OnPlayerHealthChanged += (current, max) => SetHealth(current, max, showFloatingText: true);
+                EventHandler.Instance.OnPlayerManaChanged += (current, max) => SetMana(current, max, showFloatingText: true);
+                EventHandler.Instance.OnPlayerStaminaChanged += (current, max) => SetStamina(current, max, showFloatingText: true);
+                Debug.Log("[UIBarsSystem] Subscribed to EventHandler");
+            }
         }
         
         void SetInitialValues()
@@ -120,15 +129,15 @@ namespace Unity6.LavosTrial.HUD
             Debug.Log("[UIBarsSystem] Setting initial values...");
 
             // Try to find PlayerStats using reflection to avoid circular dependency
-            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
+            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Assembly-CSharp");
             MonoBehaviour playerStatsInstance = null;
-            
+
             if (statsType != null)
             {
                 var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
                 playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
             }
-            
+
             if (playerStatsInstance != null)
             {
                 var statsType2 = playerStatsInstance.GetType();
@@ -139,19 +148,18 @@ namespace Unity6.LavosTrial.HUD
                 var currentStaminaProp = statsType2.GetProperty("CurrentStamina");
                 var maxStaminaProp = statsType2.GetProperty("MaxStamina");
 
-                SetHealth(
-                    currentHealthProp?.GetValue(playerStatsInstance) is float ch ? ch : 100f,
-                    maxHealthProp?.GetValue(playerStatsInstance) is float mh ? mh : 100f
-                );
-                SetMana(
-                    currentManaProp?.GetValue(playerStatsInstance) is float cm ? cm : 100f,
-                    maxManaProp?.GetValue(playerStatsInstance) is float mm ? mm : 100f
-                );
-                SetStamina(
-                    currentStaminaProp?.GetValue(playerStatsInstance) is float cs ? cs : 100f,
-                    maxStaminaProp?.GetValue(playerStatsInstance) is float ms ? ms : 100f
-                );
-                Debug.Log($"[UIBarsSystem] Initial values from PlayerStats");
+                float ch = currentHealthProp?.GetValue(playerStatsInstance) is float chc ? chc : 1000f;
+                float mh = maxHealthProp?.GetValue(playerStatsInstance) is float mhc ? mhc : 1000f;
+                float cm = currentManaProp?.GetValue(playerStatsInstance) is float cmc ? cmc : 500f;
+                float mm = maxManaProp?.GetValue(playerStatsInstance) is float mmc ? mmc : 500f;
+                float cs = currentStaminaProp?.GetValue(playerStatsInstance) is float csc ? csc : 100f;
+                float ms = maxStaminaProp?.GetValue(playerStatsInstance) is float msc ? msc : 100f;
+
+                SetHealth(ch, mh);
+                SetMana(cm, mm);
+                SetStamina(cs, ms);
+                
+                Debug.Log($"[UIBarsSystem] Initial values from PlayerStats - HP: {ch}/{mh}, Stamina: {cs}/{ms}");
             }
             else
             {
@@ -743,15 +751,6 @@ namespace Unity6.LavosTrial.HUD
                 {
                     ShowFloatingText($"+{Mathf.FloorToInt(delta)}", Color.yellow, "StaminaGain");
                 }
-            }
-        }
-            }
-
-            if (_staminaText != null)
-            {
-                float percent = (_currentStamina / _maxStamina) * 100f;
-                _staminaText.text = $"{percent:F0}%".ToUpper();
-                _staminaText.enabled = true;
             }
         }
 

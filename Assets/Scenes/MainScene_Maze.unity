@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 571874401}
   - component: {fileID: 571874399}
   - component: {fileID: 571874407}
+  - component: {fileID: 571874408}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -290,6 +291,26 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   interactionPromptText: {fileID: 0}
+--- !u!114 &571874408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 571874398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efbe4bbe129d1c44d9c1847e13485b2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.PlayerStats
+  maxHealth: 1000
+  maxMana: 50
+  maxStamina: 100
+  healthRegen: 2
+  manaRegen: 5
+  staminaRegen: 10
+  invincibilityTime: 0.5
+  startingEffects: []
 --- !u!1 &590304347
 GameObject:
   m_ObjectHideFlags: 0
@@ -427,6 +448,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 571874405}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &699439388
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 699439389}
+  - component: {fileID: 699439390}
+  m_Layer: 0
+  m_Name: EventHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &699439389
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699439388}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.07065, y: 0.76265, z: -0.46252}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &699439390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 699439388}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07d56861a9304c5b997212a3f477eb6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.EventHandlerInitializer
+  debugMode: 1
+  subscribeToPlayerStats: 1
 --- !u!1 &1570786577
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,3 +737,4 @@ SceneRoots:
   - {fileID: 1882940010}
   - {fileID: 571874405}
   - {fileID: 1570786578}
+  - {fileID: 699439389}

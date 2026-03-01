@@ -11,6 +11,7 @@
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 namespace Code.Lavos.HUD
@@ -269,10 +270,10 @@ namespace Code.Lavos.HUD
             var tmp = go.AddComponent<TextMeshProUGUI>();
             tmp.text = message;
             tmp.fontSize = 18;
-            tmp.fontStyle = TMPro.FontStyles.Regular;
+            tmp.fontStyle = TMPro.FontStyles.Normal;
             tmp.color = color ?? infoColor;
             tmp.alignment = TextAlignmentOptions.TopLeft;
-            tmp.enableWordWrapping = true;
+            tmp.textWrappingMode = TextWrappingModes.Normal;
 
             // Margin for text
             var textRect = tmp.rectTransform;
@@ -284,12 +285,8 @@ namespace Code.Lavos.HUD
             outline.effectColor = Color.black;
             outline.effectDistance = new Vector2(2, 2);
 
-            // Resize handle (bottom-right corner)
-            if (dialogResizable)
-            {
-                var resizeHandle = CreateResizeHandle(go);
-                go.AddComponent<ResizableDialog>().resizeHandle = resizeHandle;
-            }
+            // Note: Resize handle feature can be added in future implementation
+            // For now, dialogs are fixed size but can be positioned anywhere
 
             StartCoroutine(AnimateDialog(go, tmp, displayTime ?? dialogDisplayTime));
         }

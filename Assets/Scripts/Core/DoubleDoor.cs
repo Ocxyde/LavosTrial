@@ -367,7 +367,6 @@ namespace Code.Lavos.Core
             _haloLight.color = haloColor;
             _haloLight.intensity = haloIntensity * luminanceMultiplier;
             _haloLight.range = haloRadius;
-            _haloLight.lightmapBakeType = LightmapBakeType.Realtime;
         }
 
         private Mesh CreateHaloMesh()

@@ -14,6 +14,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.HUD
 {
@@ -225,7 +226,7 @@ namespace Code.Lavos.HUD
         /// <summary>
         /// Create an inventory window with slots.
         /// </summary>
-        public GameObject CreateInventoryWindow(string title, int columns = 5, int rows = 4, Action<int, int>? onSlotClicked = null)
+        public GameObject CreateInventoryWindow(string title, int columns = 5, int rows = 4, Action<int, int> onSlotClicked = null)
         {
             columns = columns > 0 ? columns : defaultInventoryColumns;
             rows = rows > 0 ? rows : defaultInventoryRows;
@@ -260,7 +261,7 @@ namespace Code.Lavos.HUD
             return window;
         }
 
-        private GameObject CreateInventorySlot(int index, RectTransform parent, int col, int row, Action<int, int>? onSlotClicked = null)
+        private GameObject CreateInventorySlot(int index, RectTransform parent, int col, int row, Action<int, int> onSlotClicked = null)
         {
             var slotGO = new GameObject($"Slot_{index}");
             slotGO.transform.SetParent(parent, false);
@@ -315,14 +316,20 @@ namespace Code.Lavos.HUD
             qtyText.fontStyle = TMPro.FontStyles.Bold;
             qtyText.color = Color.white;
             qtyText.alignment = TextAlignmentOptions.Right;
-            qtyText.shadowColor = Color.black;
-            qtyText.enableWordWrapping = false;
+            
+            // Add shadow component for better visibility
+            var shadow = qtyGO.AddComponent<Shadow>();
+            shadow.effectColor = Color.black;
+            shadow.effectDistance = new Vector2(2, 2);
+            
+            qtyText.textWrappingMode = TextWrappingModes.NoWrap;
 
             // Button for interaction
             var button = slotGO.AddComponent<Button>();
             if (onSlotClicked != null)
             {
-                button.onClick.AddListener(() => onSlotClicked(index, slotIndex));
+                int capturedIndex = index;
+                button.onClick.AddListener(() => onSlotClicked(capturedIndex, capturedIndex));
             }
 
             // Store slot data
@@ -369,40 +376,33 @@ namespace Code.Lavos.HUD
             var popWinData = window.GetComponent<PopWinData>();
             var contentArea = popWinData.contentArea;
 
-            // Create scrollable content
-            var scrollGO = new GameObject("ScrollContent");
-            scrollGO.transform.SetParent(contentArea, false);
-            var scrollRect = scrollGO.AddComponent<RectTransform>();
-            scrollRect.anchorMin = Vector2.zero;
-            scrollRect.anchorMax = Vector2.one;
-            scrollRect.offsetMin = Vector2.zero;
-            scrollRect.offsetMax = Vector2.zero;
-
-            var scrollView = scrollGO.AddComponent<ScrollView>();
-            scrollView.horizontal = false;
-            scrollView.vertical = true;
-
-            var viewport = scrollView.viewport;
-            var content = scrollView.content;
+            // Create content container (scrollable in future implementation)
+            var contentGO = new GameObject("StatsContent");
+            contentGO.transform.SetParent(contentArea, false);
+            var contentRect = contentGO.AddComponent<RectTransform>();
+            contentRect.anchorMin = Vector2.zero;
+            contentRect.anchorMax = Vector2.one;
+            contentRect.offsetMin = new Vector2(0, -400); // Make tall enough for all stats
+            contentRect.offsetMax = Vector2.zero;
 
             // Stats categories
-            CreateStatCategory(content, "VITAL STATISTICS", new Vector2(10, -10));
-            CreateStatRow(content, "Health", "1000 / 1000", 0);
-            CreateStatRow(content, "Mana", "500 / 500", 1);
-            CreateStatRow(content, "Stamina", "100 / 100", 2);
+            CreateStatCategory(contentRect, "VITAL STATISTICS", new Vector2(10, -10));
+            CreateStatRow(contentRect, "Health", "1000 / 1000", 0);
+            CreateStatRow(contentRect, "Mana", "500 / 500", 1);
+            CreateStatRow(contentRect, "Stamina", "100 / 100", 2);
 
-            CreateStatCategory(content, "ATTRIBUTES", new Vector2(10, -150));
-            CreateStatRow(content, "Strength", "15", 3);
-            CreateStatRow(content, "Agility", "12", 4);
-            CreateStatRow(content, "Intelligence", "18", 5);
-            CreateStatRow(content, "Vitality", "20", 6);
-            CreateStatRow(content, "Dexterity", "14", 7);
+            CreateStatCategory(contentRect, "ATTRIBUTES", new Vector2(10, -150));
+            CreateStatRow(contentRect, "Strength", "15", 3);
+            CreateStatRow(contentRect, "Agility", "12", 4);
+            CreateStatRow(contentRect, "Intelligence", "18", 5);
+            CreateStatRow(contentRect, "Vitality", "20", 6);
+            CreateStatRow(contentRect, "Dexterity", "14", 7);
 
-            CreateStatCategory(content, "COMBAT STATS", new Vector2(10, -300));
-            CreateStatRow(content, "Damage", "45-62", 8);
-            CreateStatRow(content, "Defense", "28", 9);
-            CreateStatRow(content, "Crit Chance", "5.2%", 10);
-            CreateStatRow(content, "Crit Damage", "150%", 11);
+            CreateStatCategory(contentRect, "COMBAT STATS", new Vector2(10, -300));
+            CreateStatRow(contentRect, "Damage", "45-62", 8);
+            CreateStatRow(contentRect, "Defense", "28", 9);
+            CreateStatRow(contentRect, "Crit Chance", "5.2%", 10);
+            CreateStatRow(contentRect, "Crit Damage", "150%", 11);
 
             return window;
         }
