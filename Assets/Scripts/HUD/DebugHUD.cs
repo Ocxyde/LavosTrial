@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using Code.Lavos;
+using Code.Lavos.Status;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -19,11 +20,24 @@ namespace Unity6.LavosTrial.HUD
         private string _manaInfo = "N/A";
         private string _staminaInfo = "N/A";
         private Keyboard _keyboard;
+        private MonoBehaviour _playerStats;
 
         void Awake()
         {
             _keyboard = Keyboard.current;
             _windowRect = new Rect(10, 10, 300, 150);
+            
+            // Find PlayerStats using reflection to avoid circular dependency
+            var allObjects = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+            foreach (var obj in allObjects)
+            {
+                if (obj.GetType().Name == "PlayerStats")
+                {
+                    _playerStats = obj;
+                    break;
+                }
+            }
+            
             SubscribeToEvents();
             UpdateInfo();
         }
@@ -37,19 +51,34 @@ namespace Unity6.LavosTrial.HUD
 
             UpdateInfo();
 
-            // Test input
-            if (_keyboard != null)
+            // Test input using reflection to avoid circular dependency
+            if (_keyboard != null && _playerStats != null)
             {
+                var statsType = _playerStats.GetType();
+                
                 if (_keyboard[Key.Digit1].wasPressedThisFrame) TestHealth(1.0f);
                 if (_keyboard[Key.Digit5].wasPressedThisFrame) TestHealth(0.5f);
                 if (_keyboard[Key.Digit9].wasPressedThisFrame) TestHealth(0.1f);
 
-                if (PlayerStats.Instance != null)
+                if (_keyboard[Key.Q].wasPressedThisFrame)
                 {
-                    if (_keyboard[Key.Q].wasPressedThisFrame) PlayerStats.Instance.RestoreMana(100f);
-                    if (_keyboard[Key.E].wasPressedThisFrame) PlayerStats.Instance.UseMana(50f);
-                    if (_keyboard[Key.A].wasPressedThisFrame) PlayerStats.Instance.RestoreStamina(100f);
-                    if (_keyboard[Key.D].wasPressedThisFrame) PlayerStats.Instance.UseStamina(50f);
+                    var restoreManaMethod = statsType.GetMethod("RestoreMana");
+                    restoreManaMethod?.Invoke(_playerStats, new object[] { 100f });
+                }
+                if (_keyboard[Key.E].wasPressedThisFrame)
+                {
+                    var useManaMethod = statsType.GetMethod("UseMana");
+                    useManaMethod?.Invoke(_playerStats, new object[] { 50f });
+                }
+                if (_keyboard[Key.A].wasPressedThisFrame)
+                {
+                    var restoreStaminaMethod = statsType.GetMethod("RestoreStamina");
+                    restoreStaminaMethod?.Invoke(_playerStats, new object[] { 100f });
+                }
+                if (_keyboard[Key.D].wasPressedThisFrame)
+                {
+                    var useStaminaMethod = statsType.GetMethod("UseStamina");
+                    useStaminaMethod?.Invoke(_playerStats, new object[] { 50f });
                 }
             }
         }
@@ -77,11 +106,16 @@ namespace Unity6.LavosTrial.HUD
 
         void SubscribeToEvents()
         {
-            if (PlayerStats.Instance != null)
+            if (_playerStats != null)
             {
-                PlayerStats.OnHealthChanged += OnHealthChanged;
-                PlayerStats.Instance.OnManaChanged += OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
+                var statsType = _playerStats.GetType();
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onManaEvent != null) onManaEvent.AddEventHandler(_playerStats, new System.Action<float, float>(OnManaChanged));
+                if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(_playerStats, new System.Action<float, float>(OnStaminaChanged));
             }
             else
             {
@@ -95,11 +129,19 @@ namespace Unity6.LavosTrial.HUD
 
         void UpdateInfo()
         {
-            if (PlayerStats.Instance != null)
+            if (_playerStats != null)
             {
-                _healthInfo = $"Health: {PlayerStats.Instance.CurrentHealth:F0}/{PlayerStats.Instance.MaxHealth:F0}";
-                _manaInfo = $"Mana: {PlayerStats.Instance.CurrentMana:F0}/{PlayerStats.Instance.MaxMana:F0}";
-                _staminaInfo = $"Stamina: {PlayerStats.Instance.CurrentStamina:F0}/{PlayerStats.Instance.MaxStamina:F0}";
+                var statsType = _playerStats.GetType();
+                var currentHealthProp = statsType.GetProperty("CurrentHealth");
+                var maxHealthProp = statsType.GetProperty("MaxHealth");
+                var currentManaProp = statsType.GetProperty("CurrentMana");
+                var maxManaProp = statsType.GetProperty("MaxMana");
+                var currentStaminaProp = statsType.GetProperty("CurrentStamina");
+                var maxStaminaProp = statsType.GetProperty("MaxStamina");
+                
+                _healthInfo = $"Health: {currentHealthProp?.GetValue(_playerStats):F0}/{maxHealthProp?.GetValue(_playerStats):F0}";
+                _manaInfo = $"Mana: {currentManaProp?.GetValue(_playerStats):F0}/{maxManaProp?.GetValue(_playerStats):F0}";
+                _staminaInfo = $"Stamina: {currentStaminaProp?.GetValue(_playerStats):F0}/{maxStaminaProp?.GetValue(_playerStats):F0}";
             }
             else
             {
@@ -126,14 +168,26 @@ namespace Unity6.LavosTrial.HUD
 
         void TestHealth(float percent)
         {
-            if (PlayerStats.Instance != null)
+            if (_playerStats != null)
             {
-                float targetHealth = PlayerStats.Instance.MaxHealth * percent;
-                float diff = targetHealth - PlayerStats.Instance.CurrentHealth;
-                if (diff > 0)
-                    PlayerStats.Instance.Heal(diff);
-                else
-                    PlayerStats.Instance.TakeDamage(-diff);
+                var statsType = _playerStats.GetType();
+                var maxHealthProp = statsType.GetProperty("MaxHealth");
+                var currentHealthProp = statsType.GetProperty("CurrentHealth");
+                var healMethod = statsType.GetMethod("Heal");
+                var takeDamageMethod = statsType.GetMethod("TakeDamage");
+                
+                if (maxHealthProp != null && currentHealthProp != null)
+                {
+                    float maxHealth = (float)maxHealthProp.GetValue(_playerStats);
+                    float currentHealth = (float)currentHealthProp.GetValue(_playerStats);
+                    float targetHealth = maxHealth * percent;
+                    float diff = targetHealth - currentHealth;
+                    
+                    if (diff > 0 && healMethod != null)
+                        healMethod.Invoke(_playerStats, new object[] { diff });
+                    else if (diff < 0 && takeDamageMethod != null)
+                        takeDamageMethod.Invoke(_playerStats, new object[] { -diff });
+                }
             }
             else
             {
