@@ -204,13 +204,13 @@ namespace Code.Lavos.Core
         {
             if (combatSystem == null || playerStats == null) return;
 
-            // Check if we have a weapon equipped
-            var weapon = inventory?.EquippedWeapon;
+            // Check if we have a weapon equipped (first equipment item in inventory)
+            ItemData weapon = GetEquippedWeapon();
             
             if (weapon != null)
             {
                 // Weapon attack - consume stamina if needed
-                float staminaCost = weapon.staminaCost > 0 ? weapon.staminaCost : 5f;
+                float staminaCost = weapon.damageBonus > 0 ? 8f : 5f; // Base cost for weapon attacks
                 
                 if (playerStats.CurrentStamina >= staminaCost)
                 {
@@ -235,18 +235,42 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
+        /// Get equipped weapon from inventory
+        /// </summary>
+        private ItemData GetEquippedWeapon()
+        {
+            if (inventory == null) return null;
+            
+            // Find first equipment item with damage bonus
+            var allSlots = inventory.GetAllSlots();
+            foreach (var slot in allSlots)
+            {
+                if (!slot.IsEmpty && slot.item.itemType == InventoryItemType.Equipment)
+                {
+                    // Check if it's a weapon (has damage bonus)
+                    if (slot.item.damageBonus > 0f)
+                    {
+                        return slot.item;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Cast a spell
         /// </summary>
         private void PerformCastSpell()
         {
             if (combatSystem == null || playerStats == null) return;
 
-            // Check if we have a spell equipped/selected
-            var spell = inventory?.EquippedSpell;
+            // Check if we have a spell equipped ( Equipment item with mana cost association)
+            ItemData spell = GetEquippedSpell();
             
             if (spell != null)
             {
-                float manaCost = spell.manaCost;
+                // Use manaRestore field as mana cost indicator (convention for spell items)
+                float manaCost = spell.manaRestore > 0 ? spell.manaRestore : 20f;
                 
                 if (playerStats.CurrentMana >= manaCost)
                 {
@@ -266,12 +290,6 @@ namespace Code.Lavos.Core
                 else
                 {
                     Debug.LogWarning("[InteractionSystem] Not enough mana to cast spell");
-                    
-                    // Broadcast failure through EventHandler
-                    if (EventHandler.Instance != null)
-                    {
-                        // Could add OnSpellFailed event here
-                    }
                 }
             }
             else
@@ -281,32 +299,83 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
+        /// Get equipped spell from inventory
+        /// </summary>
+        private ItemData GetEquippedSpell()
+        {
+            if (inventory == null) return null;
+            
+            // Find first equipment item that could be a spell (has mana restore value)
+            var allSlots = inventory.GetAllSlots();
+            foreach (var slot in allSlots)
+            {
+                if (!slot.IsEmpty && slot.item.itemType == InventoryItemType.Equipment)
+                {
+                    // Check if it's a spell (has mana restore - used as mana cost indicator)
+                    if (slot.item.manaRestore > 0f || slot.item.damageBonus > 0f)
+                    {
+                        return slot.item;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Use an item from inventory
         /// </summary>
         private void PerformUseItem()
         {
             if (inventory == null || playerStats == null) return;
 
-            // Use selected/first usable item
-            var item = inventory.GetSelectedItem();
+            // Use first usable item (non-equipment, consumable)
+            ItemData item = GetFirstUsableItem();
             
             if (item != null)
             {
-                if (inventory.UseItem(item))
+                // Find the slot index for this item
+                var allSlots = inventory.GetAllSlots();
+                for (int i = 0; i < allSlots.Count; i++)
                 {
-                    // Item used successfully
-                    if (EventHandler.Instance != null)
+                    if (allSlots[i].item == item)
                     {
-                        EventHandler.Instance.InvokeItemUsed(item, 1);
+                        if (inventory.UseItem(i, playerController?.gameObject))
+                        {
+                            // Item used successfully
+                            if (EventHandler.Instance != null)
+                            {
+                                EventHandler.Instance.InvokeItemUsed(item, 1);
+                            }
+                            
+                            OnInteractionPerformed?.Invoke("Use_Item", playerController?.gameObject);
+                        }
+                        return;
                     }
-                    
-                    OnInteractionPerformed?.Invoke("Use_Item", playerController.gameObject);
                 }
             }
             else
             {
                 Debug.LogWarning("[InteractionSystem] No item selected to use");
             }
+        }
+
+        /// <summary>
+        /// Get first usable item from inventory
+        /// </summary>
+        private ItemData GetFirstUsableItem()
+        {
+            if (inventory == null) return null;
+            
+            // Find first consumable item
+            var allSlots = inventory.GetAllSlots();
+            foreach (var slot in allSlots)
+            {
+                if (!slot.IsEmpty && slot.item.itemType == InventoryItemType.Consumable)
+                {
+                    return slot.item;
+                }
+            }
+            return null;
         }
 
         #endregion
@@ -370,7 +439,8 @@ namespace Code.Lavos.Core
                     var enemy = hit.collider.GetComponent<Ennemi>();
                     if (enemy != null && combatSystem != null)
                     {
-                        float damage = weapon.damage > 0 ? weapon.damage : 10f;
+                        // Use damageBonus field from ItemData
+                        float damage = weapon.damageBonus > 0 ? weapon.damageBonus : 10f;
                         var damageInfo = new DamageInfo(damage, DamageType.Physical);
                         combatSystem.DealDamage(playerController?.gameObject, enemy.gameObject, damageInfo);
                     }
@@ -415,7 +485,8 @@ namespace Code.Lavos.Core
                     var enemy = hit.collider.GetComponent<Ennemi>();
                     if (enemy != null && combatSystem != null)
                     {
-                        float damage = spell.damage > 0 ? spell.damage : 15f;
+                        // Use damageBonus field from ItemData
+                        float damage = spell.damageBonus > 0 ? spell.damageBonus : 15f;
                         var damageInfo = new DamageInfo(damage, DamageType.Magic);
                         combatSystem.DealDamage(playerController?.gameObject, enemy.gameObject, damageInfo);
                     }

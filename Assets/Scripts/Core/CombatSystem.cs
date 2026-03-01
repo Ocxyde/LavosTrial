@@ -31,7 +31,9 @@ namespace Code.Lavos.Core
         [Header("Combat Settings")]
         [SerializeField] private float baseCritChance = 0.05f; // 5% base crit chance
         [SerializeField] private float baseCritDamage = 2f; // 200% crit damage
+#pragma warning disable CS0414 // Field assigned but its value is never used (reserved for future i-frames system)
         [SerializeField] private float invincibilityTime = 0.5f; // Seconds after damage (reserved for future i-frames system)
+#pragma warning restore CS0414
 
         [Header("Resource Costs")]
         [SerializeField] private float staminaSprintCost = 2f; // Stamina per second while sprinting
