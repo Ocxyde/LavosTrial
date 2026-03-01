@@ -73,15 +73,16 @@ namespace Code.Lavos.Core
             Toggle();
         }
 
-        public void Initialize(float cellSize, float wallHeight, DoorType type, float luminance = 1f)
+        public void Initialize(float cellSize, float wallHeight, float doorWidth, float doorHeight, DoorType type, float luminance = 1f)
         {
             this.cellSize = cellSize;
             this.wallHeight = wallHeight;
             doorType = type;
             luminanceMultiplier = luminance;
 
-            doorHeight = wallHeight * 0.87f;
-            doorWidth = cellSize * 0.55f;
+            // Set door dimensions based on maze
+            this.doorWidth = doorWidth;
+            this.doorHeight = doorHeight;
 
             // Adjust colors based on door type
             if (doorType == DoorType.Exit)

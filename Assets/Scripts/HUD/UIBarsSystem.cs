@@ -715,7 +715,7 @@ namespace Unity6.LavosTrial.HUD
         /// <summary>
         /// Set stamina bar value with smooth color and floating text.
         /// Full stamina = bright yellow, empty = dark yellow/brown.
-        /// Shows floating stamina gain/loss numbers.
+        /// Shows floating stamina gain/loss numbers (only for significant changes).
         /// </summary>
         public void SetStamina(float current, float max, bool showFloatingText = true)
         {
@@ -739,8 +739,9 @@ namespace Unity6.LavosTrial.HUD
                 _staminaText.enabled = true;
             }
 
-            // Show floating stamina gain/loss number
-            if (showFloatingText && Mathf.Abs(_currentStamina - previousStamina) > 0.1f)
+            // Show floating stamina gain/loss number (only for significant changes > 1)
+            // This prevents "0" glitch from tiny per-frame drain
+            if (showFloatingText && Mathf.Abs(_currentStamina - previousStamina) > 1f)
             {
                 float delta = _currentStamina - previousStamina;
                 if (delta < 0)

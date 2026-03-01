@@ -27,6 +27,8 @@ namespace Code.Lavos.Core
         [SerializeField] private float randomDoorChance = 0.1f;
         [SerializeField] private float doorLuminanceMin = 0.8f;
         [SerializeField] private float doorLuminanceMax = 1.5f;
+        [SerializeField] private float doorWidthMultiplier = 0.55f; // Door width as % of cell size
+        [SerializeField] private float doorHeightMultiplier = 0.87f; // Door height as % of wall height
 
         [Header("Chest Settings")]
         [SerializeField] private bool placeChests = true;
@@ -40,8 +42,20 @@ namespace Code.Lavos.Core
         [SerializeField] private float pickupDensity = 0.03f;
         [SerializeField] private GameObject[] pickupPrefabs;
 
+        [Header("Trap Settings")]
+        [SerializeField] private bool placeTraps = true;
+        [SerializeField] private float trapDensity = 0.08f; // 8% of valid cells
+        [SerializeField] private int minTraps = 3;
+        [SerializeField] private int maxTraps = 8;
+        [SerializeField] private float minDistanceBetweenTraps = 8f; // Large distance between traps
+        [SerializeField] private TrapType[] availableTrapTypes;
+
         [Header("Excluded Cells")]
         [SerializeField] private List<Vector2Int> excludedCells;
+
+        [Header("Dimensions")]
+        [SerializeField] protected float cellSize = 4f;
+        [SerializeField] protected float wallHeight = 3f;
 
         private MazeGenerator _mazeGenerator;
         private ItemEngine _itemEngine;
@@ -95,6 +109,11 @@ namespace Code.Lavos.Core
             if (placePickups)
             {
                 PlacePickups();
+            }
+
+            if (placeTraps)
+            {
+                PlaceTraps();
             }
 
             Debug.Log($"[SpawnPlacerEngine] Placement complete! Total: {_placedItems.Count} items");
@@ -163,8 +182,12 @@ namespace Code.Lavos.Core
             doorObj.transform.position = worldPos;
             doorObj.transform.rotation = rotation;
 
+            // Calculate door dimensions to fit maze walls
+            float doorWidth = cellSize * doorWidthMultiplier;
+            float doorHeight = wallHeight * doorHeightMultiplier;
+
             DoubleDoor door = doorObj.AddComponent<DoubleDoor>();
-            door.Initialize(4f, 3f, type, luminance);
+            door.Initialize(cellSize, wallHeight, doorWidth, doorHeight, type, luminance);
 
             var info = new PlacedItemInfo
             {
@@ -432,6 +455,175 @@ namespace Code.Lavos.Core
 
         #endregion
 
+        #region Trap Placement
+
+        [ContextMenu("Place Traps")]
+        public void PlaceTraps()
+        {
+            if (!placeTraps) return;
+
+            List<Vector2Int> validCells = GetValidTrapCells();
+            int trapCount = Mathf.RoundToInt(validCells.Count * trapDensity);
+            trapCount = Mathf.Clamp(trapCount, minTraps, maxTraps);
+
+            Debug.Log($"[SpawnPlacerEngine] Placing {trapCount} traps (density: {trapDensity * 100}%)");
+
+            int placed = 0;
+            List<Vector2Int> trapPositions = new List<Vector2Int>();
+
+            foreach (var cell in validCells)
+            {
+                if (placed >= trapCount) break;
+
+                // Check minimum distance from other traps
+                bool tooClose = false;
+                foreach (var existingTrap in trapPositions)
+                {
+                    float distance = Vector2Int.Distance(cell, existingTrap);
+                    if (distance < minDistanceBetweenTraps)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+
+                if (tooClose) continue;
+
+                // Place trap
+                TrapType trapType = GetRandomTrapType();
+                PlaceTrapAtCell(cell, trapType);
+                trapPositions.Add(cell);
+                placed++;
+            }
+
+            Debug.Log($"[SpawnPlacerEngine] Placed {placed} traps with min distance {minDistanceBetweenTraps}f");
+        }
+
+        private void PlaceTrapAtCell(Vector2Int cell, TrapType trapType)
+        {
+            Vector3 worldPos = CellToWorldPosition(cell);
+
+            // Create trap
+            GameObject trapGO = new GameObject($"Trap_{trapType}_{cell.x}_{cell.y}");
+            trapGO.transform.position = worldPos;
+
+            // Add trap behavior
+            TrapBehavior trap = trapGO.AddComponent<TrapBehavior>();
+            
+            // Configure trap based on type
+            float damage = GetTrapDamage(trapType);
+            float radius = GetTrapRadius(trapType);
+            float cooldown = GetTrapCooldown(trapType);
+
+            trap.Initialize(trapType, damage, radius, cooldown);
+
+            // Add to placed items
+            var info = new PlacedItemInfo
+            {
+                cell = cell,
+                worldPosition = worldPos,
+                itemType = ItemType.Switch,
+                instance = trapGO,
+                prefab = null
+            };
+            _placedItems.Add(info);
+
+            Debug.Log($"[SpawnPlacerEngine] Placed {trapType} trap at {cell}");
+        }
+
+        private TrapType GetRandomTrapType()
+        {
+            if (availableTrapTypes != null && availableTrapTypes.Length > 0)
+            {
+                return availableTrapTypes[Random.Range(0, availableTrapTypes.Length)];
+            }
+
+            // Default to spike trap
+            return TrapType.Spike;
+        }
+
+        private float GetTrapDamage(TrapType type)
+        {
+            switch (type)
+            {
+                case TrapType.Spike: return 20f;
+                case TrapType.Pit: return 30f;
+                case TrapType.Dart: return 15f;
+                case TrapType.Flame: return 25f;
+                case TrapType.Poison: return 10f; // DoT
+                case TrapType.Electric: return 35f;
+                case TrapType.Ice: return 10f; // + slow
+                case TrapType.Explosion: return 50f; // AOE
+                default: return 20f;
+            }
+        }
+
+        private float GetTrapRadius(TrapType type)
+        {
+            switch (type)
+            {
+                case TrapType.Spike: return 1.5f;
+                case TrapType.Pit: return 2f;
+                case TrapType.Dart: return 1f;
+                case TrapType.Flame: return 2f;
+                case TrapType.Poison: return 3f;
+                case TrapType.Electric: return 2.5f;
+                case TrapType.Ice: return 2f;
+                case TrapType.Explosion: return 4f;
+                default: return 1.5f;
+            }
+        }
+
+        private float GetTrapCooldown(TrapType type)
+        {
+            switch (type)
+            {
+                case TrapType.Spike: return 2f;
+                case TrapType.Pit: return 5f;
+                case TrapType.Dart: return 3f;
+                case TrapType.Flame: return 1f;
+                case TrapType.Poison: return 0.5f; // Fast DoT
+                case TrapType.Electric: return 4f;
+                case TrapType.Ice: return 2f;
+                case TrapType.Explosion: return 10f;
+                default: return 2f;
+            }
+        }
+
+        private List<Vector2Int> GetValidTrapCells()
+        {
+            List<Vector2Int> validCells = new List<Vector2Int>();
+
+            for (int x = 0; x < _mazeGenerator.Width; x++)
+            {
+                for (int y = 0; y < _mazeGenerator.Height; y++)
+                {
+                    Vector2Int cell = new Vector2Int(x, y);
+
+                    // Skip excluded cells
+                    if (excludedCells != null && excludedCells.Contains(cell))
+                        continue;
+
+                    // Skip start and exit cells
+                    if (cell == Vector2Int.zero)
+                        continue;
+                    if (cell.x == _mazeGenerator.Width - 1 && cell.y == _mazeGenerator.Height - 1)
+                        continue;
+
+                    // Check if cell is walkable (no walls = floor)
+                    var cellData = _mazeGenerator.Grid[x, y];
+                    if (cellData == MazeGenerator.Wall.None)
+                    {
+                        validCells.Add(cell);
+                    }
+                }
+            }
+
+            return validCells;
+        }
+
+        #endregion
+
         private void OnDestroy()
         {
             ClearAllItems();
@@ -447,6 +639,7 @@ namespace Code.Lavos.Core
         public Vector2Int cell;
         public ItemType itemType;
         public GameObject instance;
+        public GameObject prefab;
         public Vector3 worldPosition;
     }
 }

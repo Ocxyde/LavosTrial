@@ -1,348 +1,325 @@
-# TODO - Unity 6 Project Status
-**Project:** PeuImporte  
-**Unity Version:** 6000.3.7f1  
-**Last Updated:** 2026-03-01  
-**Status:** ✅ **PRODUCTION READY**
+# TODO.md - Project Tasks & Issues
+
+**Project:** PeuImporte (Unity 6000.3.7f1)  
+**Last Scan:** 2026-03-01  
+**Status:** ⚠️ 7 Critical | 12 High | 14 Medium | 6 Low
 
 ---
 
-## 📊 Project Overview
+## 🔴 CRITICAL (Must Fix Before Release)
+
+### Memory Leaks
+
+- [ ] **DoubleDoor.cs:440-447** - `_haloEffect` GameObject never destroyed in OnDestroy
+- [ ] **ChestBehavior.cs:297-303** - `_glowLight` and glow mesh GameObjects never destroyed
+- [ ] **UIBarsSystem.cs:203-241** - Event unsubscription uses fragile reflection code
+- [ ] **HUDSystem.cs:437-478** - Event unsubscription uses fragile reflection code
+
+### Null Reference Risks
+
+- [ ] **CombatSystem.cs:154-171** - Silent failure when target has no StatsEngine (damage not applied)
+- [ ] **PlayerController.cs:189-203** - Complex fallback chain allows free jumps if systems not initialized
+
+### Singleton Issues
+
+- [ ] **ItemEngine.cs:17-32** - Auto-creation in getter can cause race conditions
+- [ ] **HUDEngine.cs:19-35** - Same auto-creation pattern
+
+---
+
+## 🟠 HIGH (Should Fix Soon)
+
+### Performance
+
+- [ ] **PlayerController.cs:127** - `FindFirstObjectByType<CombatSystem>()` in Awake (expensive)
+- [ ] **UIBarsSystem.cs:136-149** - Multiple FindFirstObjectByType calls throughout codebase
+- [ ] Replace all `FindFirstObjectByType` with Inspector assignments or cached references
+
+### Missing Inspector Setup
+
+- [ ] **SpawnPlacerEngine.cs:43** - `excludedCells` list never initialized (will be null)
+- [ ] **InventoryUI.cs:17-24** - Required fields have no null checks in Start()
+- [ ] Add `[SerializeField]` to all private fields used in Inspector
+
+### Hard-coded Values
+
+- [ ] **DrawingManager.cs:14-30** - EGA_PALETTE magic numbers should be constants
+- [ ] **PlayerController.cs:23-26** - Movement speeds should be in config file
+- [ ] Extract magic numbers to configuration:
+  - `cellSize = 4f` (appears in 6+ files)
+  - `wallHeight = 3f` (appears in 5+ files)
+  - `interactionRange = 3f` (appears in 4+ files)
+
+### Compiler Warnings
+
+- [x] **CS0618** - Fixed: `FindObjectOfType` → `FindFirstObjectByType` in PlayerController
+- [x] **CS0067** - Fixed: Added pragma for unused `OnCombatStatChanged` event
+- [x] **CS0414** - Fixed: Added comment for reserved `invincibilityTime` field
+
+---
+
+## 🟡 MEDIUM (Consider Fixing)
+
+### Code Duplication
+
+- [ ] **PixelCanvas classes** - Consolidate duplicate implementations:
+  - `DoorPixelCanvas` in DoubleDoor.cs (Lines 553-593)
+  - `ChestPixelCanvas` in ChestBehavior.cs (Lines 311-339)
+  - `PixelCanvas` in DrawingManager.cs (Lines 235-267)
+  - → Create single reusable `PixelCanvasHelper.cs`
+
+- [ ] **HUD Systems** - Three competing implementations:
+  - `UIBarsSystem` - Standalone bars
+  - `HUDSystem` - Legacy HUD
+  - `HUDEngine` + `HUDModule` - Modular system
+  - → Choose one, remove others, update `UIBarsSystemInitializer.cs` [Obsolete]
 
 ### Architecture
-- **Core System:** Plug-in-and-Out architecture
-- **Main Pivot:** `GameManager.cs` (Singleton)
-- **Item System:** `ItemEngine.cs` + `BehaviorEngine.cs`
-- **Player System:** `PlayerController.cs` + `PlayerStats.cs`
-- **Status System:** `StatsEngine.cs` (pure C#) + Status Effects
-- **HUD System:** `HUDSystem.cs` + Modules
-- **Inventory:** `Inventory.cs` + UI
-- **Database:** SQLite-like JSON persistence
-- **Rendering:** URP Standard
-- **Input:** New Input System only
+
+- [ ] **PlayerStats.cs:83-95** - Direct dependency on EventHandler (hard to test)
+- [ ] **CombatSystem.cs:10-15** - Requires both StatsEngine AND EventHandler
+- [ ] Add interfaces for better testability
+- [ ] Reduce circular dependencies (currently uses reflection to avoid)
+
+### Missing Unity Attributes
+
+- [ ] **PlayerStats.cs** - Add `[RequireComponent(typeof(PlayerController))]`
+- [ ] **CombatSystem.cs** - Add `[RequireComponent(typeof(StatsEngine))]`
+- [ ] Add `[RequireComponent]` where dependencies exist
+
+### Documentation
+
+- [ ] **Inventory.cs** - Add XML docs to public methods
+- [ ] **InventorySlot.cs** - Add class documentation
+- [ ] **StatModifier.cs** - Document undocumented methods
+- [ ] Add `<summary>` to all public APIs
 
 ---
 
-## ✅ COMPLETED TASKS
+## 🟢 LOW (Nice to Have)
 
-### Code Quality & Standards
-- [x] Added Unity 6 standard headers to all 52 C# files
-- [x] UTF-8 encoding with Unix LF line endings
-- [x] Fixed all duplicate headers
-- [x] Fixed all missing closing braces
-- [x] Fixed all namespace issues
-- [x] Added missing using directives
-- [x] Removed deprecated files (ClearShaderCache.cs)
-- [x] Cleaned up Temp/ folder duplicates
+### Cleanup
 
-### Compilation Errors Fixed
-- [x] Fixed `FindObject` → `FindFirstObjectByType` (Unity 6 API)
-- [x] Fixed `FontStyle` → `TMPro.FontStyles`
-- [x] Fixed `InventoryItemType` vs `ItemType` conversion
-- [x] Fixed `DontDestroyOnLoad` parent issue
-- [x] Fixed deprecated shader API calls
-- [x] Fixed cyclic assembly dependencies
-- [x] Fixed corrupted meta files (GUIDs)
-- [x] Fixed all missing type references
+- [ ] **CombatSystem.cs** - Remove or implement unused `OnCombatStatChanged` event
+- [ ] **StatsEngine.cs:71** - Remove or implement unused `OnDamageTaken` event
+- [ ] Remove reserved fields or implement features:
+  - `invincibilityTime` (i-frames system)
+  - `staminaDodgeCost` (dodge roll system)
 
-### Assembly & References
-- [x] Resolved cyclic dependency between assemblies
-- [x] Disabled custom .asmdef files (consolidated to Assembly-CSharp)
-- [x] Added Code.Lavos.Core references where needed
-- [x] Fixed DatabaseManager using directives
-- [x] Fixed all PlayerStats/PlayerHealth references
+### Debug Code
 
-### Git & Backup
-- [x] Created automated backup system (backup.ps1)
-- [x] Created Git workflow scripts (5 PowerShell + 1 BAT)
-- [x] Set up diff_tmp folder for change tracking
-- [x] Created cleanup scripts for old files
-- [x] All changes backed up in Backup_Solution/
+- [ ] **CombatSystem.cs:175,195,209** - Make Debug.Log conditional on debug flag
+- [ ] Remove or conditionally compile debug warnings in PlayerController
 
-### Project Configuration
-- [x] New Input System configured (not "Both")
-- [x] URP Standard rendering pipeline
-- [x] All meta files regenerated and fixed
-- [x] Project settings verified for Unity 6000.3.7f1
+### Naming Conventions
+
+- [ ] Rename folder `Ennemies/` → `Enemies/`
+- [ ] Standardize comments (mix of English/French):
+  - GameManager.cs - French comments
+  - PlayerController.cs - French comments
+  - Consider translating to English for consistency
 
 ---
 
-## 📁 Project Structure
+## 📋 GIT & VERSION CONTROL
 
-```
-D:\travaux_Unity\PeuImporte\
-├── Assets/
-│   ├── Scripts/
-│   │   ├── Core/              # ✅ Core systems (GameManager, ItemEngine, etc.)
-│   │   │   ├── Base/          # ✅ BehaviorEngine (base class)
-│   │   │   └── *.cs           # ✅ 11 files - All compiling
-│   │   ├── Player/            # ✅ Player systems
-│   │   │   └── *.cs           # ✅ 6 files - All compiling
-│   │   ├── HUD/               # ✅ UI/HUD systems
-│   │   │   └── *.cs           # ✅ 8 files - All compiling
-│   │   ├── Inventory/         # ✅ Inventory system
-│   │   │   └── *.cs           # ✅ 6 files - All compiling
-│   │   ├── Status/            # ✅ Status effects & stats
-│   │   │   └── *.cs           # ✅ 5 files - All compiling
-│   │   ├── Ressources/        # ✅ Resources & generators
-│   │   │   └── *.cs           # ✅ 8 files - All compiling
-│   │   ├── Gameplay/          # ✅ Gameplay elements
-│   │   │   └── *.cs           # ✅ 1 file - Compiling
-│   │   ├── Ennemies/          # ✅ Enemy AI
-│   │   │   └── *.cs           # ✅ 1 file - Compiling
-│   │   ├── Interaction/       # ✅ Interaction system
-│   │   │   └── *.cs           # ✅ 2 files - Compiling
-│   │   ├── Tests/             # ✅ Unit tests
-│   │   │   └── *.cs           # ✅ 2 files - Compiling
-│   │   └── Editor/            # ✅ Editor tools
-│   │       └── *.cs           # ✅ 1 file - Compiling
-│   ├── DB_SQLite/             # ✅ Database system
-│   │   └── *.cs               # ✅ 3 files - Compiling
-│   ├── Settings/              # ⚙️ URP settings
-│   └── InputSystem_Actions.inputactions  # ✅ Input config
-├── Backup_Solution/           # 💾 All backups (read-only)
-├── diff_tmp/                  # 📝 Change tracking
-├── ProjectSettings/           # ⚙️ Unity config
-└── [Scripts]                  # 🛠️ Automation scripts
+### Available Git Scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| Quick Menu | `.\git-quick.bat` | Interactive menu for all git operations |
+| Auto Commit | `.\git-auto.bat "message"` | Stage → normalize LF → backup → commit → push |
+| Sync | `.\git-sync.bat "message"` | Pull → restore → commit → push |
+| Status | `.\git-status.bat` | Quick status overview |
+| Normalize | `.\git-normalize.bat` | Normalize line endings to LF |
+| Setup LF | `.\git-setup-lf.bat` | One-time LF setup |
+
+### Common Workflows
+
+#### Daily Commit (After Coding)
+```bash
+# In Rider, make changes...
+# Then in terminal:
+.\git-auto.bat "Fixed stamina regen bug"
 ```
 
----
+#### Start of Day (Sync with Remote)
+```bash
+# Get latest and merge your changes:
+.\git-sync.bat "Merged latest changes"
+```
 
-## 🎯 CURRENT STATUS
+#### Quick Status Check
+```bash
+# See what changed:
+.\git-status.bat
 
-### Compilation
-- ✅ **0 Errors**
-- ⚠️ **1 Warning** (unused field - non-critical)
-- ✅ **100 C# files** compiling successfully
+# Or native git:
+git status
+```
 
-### Systems Status
-| System | Status | Notes |
-|--------|--------|-------|
-| Core (GameManager) | ✅ Ready | Singleton, persistent |
-| Player Controller | ✅ Ready | New Input System |
-| Player Stats | ✅ Ready | StatsEngine wrapper |
-| Status Effects | ✅ Ready | Full buff/debuff system |
-| Inventory | ✅ Ready | With UI integration |
-| HUD | ✅ Ready | Modular system |
-| Items/Interactions | ✅ Ready | Plug-in architecture |
-| Database | ✅ Ready | JSON persistence |
-| URP Rendering | ✅ Ready | Standard pipeline |
-| Input System | ✅ Ready | New Input System only |
+### Git Configuration
 
----
+**Check Git User:**
+```bash
+git config user.name
+git config user.email
+```
 
-## 📋 TODO - Future Enhancements
+**Set Git User (if needed):**
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+```
 
-### High Priority
-- [ ] Create Player GameObject in scene with all components
-- [ ] Create GameManager GameObject in scene
-- [ ] Set up main camera properly (child of Player or assigned)
-- [ ] Configure Input System actions for all gameplay features
-- [ ] Create test scene for gameplay verification
-- [ ] Set up URP lighting and post-processing
+### Git Aliases (Optional)
 
-### Medium Priority
-- [ ] Implement save/load system with DatabaseManager
-- [ ] Create UI canvas with all HUD elements
-- [ ] Set up enemy spawn points
-- [ ] Create maze generation test
-- [ ] Implement collectible items
-- [ ] Test and balance player stats (health, mana, stamina)
+Add to `.gitconfig` for shorter commands:
+```bash
+git config --global alias.st status
+git config --global alias.co checkout
+git config --global alias.br branch
+git config --global alias.ci commit
+git config --global alias.last "log -1 HEAD"
+git config --global alias.lg "log --oneline --graph --decorate"
+```
 
-### Low Priority
-- [ ] Add more status effects (buffs/debuffs)
-- [ ] Implement full inventory UI
-- [ ] Create item database (ScriptableObjects)
-- [ ] Add sound effects and music
-- [ ] Create particle effects for interactions
-- [ ] Implement checkpoint system
-- [ ] Add minimap or navigation aids
+Then use: `git st`, `git lg`, etc.
 
-### Nice to Have
-- [ ] Add achievements system
-- [ ] Implement quest system
-- [ ] Add dialogue system
-- [ ] Create crafting system
-- [ ] Add multiplayer support
-- [ ] Implement photo mode
-- [ ] Add accessibility options
+### PowerShell Aliases (Optional)
 
----
-
-## 🐛 Known Issues
-
-### Non-Critical
-- [ ] `HUDModule.cs:117` - Unused field `barMargin` (warning only)
-- [ ] Some files use non-standard namespaces (info only, not breaking)
-
-### To Test
-- [ ] Full gameplay loop (start to finish)
-- [ ] All status effects working correctly
-- [ ] Inventory save/load persistence
-- [ ] Enemy AI behavior
-- [ ] Maze generation performance
-- [ ] URP rendering on different quality settings
-
----
-
-## 🛠️ Automation Scripts
-
-### Backup & Maintenance
+Add to `$PROFILE` for global access:
 ```powershell
-.\apply-patches-and-backup.ps1    # Run backup after changes
-.\cleanup_deprecated_files.ps1    # Remove old files
-.\cleanup-diff-files.ps1          # Clean diff_tmp (>2 days)
-.\clear-unity-cache.bat           # Clear Unity cache
-```
+notepad $PROFILE
 
-### Git Workflow
-```powershell
-.\git-quick.bat                   # Interactive menu
-.\git-init-and-push.ps1           # First-time setup
-.\git-commit.ps1 "message"        # Quick commit (with backup)
-.\git-push.ps1                    # Push to remote
-.\git-pull.ps1                    # Pull from remote
-.\git-status.ps1                  # Detailed status
-```
+# Add these lines:
+function ga { & "D:\travaux_Unity\PeuImporte\git-auto.bat" $args }
+function gs { & "D:\travaux_Unity\PeuImporte\git-status.bat" }
+function gn { & "D:\travaux_Unity\PeuImporte\git-normalize.bat" }
+function gsync { & "D:\travaux_Unity\PeuImporte\git-sync.bat" $args }
 
-### Diagnostics
-```powershell
-.\scan-project-errors.ps1         # Scan for issues
-.\fix-all-issues.ps1              # Auto-fix problems
-.\diagnose-unity-crash.ps1        # Debug crashes
-.\verify-scene-setup.ps1          # Check scene setup
+# Restart PowerShell, then use: ga "message" from anywhere
 ```
 
 ---
 
-## 📖 Documentation
+## 🎯 NEXT SPRINT RECOMMENDATIONS
 
-| File | Purpose |
-|------|---------|
-| `README.md` | Project overview |
-| `TETRAHEDRON_SYSTEM.md` | Tetrahedron mesh system |
-| `TETRAHEDRAL_STYLE.md` | Art style guide |
-| `HUD_SETUP_GUIDE.md` | HUD configuration |
-| `HUD_FIX_SUMMARY.md` | HUD troubleshooting |
-| `GIT_WORKFLOW_GUIDE.md` | Git usage instructions |
-| `GIT_*.md` | Git setup guides |
-| `TODO.md` | This file |
+### Sprint 1 - Critical Fixes (Priority 1)
+1. Fix memory leaks in DoubleDoor.cs and ChestBehavior.cs
+2. Fix event subscription leaks in UIBarsSystem.cs and HUDSystem.cs
+3. Add null checks in CombatSystem.cs and PlayerController.cs
+4. Consolidate singleton initialization pattern
 
----
+### Sprint 2 - Performance & Stability (Priority 2)
+1. Replace FindFirstObjectByType with Inspector assignments
+2. Initialize all serialized lists/arrays
+3. Add RequireComponent attributes
+4. Add null checks in InventoryUI.cs
 
-## 🎮 Scene Setup Checklist
+### Sprint 3 - Code Quality (Priority 3)
+1. Consolidate PixelCanvas duplicate code
+2. Choose one HUD system, remove others
+3. Extract magic numbers to configuration
+4. Add XML documentation to public APIs
 
-### Required GameObjects
-
-#### Player
-- [ ] Create empty GameObject named "Player"
-- [ ] Add `CharacterController` component
-- [ ] Add `PlayerController` script
-- [ ] Add `PlayerStats` script
-- [ ] Add `PlayerHealth` script (if used)
-- [ ] Add Camera as child (or assign in PlayerController)
-- [ ] Tag as "Player"
-- [ ] Set position: (0, 0, 0)
-
-#### GameManager
-- [ ] Create empty GameObject named "GameManager"
-- [ ] Add `GameManager` script
-- [ ] Check "Dont Destroy On Load"
-
-#### UI/HUD
-- [ ] Create Canvas (World Space or Screen Space)
-- [ ] Add `HUDSystem` or `HUDEngine` script
-- [ ] Add `UIBarsSystem` script (if using)
-- [ ] Set up UI references in Inspector
-
-#### Environment
-- [ ] Add ground/floor with Collider
-- [ ] Add lighting (Directional Light)
-- [ ] Add URP Global Volume (if using post-processing)
-- [ ] Set up spawn points for enemies/items
+### Sprint 4 - Cleanup (Priority 4)
+1. Remove unused events and reserved fields
+2. Make debug logs conditional
+3. Standardize naming conventions
+4. Rename Ennemies folder
 
 ---
 
-## 🔧 Quick Commands
-
-### Before Playing
-```powershell
-# Always run backup before testing
-.\apply-patches-and-backup.ps1
-```
-
-### After Making Changes
-```powershell
-# Commit with auto-backup
-.\git-commit.ps1 "Your message here"
-
-# Push to remote
-.\git-push.ps1
-```
-
-### If Unity Acts Up
-```powershell
-# Clear cache and restart
-.\clear-unity-cache.bat
-# Then reopen Unity
-```
-
----
-
-## 📊 Statistics
+## 📊 CODE METRICS
 
 | Metric | Value |
 |--------|-------|
-| **Total C# Files** | 100 |
-| **Compilation Errors** | 0 |
-| **Warnings** | 1 (non-critical) |
-| **Backup Files** | All saved |
-| **Git Commits** | Tracked |
-| **Unity Version** | 6000.3.7f1 |
-| **Code Standard** | Unity 6 |
-| **Line Endings** | Unix LF |
-| **Encoding** | UTF-8 |
+| Total C# Files | 60 |
+| Lines of Code | ~16,000+ |
+| Critical Issues | 7 |
+| High Issues | 12 |
+| Medium Issues | 14 |
+| Low Issues | 6 |
+| Compiler Warnings | 0 (fixed) |
+| Compiler Errors | 0 |
 
 ---
 
-## 🏆 Project Health
+## 🔧 QUICK FIXES (Copy-Paste Solutions)
 
-| Category | Score | Status |
-|----------|-------|--------|
-| Code Quality | 100% | ✅ Excellent |
-| Compilation | 100% | ✅ No errors |
-| Documentation | 95% | ✅ Very Good |
-| Backup System | 100% | ✅ Complete |
-| Git Setup | 100% | ✅ Ready |
-| Architecture | 100% | ✅ Clean |
+### Fix 1: DoubleDoor OnDestroy
+```csharp
+// DoubleDoor.cs:440-447
+private new void OnDestroy()
+{
+    base.OnDestroy();
+    if (_doorLeftMat != null) Destroy(_doorLeftMat);
+    if (_doorRightMat != null) Destroy(_doorRightMat);
+    if (_frameMat != null) Destroy(_frameMat);
+    if (_haloMat != null) Destroy(_haloMat);
+    if (_flameMat != null) Destroy(_flameMat);
+    if (_haloEffect != null) Destroy(_haloEffect); // ADD THIS
+}
+```
 
-**Overall: 99% Production Ready!** 🎉
+### Fix 2: ChestBehavior OnDestroy
+```csharp
+// ChestBehavior.cs:297-303
+private new void OnDestroy()
+{
+    base.OnDestroy();
+    if (_chestMat != null) Destroy(_chestMat);
+    if (_glowMat != null) Destroy(_glowMat);
+    if (_glowLight != null) Destroy(_glowLight.gameObject); // ADD THIS
+    if (_glowMesh != null) Destroy(_glowMesh); // ADD THIS
+}
+```
+
+### Fix 3: CombatSystem Null Check
+```csharp
+// CombatSystem.cs:154-171
+public float DealDamage(GameObject source, GameObject target, DamageInfo damageInfo)
+{
+    if (target == null || damageInfo.amount <= 0) return 0f;
+
+    StatsEngine targetStats = GetTargetStatsEngine(target);
+    float finalDamage = damageInfo.amount;
+
+    if (targetStats != null)
+    {
+        finalDamage = targetStats.CalculateDamage(damageInfo);
+        targetStats.ModifyHealth(-finalDamage); // Apply damage
+    }
+    else
+    {
+        // Simple crit calculation for targets without StatsEngine
+        if (damageInfo.isCritical || UnityEngine.Random.value < baseCritChance)
+        {
+            finalDamage *= damageInfo.criticalMultiplier;
+        }
+        // Apply damage directly to target's health component if available
+        var health = target.GetComponent<PlayerHealth>();
+        health?.TakeDamage(finalDamage);
+    }
+
+    // ... rest of method
+}
+```
 
 ---
 
-## 📞 Need Help?
+## 📝 NOTES
 
-1. **Check Console** in Unity for errors
-2. **Run diagnostics:** `.\scan-project-errors.ps1`
-3. **Review logs:** Check Editor.log after crashes
-4. **Git issues:** See `GIT_WORKFLOW_GUIDE.md`
-5. **Setup issues:** Run `.\verify-scene-setup.ps1`
-
----
-
-## 🎯 Next Immediate Steps
-
-1. **Open Unity Editor**
-2. **Verify Console shows 0 errors**
-3. **Create/verify Player GameObject**
-4. **Create/verify GameManager GameObject**
-5. **Press Play and test!**
+- All files must use **Unix LF** line endings
+- All files must use **UTF-8** encoding
+- Backup files are **read-only** - don't modify
+- Use `backup.ps1` after any file changes
+- Use `git-normalize.bat` before committing if unsure about line endings
 
 ---
 
-**Last Full Review:** 2026-03-01  
-**Reviewed By:** AI Coding Assistant  
-**Status:** ✅ **APPROVED FOR PRODUCTION**
-
----
-
-*Keep this file updated as you make progress!* 📝✨
+**Generated:** 2026-03-01  
+**Unity Version:** 6000.3.7f1  
+**IDE:** Rider  
+**Input System:** New Input System  

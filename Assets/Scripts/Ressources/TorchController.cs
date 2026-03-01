@@ -9,6 +9,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // Part of the Ressources system - torch logic
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Code.Lavos.Core

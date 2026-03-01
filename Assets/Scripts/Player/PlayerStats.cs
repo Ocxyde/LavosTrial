@@ -8,6 +8,7 @@ using Unity6.LavosTrial.HUD;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Code.Lavos.Status;
+using System.Collections.Generic;
 
 namespace Code.Lavos.Core
 {
@@ -28,7 +29,7 @@ namespace Code.Lavos.Core
         [SerializeField] private float maxStamina = 100f;
         [SerializeField] private float healthRegen = 2f;
         [SerializeField] private float manaRegen = 5f;
-        [SerializeField] private float staminaRegen = 10f;
+        [SerializeField] private float staminaRegen = 0.15f; // Nerfed hard: 0.15 stamina/sec (667 sec to full). Sprint costs 2/sec = net loss of 1.85/sec
 
         [Header("Combat")]
         [SerializeField] private float invincibilityTime = 0.5f;
@@ -104,6 +105,12 @@ namespace Code.Lavos.Core
                 OnEffectRemoved?.Invoke(effect);
             };
 
+            // Subscribe to EventHandler for centralized event management
+            if (Core.EventHandler.Instance != null)
+            {
+                Core.EventHandler.Instance.SubscribeToPlayerStats(this);
+            }
+
             SpawnUIBars();
 
             // Apply starting effects
@@ -115,6 +122,8 @@ namespace Code.Lavos.Core
                         _statsEngine.ApplyEffect(effect);
                 }
             }
+
+            Debug.Log("[PlayerStats] Initialized with EventHandler integration");
         }
 
         void Start()

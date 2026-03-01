@@ -43,6 +43,11 @@ namespace Code.Lavos.Status
         private float _currentMana;
         private float _currentStamina;
 
+        // ─── Out of Combat Regeneration ────────────────────────────────────────
+        private float _lastStaminaUseTime = -10f; // Negative so OOC regen is active at start
+        private const float OutOfCombatDelay = 3f; // Seconds without using stamina to get OOC regen
+        private const float OutOfCombatMultiplier = 1.5f; // 1.5x regen when out of combat (nerfed from 2x)
+
         // ─── Stat Modifiers ────────────────────────────────────────────────────
         private readonly StatModifierCollection _healthModifiers = new();
         private readonly StatModifierCollection _manaModifiers = new();
@@ -493,6 +498,7 @@ namespace Code.Lavos.Status
             if (_currentStamina < actualCost) return false;
 
             _currentStamina -= actualCost;
+            _lastStaminaUseTime = Time.time; // Track last stamina use for OOC regen
             OnStaminaChanged?.Invoke(_currentStamina, MaxStamina);
             return true;
         }
@@ -563,6 +569,7 @@ namespace Code.Lavos.Status
 
         /// <summary>
         /// Apply regeneration for all resources
+        /// Out-of-combat stamina regen: 2x regen after 3 seconds without using stamina
         /// </summary>
         public void ApplyRegeneration(float deltaTime)
         {
@@ -580,7 +587,14 @@ namespace Code.Lavos.Status
 
             if (StaminaRegen > 0 && _currentStamina < MaxStamina)
             {
-                _currentStamina = Mathf.Min(_currentStamina + StaminaRegen * deltaTime, MaxStamina);
+                // Check if out of combat (no stamina use for X seconds)
+                float timeSinceStaminaUse = Time.time - _lastStaminaUseTime;
+                float regenMultiplier = (timeSinceStaminaUse >= OutOfCombatDelay) 
+                    ? OutOfCombatMultiplier 
+                    : 1f;
+                
+                float effectiveRegen = StaminaRegen * regenMultiplier;
+                _currentStamina = Mathf.Min(_currentStamina + effectiveRegen * deltaTime, MaxStamina);
                 OnStaminaChanged?.Invoke(_currentStamina, MaxStamina);
             }
         }

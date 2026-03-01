@@ -32,6 +32,11 @@ namespace Code.Lavos.Core
     [SerializeField] private float jumpHeight = 1.5f;
     [SerializeField] private float gravity = -19.81f;
 
+    // ─── Stamina Costs ───────────────────────────────────────────────────────
+    [Header("Stamina")]
+    [SerializeField] private float sprintCostPerSecond = 2f; // Flat stamina drain per second while sprinting
+    [SerializeField] private float jumpCost = 5f; // Flat stamina cost per jump
+
     // ─── Caméra / Regard ─────────────────────────────────────────────────────
     [Header("Caméra")]
     [SerializeField] private Camera playerCamera;
@@ -59,6 +64,7 @@ namespace Code.Lavos.Core
     private CharacterController _controller;
     private Inventory _inventory;
     private PlayerStats _playerStats;
+    private CombatSystem _combatSystem;
 
     // ─── Input ───────────────────────────────────────────────────────────────
     private Keyboard _kb;
@@ -108,6 +114,7 @@ namespace Code.Lavos.Core
 
         _inventory = GetComponent<Inventory>() ?? gameObject.AddComponent<Inventory>();
         _playerStats = GetComponent<PlayerStats>();
+        _combatSystem = FindFirstObjectByType<CombatSystem>();
 
         _controller.skinWidth = 0.08f;
         _controller.minMoveDistance = 0.001f;
@@ -212,42 +219,45 @@ namespace Code.Lavos.Core
         float baseSpeed = _isSprinting ? sprintSpeed : walkSpeed;
         float speed = _isSprinting ? baseSpeed * 1.10f : baseSpeed; // +10% speed bonus while sprinting
 
-        // Jump with stamina cost (1% of current stamina per jump)
+        // Jump with flat stamina cost
         if (_kb.spaceKey.wasPressedThisFrame && _isGrounded)
         {
-            // Check if PlayerStats exists and is initialized
-            if (PlayerStats.Instance != null && PlayerStats.Instance.Engine != null)
+            bool jumpSuccess = false;
+
+            // Prefer CombatSystem if available (provides better event integration)
+            if (_combatSystem != null)
             {
-                float currentStamina = PlayerStats.Instance.CurrentStamina;
-                
-                // Check if we have enough stamina to jump (minimum 1 stamina)
-                if (currentStamina > 1f)
+                if (_combatSystem.CanJump())
                 {
-                    // Consume 1% of current stamina for the jump
-                    float jumpCost = currentStamina * 0.01f;
-                    jumpCost = Mathf.Max(jumpCost, 0.5f); // Minimum cost to prevent free jumps at very low stamina
-                    
-                    bool success = PlayerStats.Instance.UseStamina(jumpCost);
-                    if (success)
-                    {
-                        _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                    }
-                    else
-                    {
-                        // Not enough stamina to jump
-                        Debug.LogWarning($"[PlayerController] Cannot jump - UseStamina failed! Current: {currentStamina}");
-                    }
+                    jumpSuccess = _combatSystem.UseStamina(jumpCost);
                 }
                 else
                 {
-                    // Too little stamina to jump
-                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {currentStamina}");
+                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {_combatSystem.EffectiveStaminaRegen}");
+                }
+            }
+            else if (PlayerStats.Instance != null && PlayerStats.Instance.Engine != null)
+            {
+                float currentStamina = PlayerStats.Instance.CurrentStamina;
+
+                if (currentStamina >= jumpCost)
+                {
+                    jumpSuccess = PlayerStats.Instance.UseStamina(jumpCost);
+                }
+                else
+                {
+                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {currentStamina}, Required: {jumpCost}");
                 }
             }
             else
             {
                 // PlayerStats not initialized yet - allow jump anyway
                 Debug.LogWarning("[PlayerController] PlayerStats not initialized - jumping without cost");
+                jumpSuccess = true;
+            }
+
+            if (jumpSuccess)
+            {
                 _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
         }
@@ -256,18 +266,24 @@ namespace Code.Lavos.Core
 
         _controller.Move(moveDir * speed * Time.deltaTime + _velocity * Time.deltaTime);
 
-        // Consume stamina while sprinting (1% of CURRENT stamina per second)
-        // This creates exponential decay - drains faster at high stamina, slower at low stamina
-        if (_isSprinting && PlayerStats.Instance != null)
+        // Consume flat stamina while sprinting (use CombatSystem if available)
+        if (_isSprinting)
         {
-            // Drain exactly 1% of current stamina per second
-            float drainPercent = 0.01f; // 1% per second
-            float drainAmount = PlayerStats.Instance.CurrentStamina * drainPercent;
+            float drainAmount = sprintCostPerSecond * Time.deltaTime;
+            bool success = false;
 
-            bool success = PlayerStats.Instance.UseStamina(drainAmount);
+            if (_combatSystem != null)
+            {
+                success = _combatSystem.UseStamina(drainAmount);
+            }
+            else if (PlayerStats.Instance != null)
+            {
+                success = PlayerStats.Instance.UseStamina(drainAmount);
+            }
+
             if (!success)
             {
-                Debug.LogWarning($"[PlayerController] Failed to consume stamina! Current: {PlayerStats.Instance.CurrentStamina}, Requested: {drainAmount}");
+                Debug.LogWarning($"[PlayerController] Failed to consume stamina! Requested: {drainAmount}");
             }
         }
     }

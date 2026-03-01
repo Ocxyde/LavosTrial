@@ -41,7 +41,41 @@
 
 ## 🏗️ Architecture
 
-### **Plug-in-and-Out System**
+### **Core-Centric Plug-in-and-Out System**
+
+**The Core is the heart of the system** - all other scripts work independently but pivot around Core main files:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              CORE (Heart of System)                     │
+│  GameManager │ ItemEngine │ BehaviorEngine │ MazeGen   │
+│  SpawnPlacer │ TrapSystem │ DoorSystem     │ EventHandler │
+└─────────────────────────────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        ▼                 ▼                 ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│  Player       │  │  Ressources   │  │  HUD          │
+│  (plugs in)   │  │  (plugs in)   │  │  (plugs in)   │
+└───────────────┘  └───────────────┘  └───────────────┘
+```
+
+**How it works:**
+1. **Core files** define base classes and managers
+2. **Other systems** inherit from Core base classes
+3. **Plug-in**: Add component → automatically registers with Core
+4. **Plug-out**: Remove component → automatically unregisters
+
+**Example:**
+```csharp
+// DoubleDoor inherits from BehaviorEngine (Core)
+public class DoubleDoor : BehaviorEngine
+{
+    // Automatically registers with ItemEngine
+    // Automatically works with SpawnPlacerEngine
+    // Just add component → it works!
+}
+```
 
 ```
 ┌─────────────────────────────────────────────────────────┐
