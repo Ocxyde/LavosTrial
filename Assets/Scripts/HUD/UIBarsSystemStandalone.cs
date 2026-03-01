@@ -29,8 +29,8 @@ namespace Unity6.LavosTrial.HUD
         [Header("Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
-        private PlayerStats _playerStats;
-        private PlayerController _playerController;
+        private MonoBehaviour _playerStats;
+        private MonoBehaviour _playerController;
 
         private void Awake()
         {
@@ -52,28 +52,48 @@ namespace Unity6.LavosTrial.HUD
                 player = GameObject.FindGameObjectWithTag("Player");
                 if (player == null)
                 {
-                    // Try to find any GameObject with PlayerStats
-                    _playerStats = FindFirstObjectByType<PlayerStats>();
-                    if (_playerStats != null)
+                    // Try to find any GameObject with PlayerStats (using dynamic lookup)
+                    var allObjects = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+                    foreach (var obj in allObjects)
                     {
-                        player = _playerStats.gameObject;
+                        if (obj.GetType().Name == "PlayerStats")
+                        {
+                            _playerStats = obj;
+                            player = obj.gameObject;
+                            break;
+                        }
                     }
                 }
             }
 
-            // Get components from player
+            // Get components from player (using dynamic lookup to avoid circular dependency)
             if (player != null)
             {
-                _playerStats = player.GetComponent<PlayerStats>();
-                _playerController = player.GetComponent<PlayerController>();
+                _playerStats = player.GetComponent("PlayerStats") as MonoBehaviour;
+                _playerController = player.GetComponent("PlayerController") as MonoBehaviour;
             }
 
             // Subscribe to PlayerStats events (static and instance)
             if (_playerStats != null)
             {
-                PlayerStats.OnHealthChanged += OnHealthChanged;
-                _playerStats.OnManaChanged += OnManaChanged;
-                _playerStats.OnStaminaChanged += OnStaminaChanged;
+                var onHealthChangedEvent = _playerStats.GetType().GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                if (onHealthChangedEvent != null)
+                {
+                    onHealthChangedEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                }
+                
+                var onManaChangedEvent = _playerStats.GetType().GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                if (onManaChangedEvent != null)
+                {
+                    onManaChangedEvent.AddEventHandler(_playerStats, new System.Action<float, float>(OnManaChanged));
+                }
+                
+                var onStaminaChangedEvent = _playerStats.GetType().GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                if (onStaminaChangedEvent != null)
+                {
+                    onStaminaChangedEvent.AddEventHandler(_playerStats, new System.Action<float, float>(OnStaminaChanged));
+                }
+                
                 if (showDebugLogs)
                     Debug.Log($"[UIBarsSystemStandalone] Linked to PlayerStats on '{player.name}'");
             }

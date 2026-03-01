@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Code.Lavos;
 using Code.Lavos.Status;
+using Code.Lavos.Core;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -116,7 +118,7 @@ namespace Unity6.LavosTrial.HUD
         private Coroutine _popupRoutine;
 
         // — Subscribed instances —
-        private static Inventory _inventory;
+        private static MonoBehaviour _inventory;
 
         // ------------
         //  INPUT CONFIGURATION
@@ -384,12 +386,28 @@ namespace Unity6.LavosTrial.HUD
                 PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
             }
 
-            GameManager.OnScoreChanged += OnScoreChanged;
-            GameManager.OnGameStateChanged += OnGameStateChanged;
+            // Use reflection to subscribe to GameManager events (avoids circular dependency)
+            var gmType = System.Type.GetType("Code.Lavos.Core.GameManager, Code.Lavos.Core");
+            if (gmType != null)
+            {
+                var onScoreEvent = gmType.GetEvent("OnScoreChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onStateEvent = gmType.GetEvent("OnGameStateChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                if (onScoreEvent != null) onScoreEvent.AddEventHandler(null, new System.Action<int>(OnScoreChanged));
+                if (onStateEvent != null) onStateEvent.AddEventHandler(null, new System.Action<System.Enum>(OnGameStateChanged));
+            }
 
-            _inventory = Inventory.Instance;
-            if (_inventory != null)
-                _inventory.OnInventoryChanged += RefreshHotbar;
+            // Use reflection to subscribe to Inventory events (avoids circular dependency)
+            var invType = System.Type.GetType("Code.Lavos.Core.Inventory, Code.Lavos.Inventory");
+            if (invType != null)
+            {
+                var instanceProp = invType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                _inventory = instanceProp?.GetValue(null) as MonoBehaviour;
+                if (_inventory != null)
+                {
+                    var onInvEvent = invType.GetEvent("OnInventoryChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    onInvEvent?.AddEventHandler(_inventory, new System.Action(RefreshHotbar));
+                }
+            }
         }
 
         private void UnsubscribeFromEvents()
@@ -405,12 +423,22 @@ namespace Unity6.LavosTrial.HUD
                 PlayerStats.Instance.OnEffectRemoved -= OnEffectRemoved;
             }
 
-            GameManager.OnScoreChanged -= OnScoreChanged;
-            GameManager.OnGameStateChanged -= OnGameStateChanged;
+            // Use reflection to unsubscribe from GameManager events
+            var gmType = System.Type.GetType("Code.Lavos.Core.GameManager, Code.Lavos.Core");
+            if (gmType != null)
+            {
+                var onScoreEvent = gmType.GetEvent("OnScoreChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onStateEvent = gmType.GetEvent("OnGameStateChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                if (onScoreEvent != null) onScoreEvent.RemoveEventHandler(null, new System.Action<int>(OnScoreChanged));
+                if (onStateEvent != null) onStateEvent.RemoveEventHandler(null, new System.Action<System.Enum>(OnGameStateChanged));
+            }
 
+            // Use reflection to unsubscribe from Inventory events
             if (_inventory != null)
             {
-                _inventory.OnInventoryChanged -= RefreshHotbar;
+                var invType = _inventory.GetType();
+                var onInvEvent = invType.GetEvent("OnInventoryChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                onInvEvent?.RemoveEventHandler(_inventory, new System.Action(RefreshHotbar));
             }
         }
 
@@ -496,14 +524,14 @@ namespace Unity6.LavosTrial.HUD
             interactionPrompt.enabled = !string.IsNullOrEmpty(prompt);
         }
 
-        private void OnPlayerDied() { /* GameManager â†’ TriggerGameOver â†’ OnGameStateChanged */ }
+        private void OnPlayerDied() { /* GameManager → TriggerGameOver → OnGameStateChanged */ }
 
-        private void OnGameStateChanged(GameManager.GameState state)
+        private void OnGameStateChanged(System.Enum state)
         {
-            bool playing = state == GameManager.GameState.Playing;
-            bool paused = state == GameManager.GameState.Paused;
-            bool gameOver = state == GameManager.GameState.GameOver;
-            bool victory = state == GameManager.GameState.Victory;
+            bool playing = state.ToString() == "Playing";
+            bool paused = state.ToString() == "Paused";
+            bool gameOver = state.ToString() == "GameOver";
+            bool victory = state.ToString() == "Victory";
 
             _hudRoot?.SetActive(playing || paused);
             pausePanel?.SetActive(paused);
@@ -704,13 +732,13 @@ namespace Unity6.LavosTrial.HUD
             }
         }
 
-        private Color RarityColor(ItemRarity rarity) => rarity switch
+        private Color RarityColor(System.Enum rarity) => rarity.ToString() switch
         {
-            ItemRarity.Common => new Color(0.75f, 0.75f, 0.75f),
-            ItemRarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
-            ItemRarity.Rare => new Color(0.20f, 0.45f, 0.95f),
-            ItemRarity.Epic => new Color(0.65f, 0.20f, 0.85f),
-            ItemRarity.Legendary => new Color(1.00f, 0.55f, 0.05f),
+            "Common" => new Color(0.75f, 0.75f, 0.75f),
+            "Uncommon" => new Color(0.30f, 0.80f, 0.30f),
+            "Rare" => new Color(0.20f, 0.45f, 0.95f),
+            "Epic" => new Color(0.65f, 0.20f, 0.85f),
+            "Legendary" => new Color(1.00f, 0.55f, 0.05f),
             _ => Color.white,
         };
 

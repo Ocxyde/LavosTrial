@@ -3,7 +3,8 @@
     "rootNamespace": "Code.Lavos",
     "references": [
         "Code.Lavos.Core",
-        "Code.Lavos.Inventory"
+        "Code.Lavos.Inventory",
+        "Code.Lavos.HUD"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

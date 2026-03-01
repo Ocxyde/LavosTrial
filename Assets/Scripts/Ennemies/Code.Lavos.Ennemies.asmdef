@@ -3,7 +3,8 @@
     "rootNamespace": "Code.Lavos",
     "references": [
         "Code.Lavos.Core",
-        "Code.Lavos.Status"
+        "Code.Lavos.Status",
+        "Code.Lavos.Player"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

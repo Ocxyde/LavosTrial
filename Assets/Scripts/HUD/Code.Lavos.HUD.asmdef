@@ -4,6 +4,7 @@
     "references": [
         "Code.Lavos.Core",
         "Code.Lavos.Status",
+        "Code.Lavos.Inventory",
         "Unity.TextMeshPro",
         "Unity.InputSystem"
     ],
