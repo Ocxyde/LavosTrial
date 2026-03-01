@@ -60,6 +60,9 @@ namespace Code.Lavos.Core
     [SerializeField] private LayerMask playerLayer = 0;
     [SerializeField] private TextMeshProUGUI interactionPromptText;
 
+    // ─── Interaction System Reference ────────────────────────────────────────
+    private InteractionSystem _interactionSystem;
+
     // ─── Composants ──────────────────────────────────────────────────────────
     private CharacterController _controller;
     private Inventory _inventory;
@@ -89,12 +92,14 @@ namespace Code.Lavos.Core
     private IInteractable _highlightedInteractable;
 
     // ─── Événements ──────────────────────────────────────────────────────────
+    // Delegated to InteractionSystem
     public static event System.Action<string> OnInteractableChanged;
 
     // ─── Propriétés ──────────────────────────────────────────────────────────
     public Inventory PlayerInventory => _inventory;
-    public IInteractable CurrentInteractable => _currentInteractable;
-    public bool HasInteractable => _currentInteractable != null;
+    // Delegate to InteractionSystem if available
+    public IInteractable CurrentInteractable => _interactionSystem?.CurrentInteractable ?? _currentInteractable;
+    public bool HasInteractable => _interactionSystem?.HasInteractable ?? _currentInteractable != null;
     public bool IsGrounded => _isGrounded;
 
     /// <summary>
@@ -115,6 +120,7 @@ namespace Code.Lavos.Core
         _inventory = GetComponent<Inventory>() ?? gameObject.AddComponent<Inventory>();
         _playerStats = GetComponent<PlayerStats>();
         _combatSystem = FindFirstObjectByType<CombatSystem>();
+        _interactionSystem = FindFirstObjectByType<InteractionSystem>();
 
         _controller.skinWidth = 0.08f;
         _controller.minMoveDistance = 0.001f;
@@ -149,7 +155,18 @@ namespace Code.Lavos.Core
         HandleMouseLook();
         HandleMovement();
         HandleHeadBob();
-        HandleInteraction();
+        
+        // Delegate interaction handling to InteractionSystem if available
+        if (_interactionSystem != null)
+        {
+            // Sync interaction prompt UI with InteractionSystem
+            InteractionSystem.OnInteractableChangedStatic += UpdateInteractionPromptUI;
+        }
+        else
+        {
+            // Fallback to legacy interaction handling
+            HandleInteraction();
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -332,7 +349,7 @@ namespace Code.Lavos.Core
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  INTERACTION (E)
+    //  INTERACTION (E) - Legacy mode (when InteractionSystem not available)
     // ─────────────────────────────────────────────────────────────────────────
     private void HandleInteraction()
     {
@@ -373,6 +390,17 @@ namespace Code.Lavos.Core
         _currentInteractable = null;
         ClearInteractionPrompt();
         OnInteractableChanged?.Invoke(string.Empty);
+    }
+
+    /// <summary>
+    /// Update interaction prompt UI (called by InteractionSystem)
+    /// </summary>
+    private void UpdateInteractionPromptUI(string prompt)
+    {
+        if (interactionPromptText != null) 
+        {
+            interactionPromptText.text = string.IsNullOrEmpty(prompt) ? string.Empty : $"[E] {prompt}";
+        }
     }
 
     private void UpdateInteractionPrompt(string prompt)
