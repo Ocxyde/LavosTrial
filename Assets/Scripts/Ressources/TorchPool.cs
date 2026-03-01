@@ -1,3 +1,14 @@
+// TorchPool.cs
+// Object pool for torch prefabs
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - torch pooling
+
+// TorchPool.cs
+// Object pool for torch prefabs
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - torch pooling
 using System.Collections.Generic;
 using UnityEngine;
 

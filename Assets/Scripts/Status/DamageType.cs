@@ -1,4 +1,10 @@
-﻿using UnityEngine;
+// DamageType.cs
+// Damage type enumeration for combat and resistance system
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Status system - used by StatsEngine.cs for damage calculation
+
+using UnityEngine;
 
 namespace Code.Lavos.Status
 {

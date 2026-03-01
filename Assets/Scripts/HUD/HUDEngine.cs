@@ -1,4 +1,4 @@
-﻿// HUDEngine.cs
+// HUDEngine.cs
 // Central HUD management system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -34,7 +34,7 @@ namespace Unity6.LavosTrial.HUD
             {
                 if (_instance == null)
                 {
-                    _instance = FindObject<HUDEngine>();
+                    _instance = FindFirstObjectByType<HUDEngine>();
                     if (_instance == null)
                     {
                         GameObject go = new GameObject("HUDEngine");
@@ -386,11 +386,12 @@ namespace Unity6.LavosTrial.HUD
 
             // Draw module count
 #if UNITY_EDITOR
+            var labelStyle = new GUIStyle()
+            {
+                normal = { textColor = Color.green }
+            };
             UnityEditor.Handles.Label(center + Vector3.up * (_canvasRect.rect.height / 2 + 20),
-                $"HUD Modules: {_modules.Count}", new GUIStyle()
-                {
-                    normal = new UnityEditor.GUIStyleState() { textColor = Color.green }
-                });
+                $"HUD Modules: {_modules.Count}", labelStyle);
 #endif
         }
 

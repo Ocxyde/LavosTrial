@@ -1,7 +1,14 @@
-﻿using UnityEngine;
+// DebugHUD.cs
+// Debug UI for testing and development
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the HUD system - debug only
+
+using UnityEngine;
 using UnityEngine.InputSystem;
 using Code.Lavos;
 using Code.Lavos.Status;
+using Code.Lavos.Core;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -138,10 +145,10 @@ namespace Unity6.LavosTrial.HUD
                 var maxManaProp = statsType.GetProperty("MaxMana");
                 var currentStaminaProp = statsType.GetProperty("CurrentStamina");
                 var maxStaminaProp = statsType.GetProperty("MaxStamina");
-                
-                _healthInfo = $"Health: {currentHealthProp?.GetValue(_playerStats):F0}/{maxHealthProp?.GetValue(_playerStats):F0}";
-                _manaInfo = $"Mana: {currentManaProp?.GetValue(_playerStats):F0}/{maxManaProp?.GetValue(_playerStats):F0}";
-                _staminaInfo = $"Stamina: {currentStaminaProp?.GetValue(_playerStats):F0}/{maxStaminaProp?.GetValue(_playerStats):F0}";
+
+                _healthInfo = $"Health: {(currentHealthProp?.GetValue(_playerStats) is float ch ? ch : 0f):F0}/{(maxHealthProp?.GetValue(_playerStats) is float mh ? mh : 0f):F0}";
+                _manaInfo = $"Mana: {(currentManaProp?.GetValue(_playerStats) is float cm ? cm : 0f):F0}/{(maxManaProp?.GetValue(_playerStats) is float mm ? mm : 0f):F0}";
+                _staminaInfo = $"Stamina: {(currentStaminaProp?.GetValue(_playerStats) is float cs ? cs : 0f):F0}/{(maxStaminaProp?.GetValue(_playerStats) is float ms ? ms : 0f):F0}";
             }
             else
             {
@@ -175,14 +182,14 @@ namespace Unity6.LavosTrial.HUD
                 var currentHealthProp = statsType.GetProperty("CurrentHealth");
                 var healMethod = statsType.GetMethod("Heal");
                 var takeDamageMethod = statsType.GetMethod("TakeDamage");
-                
+
                 if (maxHealthProp != null && currentHealthProp != null)
                 {
-                    float maxHealth = (float)maxHealthProp.GetValue(_playerStats);
-                    float currentHealth = (float)currentHealthProp.GetValue(_playerStats);
+                    float maxHealth = maxHealthProp.GetValue(_playerStats) is float mh ? mh : 100f;
+                    float currentHealth = currentHealthProp.GetValue(_playerStats) is float ch ? ch : 100f;
                     float targetHealth = maxHealth * percent;
                     float diff = targetHealth - currentHealth;
-                    
+
                     if (diff > 0 && healMethod != null)
                         healMethod.Invoke(_playerStats, new object[] { diff });
                     else if (diff < 0 && takeDamageMethod != null)

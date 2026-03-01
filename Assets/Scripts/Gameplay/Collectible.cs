@@ -1,16 +1,27 @@
+// Collectible.cs
+// Collectible item system - coins, potions, bonuses
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// SETUP in Unity:
+//  1. Create a GameObject (e.g., sphere)
+//  2. Attach this script
+//  3. Add Collider with "Is Trigger" enabled
+//  4. Select type in Inspector
+
 using UnityEngine;
 using Unity6.LavosTrial.HUD;
+using Code.Lavos.Status;
 
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// COLLECTIBLE — Objet ramassable (pièce, potion, bonus…)
+    /// COLLECTIBLE — Pickable object (coin, potion, bonus...)
     ///
-    /// SETUP dans Unity :
-    ///  1. Crée un GameObject (ex: une sphère)
-    ///  2. Attache ce script dessus
-    ///  3. Ajoute un Collider en mode "Is Trigger"
-    ///  4. Choisis le type dans l'Inspector
+    /// SETUP in Unity:
+    ///  1. Create a GameObject (e.g., a sphere)
+    ///  2. Attach this script
+    ///  3. Add Collider with "Is Trigger" mode
+    ///  4. Select type in Inspector
     /// </summary>
     public class Collectible : MonoBehaviour
     {
@@ -75,8 +86,8 @@ namespace Code.Lavos.Core
         if (collectVFX != null)
             Instantiate(collectVFX, transform.position, Quaternion.identity);
 
-        Debug.Log($"[Collectible] RamassÃ© : {type} +{value}");
+        Debug.Log($"[Collectible] Ramassé : {type} +{value}");
         Destroy(gameObject);
     }
-}
+    }
 }

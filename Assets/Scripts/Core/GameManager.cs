@@ -1,3 +1,9 @@
+// GameManager.cs
+// Central game state manager (Singleton)
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Main pivot point for plug-in-and-out system
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

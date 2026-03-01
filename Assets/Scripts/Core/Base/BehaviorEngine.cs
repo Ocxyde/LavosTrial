@@ -1,4 +1,4 @@
-﻿// BehaviorEngine.cs
+// BehaviorEngine.cs
 // Base class for all items in ItemEngine system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //

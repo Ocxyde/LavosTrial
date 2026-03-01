@@ -1,5 +1,12 @@
-﻿using NUnit.Framework;
+// MazeGeneratorTests.cs
+// Unit tests for MazeGenerator
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Test file - validates maze generation
+
+using NUnit.Framework;
 using UnityEngine;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Tests
 {

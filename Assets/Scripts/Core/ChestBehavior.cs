@@ -51,7 +51,7 @@ namespace Code.Lavos.Core
         public bool IsOpen => _isOpen;
         public LootTable LootTable => lootTable;
 
-        private void Awake()
+        private new void Awake()
         {
             // Set item type
             SetItemType(ItemType.Chest);
@@ -364,7 +364,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        private void OnDestroy()
+        private new void OnDestroy()
         {
             base.OnDestroy();
 

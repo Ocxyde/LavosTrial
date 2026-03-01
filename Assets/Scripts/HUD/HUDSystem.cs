@@ -1,3 +1,9 @@
+// HUDSystem.cs
+// Main HUD management system
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Central UI manager for all HUD elements
+
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -375,15 +381,31 @@ namespace Unity6.LavosTrial.HUD
         // ---------
         private void SubscribeToEvents()
         {
-            PlayerStats.OnHealthChanged += OnHealthChanged;
-            PlayerStats.OnPlayerDied += OnPlayerDied;
-
-            if (PlayerStats.Instance != null)
+            // Use reflection to subscribe to PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                PlayerStats.Instance.OnManaChanged += OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
-                PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
-                PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onPlayerDiedEvent = statsType.GetEvent("OnPlayerDied", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onPlayerDiedEvent != null) onPlayerDiedEvent.AddEventHandler(null, new System.Action(OnPlayerDied));
+
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+                
+                if (playerStatsInstance != null)
+                {
+                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onManaEvent != null) onManaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                    if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                    if (onEffectAddedEvent != null) onEffectAddedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+                }
             }
 
             // Use reflection to subscribe to GameManager events (avoids circular dependency)
@@ -412,15 +434,31 @@ namespace Unity6.LavosTrial.HUD
 
         private void UnsubscribeFromEvents()
         {
-            PlayerStats.OnHealthChanged -= OnHealthChanged;
-            PlayerStats.OnPlayerDied -= OnPlayerDied;
-
-            if (PlayerStats.Instance != null)
+            // Use reflection to unsubscribe from PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                PlayerStats.Instance.OnManaChanged -= OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged -= OnStaminaChanged;
-                PlayerStats.Instance.OnEffectAdded -= OnEffectAdded;
-                PlayerStats.Instance.OnEffectRemoved -= OnEffectRemoved;
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onPlayerDiedEvent = statsType.GetEvent("OnPlayerDied", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onPlayerDiedEvent != null) onPlayerDiedEvent.RemoveEventHandler(null, new System.Action(OnPlayerDied));
+
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+                
+                if (playerStatsInstance != null)
+                {
+                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onManaEvent != null) onManaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                    if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                    if (onEffectAddedEvent != null) onEffectAddedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+                }
             }
 
             // Use reflection to unsubscribe from GameManager events

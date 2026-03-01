@@ -1,4 +1,4 @@
-﻿// DoubleDoor.cs
+// DoubleDoor.cs
 // Double-sided door with glowing halo/aura and 8-bit pixel art flame style
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Inherits from BehaviorEngine for ItemEngine integration

@@ -1,3 +1,9 @@
+// InventoryUI.cs
+// Inventory UI display and management
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Inventory system - UI controller
+
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -159,5 +165,5 @@ namespace Code.Lavos.Core
         if (Inventory.Instance != null)
             Inventory.Instance.OnInventoryChanged -= UpdateUI;
     }
-}
+    }
 }

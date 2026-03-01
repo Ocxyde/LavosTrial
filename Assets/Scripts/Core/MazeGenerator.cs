@@ -1,3 +1,9 @@
+// MazeGenerator.cs
+// Procedural maze generation algorithm
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - generates maze layout
+
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;

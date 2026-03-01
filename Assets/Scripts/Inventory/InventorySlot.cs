@@ -1,3 +1,9 @@
+// InventorySlot.cs
+// Inventory slot data structure for plug-in-and-out inventory system
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Inventory system - works with Inventory.cs and InventoryUI.cs
+
 namespace Code.Lavos.Core
 {
     [System.Serializable]

@@ -24,7 +24,7 @@ namespace Unity6.LavosTrial.HUD
         public virtual void Initialize(HUDEngine engine)
         {
             _engine = engine;
-            _rect_transform = GetComponent<RectTransform>();
+            _rectTransform = GetComponent<RectTransform>();
             _canvas = GetComponent<Canvas>();
         }
 
@@ -204,11 +204,24 @@ namespace Unity6.LavosTrial.HUD
 
         private void SubscribeToEvents()
         {
-            if (Code.Lavos.Status.PlayerStats.Instance != null)
+            // Use reflection to subscribe to PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                Code.Lavos.Status.PlayerStats.OnHealthChanged += OnHealthChanged;
-                Code.Lavos.Status.PlayerStats.Instance.OnManaChanged += OnManaChanged;
-                Code.Lavos.Status.PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+
+                if (playerStatsInstance != null)
+                {
+                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onManaEvent != null) onManaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                    if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                }
             }
         }
 
@@ -263,11 +276,24 @@ namespace Unity6.LavosTrial.HUD
 
         public override void Cleanup()
         {
-            if (Code.Lavos.Status.PlayerStats.Instance != null)
+            // Use reflection to unsubscribe from PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                Code.Lavos.Status.PlayerStats.OnHealthChanged -= OnHealthChanged;
-                Code.Lavos.Status.PlayerStats.Instance.OnManaChanged -= OnManaChanged;
-                Code.Lavos.Status.PlayerStats.Instance.OnStaminaChanged -= OnStaminaChanged;
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+
+                if (playerStatsInstance != null)
+                {
+                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onManaEvent != null) onManaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                    if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                }
             }
         }
     }
@@ -317,10 +343,21 @@ namespace Unity6.LavosTrial.HUD
 
         private void SubscribeToEvents()
         {
-            if (Code.Lavos.Status.PlayerStats.Instance != null)
+            // Use reflection to subscribe to PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                Code.Lavos.Status.PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
-                Code.Lavos.Status.PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+
+                if (playerStatsInstance != null)
+                {
+                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onEffectAddedEvent != null) onEffectAddedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+                }
             }
         }
 
@@ -372,10 +409,21 @@ namespace Unity6.LavosTrial.HUD
 
         public override void Cleanup()
         {
-            if (Code.Lavos.Status.PlayerStats.Instance != null)
+            // Use reflection to unsubscribe from PlayerStats events (avoids circular dependency)
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            if (statsType != null)
             {
-                Code.Lavos.Status.PlayerStats.Instance.OnEffectAdded -= OnEffectAdded;
-                Code.Lavos.Status.PlayerStats.Instance.OnEffectRemoved -= OnEffectRemoved;
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+
+                if (playerStatsInstance != null)
+                {
+                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                    if (onEffectAddedEvent != null) onEffectAddedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+                }
             }
         }
     }
@@ -482,7 +530,7 @@ namespace Unity6.LavosTrial.HUD
             tmp.text = text;
             tmp.fontSize = 24;
             tmp.color = color;
-            tmp.fontStyle = UnityEngine.FontStyles.Bold;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
 
             // Simple fade out coroutine
             _engine.StartCoroutine(FadeOutPopup(go, tmp));
@@ -498,7 +546,7 @@ namespace Unity6.LavosTrial.HUD
                 elapsed += Time.deltaTime;
                 float t = elapsed / popupDuration;
 
-                rt = go.GetComponent<RectTransform>();
+                var rt = go.GetComponent<RectTransform>();
                 rt.anchoredPosition += Vector2.up * popupSpeed * Time.deltaTime * 100f;
 
                 text.color = new Color(original.r, original.g, original.b, original.a * (1 - t));

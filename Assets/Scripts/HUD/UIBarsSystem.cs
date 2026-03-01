@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Code.Lavos;
 using Code.Lavos.Status;
+using Code.Lavos.Core;
 
 namespace Unity6.LavosTrial.HUD
 {
@@ -92,6 +93,13 @@ namespace Unity6.LavosTrial.HUD
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            
+            // Ensure this is a root GameObject before calling DontDestroyOnLoad
+            if (transform.parent != null)
+            {
+                transform.SetParent(null, true);
+            }
+            
             DontDestroyOnLoad(gameObject);
             Debug.Log("[UIBarsSystem] Awake - Instance initialized");
         }
@@ -112,7 +120,7 @@ namespace Unity6.LavosTrial.HUD
             Debug.Log("[UIBarsSystem] Setting initial values...");
 
             // Try to find PlayerStats using reflection to avoid circular dependency
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
             MonoBehaviour playerStatsInstance = null;
             
             if (statsType != null)
@@ -130,10 +138,19 @@ namespace Unity6.LavosTrial.HUD
                 var maxManaProp = statsType2.GetProperty("MaxMana");
                 var currentStaminaProp = statsType2.GetProperty("CurrentStamina");
                 var maxStaminaProp = statsType2.GetProperty("MaxStamina");
-                
-                SetHealth((float)(currentHealthProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxHealthProp?.GetValue(playerStatsInstance) ?? 100f));
-                SetMana((float)(currentManaProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxManaProp?.GetValue(playerStatsInstance) ?? 100f));
-                SetStamina((float)(currentStaminaProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxStaminaProp?.GetValue(playerStatsInstance) ?? 100f));
+
+                SetHealth(
+                    currentHealthProp?.GetValue(playerStatsInstance) is float ch ? ch : 100f,
+                    maxHealthProp?.GetValue(playerStatsInstance) is float mh ? mh : 100f
+                );
+                SetMana(
+                    currentManaProp?.GetValue(playerStatsInstance) is float cm ? cm : 100f,
+                    maxManaProp?.GetValue(playerStatsInstance) is float mm ? mm : 100f
+                );
+                SetStamina(
+                    currentStaminaProp?.GetValue(playerStatsInstance) is float cs ? cs : 100f,
+                    maxStaminaProp?.GetValue(playerStatsInstance) is float ms ? ms : 100f
+                );
                 Debug.Log($"[UIBarsSystem] Initial values from PlayerStats");
             }
             else
@@ -172,7 +189,7 @@ namespace Unity6.LavosTrial.HUD
         private void SubscribeToEvents()
         {
             // Subscribe to PlayerStats events (unified system) using reflection
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
             MonoBehaviour playerStatsInstance = null;
             
             if (statsType != null)
@@ -217,7 +234,7 @@ namespace Unity6.LavosTrial.HUD
         private void UnsubscribeFromEvents()
         {
             // Unsubscribe from PlayerStats using reflection
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
             MonoBehaviour playerStatsInstance = null;
             
             if (statsType != null)
@@ -724,7 +741,7 @@ namespace Unity6.LavosTrial.HUD
         public void RefreshEffectTimers()
         {
             // Use reflection to access PlayerStats
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
             MonoBehaviour playerStatsInstance = null;
             
             if (statsType != null)
@@ -736,7 +753,7 @@ namespace Unity6.LavosTrial.HUD
             if (playerStatsInstance == null) return;
 
             var activeEffectsProp = playerStatsInstance.GetType().GetProperty("ActiveEffects");
-            var effects = activeEffectsProp?.GetValue(playerStatsInstance) as System.Collections.Generic.IList;
+            var effects = activeEffectsProp?.GetValue(playerStatsInstance) as System.Collections.IList;
             if (effects == null) return;
 
             foreach (var effectObj in effects)

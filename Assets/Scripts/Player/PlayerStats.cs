@@ -1,3 +1,9 @@
+// PlayerStats.cs
+// Player stats wrapper for StatsEngine
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: MonoBehaviour integration for StatsEngine
+
 using Unity6.LavosTrial.HUD;
 using UnityEngine;
 using Object = UnityEngine.Object;

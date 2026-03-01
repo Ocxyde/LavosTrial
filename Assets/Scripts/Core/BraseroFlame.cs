@@ -1,3 +1,14 @@
+// BraseroFlame.cs
+// Brazier flame effect with 8-bit pixel art style
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - works with FlameAnimator.cs
+
+// BraseroFlame.cs
+// Brazier flame effect with 8-bit pixel art style
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - works with FlameAnimator.cs
 using UnityEngine;
 
 namespace Code.Lavos.Core

@@ -1,4 +1,4 @@
-﻿// SpawnPlacerEngine.cs
+// SpawnPlacerEngine.cs
 // Procedural item placement engine for maze
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Plug-in-and-Out modular architecture

@@ -1,3 +1,14 @@
+// DrawingPool.cs
+// Object pool for procedural textures
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - texture pooling
+
+// DrawingPool.cs
+// Object pool for procedural textures
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - texture pooling
 using System.Collections.Generic;
 using UnityEngine;
 

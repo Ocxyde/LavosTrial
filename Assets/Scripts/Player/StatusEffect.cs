@@ -1,4 +1,9 @@
-﻿// Backward compatibility wrappers for Status namespace types
+// StatusEffect.cs
+// Legacy status effect wrapper
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Status system - backward compatibility
+
 namespace Code.Lavos.Core
 {
     /// <summary>

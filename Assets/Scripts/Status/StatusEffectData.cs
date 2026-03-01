@@ -1,4 +1,15 @@
-﻿using System;
+// StatusEffectData.cs
+// Comprehensive status effect data
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Status effect definition and data
+
+// StatusEffectData.cs
+// Comprehensive status effect data
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Status effect definition and data
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 

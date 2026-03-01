@@ -111,12 +111,27 @@ namespace Unity6.LavosTrial.HUD
         {
             if (UIBarsSystem.Instance == null) return;
 
-            // Health, Mana, Stamina from PlayerStats
+            // Health, Mana, Stamina from PlayerStats (using reflection to avoid circular dependency)
             if (_playerStats != null)
             {
-                UIBarsSystem.Instance.SetHealth(_playerStats.CurrentHealth, _playerStats.MaxHealth);
-                UIBarsSystem.Instance.SetMana(_playerStats.CurrentMana, _playerStats.MaxMana);
-                UIBarsSystem.Instance.SetStamina(_playerStats.CurrentStamina, _playerStats.MaxStamina);
+                var statsType = _playerStats.GetType();
+                var currentHealthProp = statsType.GetProperty("CurrentHealth");
+                var maxHealthProp = statsType.GetProperty("MaxHealth");
+                var currentManaProp = statsType.GetProperty("CurrentMana");
+                var maxManaProp = statsType.GetProperty("MaxMana");
+                var currentStaminaProp = statsType.GetProperty("CurrentStamina");
+                var maxStaminaProp = statsType.GetProperty("MaxStamina");
+
+                float curHealth = currentHealthProp?.GetValue(_playerStats) is float ch ? ch : 1000f;
+                float maxHealth = maxHealthProp?.GetValue(_playerStats) is float mh ? mh : 1000f;
+                float curMana = currentManaProp?.GetValue(_playerStats) is float cm ? cm : 100f;
+                float maxMana = maxManaProp?.GetValue(_playerStats) is float mm ? mm : 100f;
+                float curStamina = currentStaminaProp?.GetValue(_playerStats) is float cs ? cs : 100f;
+                float maxStamina = maxStaminaProp?.GetValue(_playerStats) is float ms ? ms : 100f;
+
+                UIBarsSystem.Instance.SetHealth(curHealth, maxHealth);
+                UIBarsSystem.Instance.SetMana(curMana, maxMana);
+                UIBarsSystem.Instance.SetStamina(curStamina, maxStamina);
             }
             else
             {

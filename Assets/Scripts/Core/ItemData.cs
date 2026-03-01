@@ -1,3 +1,9 @@
+// ItemData.cs
+// ScriptableObject data for inventory items
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Inventory system - works with Inventory.cs
+
 using UnityEngine;
 
 namespace Code.Lavos.Core

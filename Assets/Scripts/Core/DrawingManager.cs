@@ -1,3 +1,9 @@
+// DrawingManager.cs
+// Procedural texture generation and sprite creation
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - generates textures for maze
+
 using System;
 using UnityEngine;
 

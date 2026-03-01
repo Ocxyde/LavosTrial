@@ -1,3 +1,14 @@
+// ParticleGenerator.cs
+// Particle system generator for VFX
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - creates particle effects
+
+// ParticleGenerator.cs
+// Particle system generator for VFX
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - creates particle effects
 using System.Collections.Generic;
 using UnityEngine;
 

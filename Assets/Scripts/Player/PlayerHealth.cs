@@ -1,4 +1,10 @@
-﻿using UnityEngine;
+// PlayerHealth.cs
+// Player health management
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Player system - health component
+
+using UnityEngine;
 
 namespace Code.Lavos.Core
 {

@@ -1,3 +1,14 @@
+// FlameAnimator.cs
+// Animation system for 8-bit flame effects
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - works with BraseroFlame.cs
+
+// FlameAnimator.cs
+// Animation system for 8-bit flame effects
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Core system - works with BraseroFlame.cs
 using UnityEngine;
 
 namespace Code.Lavos.Core

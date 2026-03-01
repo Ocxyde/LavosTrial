@@ -1,0 +1,50 @@
+# Force LF for all text files
+* text=auto eol=lf
+
+# C# files
+*.cs text eol=lf
+*.asmdef text eol=lf
+
+# Unity YAML
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text eol=lf
+*.mat text eol=lf
+
+# Shaders
+*.shader text eol=lf
+*.hlsl text eol=lf
+*.cginc text eol=lf
+
+# Input System
+*.inputactions text eol=lf
+
+# Text and config
+*.json text eol=lf
+*.xml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+
+# Scripts (if tracked)
+*.ps1 text eol=lf
+*.bat text eol=lf
+*.cmd text eol=lf
+
+# Images (binary)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.tga binary
+*.psd binary
+*.ai binary
+
+# Audio (binary)
+*.mp3 binary
+*.wav binary
+*.ogg binary
+
+# Models (binary)
+*.fbx binary
+*.obj binary
+*.blend binary

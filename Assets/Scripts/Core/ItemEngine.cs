@@ -1,4 +1,4 @@
-﻿// ItemEngine.cs
+// ItemEngine.cs
 // Central item management system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //

@@ -1,6 +1,13 @@
+// PlayerController.cs
+// Player movement, camera, and input
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Player controller with New Input System
+
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Code.Lavos.Status;
 
 namespace Code.Lavos.Core
 {
@@ -326,5 +333,5 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────────────────
     public void LockCursor() { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
     public void UnlockCursor() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
-}
+    }
 }

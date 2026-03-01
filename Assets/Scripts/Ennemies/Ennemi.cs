@@ -1,3 +1,10 @@
+// Ennemi.cs
+// Basic enemy behavior - deals damage on collision
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Simple enemy that attaches to any GameObject with a Collider
+// Deals damage when colliding with the player
+
 using UnityEngine;
 
 namespace Code.Lavos.Core

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.DB
 {

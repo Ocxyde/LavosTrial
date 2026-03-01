@@ -1,0 +1,8 @@
+Always remember to use backup.ps1 to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+scan now for my whole solution and project, search for errors and apply patch right now
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file.

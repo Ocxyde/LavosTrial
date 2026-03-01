@@ -1,3 +1,14 @@
+// AnimatedFlame.cs
+// Animated 8-bit flame sprite
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - flame animation
+
+// AnimatedFlame.cs
+// Animated 8-bit flame sprite
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - flame animation
 using UnityEngine;
 
 namespace Code.Lavos.Core

@@ -1,3 +1,9 @@
+// InventorySlotUI.cs
+// UI slot for inventory items
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Inventory system - UI component
+
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -88,5 +94,5 @@ namespace Code.Lavos.Core
     {
         _onHoverEnd?.Invoke();
     }
-}
+    }
 }

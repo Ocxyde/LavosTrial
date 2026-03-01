@@ -1,4 +1,4 @@
-﻿// LootTable.cs
+// LootTable.cs
 // Loot table definition for chest rewards and item drops
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Located in Core assembly for use by SpawnPlacerEngine and ChestBehavior

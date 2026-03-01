@@ -1,0 +1,11 @@
+﻿{
+  "EnableCompilation": false,
+  "SynchronousCompilation": true,
+  "VerboseCompilation": false,
+  "DumpBurstAssembly": false,
+  "EnableSafetyChecks": true,
+  "OptimizationLevel": 1,
+  "DebugInformation": true,
+  "CompileSyncWithUnityCompilation": true,
+  "DisableBurstInTests": true
+}

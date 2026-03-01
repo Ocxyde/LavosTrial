@@ -1,4 +1,15 @@
-﻿using NUnit.Framework;
+// StatsEngineTests.cs
+// Unit tests for StatsEngine
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Test file - validates stat calculations
+
+// StatsEngineTests.cs
+// Unit tests for StatsEngine
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Test file - validates stat calculations
+using NUnit.Framework;
 using Code.Lavos.Status;
 using UnityEngine;
 

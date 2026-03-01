@@ -1,4 +1,4 @@
-﻿// UIBarsSystemInitializer.cs
+// UIBarsSystemInitializer.cs
 // Deprecated - Use UIBarsSystemStandalone.cs instead
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //

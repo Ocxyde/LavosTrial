@@ -1,3 +1,14 @@
+// PersistentPlayerData.cs
+// Persistent player data between sessions
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Player system - save/load data
+
+// PersistentPlayerData.cs
+// Persistent player data between sessions
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Player system - save/load data
 using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Status;
@@ -55,7 +66,7 @@ namespace Code.Lavos.Core
         public int slotIndex;
         public string itemName;
         public int quantity;
-        public ItemType itemType;
+        public InventoryItemType itemType;
 
         public InventorySlotData() { }
 

@@ -1,3 +1,9 @@
+// ItemPickup.cs
+// Pickup behavior for inventory items
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Inventory system - world pickup
+
 using UnityEngine;
 
 namespace Code.Lavos.Core
@@ -127,5 +133,5 @@ namespace Code.Lavos.Core
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, pickupRadius);
     }
-}
+    }
 }

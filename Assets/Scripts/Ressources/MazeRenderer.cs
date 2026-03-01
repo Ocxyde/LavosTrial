@@ -1,3 +1,14 @@
+// MazeRenderer.cs
+// Renders maze from MazeGenerator data
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - maze visualization
+
+// MazeRenderer.cs
+// Renders maze from MazeGenerator data
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Ressources system - maze visualization
 // Clean, Unity6-compatible MazeRenderer: final consolidated class
 // Unity6-era compatibility note: this file follows Unity6 patterns and uses the New Input System placeholder guidance.
 using System.Collections.Generic;

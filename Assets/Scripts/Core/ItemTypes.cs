@@ -1,4 +1,4 @@
-﻿// ItemTypes.cs
+// ItemTypes.cs
 // Shared item type enums for Core and Ressources assemblies
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 

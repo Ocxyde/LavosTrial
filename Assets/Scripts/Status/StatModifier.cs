@@ -1,4 +1,10 @@
-﻿using System;
+// StatModifier.cs
+// Stat modifier system for buffs, debuffs, and status effects
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// Part of the Status system - works with StatsEngine.cs and StatusEffectData.cs
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
