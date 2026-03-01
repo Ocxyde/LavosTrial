@@ -72,6 +72,15 @@ namespace Code.Lavos.Core
 
         #endregion
 
+        #region Door Events
+
+        public event Action<Vector3, DoorVariant> OnDoorOpened;
+        public event Action<Vector3, DoorVariant> OnDoorClosed;
+        public event Action<Vector3> OnDoorLocked;
+        public event Action<Vector3, DoorTrapType> OnDoorTrapTriggered;
+
+        #endregion
+
         #region Game Events
 
         public event Action<int> OnScoreChanged;
@@ -340,6 +349,33 @@ namespace Code.Lavos.Core
             {
                 Debug.Log("[EventHandler] Subscribed to PlayerStats events");
             }
+        }
+
+        #endregion
+        #region Door Event Invokers
+
+        public void InvokeDoorOpened(Vector3 position, DoorVariant variant)
+        {
+            OnDoorOpened?.Invoke(position, variant);
+            if (debugEvents) Debug.Log($"[EventHandler] DoorOpened: {variant} at {position}");
+        }
+
+        public void InvokeDoorClosed(Vector3 position, DoorVariant variant)
+        {
+            OnDoorClosed?.Invoke(position, variant);
+            if (debugEvents) Debug.Log($"[EventHandler] DoorClosed: {variant} at {position}");
+        }
+
+        public void InvokeDoorLocked(Vector3 position)
+        {
+            OnDoorLocked?.Invoke(position);
+            if (debugEvents) Debug.Log($"[EventHandler] DoorLocked at {position}");
+        }
+
+        public void InvokeDoorTrapTriggered(Vector3 position, DoorTrapType trap)
+        {
+            OnDoorTrapTriggered?.Invoke(position, trap);
+            if (debugEvents) Debug.Log($"[EventHandler] DoorTrapTriggered: {trap} at {position}");
         }
 
         #endregion

@@ -34,10 +34,11 @@ namespace Code.Lavos.Core
     [SerializeField] private Color ambientColor = new Color(0.15f, 0.1f, 0.08f);
 
     [Header("Exit Door")]
-    [SerializeField] private bool spawnExitDoor = true;
+    [SerializeField] private bool spawnExitDoor = false;  // DISABLED - No exit door
 
     private MazeGenerator _gen;
     private TorchPool _torchPool;
+    private RoomGenerator _roomGenerator;
 
     private Material _wallMat;
     private Material _floorMat;
@@ -60,6 +61,7 @@ namespace Code.Lavos.Core
         _isInitialized = true;
         _gen = GetComponent<MazeGenerator>();
         _torchPool = GetComponent<TorchPool>();
+        _roomGenerator = GetComponent<RoomGenerator>();
         EnsureDrawingPoolExists();
         EnsureRuntimeStatusUI();
     }
@@ -86,11 +88,18 @@ namespace Code.Lavos.Core
         CleanupOld();
         SetupEnvironment();
         _gen.Generate();
+        
+        // Generate rooms after maze generation
+        if (_roomGenerator != null)
+        {
+            _roomGenerator.GenerateRooms();
+        }
+        
         CreateMaterials();
         CreateContainers();
         BuildGeometry();
         SpawnPlayer();
-        SpawnExitDoor();
+        // SpawnExitDoor(); // DISABLED - No exit door
     }
 
     public void Regenerate() => BuildMaze();

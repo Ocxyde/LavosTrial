@@ -19,16 +19,17 @@ namespace Code.Lavos.Core
         [SerializeField] private bool autoPlaceOnStart = true;
         [SerializeField] private bool showDebugGizmos = true;
 
-        [Header("Door Settings")]
-        [SerializeField] private bool placeDoors = true;
-        [SerializeField] private DoorType startDoorType = DoorType.Start;
-        [SerializeField] private DoorType exitDoorType = DoorType.Exit;
-        [SerializeField] private bool placeRandomDoors = true;
-        [SerializeField] private float randomDoorChance = 0.1f;
-        [SerializeField] private float doorLuminanceMin = 0.8f;
-        [SerializeField] private float doorLuminanceMax = 1.5f;
-        [SerializeField] private float doorWidthMultiplier = 0.55f; // Door width as % of cell size
-        [SerializeField] private float doorHeightMultiplier = 0.87f; // Door height as % of wall height
+        // DOORS DISABLED - No door placement
+        // [Header("Door Settings")]
+        // [SerializeField] private bool placeDoors = true;
+        // [SerializeField] private DoorType startDoorType = DoorType.Start;
+        // [SerializeField] private DoorType exitDoorType = DoorType.Exit;
+        // [SerializeField] private bool placeRandomDoors = true;
+        // [SerializeField] private float randomDoorChance = 0.1f;
+        // [SerializeField] private float doorLuminanceMin = 0.8f;
+        // [SerializeField] private float doorLuminanceMax = 1.5f;
+        // [SerializeField] private float doorWidthMultiplier = 0.55f;
+        // [SerializeField] private float doorHeightMultiplier = 0.87f;
 
         [Header("Chest Settings")]
         [SerializeField] private bool placeChests = true;
@@ -44,17 +45,14 @@ namespace Code.Lavos.Core
 
         [Header("Trap Settings")]
         [SerializeField] private bool placeTraps = true;
-        [SerializeField] private float trapDensity = 0.08f; // 8% of valid cells
+        [SerializeField] private float trapDensity = 0.08f;
         [SerializeField] private int minTraps = 3;
         [SerializeField] private int maxTraps = 8;
-        [SerializeField] private float minDistanceBetweenTraps = 8f; // Large distance between traps
+        [SerializeField] private float minDistanceBetweenTraps = 8f;
         [SerializeField] private TrapType[] availableTrapTypes;
 
         [Header("Excluded Cells")]
         [SerializeField] private List<Vector2Int> excludedCells = new();
-
-        [Header("Require Components")]
-        [SerializeField] private bool requireMazeGenerator = true;
 
         [Header("Dimensions")]
         [SerializeField] protected float cellSize = 4f;
@@ -100,10 +98,8 @@ namespace Code.Lavos.Core
 
             Debug.Log("[SpawnPlacerEngine] Starting item placement...");
 
-            if (placeDoors)
-            {
-                PlaceDoors();
-            }
+            // DOORS DISABLED
+            // if (placeDoors) { PlaceDoors(); }
 
             if (placeChests)
             {
@@ -125,6 +121,8 @@ namespace Code.Lavos.Core
 
         #region Door Placement
 
+        // DOORS DISABLED - Entire region commented out
+        /*
         [ContextMenu("Place Doors")]
         public void PlaceDoors()
         {
@@ -182,13 +180,13 @@ namespace Code.Lavos.Core
             // Determine door rotation based on maze walls
             Quaternion rotation = GetDoorRotation(cell);
 
-            GameObject doorObj = new GameObject($"Door_{cell.x}_{cell.y}");
-            doorObj.transform.position = worldPos;
-            doorObj.transform.rotation = rotation;
-
             // Calculate door dimensions to fit maze walls
             float doorWidth = cellSize * doorWidthMultiplier;
             float doorHeight = wallHeight * doorHeightMultiplier;
+
+            GameObject doorObj = new GameObject($"Door_{cell.x}_{cell.y}");
+            doorObj.transform.position = worldPos;
+            doorObj.transform.rotation = rotation;
 
             DoubleDoor door = doorObj.AddComponent<DoubleDoor>();
             door.Initialize(cellSize, wallHeight, doorWidth, doorHeight, type, luminance);
@@ -211,20 +209,19 @@ namespace Code.Lavos.Core
             // Check adjacent walls to determine door orientation
             var walls = _mazeGenerator.Grid[cell.x, cell.y];
 
-            // Simple heuristic: if north/south walls are open, door faces east-west
-            // If east/west walls are open, door faces north-south
             bool hasNorthWall = (walls & MazeGenerator.Wall.North) != 0;
             bool hasSouthWall = (walls & MazeGenerator.Wall.South) != 0;
 
             if (hasNorthWall && hasSouthWall)
             {
-                return Quaternion.Euler(0, 90, 0); // Face east-west
+                return Quaternion.Euler(0, 90, 0);
             }
             else
             {
-                return Quaternion.Euler(0, 0, 0); // Face north-south
+                return Quaternion.Euler(0, 0, 0);
             }
         }
+        */
 
         #endregion
 

@@ -84,6 +84,13 @@ namespace Code.Lavos.Core
     {
         if (!_canPickup || item == null) return;
 
+        // Check Inventory exists
+        if (Inventory.Instance == null)
+        {
+            Debug.LogWarning("[ItemPickup] Cannot pickup - Inventory not found!");
+            return;
+        }
+
         if (Inventory.Instance.AddItem(item, quantity))
         {
             item.OnPickup(picker);
