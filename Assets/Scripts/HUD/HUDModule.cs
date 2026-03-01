@@ -114,7 +114,6 @@ namespace Unity6.LavosTrial.HUD
     {
         [Header("Bar Settings")]
         [SerializeField] private float barThickness = 25f;
-        [SerializeField] private float barMargin = 20f;
 
         [Header("References")]
         [SerializeField] private RectTransform healthBarRoot;

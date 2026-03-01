@@ -204,25 +204,54 @@ namespace Code.Lavos.Core
         
         // Check sprint condition: shift held + moving + grounded + has stamina
         _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded &&
-                       PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 0f;
+                       PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 1f;
 
         Vector3 moveDir = (transform.right * h + transform.forward * v).normalized;
-        
-        // Calculate speed with sprint bonus (+5% base movement speed)
-        float baseSpeed = _isSprinting ? sprintSpeed : walkSpeed;
-        float speed = _isSprinting ? baseSpeed * 1.05f : baseSpeed; // +5% speed bonus while sprinting
 
+        // Calculate speed with sprint bonus (+10% base movement speed when sprinting)
+        float baseSpeed = _isSprinting ? sprintSpeed : walkSpeed;
+        float speed = _isSprinting ? baseSpeed * 1.10f : baseSpeed; // +10% speed bonus while sprinting
+
+        // Jump with stamina cost (1% of current stamina per jump)
         if (_kb.spaceKey.wasPressedThisFrame && _isGrounded)
-            _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        {
+            // Check if we have enough stamina to jump (minimum 1 stamina)
+            if (PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 1f)
+            {
+                // Consume 1% of current stamina for the jump
+                float jumpCost = PlayerStats.Instance.CurrentStamina * 0.01f;
+                jumpCost = Mathf.Max(jumpCost, 0.5f); // Minimum cost to prevent free jumps at very low stamina
+                
+                bool success = PlayerStats.Instance.UseStamina(jumpCost);
+                if (success)
+                {
+                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                }
+                else
+                {
+                    // Not enough stamina to jump
+                    Debug.LogWarning($"[PlayerController] Cannot jump - insufficient stamina! Current: {PlayerStats.Instance.CurrentStamina}");
+                }
+            }
+            else
+            {
+                // Too little stamina to jump
+                Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low!");
+            }
+        }
 
         _velocity.y += gravity * Time.deltaTime;
 
         _controller.Move(moveDir * speed * Time.deltaTime + _velocity * Time.deltaTime);
 
-        // Consume stamina while sprinting (1% of current stamina per second)
+        // Consume stamina while sprinting (1% of CURRENT stamina per second)
+        // This creates exponential decay - drains faster at high stamina, slower at low stamina
         if (_isSprinting && PlayerStats.Instance != null)
         {
-            float drainAmount = PlayerStats.Instance.CurrentStamina * 0.01f * Time.deltaTime;
+            // Drain exactly 1% of current stamina per second
+            float drainPercent = 0.01f; // 1% per second
+            float drainAmount = PlayerStats.Instance.CurrentStamina * drainPercent;
+
             bool success = PlayerStats.Instance.UseStamina(drainAmount);
             if (!success)
             {

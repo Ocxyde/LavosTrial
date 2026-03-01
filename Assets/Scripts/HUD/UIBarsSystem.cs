@@ -268,9 +268,9 @@ namespace Unity6.LavosTrial.HUD
         }
 
         // PlayerStats event handlers
-        private void OnHealthChanged(float current, float max) => SetHealth(current, max);
-        private void OnManaChanged(float current, float max) => SetMana(current, max);
-        private void OnStaminaChanged(float current, float max) => SetStamina(current, max);
+        private void OnHealthChanged(float current, float max) => SetHealth(current, max, showFloatingText: true);
+        private void OnManaChanged(float current, float max) => SetMana(current, max, showFloatingText: true);
+        private void OnStaminaChanged(float current, float max) => SetStamina(current, max, showFloatingText: true);
         private void OnEffectAdded(StatusEffectData effect) => AddStatusEffect(effect);
         private void OnEffectRemoved(StatusEffectData effect) => RemoveStatusEffect(effect);
         
@@ -300,13 +300,13 @@ namespace Unity6.LavosTrial.HUD
             float screenHeight = canvasRect.rect.height;
 
             // Calculate bar dimensions
-            // Health & Mana: 3% width, 55% height (vertical bars on edges)
-            float verticalBarWidth = screenWidth * 0.03f;    // 3% of screen width
-            float verticalBarHeight = screenHeight * 0.55f;  // 55% of screen height
-            
-            // Stamina: 55% width, 3% height (horizontal bar at bottom)
-            float horizontalBarWidth = screenWidth * 0.55f;  // 55% of screen width
-            float horizontalBarHeight = screenHeight * 0.03f; // 3% of screen height
+            // Health & Mana: 5% width, 65% height (vertical bars on edges) - VISIBLE PIXEL ART STYLE
+            float verticalBarWidth = screenWidth * 0.05f;    // 5% of screen width (thicker)
+            float verticalBarHeight = screenHeight * 0.65f;  // 65% of screen height (taller)
+
+            // Stamina: 65% width, 5% height (horizontal bar at bottom) - VISIBLE PIXEL ART STYLE
+            float horizontalBarWidth = screenWidth * 0.65f;  // 65% of screen width (wider)
+            float horizontalBarHeight = screenHeight * 0.05f; // 5% of screen height (thicker)
 
             // Health Bar (Left edge - vertical)
             // Position: left edge, centered vertically
@@ -603,11 +603,13 @@ namespace Unity6.LavosTrial.HUD
         #region Public API - Bar Updates
 
         /// <summary>
-        /// Set health bar value with color interpolation based on remaining percentage.
+        /// Set health bar value with color interpolation and floating text.
         /// As health is spent, color dims from bright green to dark red.
+        /// Shows floating damage/heal numbers.
         /// </summary>
-        public void SetHealth(float current, float max)
+        public void SetHealth(float current, float max, bool showFloatingText = true)
         {
+            float previousHealth = _currentHealth;
             _currentHealth = Mathf.Clamp(current, 0, max);
             _maxHealth = max > 0 ? max : 1;
 
@@ -617,22 +619,18 @@ namespace Unity6.LavosTrial.HUD
                 _healthFill.fillAmount = t;
 
                 // Smooth color interpolation: full health = bright green, low health = dark red
-                // Using 3 thresholds for 8-bit style color steps
                 if (t >= 0.6f)
                 {
-                    // High health: interpolate between mid-green and bright green
                     float localT = (t - 0.6f) / 0.4f;
                     _healthFill.color = Color.Lerp(healthColorLow, healthColorHigh, localT);
                 }
                 else if (t >= 0.3f)
                 {
-                    // Medium health: interpolate between critical red and mid-green
                     float localT = (t - 0.3f) / 0.3f;
                     _healthFill.color = Color.Lerp(healthColorCritical, healthColorLow, localT);
                 }
                 else
                 {
-                    // Low health: stay at critical red, dim slightly as it approaches zero
                     float dimFactor = t / 0.3f;
                     _healthFill.color = new Color(
                         healthColorCritical.r * dimFactor,
@@ -648,18 +646,30 @@ namespace Unity6.LavosTrial.HUD
                 _healthText.text = $"{percent:F0}%".ToUpper();
                 _healthText.enabled = true;
             }
-            else
+
+            // Show floating damage/heal number
+            if (showFloatingText && Mathf.Abs(_currentHealth - previousHealth) > 0.1f)
             {
-                Debug.LogWarning("[UIBarsSystem] HealthText is null!");
+                float delta = _currentHealth - previousHealth;
+                if (delta < 0)
+                {
+                    ShowFloatingText(Mathf.FloorToInt(Mathf.Abs(delta)).ToString(), Color.red, "Damage");
+                }
+                else
+                {
+                    ShowFloatingText($"+{Mathf.FloorToInt(delta)}", Color.green, "Heal");
+                }
             }
         }
 
         /// <summary>
-        /// Set mana bar value with smooth color diminishing as mana is spent.
+        /// Set mana bar value with smooth color diminishing and floating text.
         /// Full mana = bright blue, empty mana = dark blue/gray.
+        /// Shows floating mana gain/loss numbers.
         /// </summary>
-        public void SetMana(float current, float max)
+        public void SetMana(float current, float max, bool showFloatingText = true)
         {
+            float previousMana = _currentMana;
             _currentMana = Mathf.Clamp(current, 0, max);
             _maxMana = max > 0 ? max : 1;
 
@@ -667,9 +677,8 @@ namespace Unity6.LavosTrial.HUD
             {
                 float t = _currentMana / _maxMana;
                 _manaFill.fillAmount = t;
-                
+
                 // Smooth color interpolation: full = bright blue, empty = dark blue
-                // Interpolate between dark and bright based on remaining mana
                 _manaFill.color = Color.Lerp(manaColorLow, manaColor, t);
             }
 
@@ -679,14 +688,30 @@ namespace Unity6.LavosTrial.HUD
                 _manaText.text = $"{percent:F0}%".ToUpper();
                 _manaText.enabled = true;
             }
+
+            // Show floating mana gain/loss number
+            if (showFloatingText && Mathf.Abs(_currentMana - previousMana) > 0.1f)
+            {
+                float delta = _currentMana - previousMana;
+                if (delta < 0)
+                {
+                    ShowFloatingText(Mathf.FloorToInt(Mathf.Abs(delta)).ToString(), new Color(0.3f, 0.3f, 1f), "ManaLoss");
+                }
+                else
+                {
+                    ShowFloatingText($"+{Mathf.FloorToInt(delta)}", Color.cyan, "ManaGain");
+                }
+            }
         }
 
         /// <summary>
-        /// Set stamina bar value with smooth color diminishing as stamina is spent.
+        /// Set stamina bar value with smooth color and floating text.
         /// Full stamina = bright yellow, empty = dark yellow/brown.
+        /// Shows floating stamina gain/loss numbers.
         /// </summary>
-        public void SetStamina(float current, float max)
+        public void SetStamina(float current, float max, bool showFloatingText = true)
         {
+            float previousStamina = _currentStamina;
             _currentStamina = Mathf.Clamp(current, 0, max);
             _maxStamina = max > 0 ? max : 1;
 
@@ -694,9 +719,8 @@ namespace Unity6.LavosTrial.HUD
             {
                 float t = _currentStamina / _maxStamina;
                 _staminaFill.fillAmount = t;
-                
+
                 // Smooth color interpolation: full = bright yellow, empty = dark yellow
-                // Interpolate between dark and bright based on remaining stamina
                 _staminaFill.color = Color.Lerp(staminaColorLow, staminaColor, t);
             }
 
@@ -706,6 +730,147 @@ namespace Unity6.LavosTrial.HUD
                 _staminaText.text = $"{percent:F0}%".ToUpper();
                 _staminaText.enabled = true;
             }
+
+            // Show floating stamina gain/loss number
+            if (showFloatingText && Mathf.Abs(_currentStamina - previousStamina) > 0.1f)
+            {
+                float delta = _currentStamina - previousStamina;
+                if (delta < 0)
+                {
+                    ShowFloatingText(Mathf.FloorToInt(Mathf.Abs(delta)).ToString(), new Color(1f, 0.8f, 0f), "StaminaLoss");
+                }
+                else
+                {
+                    ShowFloatingText($"+{Mathf.FloorToInt(delta)}", Color.yellow, "StaminaGain");
+                }
+            }
+        }
+            }
+
+            if (_staminaText != null)
+            {
+                float percent = (_currentStamina / _maxStamina) * 100f;
+                _staminaText.text = $"{percent:F0}%".ToUpper();
+                _staminaText.enabled = true;
+            }
+        }
+
+        #endregion
+
+        #region Floating Text System
+
+        /// <summary>
+        /// Show floating text (damage, heal, gain, loss, etc.).
+        /// Reusable for any stat change visualization.
+        /// </summary>
+        private void ShowFloatingText(string text, Color color, string type)
+        {
+            if (_healthBarRoot == null) return;
+
+            // Create floating text GameObject
+            var go = new GameObject($"Floating_{type}");
+            go.transform.SetParent(_healthBarRoot.parent, false);
+            
+            var rect = go.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(120, 45);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0, 60);
+            
+            var tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.text = text;
+            tmp.fontSize = 32;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
+            tmp.color = color;
+            tmp.alignment = TextAlignmentOptions.Center;
+            
+            // Outline for better visibility
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = Color.black;
+            outline.effectDistance = new Vector2(3, 3);
+            
+            // Shadow for depth
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0, 0, 0, 0.5f);
+            shadow.effectDistance = new Vector2(2, 2);
+            
+            // Fade out coroutine
+            StartCoroutine(FadeOutFloatingText(go, tmp));
+        }
+
+        private System.Collections.IEnumerator FadeOutFloatingText(GameObject go, TextMeshProUGUI text)
+        {
+            float elapsed = 0f;
+            float duration = 1.5f;
+            Color original = text.color;
+            Vector3 startPos = go.transform.localPosition;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                
+                // Fade out
+                text.color = new Color(original.r, original.g, original.b, original.a * (1 - t));
+                
+                // Float upward with slight curve
+                go.transform.localPosition = startPos + Vector3.up * (elapsed * 40f) + Vector3.right * Mathf.Sin(elapsed * 2f) * 5f;
+                
+                // Scale up slightly
+                float scale = 1f + t * 0.2f;
+                go.transform.localScale = Vector3.one * scale;
+                
+                yield return null;
+            }
+            
+            Destroy(go);
+        }
+
+        /// <summary>
+        /// Show custom floating text at specific position.
+        /// For dialogs, notifications, or custom messages.
+        /// </summary>
+        public void ShowCustomFloatingText(string text, Color color, float duration = 2f, Vector2? offset = null)
+        {
+            if (_healthBarRoot == null) return;
+
+            var go = new GameObject($"CustomFloating_{text}");
+            go.transform.SetParent(_healthBarRoot.parent, false);
+            
+            var rect = go.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(200, 50);
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = offset ?? new Vector2(0, 100);
+            
+            var tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.text = text;
+            tmp.fontSize = 28;
+            tmp.fontStyle = TMPro.FontStyles.Bold;
+            tmp.color = color;
+            tmp.alignment = TextAlignmentOptions.Center;
+            
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = Color.black;
+            outline.effectDistance = new Vector2(3, 3);
+            
+            StartCoroutine(FadeOutCustomText(go, tmp, duration));
+        }
+
+        private System.Collections.IEnumerator FadeOutCustomText(GameObject go, TextMeshProUGUI text, float duration)
+        {
+            float elapsed = 0f;
+            Color original = text.color;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                text.color = new Color(original.r, original.g, original.b, original.a * (1 - t));
+                yield return null;
+            }
+            
+            Destroy(go);
         }
 
         #endregion
