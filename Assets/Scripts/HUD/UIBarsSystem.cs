@@ -110,14 +110,31 @@ namespace Unity6.LavosTrial.HUD
         void SetInitialValues()
         {
             Debug.Log("[UIBarsSystem] Setting initial values...");
+
+            // Try to find PlayerStats using reflection to avoid circular dependency
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            MonoBehaviour playerStatsInstance = null;
             
-            // Try PlayerStats first
-            if (PlayerStats.Instance != null)
+            if (statsType != null)
             {
-                SetHealth(PlayerStats.Instance.CurrentHealth, PlayerStats.Instance.MaxHealth);
-                SetMana(PlayerStats.Instance.CurrentMana, PlayerStats.Instance.MaxMana);
-                SetStamina(PlayerStats.Instance.CurrentStamina, PlayerStats.Instance.MaxStamina);
-                Debug.Log($"[UIBarsSystem] Initial values from PlayerStats - HP: {PlayerStats.Instance.CurrentHealth}/{PlayerStats.Instance.MaxHealth}");
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+            }
+            
+            if (playerStatsInstance != null)
+            {
+                var statsType2 = playerStatsInstance.GetType();
+                var currentHealthProp = statsType2.GetProperty("CurrentHealth");
+                var maxHealthProp = statsType2.GetProperty("MaxHealth");
+                var currentManaProp = statsType2.GetProperty("CurrentMana");
+                var maxManaProp = statsType2.GetProperty("MaxMana");
+                var currentStaminaProp = statsType2.GetProperty("CurrentStamina");
+                var maxStaminaProp = statsType2.GetProperty("MaxStamina");
+                
+                SetHealth((float)(currentHealthProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxHealthProp?.GetValue(playerStatsInstance) ?? 100f));
+                SetMana((float)(currentManaProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxManaProp?.GetValue(playerStatsInstance) ?? 100f));
+                SetStamina((float)(currentStaminaProp?.GetValue(playerStatsInstance) ?? 100f), (float)(maxStaminaProp?.GetValue(playerStatsInstance) ?? 100f));
+                Debug.Log($"[UIBarsSystem] Initial values from PlayerStats");
             }
             else
             {
@@ -125,15 +142,10 @@ namespace Unity6.LavosTrial.HUD
                 var playerHealth = FindFirstObjectByType<PlayerHealth>();
                 if (playerHealth != null)
                 {
-                    // Use reflection to get maxHealth since it's a private field
-                    var maxHealthField = playerHealth.GetType().GetField("maxHealth",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    float maxHp = maxHealthField != null ? (float)maxHealthField.GetValue(playerHealth) : 100f;
-                    
-                    SetHealth(playerHealth.CurrentHealth, maxHp);
+                    SetHealth(playerHealth.CurrentHealth, playerHealth.MaxHealth);
                     SetMana(100f, 100f);
                     SetStamina(100f, 100f);
-                    Debug.Log($"[UIBarsSystem] Initial values from PlayerHealth - HP: {playerHealth.CurrentHealth}/{maxHp}");
+                    Debug.Log($"[UIBarsSystem] Initial values from PlayerHealth - HP: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth}");
                 }
                 else
                 {
@@ -159,18 +171,34 @@ namespace Unity6.LavosTrial.HUD
 
         private void SubscribeToEvents()
         {
-            // Subscribe to PlayerStats events (unified system)
-            if (PlayerStats.Instance != null)
+            // Subscribe to PlayerStats events (unified system) using reflection
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            MonoBehaviour playerStatsInstance = null;
+            
+            if (statsType != null)
             {
-                PlayerStats.OnHealthChanged += OnHealthChanged;
-                PlayerStats.Instance.OnManaChanged += OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged += OnStaminaChanged;
-                PlayerStats.Instance.OnEffectAdded += OnEffectAdded;
-                PlayerStats.Instance.OnEffectRemoved += OnEffectRemoved;
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+            }
+            
+            if (playerStatsInstance != null)
+            {
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onManaEvent = playerStatsInstance.GetType().GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onStaminaEvent = playerStatsInstance.GetType().GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onEffectAddedEvent = playerStatsInstance.GetType().GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onEffectRemovedEvent = playerStatsInstance.GetType().GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onManaEvent != null) onManaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                if (onEffectAddedEvent != null) onEffectAddedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                if (onEffectRemovedEvent != null) onEffectRemovedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+                
                 Debug.Log("[UIBarsSystem] Subscribed to PlayerStats events");
                 return; // Exit early - no need to retry
             }
-            
+
             // Fallback to PlayerHealth (legacy system)
             var playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
@@ -188,16 +216,31 @@ namespace Unity6.LavosTrial.HUD
 
         private void UnsubscribeFromEvents()
         {
-            // Unsubscribe from PlayerStats
-            if (PlayerStats.Instance != null)
+            // Unsubscribe from PlayerStats using reflection
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            MonoBehaviour playerStatsInstance = null;
+            
+            if (statsType != null)
             {
-                PlayerStats.OnHealthChanged -= OnHealthChanged;
-                PlayerStats.Instance.OnManaChanged -= OnManaChanged;
-                PlayerStats.Instance.OnStaminaChanged -= OnStaminaChanged;
-                PlayerStats.Instance.OnEffectAdded -= OnEffectAdded;
-                PlayerStats.Instance.OnEffectRemoved -= OnEffectRemoved;
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
             }
             
+            if (playerStatsInstance != null)
+            {
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onManaEvent = playerStatsInstance.GetType().GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onStaminaEvent = playerStatsInstance.GetType().GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onEffectAddedEvent = playerStatsInstance.GetType().GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onEffectRemovedEvent = playerStatsInstance.GetType().GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onManaEvent != null) onManaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
+                if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
+                if (onEffectAddedEvent != null) onEffectAddedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
+                if (onEffectRemovedEvent != null) onEffectRemovedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
+            }
+
             // Unsubscribe from PlayerHealth
             var playerHealth = FindFirstObjectByType<PlayerHealth>();
             if (playerHealth != null)
@@ -680,23 +723,49 @@ namespace Unity6.LavosTrial.HUD
         /// </summary>
         public void RefreshEffectTimers()
         {
-            if (PlayerStats.Instance == null) return;
+            // Use reflection to access PlayerStats
+            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
+            MonoBehaviour playerStatsInstance = null;
+            
+            if (statsType != null)
+            {
+                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
+            }
+            
+            if (playerStatsInstance == null) return;
 
-            var effects = PlayerStats.Instance.ActiveEffects;
+            var activeEffectsProp = playerStatsInstance.GetType().GetProperty("ActiveEffects");
+            var effects = activeEffectsProp?.GetValue(playerStatsInstance) as System.Collections.Generic.IList;
             if (effects == null) return;
 
-            foreach (var effect in effects)
+            foreach (var effectObj in effects)
             {
-                if (effect == null || !_effectIcons.TryGetValue(effect.id, out var data)) continue;
+                if (effectObj == null) continue;
+                
+                var effectIdProp = effectObj.GetType().GetProperty("id");
+                var effectId = effectIdProp?.GetValue(effectObj) as string;
+                
+                if (effectId == null || !_effectIcons.TryGetValue(effectId, out var data)) continue;
 
-                float t = effect.MaxDuration > 0 ? effect.remainingTime / effect.MaxDuration : 0;
+                var maxDurationProp = effectObj.GetType().GetProperty("MaxDuration");
+                var remainingTimeProp = effectObj.GetType().GetProperty("remainingTime");
+                var maxStacksProp = effectObj.GetType().GetProperty("maxStacks");
+                var currentStacksProp = effectObj.GetType().GetProperty("currentStacks");
+                
+                float maxDuration = maxDurationProp != null ? (float)maxDurationProp.GetValue(effectObj) : 0f;
+                float remainingTime = remainingTimeProp != null ? (float)remainingTimeProp.GetValue(effectObj) : 0f;
+                int maxStacks = maxStacksProp != null ? (int)maxStacksProp.GetValue(effectObj) : 1;
+                int currentStacks = currentStacksProp != null ? (int)currentStacksProp.GetValue(effectObj) : 1;
+                
+                float t = maxDuration > 0 ? remainingTime / maxDuration : 0f;
                 data.FillBar.fillAmount = Mathf.Clamp01(t);
 
-                if (data.StackText != null && effect.maxStacks > 1)
-                    data.StackText.text = effect.currentStacks > 1 ? $"x{effect.currentStacks}" : "";
+                if (data.StackText != null && maxStacks > 1)
+                    data.StackText.text = currentStacks > 1 ? $"x{currentStacks}" : "";
 
-                if (data.DurationText != null && effect.remainingTime > 0)
-                    data.DurationText.text = $"{effect.remainingTime:F1}s";
+                if (data.DurationText != null && remainingTime > 0)
+                    data.DurationText.text = $"{remainingTime:F1}s";
             }
         }
 

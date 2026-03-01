@@ -158,9 +158,14 @@ namespace Unity6.LavosTrial.HUD
         {
             if (_playerStats != null)
             {
-                PlayerStats.OnHealthChanged -= OnHealthChanged;
-                _playerStats.OnManaChanged -= OnManaChanged;
-                _playerStats.OnStaminaChanged -= OnStaminaChanged;
+                var statsType = _playerStats.GetType();
+                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                
+                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
+                if (onManaEvent != null) onManaEvent.RemoveEventHandler(_playerStats, new System.Action<float, float>(OnManaChanged));
+                if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(_playerStats, new System.Action<float, float>(OnStaminaChanged));
             }
         }
     }
