@@ -6,7 +6,8 @@
   "name": "Code.Lavos.Interaction",
   "references": [
     "Code.Lavos.Core",
-    "Code.Lavos.Player"
+    "Code.Lavos.Player",
+    "Code.Lavos.Inventory"
   ],
   "generateProgrammingAssets": false,
   "excludePlatforms": [],

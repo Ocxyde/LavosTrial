@@ -1,17 +1,19 @@
-﻿{
-    "name": "Code.Lavos.Gameplay",
-    "rootNamespace": "Code.Lavos.Gameplay",
-    "references": [
-        "Code.Lavos.Core",
-        "Code.Lavos.Status",
-        "Code.Lavos.Player",
-        "Code.Lavos.HUD"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "generateProgrammingAssets": false
+{
+  "autoReferenced": true,
+  "rootNamespace": "Code.Lavos.Gameplay",
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "name": "Code.Lavos.Gameplay",
+  "references": [
+    "Code.Lavos.Core",
+    "Code.Lavos.Status",
+    "Code.Lavos.Player",
+    "Code.Lavos.HUD",
+    "Code.Lavos.Inventory",
+    "Code.Lavos.Interaction"
+  ],
+  "generateProgrammingAssets": false,
+  "excludePlatforms": [],
+  "precompiledReferences": [],
+  "includePlatforms": []
 }
