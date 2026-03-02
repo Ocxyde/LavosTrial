@@ -1,15 +1,12 @@
 {
   "autoReferenced": true,
-  "rootNamespace": "Code.Lavos.Core",
+  "rootNamespace": "Code.Lavos.Interaction",
   "allowUnsafeCode": false,
   "overrideReferences": false,
-  "name": "Code.Lavos.Core",
+  "name": "Code.Lavos.Interaction",
   "references": [
-    "Code.Lavos.Status",
-    "Code.Lavos.Player",
-    "Code.Lavos.Inventory",
-    "Code.Lavos.Interaction",
-    "Code.Lavos.Ressources"
+    "Code.Lavos.Core",
+    "Code.Lavos.Player"
   ],
   "generateProgrammingAssets": false,
   "excludePlatforms": [],
