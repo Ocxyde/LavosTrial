@@ -1,4 +1,4 @@
-﻿// CombatSystem.cs
+// CombatSystem.cs
 // Combat engine for damage, healing, and resource management
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -126,7 +126,7 @@ namespace Code.Lavos.Core
         {
             if (_statsEngine == null)
             {
-                var playerStats = FindFirstObjectByType<PlayerStats>();
+                var playerStats = FindFirstObjectByType<Component>() as IPlayerStats;
                 if (playerStats != null && playerStats.Engine != null)
                 {
                     _statsEngine = playerStats.Engine;
@@ -278,7 +278,7 @@ namespace Code.Lavos.Core
         private StatsEngine GetTargetStatsEngine(GameObject target)
         {
             // Try to get StatsEngine from target
-            var playerStats = target.GetComponent<PlayerStats>();
+            var playerStats = target.GetComponent<IPlayerStats>();
             return playerStats?.Engine;
         }
 

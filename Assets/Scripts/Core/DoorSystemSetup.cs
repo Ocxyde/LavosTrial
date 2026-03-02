@@ -1,4 +1,4 @@
-﻿// DoorSystemSetup.cs
+// DoorSystemSetup.cs
 // Editor helper script to verify and setup door system components
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -87,7 +87,7 @@ namespace Code.Lavos.Core
             }
 
             // Check MazeRenderer
-            var mazeRenderer = GetComponent<MazeRenderer>();
+            var mazeRenderer = GetComponent<IMazeRenderer>();
             if (mazeRenderer == null)
             {
                 Debug.LogError("❌ MazeRenderer component missing!");
@@ -140,7 +140,7 @@ namespace Code.Lavos.Core
                 Debug.Log("✅ Added RoomDoorPlacer");
             }
 
-            if (GetComponent<MazeRenderer>() == null)
+            if (GetComponent<IMazeRenderer>() == null)
             {
                 gameObject.AddComponent<MazeRenderer>();
                 Debug.Log("✅ Added MazeRenderer");

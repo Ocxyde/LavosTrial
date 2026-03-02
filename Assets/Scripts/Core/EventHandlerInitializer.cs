@@ -1,4 +1,4 @@
-﻿// EventHandlerInitializer.cs
+// EventHandlerInitializer.cs
 // Auto-creates EventHandler on scene load
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -39,9 +39,9 @@ namespace Code.Lavos.Core
             DontDestroyOnLoad(handlerGO);
 
             // Auto-subscribe to PlayerStats if available
-            if (subscribeToPlayerStats && PlayerStats.Instance != null)
+            if (subscribeToPlayerStats && Component.FindFirstObjectByType<Component>\(\) as IPlayerStats != null)
             {
-                handler.SubscribeToPlayerStats(PlayerStats.Instance);
+                handler.SubscribeToPlayerStats(Component.FindFirstObjectByType<Component>() as IPlayerStats);
             }
 
             Debug.Log("[EventHandlerInitializer] EventHandler created and initialized");

@@ -57,7 +57,7 @@ namespace Code.Lavos.Core
             if (itemType != InventoryItemType.Consumable) return;
 
             // Use direct component reference for better performance
-            var playerStats = user.GetComponent<PlayerStats>();
+            var playerStats = user.GetComponent<IPlayerStats>();
             if (playerStats == null) return;
 
             // Direct method calls - no reflection overhead

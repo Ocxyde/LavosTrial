@@ -1,4 +1,4 @@
-﻿// MazeIntegration.cs
+// MazeIntegration.cs
 // Integrates maze generation with rooms and doors
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -51,7 +51,7 @@ namespace Code.Lavos.Core
         [SerializeField] private RoomGenerator roomGenerator;
         [SerializeField] private DoorHolePlacer doorHolePlacer;
         [SerializeField] private RoomDoorPlacer roomDoorPlacer;
-        [SerializeField] private MazeRenderer mazeRenderer;
+        [SerializeField] private IMazeRenderer mazeRenderer;
         [SerializeField] private SeedManager seedManager;
 
         // State
@@ -92,7 +92,7 @@ namespace Code.Lavos.Core
                 roomDoorPlacer = GetComponent<RoomDoorPlacer>();
 
             if (mazeRenderer == null)
-                mazeRenderer = GetComponent<MazeRenderer>();
+                mazeRenderer = GetComponent<IMazeRenderer>();
 
             if (seedManager == null)
                 seedManager = FindFirstObjectByType<SeedManager>();

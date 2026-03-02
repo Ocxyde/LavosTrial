@@ -1,4 +1,4 @@
-﻿// EventHandler.cs
+// EventHandler.cs
 // Central Event Management System for all game events
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -29,6 +29,10 @@ namespace Code.Lavos.Core
         public bool debugEvents = false;
 
         #region Player Events
+
+        // Static fallback events for Core compatibility
+        public static event Action<float, float> OnPlayerHealthChangedStatic;
+        public static event Action OnPlayerDiedStatic;
 
         // Health
         public event Action<float, float> OnPlayerHealthChanged;
@@ -139,7 +143,7 @@ namespace Code.Lavos.Core
 
         private void DelayedPlayerStatsSubscription()
         {
-            var playerStats = FindFirstObjectByType<PlayerStats>();
+            var playerStats = FindFirstObjectByType<Component>() as IPlayerStats;
             if (playerStats != null)
             {
                 SubscribeToPlayerStats(playerStats);
@@ -153,8 +157,8 @@ namespace Code.Lavos.Core
 
         private void RetryPlayerStatsSubscription()
         {
-            // Check if already subscribed via PlayerStats.OnHealthChanged subscribers count
-            var playerStats = FindFirstObjectByType<PlayerStats>();
+            // Check if already subscribed via OnPlayerHealthChangedStatic subscribers count
+            var playerStats = FindFirstObjectByType<Component>() as IPlayerStats;
             if (playerStats != null)
             {
                 SubscribeToPlayerStats(playerStats);
@@ -428,7 +432,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Subscribe to all player stat events from PlayerStats.
         /// </summary>
-        public void SubscribeToPlayerStats(PlayerStats stats)
+        public void SubscribeToPlayerStats(IPlayerStats stats)
         {
             if (stats == null)
             {
@@ -438,8 +442,8 @@ namespace Code.Lavos.Core
 
             stats.OnManaChanged += InvokePlayerManaChanged;
             stats.OnStaminaChanged += InvokePlayerStaminaChanged;
-            PlayerStats.OnHealthChanged += InvokePlayerHealthChanged;
-            PlayerStats.OnPlayerDied += InvokePlayerDied;
+            OnPlayerHealthChangedStatic += InvokePlayerHealthChanged;
+            OnPlayerDiedStatic += InvokePlayerDied;
 
             if (debugEvents)
             {
