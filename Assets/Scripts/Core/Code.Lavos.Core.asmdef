@@ -1,4 +1,4 @@
-﻿{
+{
   "autoReferenced": true,
   "rootNamespace": "Code.Lavos.Core",
   "allowUnsafeCode": false,
@@ -6,6 +6,9 @@
   "name": "Code.Lavos.Core",
   "references": [
     "Code.Lavos.Status",
+    "Code.Lavos.Gameplay",
+    "Code.Lavos.Ressources",
+    "Code.Lavos.Player",
     "GUID:6280726566d84ea0be05b4f0a91fd88d"
   ],
   "generateProgrammingAssets": false,
