@@ -9,8 +9,6 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 
-#pragma warning disable CS0618 // Disable warnings for deprecated Unity API (using older but functional API)
-
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -22,9 +20,9 @@ namespace Code.Lavos.Core
         [MenuItem("Tools/PeuImporte/Add Door System to Maze")]
         public static void AddDoorSystemToMaze()
         {
-            // Find MazeGenerator in scene
-            var mazeGenerators = FindObjectsOfType<MazeGenerator>();
-            
+            // Find MazeGenerator in scene using Unity 6 API
+            var mazeGenerators = Object.FindObjectsByType<MazeGenerator>(FindObjectsSortMode.None);
+
             GameObject mazeObj = null;
             MazeGenerator mazeGen = null;
 

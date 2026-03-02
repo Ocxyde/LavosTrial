@@ -56,25 +56,22 @@ namespace Code.Lavos.Core
 
             if (itemType != InventoryItemType.Consumable) return;
 
-            // Use dynamic lookup to avoid assembly dependency
-            var stats = user.GetComponent("PlayerStats") as MonoBehaviour;
-            if (stats == null) return;
+            // Use direct component reference for better performance
+            var playerStats = user.GetComponent<PlayerStats>();
+            if (playerStats == null) return;
 
-            // Use reflection to call heal/restore methods
+            // Direct method calls - no reflection overhead
             if (healthRestore > 0f)
             {
-                var healMethod = stats.GetType().GetMethod("Heal");
-                healMethod?.Invoke(stats, new object[] { healthRestore });
+                playerStats.Heal(healthRestore);
             }
             if (manaRestore > 0f)
             {
-                var restoreManaMethod = stats.GetType().GetMethod("RestoreMana");
-                restoreManaMethod?.Invoke(stats, new object[] { manaRestore });
+                playerStats.RestoreMana(manaRestore);
             }
             if (staminaRestore > 0f)
             {
-                var restoreStaminaMethod = stats.GetType().GetMethod("RestoreStamina");
-                restoreStaminaMethod?.Invoke(stats, new object[] { staminaRestore });
+                playerStats.RestoreStamina(staminaRestore);
             }
         }
 
