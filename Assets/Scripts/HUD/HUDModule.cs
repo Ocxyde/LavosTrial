@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-namespace Unity6.LavosTrial.HUD
+namespace Code.Lavos.HUD
 {
     /// <summary>
     /// Base class for HUD modules.

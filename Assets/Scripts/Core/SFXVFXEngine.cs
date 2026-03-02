@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Status;
 
+#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
+
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -48,8 +50,8 @@ namespace Code.Lavos.Core
 
         [Header("VFX Settings")]
         [SerializeField] private bool enableVFX = true;
-        [SerializeField] private int maxParticleSystems = 50;  // Reserved for future particle system
-
+        [SerializeField] private int maxParticleSystems = 50;  // Reserved for future particle system limit
+        
         #endregion
 
         #region Private Fields

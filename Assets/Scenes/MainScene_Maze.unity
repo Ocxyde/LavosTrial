@@ -273,6 +273,8 @@ MonoBehaviour:
   sprintSpeed: 9
   jumpHeight: 1.5
   gravity: -19.81
+  sprintCostPerSecond: 2
+  jumpCost: 5
   playerCamera: {fileID: 0}
   mouseSensitivity: 0.2
   maxLookAngle: 80
@@ -584,6 +586,12 @@ GameObject:
   - component: {fileID: 1882940008}
   - component: {fileID: 1882940007}
   - component: {fileID: 1882940006}
+  - component: {fileID: 1882940016}
+  - component: {fileID: 1882940015}
+  - component: {fileID: 1882940014}
+  - component: {fileID: 1882940013}
+  - component: {fileID: 1882940012}
+  - component: {fileID: 1882940011}
   m_Layer: 0
   m_Name: MazeManager
   m_TagString: Untagged
@@ -638,7 +646,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
   width: 31
   height: 31
-  seedString: 
 --- !u!114 &1882940009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -666,6 +673,137 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1882940011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8d1866f420e22a44ba4f78a72cc4d72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.DrawingPool
+  wallVariants: 4
+  floorVariants: 4
+  ceilVariants: 4
+  torchVariants: 2
+  flameFrameCount: 6
+--- !u!114 &1882940012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fbc9976b1c943e3abe55945e483aa83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.SeedManager
+  seedMode: 0
+  startingSeedLength: 5
+  maxSeedLength: 16
+  baseSeedPrefix: LAVOS
+  customSeed: 
+  saveBetweenSessions: 1
+  saveKey: GameSeedProgress
+--- !u!114 &1882940013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f43e219f6b3847e2a2f6a1905eb8118b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.MazeIntegration
+  autoGenerateOnStart: 1
+  useRandomSeed: 1
+  manualSeed: MyCustomSeed123
+  mazeWidth: 31
+  mazeHeight: 31
+  generateRooms: 1
+  minRooms: 3
+  maxRooms: 8
+  generateDoors: 1
+  doorChance: 0.6
+  mazeGenerator: {fileID: 0}
+  roomGenerator: {fileID: 0}
+  doorHolePlacer: {fileID: 0}
+  roomDoorPlacer: {fileID: 0}
+  mazeRenderer: {fileID: 0}
+  seedManager: {fileID: 0}
+  showDebugUI: 1
+--- !u!114 &1882940014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e6d991109b14ef5bcc31e3e6615ad7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.RoomDoorPlacer
+  placeDoorsInHoles: 1
+  availableVariants: 
+  availableTrapTypes: 
+  wallTextureSets: []
+  randomizeWallTextures: 1
+  holePlacer: {fileID: 0}
+  roomGenerator: {fileID: 0}
+  mazeGenerator: {fileID: 0}
+  showDebugGizmos: 1
+  cellSize: 4
+  wallHeight: 3
+--- !u!114 &1882940015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfc62ba0a3de4da99bc3e16a5607a286, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.DoorHolePlacer
+  holeWidth: 2.5
+  holeHeight: 3
+  holeDepth: 0.5
+  doorChancePerWall: 0.6
+  carveHolesInWalls: 1
+  showDebugGizmos: 1
+  roomGenerator: {fileID: 0}
+  mazeGenerator: {fileID: 0}
+  cellSize: 4
+--- !u!114 &1882940016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1882940005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9378e06f3764370b28cf324d08f5c39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Code.Lavos.Core.RoomGenerator
+  minRoomWidth: 3
+  maxRoomWidth: 8
+  minRoomHeight: 3
+  maxRoomHeight: 8
+  roomDensity: 0.3
+  minRooms: 1
+  maxRooms: 5
+  allowSpecialRooms: 1
+  specialRoomChance: 0.2
+  mazeGenerator: {fileID: 0}
 --- !u!1 &2075126178
 GameObject:
   m_ObjectHideFlags: 0

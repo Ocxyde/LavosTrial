@@ -264,11 +264,9 @@ namespace Code.Lavos.Core
             {
                 if (_combatSystem.CanJump())
                 {
-                    jumpSuccess = _combatSystem.UseStamina(jumpCost);
-                }
-                else
-                {
-                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {_combatSystem.EffectiveStaminaRegen}");
+                    _combatSystem.UseStamina(jumpCost);
+                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    jumpSuccess = true;
                 }
             }
             else if (PlayerStats.Instance != null && PlayerStats.Instance.Engine != null)
@@ -277,23 +275,16 @@ namespace Code.Lavos.Core
 
                 if (currentStamina >= jumpCost)
                 {
-                    jumpSuccess = PlayerStats.Instance.UseStamina(jumpCost);
-                }
-                else
-                {
-                    Debug.LogWarning($"[PlayerController] Cannot jump - stamina too low! Current: {currentStamina}, Required: {jumpCost}");
+                    PlayerStats.Instance.UseStamina(jumpCost);
+                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    jumpSuccess = true;
                 }
             }
             else
             {
-                // PlayerStats not initialized yet - allow jump anyway
-                Debug.LogWarning("[PlayerController] PlayerStats not initialized - jumping without cost");
-                jumpSuccess = true;
-            }
-
-            if (jumpSuccess)
-            {
+                // Fallback: jump without stamina cost if systems not initialized
                 _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                jumpSuccess = true;
             }
         }
 
@@ -301,24 +292,24 @@ namespace Code.Lavos.Core
 
         _controller.Move(moveDir * speed * Time.deltaTime + _velocity * Time.deltaTime);
 
-        // Consume flat stamina while sprinting (use CombatSystem if available)
+        // Consume flat stamina while sprinting (use PlayerStats directly)
         if (_isSprinting)
         {
             float drainAmount = sprintCostPerSecond * Time.deltaTime;
-            bool success = false;
 
-            if (_combatSystem != null)
+            if (PlayerStats.Instance != null)
             {
-                success = _combatSystem.UseStamina(drainAmount);
+                bool staminaUsed = PlayerStats.Instance.UseStamina(drainAmount);
+                if (!staminaUsed)
+                {
+                    // Force stop sprinting when stamina depleted
+                    _isSprinting = false;
+                }
             }
-            else if (PlayerStats.Instance != null)
+            else
             {
-                success = PlayerStats.Instance.UseStamina(drainAmount);
-            }
-
-            if (!success)
-            {
-                Debug.LogWarning($"[PlayerController] Failed to consume stamina! Requested: {drainAmount}");
+                // Disable sprint if PlayerStats not available
+                _isSprinting = false;
             }
         }
     }

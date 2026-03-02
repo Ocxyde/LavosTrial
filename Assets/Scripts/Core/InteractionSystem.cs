@@ -4,9 +4,11 @@
 //
 // CORE: Single point for all interactions - routes through EventHandler
 // Handles: E-key interactions, combat actions, trap triggers, spell/weapon usage
+// Uses New Input System
 
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Code.Lavos.Status;
 
 namespace Code.Lavos.Core
@@ -21,6 +23,7 @@ namespace Code.Lavos.Core
     /// - Trap triggers
     /// - Spell/weapon usage
     /// - All actions broadcast through EventHandler
+    /// - New Input System compatible
     /// </summary>
     public class InteractionSystem : MonoBehaviour
     {
@@ -33,11 +36,11 @@ namespace Code.Lavos.Core
         [SerializeField] private LayerMask interactionLayerMask = ~0;
         [SerializeField] private LayerMask playerLayerMask = 0;
 
-        [Header("Input")]
-        [SerializeField] private KeyCode interactKey = KeyCode.E;
-        [SerializeField] private KeyCode attackKey = KeyCode.Mouse0;
-        [SerializeField] private KeyCode spellKey = KeyCode.Mouse1;
-        [SerializeField] private KeyCode useItemKey = KeyCode.F;
+        [Header("Input Actions")]
+        [SerializeField] private InputActionReference interactAction;
+        [SerializeField] private InputActionReference attackAction;
+        [SerializeField] private InputActionReference spellAction;
+        [SerializeField] private InputActionReference useItemAction;
 
         [Header("References")]
         [SerializeField] private PlayerController playerController;
@@ -52,6 +55,12 @@ namespace Code.Lavos.Core
         private IInteractable _currentInteractable;
         private IInteractable _highlightedInteractable;
         private Camera _interactionCamera;
+
+        // Input actions
+        private InputAction _interactAction;
+        private InputAction _attackAction;
+        private InputAction _spellAction;
+        private InputAction _useItemAction;
 
         #endregion
 
@@ -123,12 +132,33 @@ namespace Code.Lavos.Core
 
             _interactionCamera = Camera.main;
 
+            // Setup input actions
+            SetupInputActions();
+
             Debug.Log("[InteractionSystem] Initialized");
+        }
+
+        void OnEnable()
+        {
+            // Enable input actions
+            _interactAction?.Enable();
+            _attackAction?.Enable();
+            _spellAction?.Enable();
+            _useItemAction?.Enable();
+        }
+
+        void OnDisable()
+        {
+            // Disable input actions
+            _interactAction?.Disable();
+            _attackAction?.Disable();
+            _spellAction?.Disable();
+            _useItemAction?.Disable();
         }
 
         void Update()
         {
-            if (GameManager.Instance == null || 
+            if (GameManager.Instance == null ||
                 GameManager.Instance.CurrentState != GameManager.GameState.Playing)
                 return;
 
@@ -150,11 +180,41 @@ namespace Code.Lavos.Core
         #region Interaction Input Handling
 
         /// <summary>
+        /// Setup input action references
+        /// </summary>
+        private void SetupInputActions()
+        {
+            // Try to get actions from InputActionReferences assigned in Inspector
+            if (interactAction != null && interactAction.action != null)
+            {
+                _interactAction = interactAction.action;
+            }
+            if (attackAction != null && attackAction.action != null)
+            {
+                _attackAction = attackAction.action;
+            }
+            if (spellAction != null && spellAction.action != null)
+            {
+                _spellAction = spellAction.action;
+            }
+            if (useItemAction != null && useItemAction.action != null)
+            {
+                _useItemAction = useItemAction.action;
+            }
+
+            // If actions are still null, they will fall back to Keyboard.current in input handlers
+            Debug.Log("[InteractionSystem] Input actions setup complete");
+        }
+
+        /// <summary>
         /// Handle E-key interaction with objects
         /// </summary>
         private void HandleInteractionInput()
         {
-            if (Input.GetKeyDown(interactKey) && _currentInteractable?.CanInteract(playerController) == true)
+            bool interactPressed = _interactAction?.IsPressed() == true ||
+                                 Keyboard.current?.eKey?.isPressed == true;
+
+            if (interactPressed && _currentInteractable?.CanInteract(playerController) == true)
             {
                 PerformInteraction(_currentInteractable);
             }
@@ -171,7 +231,7 @@ namespace Code.Lavos.Core
             if (EventHandler.Instance != null)
             {
                 EventHandler.Instance.InvokeItemUsed(
-                    new ItemData { itemName = interactable.InteractionPrompt }, 
+                    new ItemData { itemName = interactable.InteractionPrompt },
                     1
                 );
             }
@@ -194,20 +254,30 @@ namespace Code.Lavos.Core
         /// </summary>
         private void HandleCombatInput()
         {
-            // Primary attack (left click)
-            if (Input.GetKeyDown(attackKey))
+            // Primary attack (left click or gamepad button)
+            bool attackPressed = _attackAction?.IsPressed() == true ||
+                                Mouse.current?.leftButton?.isPressed == true ||
+                                Keyboard.current?.enterKey?.isPressed == true;
+
+            if (attackPressed)
             {
                 PerformAttack();
             }
 
-            // Spell cast (right click)
-            if (Input.GetKeyDown(spellKey))
+            // Spell cast (right click or secondary button)
+            bool spellPressed = _spellAction?.IsPressed() == true ||
+                               Mouse.current?.rightButton?.isPressed == true;
+
+            if (spellPressed)
             {
                 PerformCastSpell();
             }
 
-            // Use item (F key)
-            if (Input.GetKeyDown(useItemKey))
+            // Use item (F key or gamepad button)
+            bool useItemPressed = _useItemAction?.IsPressed() == true ||
+                                 Keyboard.current?.fKey?.isPressed == true;
+
+            if (useItemPressed)
             {
                 PerformUseItem();
             }

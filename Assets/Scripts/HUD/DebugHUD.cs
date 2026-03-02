@@ -10,7 +10,7 @@ using Code.Lavos;
 using Code.Lavos.Status;
 using Code.Lavos.Core;
 
-namespace Unity6.LavosTrial.HUD
+namespace Code.Lavos.HUD
 {
     /// <summary>
     /// Simple debug HUD to verify health system is working

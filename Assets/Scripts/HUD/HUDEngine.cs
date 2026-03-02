@@ -18,7 +18,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Code.Lavos.Status;
 
-namespace Unity6.LavosTrial.HUD
+namespace Code.Lavos.HUD
 {
     /// <summary>
     /// Central HUD management engine.

@@ -8,6 +8,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
+
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -17,31 +19,31 @@ namespace Code.Lavos.Core
     public class DoorFactory : MonoBehaviour
     {
         [Header("Door Dimensions")]
-        [SerializeField] private float doorWidth = 2.5f;
-        [SerializeField] private float doorHeight = 3f;
-        [SerializeField] private float doorDepth = 0.5f;
-        [SerializeField] private float frameThickness = 0.3f;
-        
+        [SerializeField] private float doorWidth = 2.5f;  // Reserved for future customization
+        [SerializeField] private float doorHeight = 3f;  // Reserved for future customization
+        [SerializeField] private float doorDepth = 0.5f;  // Reserved for future customization
+        [SerializeField] private float frameThickness = 0.3f;  // Reserved for future customization
+
         [Header("Pixel Art Settings")]
-        [SerializeField] private int textureResolution = 32;
-        [SerializeField] private bool usePixelArtFilter = true;
-        
+        [SerializeField] private int textureResolution = 32;  // Reserved for future customization
+        [SerializeField] private bool usePixelArtFilter = true;  // Reserved for future customization
+
         [Header("Effects")]
-        [SerializeField] private bool enableParticleEffects = true;
-        [SerializeField] private bool enableFogEffects = true;
-        [SerializeField] private bool enableAuraEffects = true;
-        
+        [SerializeField] private static bool enableParticleEffects = true;
+        [SerializeField] private static bool enableFogEffects = true;
+        [SerializeField] private static bool enableAuraEffects = true;  // Reserved for future use
+
         [Header("Materials")]
-        [SerializeField] private Material woodMaterial;
-        [SerializeField] private Material stoneMaterial;
-        [SerializeField] private Material metalMaterial;
-        [SerializeField] private Material magicMaterial;
-        
+        [SerializeField] private static Material woodMaterial;
+        [SerializeField] private static Material stoneMaterial;
+        [SerializeField] private static Material metalMaterial;
+        [SerializeField] private static Material magicMaterial;
+
         private static Dictionary<string, Texture2D> _textureCache = new();
         private static Dictionary<string, Material> _materialCache = new();
         
         #region Door Creation
-        
+
         /// <summary>
         /// Create a 3D door that fits into a wall surface.
         /// Removes/replaces the wall geometry at door position.
@@ -54,32 +56,47 @@ namespace Code.Lavos.Core
             float cellSize = 4f,
             float wallHeight = 3f)
         {
+            // Calculate default dimensions
+            float width = cellSize * 0.6f;
+            float height = wallHeight * 0.9f;
+            float depth = 0.5f;
+
+            return CreateDoor(position, rotation, variant, trap, width, height, depth);
+        }
+
+        /// <summary>
+        /// Create a 3D door with custom dimensions that fits into a wall hole.
+        /// </summary>
+        public static GameObject CreateDoor(
+            Vector3 position,
+            Quaternion rotation,
+            DoorVariant variant,
+            DoorTrapType trap,
+            float customWidth,
+            float customHeight,
+            float customDepth)
+        {
             // Create door container
             GameObject doorObj = new GameObject($"Door_{variant}_{trap}");
             doorObj.transform.position = position;
             doorObj.transform.rotation = rotation;
-            
-            // Calculate dimensions
-            float width = cellSize * 0.6f;
-            float height = wallHeight * 0.9f;
-            float depth = 0.5f;
-            
+
             // Create door frame (fits into wall)
-            CreateDoorFrame(doorObj, width, height, depth, variant);
-            
+            CreateDoorFrame(doorObj, customWidth, customHeight, customDepth, variant);
+
             // Create door panels (left and right)
-            CreateDoorPanels(doorObj, width, height, depth, variant);
-            
+            CreateDoorPanels(doorObj, customWidth, customHeight, customDepth, variant);
+
             // Add collider
-            AddDoorCollider(doorObj, width, height, depth);
-            
+            AddDoorCollider(doorObj, customWidth, customHeight, customDepth);
+
             // Add DoorsEngine component
             DoorsEngine doorEngine = doorObj.AddComponent<DoorsEngine>();
             doorEngine.Initialize(variant, trap);
-            
+
             // Add effects based on variant/trap
             AddDoorEffects(doorObj, variant, trap);
-            
+
             return doorObj;
         }
         
@@ -123,6 +140,7 @@ namespace Code.Lavos.Core
         
         /// <summary>
         /// Create door panels (left and right doors).
+        /// Panels fill most of the opening, leaving small gap for animation.
         /// </summary>
         private static void CreateDoorPanels(
             GameObject parent,
@@ -131,33 +149,47 @@ namespace Code.Lavos.Core
             float depth,
             DoorVariant variant)
         {
-            float panelWidth = width / 2f - 0.1f;
-            float panelHeight = height - 0.2f;
-            float panelDepth = 0.15f;
+            // Frame thickness
+            float frameThickness = 0.3f;
             
+            // Clear opening inside frame
+            float clearWidth = width - frameThickness * 2f;
+            float clearHeight = height - frameThickness * 0.5f;  // Only top frame
+            
+            // Each panel is half the clear width
+            float panelWidth = clearWidth / 2f - 0.05f;  // Small gap between panels
+            float panelHeight = clearHeight - 0.1f;  // Small gap at top/bottom
+            float panelDepth = depth - 0.1f;  // Slightly recessed
+
+            // Create DoorGeometry parent for panels (for animation system)
+            GameObject doorGeometry = new GameObject("DoorGeometry");
+            doorGeometry.transform.SetParent(parent.transform);
+            doorGeometry.transform.localPosition = Vector3.zero;
+            doorGeometry.transform.localRotation = Quaternion.identity;
+
             // Left panel
-            GameObject leftPanel = CreatePanelPiece(parent, "Panel_Left",
-                new Vector3(-panelWidth / 2f - 0.05f, panelHeight / 2f, 0),
+            GameObject leftPanel = CreatePanelPiece(doorGeometry, "LeftPanel",
+                new Vector3(-panelWidth / 2f - clearWidth / 4f, panelHeight / 2f + frameThickness * 0.25f, 0),
                 new Vector3(panelWidth, panelHeight, panelDepth),
                 GetDoorPanelMaterial(variant),
                 true);
-            
-            leftPanel.transform.SetParent(parent.transform);
-            
+
+            leftPanel.transform.SetParent(doorGeometry.transform);
+
             // Right panel
-            GameObject rightPanel = CreatePanelPiece(parent, "Panel_Right",
-                new Vector3(panelWidth / 2f + 0.05f, panelHeight / 2f, 0),
+            GameObject rightPanel = CreatePanelPiece(doorGeometry, "RightPanel",
+                new Vector3(panelWidth / 2f + clearWidth / 4f, panelHeight / 2f + frameThickness * 0.25f, 0),
                 new Vector3(panelWidth, panelHeight, panelDepth),
                 GetDoorPanelMaterial(variant),
                 true);
-            
-            rightPanel.transform.SetParent(parent.transform);
-            
+
+            rightPanel.transform.SetParent(doorGeometry.transform);
+
             // Store panel references in DoorsEngine for animation
             DoorsEngine engine = parent.GetComponent<DoorsEngine>();
             if (engine != null)
             {
-                // TODO: Store panel references for rotation
+                engine.SetPanelReferences(leftPanel.transform, rightPanel.transform);
             }
         }
         
@@ -417,7 +449,7 @@ namespace Code.Lavos.Core
             if (woodMaterial != null) return woodMaterial;
             
             woodMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            woodMaterial.mainTexture = GenerateWoodTexture();
+            woodMaterial.mainTexture = PixelArtGenerator.GenerateWoodTexture(32, 32);
             woodMaterial.SetFloat("_Smoothness", 0.2f);
             
             return woodMaterial;
@@ -428,7 +460,7 @@ namespace Code.Lavos.Core
             if (stoneMaterial != null) return stoneMaterial;
             
             stoneMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            stoneMaterial.mainTexture = GenerateStoneTexture();
+            stoneMaterial.mainTexture = PixelArtGenerator.GenerateStoneTexture(32, 32);
             stoneMaterial.SetFloat("_Smoothness", 0.1f);
             
             return stoneMaterial;
@@ -439,7 +471,7 @@ namespace Code.Lavos.Core
             if (metalMaterial != null) return metalMaterial;
             
             metalMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            metalMaterial.mainTexture = GenerateMetalTexture();
+            metalMaterial.mainTexture = PixelArtGenerator.GenerateMetalTexture(32, 32);
             metalMaterial.SetFloat("_Smoothness", 0.6f);
             
             return metalMaterial;

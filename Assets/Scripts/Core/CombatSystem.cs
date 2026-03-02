@@ -119,6 +119,26 @@ namespace Code.Lavos.Core
             Debug.Log("[CombatSystem] Initialized with StatsEngine");
         }
 
+        /// <summary>
+        /// Ensure StatsEngine is initialized (auto-find if needed)
+        /// </summary>
+        private void EnsureStatsEngine()
+        {
+            if (_statsEngine == null)
+            {
+                var playerStats = FindFirstObjectByType<PlayerStats>();
+                if (playerStats != null && playerStats.Engine != null)
+                {
+                    _statsEngine = playerStats.Engine;
+                    Debug.Log("[CombatSystem] Auto-initialized StatsEngine from PlayerStats");
+                }
+                else
+                {
+                    Debug.LogWarning("[CombatSystem] StatsEngine not initialized - stamina methods will fail");
+                }
+            }
+        }
+
         #endregion
 
         #region Combat State Management
@@ -308,7 +328,13 @@ namespace Code.Lavos.Core
         /// </summary>
         public bool UseStamina(float amount)
         {
-            if (_statsEngine == null) return false;
+            EnsureStatsEngine();
+            
+            if (_statsEngine == null)
+            {
+                Debug.LogWarning("[CombatSystem] Cannot use stamina - StatsEngine not initialized");
+                return false;
+            }
 
             bool success = _statsEngine.UseStamina(amount);
             if (success)

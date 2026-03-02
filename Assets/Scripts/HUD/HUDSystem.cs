@@ -1,1119 +1,848 @@
 // HUDSystem.cs
-// Main HUD management system
+// Complete dynamic HUD management system - Plug-in-and-Out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// CORE: Central UI manager for all HUD elements
+// CORE: Central UI manager that plugs into EventHandler
+// Features:
+// - Health/Mana/Stamina bars with smooth animations (via EventHandler)
+// - Hotbar with 5 slots (keys 1-5)
+// - Status effects panel (buffs/debuffs via EventHandler)
+// - Interaction prompts
+// - Floating combat text (damage/heal via EventHandler)
+// - Notifications
+// - Auto-constructs at runtime
+//
+// Plug-in-and-Out: This system plugs into EventHandler for all game events
 
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using Code.Lavos;
-using Code.Lavos.Status;
 using Code.Lavos.Core;
+using Code.Lavos.Status;
 
-namespace Unity6.LavosTrial.HUD
+namespace Code.Lavos.HUD
 {
     /// <summary>
-    /// HUDSystem â€” SystÃ¨me HUD unifiÃ© + Status Effects + Hotbar pixel art
-    ///
-    /// SETUP Unity :
-    ///   1. GameObject vide "HUDSystem" â†’ attache ce script â†’ c'est tout.
-    ///   2. Tout se construit automatiquement au runtime.
-    ///
-    /// NouveautÃ©s v2 :
-    ///   - Status effects : icÃ´nes colorÃ©es + barre de durÃ©e + stacks (bas-gauche)
-    ///   - Hotbar pixel art : 5 slots bas-centre, touches 1-5, slot actif surlignÃ©
-    ///
-    /// Unity6 Integration:
-    ///   - Namespace: Unity6.LavosTrial.HUD
-    ///   - Input System: Detection runtime + fallback
-    ///   - Keyboard mapping: via JSON config (Assets/Input/Unity6.LavosTrial.InputMap.json)
+    /// Complete HUD system - auto-constructs all UI elements at runtime.
+    /// Plugs into EventHandler for all stat updates and game events.
+    /// 
+    /// SETUP: Attach to empty GameObject "HUDSystem" - everything else is automatic.
     /// </summary>
     public class HUDSystem : MonoBehaviour
     {
-        // - Singleton -
         public static HUDSystem Instance { get; private set; }
 
-        // --------
-        //  INSPECTOR (tout optionnel)
-        // --------
-        [Header("Canvas (auto-crÃ©Ã© si vide)")]
-        [SerializeField] private Canvas targetCanvas;
+        #region Inspector Settings
 
-        [Header("Barres de statut")]
-        [SerializeField] private Image healthFill;
-        [SerializeField] private Image manaFill;
-        [SerializeField] private Image staminaFill;
+        [Header("UI Settings")]
+        [SerializeField] private bool autoConstruct = true;
 
-        [Header("Textes barres")]
-        [SerializeField] private TextMeshProUGUI healthText;
-        [SerializeField] private TextMeshProUGUI manaText;
-        [SerializeField] private TextMeshProUGUI staminaText;
-        [SerializeField] private TextMeshProUGUI scoreText;
-        [SerializeField] private TextMeshProUGUI interactionPrompt;
-
-        [Header("Popup")]
-        [SerializeField] private TextMeshProUGUI popupText;
-        [SerializeField] private float popupDuration = 2f;
-
-        [Header("Panneaux")]
-        [SerializeField] private GameObject pausePanel;
-        [SerializeField] private GameObject gameOverPanel;
-        [SerializeField] private GameObject victoryPanel;
-
-        [Header("Couleurs barres")]
-        // 8-bit style colors - no alpha, brightness indicates resource level
-        [SerializeField] private Color colorHealthHigh = new Color(0.2f, 0.9f, 0.3f);    // Bright green (100%)
-        [SerializeField] private Color colorHealthLow = new Color(0.9f, 0.7f, 0.1f);     // Yellow-orange (50%)
-        [SerializeField] private Color colorHealthCritical = new Color(0.9f, 0.1f, 0.1f); // Red (0%)
-        [SerializeField] private Color colorMana = new Color(0.2f, 0.5f, 1.0f);          // Bright blue (100%)
-        [SerializeField] private Color colorManaLow = new Color(0.1f, 0.25f, 0.5f);      // Dark blue (0%)
-        [SerializeField] private Color colorStamina = new Color(1.0f, 0.8f, 0.2f);       // Bright yellow (100%)
-        [SerializeField] private Color colorStaminaLow = new Color(0.5f, 0.4f, 0.1f);    // Dark yellow/brown (0%)
+        [Header("Bar Colors")]
+        [SerializeField] private Color healthColorHigh = new Color(0.2f, 0.9f, 0.3f);
+        [SerializeField] private Color healthColorLow = new Color(0.9f, 0.7f, 0.1f);
+        [SerializeField] private Color healthColorCritical = new Color(0.9f, 0.1f, 0.1f);
+        [SerializeField] private Color manaColor = new Color(0.2f, 0.5f, 1.0f);
+        [SerializeField] private Color staminaColor = new Color(1.0f, 0.8f, 0.2f);
 
         [Header("Hotbar")]
         [SerializeField] private int hotbarSlotCount = 5;
         [SerializeField] private float hotbarSlotSize = 52f;
-        [SerializeField] private Color hotbarBgColor = new Color(0.08f, 0.08f, 0.08f, 0.88f);
-        [SerializeField] private Color hotbarBorderColor = new Color(0.55f, 0.55f, 0.55f, 1f);
         [SerializeField] private Color hotbarActiveColor = new Color(1f, 0.82f, 0.2f, 1f);
-        [SerializeField] private Color hotbarInactiveColor = new Color(0.22f, 0.22f, 0.22f, 1f);
+        [SerializeField] private Color hotbarInactiveColor = new Color(0.55f, 0.55f, 0.55f, 1f);
 
         [Header("Status Effects")]
         [SerializeField] private float effectIconSize = 40f;
 
-        [Header("Input Config")]
-        [SerializeField] private string inputMapPath = "Assets/Input/Unity6.LavosTrial.InputMap.json";
+        #endregion
 
-        // ------------
-        //  Ã‰TAT INTERNE
-        // ------------
+        #region UI References (Auto-constructed)
+
+        // Root
         private GameObject _hudRoot;
+        private Canvas _canvas;
 
-        // â€” Hotbar â€”
-        private int _activeSlot = 0;
-        private Image[] _hotbarBorders;   // cadre externe (couleur active/inactive)
-        private Image[] _hotbarIconImages; // icÃ´ne de l'item
-        private TextMeshProUGUI[] _hotbarQtyTexts;  // quantité
-        private TextMeshProUGUI[] _hotbarKeyTexts;  // label touche (1-5)
+        // Bars
+        private Image _healthBarFill;
+        private Image _manaBarFill;
+        private Image _staminaBarFill;
+        private TextMeshProUGUI _healthText;
+        private TextMeshProUGUI _manaText;
+        private TextMeshProUGUI _staminaText;
+        private TextMeshProUGUI _interactionText;
 
-        // â€” Input System â€”
-        private Keyboard _kb;
-        private Mouse _mouse;
-        private InputMapConfig _inputConfig;
-        private Dictionary<string, string[]> _actionKeyMap = new();
+        // Hotbar
+        private GameObject _hotbarRoot;
+        private Image[] _hotbarSlots;
+        private Image[] _hotbarBorders;
+        private TextMeshProUGUI[] _hotbarKeys;
 
-        // â€” Status Effects â€”
-        private Transform _effectRow;
-        private Dictionary<string, EffectIconData> _effectIcons = new();
+        // Status Effects
+        private GameObject _statusEffectsRoot;
+        private Transform _effectsContent;
+        private Dictionary<string, GameObject> _activeEffects = new Dictionary<string, GameObject>();
 
-        private struct EffectIconData
+        // Floating Text
+        private GameObject _floatingTextRoot;
+
+        #endregion
+
+        #region State
+
+        private PlayerStats _playerStats;
+        private Inventory _inventory;
+        private int _activeHotbarSlot = 0;
+        private bool _isSubscribed = false;
+
+        // Current values for smooth interpolation
+        private float _currentHealth, _maxHealth;
+        private float _currentMana, _maxMana;
+        private float _currentStamina, _maxStamina;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void Awake()
         {
-            public GameObject Root;
-            public Image FillBar;
-            public TextMeshProUGUI StackText;
-            public float MaxDuration;
-        }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
 
-        // — Popup —
-        private Coroutine _popupRoutine;
-
-        // — Subscribed instances —
-        private static MonoBehaviour _inventory;
-
-        // ------------
-        //  INPUT CONFIGURATION
-        // ------------
-        [System.Serializable]
-        public class InputMapConfig
-        {
-            public string version = "1.0";
-            public string name;
-            public string description;
-            public string locale = "en-US";
-            public string layout = "QWERTY";
-            public ActionMap actions;
-            public FallbackConfig fallback;
-        }
-
-        [System.Serializable]
-        public class ActionMap
-        {
-            public string[] MoveUp;
-            public string[] MoveDown;
-            public string[] MoveLeft;
-            public string[] MoveRight;
-            public string[] Jump;
-            public string[] Fire;
-            public string[] Aim;
-            public string[] Reload;
-            public string[] Interact;
-            public string[] Inventory;
-            public string[] Pause;
-            public string[] Sprint;
-            public string[] Crouch;
-        }
-
-        [System.Serializable]
-        public class FallbackConfig
-        {
-            public bool enabled;
-            public string layout;
-            public ActionMap actions;
-        }
-
-        // --------
-        //  CYCLE DE VIE
-        // --------
-        void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            // Initialize input system early to avoid null refs in Update
-            InitializeInputSystem();
-            DetectInputSystem();
-            LoadInputConfig();
-            EnsureCanvas();
-            BuildHUDIfNeeded();
+
+            if (autoConstruct)
+            {
+                ConstructHUD();
+            }
+
+            Debug.Log("[HUDSystem] Initialized");
         }
 
-        void Start() => SubscribeToEvents();
-        void OnDestroy()
+        private void Start()
+        {
+            // Find player references
+            var player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                _playerStats = player.GetComponent<PlayerStats>();
+                _inventory = player.GetComponent<Inventory>();
+                
+                // Initialize with current values
+                if (_playerStats != null)
+                {
+                    _currentHealth = _playerStats.CurrentHealth;
+                    _maxHealth = _playerStats.MaxHealth;
+                    _currentMana = _playerStats.CurrentMana;
+                    _maxMana = _playerStats.MaxMana;
+                    _currentStamina = _playerStats.CurrentStamina;
+                    _maxStamina = _playerStats.MaxStamina;
+                    
+                    UpdateAllBars();
+                }
+            }
+
+            SubscribeToEvents();
+            UpdateHotbarDisplay();
+        }
+
+        private void Update()
+        {
+            HandleHotbarInput();
+        }
+
+        private void OnDestroy()
         {
             UnsubscribeFromEvents();
-            if (Instance == this) Instance = null;
+            if (Instance == this)
+                Instance = null;
         }
 
-        void Update()
+        private void OnEnable()
         {
-            _kb ??= Keyboard.current;
-            _mouse ??= Mouse.current;
-            HandleHotbarInput();
-            RefreshEffectTimers();
+            // Re-subscribe if component is re-enabled
+            SubscribeToEvents();
         }
 
-        // ------------
-        //  INPUT SYSTEM DETECTION
-        // ------------
-        private void DetectInputSystem()
+        private void OnDisable()
         {
-#if UNITY_INPUT_SYSTEM_ENABLED
-            Debug.Log($"[HUDSystem] New Input System detected: {Keyboard.current != null}");
-#else
-            Debug.Log("[HUDSystem] New Input System not enabled - using legacy Input");
-#endif
-        }
-        // Initialize input system early to avoid null refs in Update
-        private void InitializeInputSystem()
-        {
-            _kb = Keyboard.current;
-            _mouse = Mouse.current;
+            UnsubscribeFromEvents();
         }
 
-        private void LoadInputConfig()
-        {
-            _actionKeyMap = new Dictionary<string, string[]>();
+        #endregion
 
-            string fullPath = Path.Combine(Application.dataPath, "..", inputMapPath);
-            if (File.Exists(fullPath))
+        #region HUD Construction
+
+        private void ConstructHUD()
+        {
+            CreateCanvas();
+            CreateBars();
+            CreateHotbar();
+            CreateStatusEffectsPanel();
+            CreateFloatingTextRoot();
+        }
+
+        private void CreateCanvas()
+        {
+            // Setup Canvas on this GameObject
+            _canvas = gameObject.GetComponent<Canvas>();
+            if (_canvas == null)
             {
-                try
-                {
-                    string json = File.ReadAllText(fullPath);
-                    _inputConfig = JsonUtility.FromJson<InputMapConfig>(json);
-
-                    if (_inputConfig?.actions != null)
-                    {
-                        MapAction("MoveUp", _inputConfig.actions.MoveUp);
-                        MapAction("MoveDown", _inputConfig.actions.MoveDown);
-                        MapAction("MoveLeft", _inputConfig.actions.MoveLeft);
-                        MapAction("MoveRight", _inputConfig.actions.MoveRight);
-                        MapAction("Jump", _inputConfig.actions.Jump);
-                        MapAction("Fire", _inputConfig.actions.Fire);
-                        MapAction("Aim", _inputConfig.actions.Aim);
-                        MapAction("Reload", _inputConfig.actions.Reload);
-                        MapAction("Interact", _inputConfig.actions.Interact);
-                        MapAction("Inventory", _inputConfig.actions.Inventory);
-                        MapAction("Pause", _inputConfig.actions.Pause);
-                        MapAction("Sprint", _inputConfig.actions.Sprint);
-                        MapAction("Crouch", _inputConfig.actions.Crouch);
-                    }
-
-                    Debug.Log($"[HUDSystem] Input map loaded: {_inputConfig?.layout ?? "default"}");
-                }
-                catch (System.Exception ex)
-                {
-                    Debug.LogWarning($"[HUDSystem] Failed to load input config: {ex.Message}");
-                    LoadDefaultInputMap();
-                }
+                _canvas = gameObject.AddComponent<Canvas>();
             }
-            else
+            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 100;
+
+            // Canvas Scaler
+            var scaler = gameObject.GetComponent<CanvasScaler>();
+            if (scaler == null)
             {
-                Debug.LogWarning($"[HUDSystem] Input config not found at {fullPath}, using defaults");
-                LoadDefaultInputMap();
+                scaler = gameObject.AddComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920, 1080);
+                scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+                scaler.matchWidthOrHeight = 0.5f;
+            }
+
+            // Graphic Raycaster
+            if (gameObject.GetComponent<GraphicRaycaster>() == null)
+            {
+                gameObject.AddComponent<GraphicRaycaster>();
+            }
+
+            // Create root container for HUD elements
+            _hudRoot = new GameObject("HUDContainer");
+            _hudRoot.transform.SetParent(transform);
+            _hudRoot.transform.SetAsFirstSibling(); // Keep at top of hierarchy
+        }
+
+        private void CreateBars()
+        {
+            // Health Bar - Left edge, vertical (stretches full height)
+            var healthGO = new GameObject("HealthBar");
+            healthGO.transform.SetParent(_hudRoot.transform);
+            var healthRect = healthGO.AddComponent<RectTransform>();
+            healthRect.anchorMin = new Vector2(0f, 0.15f); // Start at 15% from bottom
+            healthRect.anchorMax = new Vector2(0f, 0.85f); // End at 85% from bottom
+            healthRect.pivot = new Vector2(0f, 0.5f);
+            healthRect.anchoredPosition = new Vector2(20, 0); // 20px from left edge
+            healthRect.sizeDelta = new Vector2(25f, 0f); // 25px wide, height from anchors
+
+            // Background
+            var healthBG = healthGO.AddComponent<Image>();
+            healthBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            // Fill bar
+            _healthBarFill = healthGO.AddComponent<Image>();
+            _healthBarFill.color = healthColorHigh;
+            _healthBarFill.type = Image.Type.Filled;
+            _healthBarFill.fillMethod = Image.FillMethod.Vertical;
+            _healthBarFill.fillOrigin = 0; // Bottom
+            _healthBarFill.fillAmount = 1f;
+
+            // Text
+            _healthText = CreateOverlayText(healthGO, "HealthText", "1000/1000");
+
+            // Mana Bar - Right edge, vertical
+            var manaGO = new GameObject("ManaBar");
+            manaGO.transform.SetParent(_hudRoot.transform);
+            var manaRect = manaGO.AddComponent<RectTransform>();
+            manaRect.anchorMin = new Vector2(1f, 0.15f);
+            manaRect.anchorMax = new Vector2(1f, 0.85f);
+            manaRect.pivot = new Vector2(1f, 0.5f);
+            manaRect.anchoredPosition = new Vector2(-20, 0); // 20px from right edge
+            manaRect.sizeDelta = new Vector2(25f, 0f);
+
+            var manaBG = manaGO.AddComponent<Image>();
+            manaBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            _manaBarFill = manaGO.AddComponent<Image>();
+            _manaBarFill.color = manaColor;
+            _manaBarFill.type = Image.Type.Filled;
+            _manaBarFill.fillMethod = Image.FillMethod.Vertical;
+            _manaBarFill.fillOrigin = 0; // Bottom
+            _manaBarFill.fillAmount = 1f;
+
+            _manaText = CreateOverlayText(manaGO, "ManaText", "50/50");
+
+            // Stamina Bar - Bottom edge, horizontal
+            var staminaGO = new GameObject("StaminaBar");
+            staminaGO.transform.SetParent(_hudRoot.transform);
+            var staminaRect = staminaGO.AddComponent<RectTransform>();
+            staminaRect.anchorMin = new Vector2(0.15f, 0f); // Start at 15% from left
+            staminaRect.anchorMax = new Vector2(0.85f, 0f); // End at 85% from left
+            staminaRect.pivot = new Vector2(0.5f, 0f);
+            staminaRect.anchoredPosition = new Vector2(0, 20); // 20px from bottom
+            staminaRect.sizeDelta = new Vector2(0f, 25f); // 25px tall, width from anchors
+
+            var staminaBG = staminaGO.AddComponent<Image>();
+            staminaBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            _staminaBarFill = staminaGO.AddComponent<Image>();
+            _staminaBarFill.color = staminaColor;
+            _staminaBarFill.type = Image.Type.Filled;
+            _staminaBarFill.fillMethod = Image.FillMethod.Horizontal;
+            _staminaBarFill.fillOrigin = 0; // Left
+            _staminaBarFill.fillAmount = 1f;
+
+            _staminaText = CreateOverlayText(staminaGO, "StaminaText", "100/100");
+
+            // Interaction prompt - Top center
+            var interactionGO = new GameObject("InteractionPrompt");
+            interactionGO.transform.SetParent(_hudRoot.transform);
+            var interactionRect = interactionGO.AddComponent<RectTransform>();
+            interactionRect.anchorMin = new Vector2(0.5f, 1f);
+            interactionRect.anchorMax = new Vector2(0.5f, 1f);
+            interactionRect.pivot = new Vector2(0.5f, 1f);
+            interactionRect.anchoredPosition = new Vector2(0, -100);
+            interactionRect.sizeDelta = new Vector2(400, 50);
+
+            _interactionText = interactionGO.AddComponent<TextMeshProUGUI>();
+            _interactionText.fontSize = 24;
+            _interactionText.alignment = TextAlignmentOptions.Center;
+            _interactionText.color = Color.white;
+            _interactionText.text = "";
+            _interactionText.textWrappingMode = TextWrappingModes.NoWrap;
+        }
+
+        private TextMeshProUGUI CreateOverlayText(GameObject parent, string name, string text)
+        {
+            var textGO = new GameObject(name);
+            textGO.transform.SetParent(parent.transform);
+            var textRect = textGO.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+            textRect.anchoredPosition = Vector2.zero;
+            textRect.sizeDelta = Vector2.zero;
+
+            var textComp = textGO.AddComponent<TextMeshProUGUI>();
+            textComp.fontSize = 16;
+            textComp.alignment = TextAlignmentOptions.Center;
+            textComp.color = Color.white;
+            textComp.text = text;
+            textComp.textWrappingMode = TextWrappingModes.NoWrap;
+
+            return textComp;
+        }
+
+        private void CreateHotbar()
+        {
+            _hotbarRoot = new GameObject("Hotbar");
+            _hotbarRoot.transform.SetParent(_hudRoot.transform);
+            var hotbarRect = _hotbarRoot.AddComponent<RectTransform>();
+            hotbarRect.anchorMin = new Vector2(0.5f, 0f);
+            hotbarRect.anchorMax = new Vector2(0.5f, 0f);
+            hotbarRect.pivot = new Vector2(0.5f, 0f);
+            hotbarRect.anchoredPosition = new Vector2(0, 20);
+            hotbarRect.sizeDelta = new Vector2(hotbarSlotCount * (hotbarSlotSize + 10), hotbarSlotSize + 20);
+
+            // Background
+            var bg = _hotbarRoot.AddComponent<Image>();
+            bg.color = new Color(0.08f, 0.08f, 0.08f, 0.88f);
+
+            // Border
+            var border = _hotbarRoot.AddComponent<Outline>();
+            border.effectColor = new Color(0.55f, 0.55f, 0.55f, 1f);
+            border.effectDistance = new Vector2(2, 2);
+
+            _hotbarSlots = new Image[hotbarSlotCount];
+            _hotbarBorders = new Image[hotbarSlotCount];
+            _hotbarKeys = new TextMeshProUGUI[hotbarSlotCount];
+
+            for (int i = 0; i < hotbarSlotCount; i++)
+            {
+                CreateHotbarSlot(i);
             }
         }
 
-        private void LoadDefaultInputMap()
+        private void CreateHotbarSlot(int index)
         {
-            _actionKeyMap = new Dictionary<string, string[]>
-            {
-                { "MoveUp", new[] { "W", "UpArrow" } },
-                { "MoveDown", new[] { "S", "DownArrow" } },
-                { "MoveLeft", new[] { "A", "LeftArrow" } },
-                { "MoveRight", new[] { "D", "RightArrow" } },
-                { "Jump", new[] { "Space" } },
-                { "Fire", new[] { "LeftCtrl", "Mouse0" } },
-                { "Aim", new[] { "Mouse1" } },
-                { "Reload", new[] { "R" } },
-                { "Interact", new[] { "E" } },
-                { "Inventory", new[] { "I" } },
-                { "Pause", new[] { "Escape" } },
-                { "Sprint", new[] { "LeftShift" } },
-                { "Crouch", new[] { "C" } }
-            };
+            var slotGO = new GameObject("Slot" + (index + 1));
+            slotGO.transform.SetParent(_hotbarRoot.transform);
+            var slotRect = slotGO.AddComponent<RectTransform>();
+            slotRect.sizeDelta = new Vector2(hotbarSlotSize, hotbarSlotSize);
+            slotRect.anchorMin = new Vector2(0.5f, 0.5f);
+            slotRect.anchorMax = new Vector2(0.5f, 0.5f);
+            slotRect.pivot = new Vector2(0.5f, 0.5f);
+            slotRect.anchoredPosition = new Vector2((index - (hotbarSlotCount - 1) / 2f) * (hotbarSlotSize + 10), 0);
+
+            // Slot background
+            var slotImage = slotGO.AddComponent<Image>();
+            slotImage.color = new Color(0.15f, 0.15f, 0.15f, 1f);
+            _hotbarSlots[index] = slotImage;
+
+            // Border
+            var borderGO = new GameObject("Border");
+            borderGO.transform.SetParent(slotGO.transform);
+            var borderRect = borderGO.AddComponent<RectTransform>();
+            borderRect.anchorMin = Vector2.zero;
+            borderRect.anchorMax = Vector2.one;
+            borderRect.sizeDelta = new Vector2(4, 4);
+            var borderImage = borderGO.AddComponent<Image>();
+            borderImage.color = (index == _activeHotbarSlot) ? hotbarActiveColor : hotbarInactiveColor;
+            _hotbarBorders[index] = borderImage;
+
+            // Key hint
+            var keyGO = new GameObject("KeyHint");
+            keyGO.transform.SetParent(slotGO.transform);
+            var keyRect = keyGO.AddComponent<RectTransform>();
+            keyRect.anchorMin = new Vector2(1, 0);
+            keyRect.anchorMax = new Vector2(1, 0);
+            keyRect.pivot = new Vector2(1, 0);
+            keyRect.anchoredPosition = new Vector2(-5, 5);
+            keyRect.sizeDelta = new Vector2(30, 30);
+
+            var keyText = keyGO.AddComponent<TextMeshProUGUI>();
+            keyText.fontSize = 14;
+            keyText.color = Color.gray;
+            keyText.text = (index + 1).ToString();
+            _hotbarKeys[index] = keyText;
         }
 
-        private void MapAction(string action, string[] keys)
+        private void CreateStatusEffectsPanel()
         {
-            if (keys != null && keys.Length > 0)
-                _actionKeyMap[action] = keys;
+            _statusEffectsRoot = new GameObject("StatusEffects");
+            _statusEffectsRoot.transform.SetParent(_hudRoot.transform);
+            var effectsRect = _statusEffectsRoot.AddComponent<RectTransform>();
+            effectsRect.anchorMin = new Vector2(0f, 0f);
+            effectsRect.anchorMax = new Vector2(0f, 0f);
+            effectsRect.pivot = new Vector2(0f, 0f);
+            effectsRect.anchoredPosition = new Vector2(20, 20);
+            effectsRect.sizeDelta = new Vector2(200, 300);
+
+            Debug.Log("[HUDSystem] Status effects panel created");
         }
 
-        public bool IsKeyPressed(string action)
+        private void CreateFloatingTextRoot()
         {
-            if (_kb == null || string.IsNullOrEmpty(action)) return false;
-
-            if (_actionKeyMap.TryGetValue(action, out var keys))
-            {
-                foreach (var key in keys)
-                {
-                    if (TryGetKey(key, out var unityKey) && _kb[unityKey].isPressed)
-                        return true;
-                    if (IsMouseButtonPressed(key))
-                        return true;
-                }
-            }
-            return false;
+            _floatingTextRoot = new GameObject("FloatingText");
+            _floatingTextRoot.transform.SetParent(_hudRoot.transform);
+            var floatingRect = _floatingTextRoot.AddComponent<RectTransform>();
+            floatingRect.anchorMin = Vector2.zero;
+            floatingRect.anchorMax = Vector2.one;
+            floatingRect.sizeDelta = Vector2.zero;
         }
 
-        public bool WasKeyPressedThisFrame(string action)
-        {
-            if (_kb == null || string.IsNullOrEmpty(action)) return false;
+        #endregion
 
-            if (_actionKeyMap.TryGetValue(action, out var keys))
-            {
-                foreach (var key in keys)
-                {
-                    if (TryGetKey(key, out var unityKey) && _kb[unityKey].wasPressedThisFrame)
-                        return true;
-                    if (WasMouseButtonPressedThisFrame(key))
-                        return true;
-                }
-            }
-            return false;
-        }
+        #region Event Subscription
 
-        private bool TryGetKey(string keyName, out Key result)
-        {
-            result = Key.None;
-            if (string.IsNullOrEmpty(keyName)) return false;
-
-            switch (keyName.ToUpperInvariant())
-            {
-                case "W": case "UPARROW": result = Key.UpArrow; return true;
-                case "S": case "DOWNARROW": result = Key.DownArrow; return true;
-                case "A": case "LEFTARROW": result = Key.LeftArrow; return true;
-                case "D": case "RIGHTARROW": result = Key.RightArrow; return true;
-                case "SPACE": result = Key.Space; return true;
-                case "LEFTCTRL": result = Key.LeftCtrl; return true;
-                case "RIGHTCTRL": result = Key.RightCtrl; return true;
-                case "R": result = Key.R; return true;
-                case "E": result = Key.E; return true;
-                case "I": result = Key.I; return true;
-                case "ESCAPE": result = Key.Escape; return true;
-                case "LEFTSHIFT": result = Key.LeftShift; return true;
-                case "RIGHTSHIFT": result = Key.RightShift; return true;
-                case "C": result = Key.C; return true;
-                case "1": result = Key.Digit1; return true;
-                case "2": result = Key.Digit2; return true;
-                case "3": result = Key.Digit3; return true;
-                case "4": result = Key.Digit4; return true;
-                case "5": result = Key.Digit5; return true;
-                default: return false;
-            }
-        }
-
-        private bool IsMouseButtonPressed(string buttonName)
-        {
-            if (_mouse == null || string.IsNullOrEmpty(buttonName)) return false;
-
-            switch (buttonName.ToUpperInvariant())
-            {
-                case "MOUSE0": return _mouse.leftButton.isPressed;
-                case "MOUSE1": return _mouse.rightButton.isPressed;
-                case "MOUSE2": return _mouse.middleButton.isPressed;
-                default: return false;
-            }
-        }
-
-        private bool WasMouseButtonPressedThisFrame(string buttonName)
-        {
-            if (_mouse == null || string.IsNullOrEmpty(buttonName)) return false;
-
-            switch (buttonName.ToUpperInvariant())
-            {
-                case "MOUSE0": return _mouse.leftButton.wasPressedThisFrame;
-                case "MOUSE1": return _mouse.rightButton.wasPressedThisFrame;
-                case "MOUSE2": return _mouse.middleButton.wasPressedThisFrame;
-                default: return false;
-            }
-        }
-
-        // ---------
-        //  ABONNEMENTS ÉVÉNEMENTS
-        // ---------
+        /// <summary>
+        /// Subscribe to all relevant EventHandler events.
+        /// This is the plug-in point for the HUD system.
+        /// </summary>
         private void SubscribeToEvents()
         {
-            // Use reflection to subscribe to PlayerStats events (avoids circular dependency)
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
-            if (statsType != null)
+            if (_isSubscribed) return;
+            
+            if (EventHandler.Instance == null)
             {
-                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onPlayerDiedEvent = statsType.GetEvent("OnPlayerDied", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                
-                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
-                if (onPlayerDiedEvent != null) onPlayerDiedEvent.AddEventHandler(null, new System.Action(OnPlayerDied));
-
-                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
-                
-                if (playerStatsInstance != null)
-                {
-                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-
-                    if (onManaEvent != null) onManaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
-                    if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
-                    if (onEffectAddedEvent != null) onEffectAddedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
-                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
-                }
+                Debug.LogWarning("[HUDSystem] EventHandler not found - will retry in 0.5s");
+                Invoke(nameof(SubscribeToEvents), 0.5f);
+                return;
             }
 
-            // Use reflection to subscribe to GameManager events (avoids circular dependency)
-            var gmType = System.Type.GetType("Code.Lavos.Core.GameManager, Code.Lavos.Core");
-            if (gmType != null)
-            {
-                var onScoreEvent = gmType.GetEvent("OnScoreChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onStateEvent = gmType.GetEvent("OnGameStateChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                if (onScoreEvent != null) onScoreEvent.AddEventHandler(null, new System.Action<int>(OnScoreChanged));
-                if (onStateEvent != null) onStateEvent.AddEventHandler(null, new System.Action<System.Enum>(OnGameStateChanged));
-            }
+            // Player stat events
+            EventHandler.Instance.OnPlayerHealthChanged += OnHealthChanged;
+            EventHandler.Instance.OnPlayerDamaged += OnPlayerDamaged;
+            EventHandler.Instance.OnPlayerHealed += OnPlayerHealed;
+            EventHandler.Instance.OnPlayerManaChanged += OnManaChanged;
+            EventHandler.Instance.OnPlayerStaminaChanged += OnStaminaChanged;
 
-            // Use reflection to subscribe to Inventory events (avoids circular dependency)
-            var invType = System.Type.GetType("Code.Lavos.Core.Inventory, Code.Lavos.Inventory");
-            if (invType != null)
-            {
-                var instanceProp = invType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                _inventory = instanceProp?.GetValue(null) as MonoBehaviour;
-                if (_inventory != null)
-                {
-                    var onInvEvent = invType.GetEvent("OnInventoryChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    onInvEvent?.AddEventHandler(_inventory, new System.Action(RefreshHotbar));
-                }
-            }
+            // Status effect events
+            EventHandler.Instance.OnStatChanged += OnStatChanged;
+
+            // Floating text / notifications
+            EventHandler.Instance.OnFloatingTextRequested += ShowFloatingText;
+            EventHandler.Instance.OnNotificationRequested += ShowNotification;
+
+            _isSubscribed = true;
+            Debug.Log("[HUDSystem] Plugged into EventHandler - All events subscribed");
         }
 
         private void UnsubscribeFromEvents()
         {
-            // Use reflection to unsubscribe from PlayerStats events (avoids circular dependency)
-            var statsType = System.Type.GetType("Code.Lavos.Status.PlayerStats, Code.Lavos.Status");
-            if (statsType != null)
-            {
-                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onPlayerDiedEvent = statsType.GetEvent("OnPlayerDied", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                
-                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
-                if (onPlayerDiedEvent != null) onPlayerDiedEvent.RemoveEventHandler(null, new System.Action(OnPlayerDied));
+            if (EventHandler.Instance == null) return;
 
-                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
-                
-                if (playerStatsInstance != null)
-                {
-                    var onManaEvent = statsType.GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onStaminaEvent = statsType.GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onEffectAddedEvent = statsType.GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                    var onEffectRemovedEvent = statsType.GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+            // Player stat events
+            EventHandler.Instance.OnPlayerHealthChanged -= OnHealthChanged;
+            EventHandler.Instance.OnPlayerDamaged -= OnPlayerDamaged;
+            EventHandler.Instance.OnPlayerHealed -= OnPlayerHealed;
+            EventHandler.Instance.OnPlayerManaChanged -= OnManaChanged;
+            EventHandler.Instance.OnPlayerStaminaChanged -= OnStaminaChanged;
 
-                    if (onManaEvent != null) onManaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
-                    if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
-                    if (onEffectAddedEvent != null) onEffectAddedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
-                    if (onEffectRemovedEvent != null) onEffectRemovedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
-                }
-            }
+            // Status effect events
+            EventHandler.Instance.OnStatChanged -= OnStatChanged;
 
-            // Use reflection to unsubscribe from GameManager events
-            var gmType = System.Type.GetType("Code.Lavos.Core.GameManager, Code.Lavos.Core");
-            if (gmType != null)
-            {
-                var onScoreEvent = gmType.GetEvent("OnScoreChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onStateEvent = gmType.GetEvent("OnGameStateChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                if (onScoreEvent != null) onScoreEvent.RemoveEventHandler(null, new System.Action<int>(OnScoreChanged));
-                if (onStateEvent != null) onStateEvent.RemoveEventHandler(null, new System.Action<System.Enum>(OnGameStateChanged));
-            }
-
-            // Use reflection to unsubscribe from Inventory events
-            if (_inventory != null)
-            {
-                var invType = _inventory.GetType();
-                var onInvEvent = invType.GetEvent("OnInventoryChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                onInvEvent?.RemoveEventHandler(_inventory, new System.Action(RefreshHotbar));
-            }
+            // Floating text / notifications
+            EventHandler.Instance.OnFloatingTextRequested -= ShowFloatingText;
+            EventHandler.Instance.OnNotificationRequested -= ShowNotification;
         }
 
-        // ------------
-        //  CALLBACKS — BARRES
-        // ------------
+        #endregion
+
+        #region Event Handlers
+
         private void OnHealthChanged(float current, float max)
         {
-            if (healthFill != null)
-            {
-                float t = max > 0f ? current / max : 0f;
-                healthFill.fillAmount = t;
-                
-                // Smooth color interpolation: full health = bright green, low health = dark red
-                if (t >= 0.6f)
-                {
-                    float localT = (t - 0.6f) / 0.4f;
-                    healthFill.color = Color.Lerp(colorHealthLow, colorHealthHigh, localT);
-                }
-                else if (t >= 0.3f)
-                {
-                    float localT = (t - 0.3f) / 0.3f;
-                    healthFill.color = Color.Lerp(colorHealthCritical, colorHealthLow, localT);
-                }
-                else
-                {
-                    float dimFactor = t / 0.3f;
-                    healthFill.color = new Color(
-                        colorHealthCritical.r * dimFactor,
-                        colorHealthCritical.g * dimFactor,
-                        colorHealthCritical.b * dimFactor
-                    );
-                }
-            }
-            if (healthText != null)
-            {
-                float percent = (current / max) * 100f;
-                healthText.text = $"{percent:F0}%";
-            }
+            _currentHealth = current;
+            _maxHealth = max;
+            UpdateBar(_healthBarFill, _healthText, current, max, healthColorHigh, healthColorLow, healthColorCritical);
+        }
+
+        private void OnPlayerDamaged(float amount)
+        {
+            // Flash health bar red
+            StartCoroutine(FlashBar(_healthBarFill, Color.red, 0.3f));
+            
+            // Show damage floating text
+            ShowFloatingText($"-{Mathf.CeilToInt(amount)}", Color.red, 1.5f);
+        }
+
+        private void OnPlayerHealed(float amount)
+        {
+            // Show heal floating text
+            ShowFloatingText($"+{Mathf.CeilToInt(amount)}", Color.green, 1.5f);
         }
 
         private void OnManaChanged(float current, float max)
         {
-            if (manaFill != null)
-            {
-                float t = max > 0f ? current / max : 0f;
-                manaFill.fillAmount = t;
-                // Smooth interpolation: full = bright blue, empty = dark blue
-                manaFill.color = Color.Lerp(colorManaLow, colorMana, t);
-            }
-            if (manaText != null)
-            {
-                float percent = (current / max) * 100f;
-                manaText.text = $"{percent:F0}%";
-            }
+            _currentMana = current;
+            _maxMana = max;
+            UpdateBar(_manaBarFill, _manaText, current, max, manaColor, manaColor, manaColor);
         }
 
         private void OnStaminaChanged(float current, float max)
         {
-            if (staminaFill != null)
+            _currentStamina = current;
+            _maxStamina = max;
+            UpdateBar(_staminaBarFill, _staminaText, current, max, staminaColor, staminaColor, staminaColor);
+        }
+
+        private void OnStatChanged(string statName, float newValue)
+        {
+            // Handle custom stat changes if needed (silent)
+        }
+
+        private void UpdateAllBars()
+        {
+            UpdateBar(_healthBarFill, _healthText, _currentHealth, _maxHealth, healthColorHigh, healthColorLow, healthColorCritical);
+            UpdateBar(_manaBarFill, _manaText, _currentMana, _maxMana, manaColor, manaColor, manaColor);
+            UpdateBar(_staminaBarFill, _staminaText, _currentStamina, _maxStamina, staminaColor, staminaColor, staminaColor);
+        }
+
+        private void UpdateBar(Image fill, TextMeshProUGUI text, float current, float max, Color high, Color mid, Color low)
+        {
+            if (fill == null || text == null) return;
+
+            float percent = max > 0 ? current / max : 0;
+            fill.fillAmount = Mathf.Clamp01(percent);
+            text.text = $"{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(max)}";
+
+            // Color interpolation based on resource level
+            if (percent > 0.6f)
+                fill.color = Color.Lerp(mid, high, (percent - 0.6f) / 0.4f);
+            else if (percent > 0.3f)
+                fill.color = Color.Lerp(low, mid, (percent - 0.3f) / 0.3f);
+            else
+                fill.color = low;
+        }
+
+        private IEnumerator FlashBar(Image bar, Color flashColor, float duration)
+        {
+            Color originalColor = bar.color;
+            float elapsed = 0;
+            
+            while (elapsed < duration)
             {
-                float t = max > 0f ? current / max : 0f;
-                staminaFill.fillAmount = t;
-                // Smooth interpolation: full = bright yellow, empty = dark yellow
-                staminaFill.color = Color.Lerp(colorStaminaLow, colorStamina, t);
+                elapsed += Time.deltaTime;
+                bar.color = Color.Lerp(originalColor, flashColor, Mathf.Sin(elapsed / duration * Mathf.PI));
+                yield return null;
             }
-            if (staminaText != null)
+            
+            bar.color = originalColor;
+        }
+
+        public void ShowFloatingText(string text, Color color, float duration = 1.5f)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            StartCoroutine(FloatingTextRoutine(text, color, duration));
+        }
+
+        private IEnumerator FloatingTextRoutine(string text, Color color, float duration)
+        {
+            var textGO = new GameObject("FloatingText");
+            textGO.transform.SetParent(_floatingTextRoot.transform);
+            var rect = textGO.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(200, 50);
+
+            var textComp = textGO.AddComponent<TextMeshProUGUI>();
+            textComp.fontSize = 24;
+            textComp.alignment = TextAlignmentOptions.Center;
+            textComp.color = color;
+            textComp.text = text;
+            textComp.textWrappingMode = TextWrappingModes.NoWrap;
+
+            float elapsed = 0;
+            Vector2 startPos = rect.anchoredPosition;
+
+            while (elapsed < duration)
             {
-                float percent = (current / max) * 100f;
-                staminaText.text = $"{percent:F0}%";
-            }
-        }
-
-        private void OnScoreChanged(int score)
-        {
-            if (scoreText != null) scoreText.text = $"Score : {score}";
-        }
-
-        private void OnInteractableChanged(string prompt)
-        {
-            if (interactionPrompt == null) return;
-            interactionPrompt.text = string.IsNullOrEmpty(prompt) ? "" : $"[E] {prompt}";
-            interactionPrompt.enabled = !string.IsNullOrEmpty(prompt);
-        }
-
-        private void OnPlayerDied() { /* GameManager → TriggerGameOver → OnGameStateChanged */ }
-
-        private void OnGameStateChanged(System.Enum state)
-        {
-            bool playing = state.ToString() == "Playing";
-            bool paused = state.ToString() == "Paused";
-            bool gameOver = state.ToString() == "GameOver";
-            bool victory = state.ToString() == "Victory";
-
-            _hudRoot?.SetActive(playing || paused);
-            pausePanel?.SetActive(paused);
-            gameOverPanel?.SetActive(gameOver);
-            victoryPanel?.SetActive(victory);
-
-            bool cursorFree = paused || gameOver || victory;
-            Cursor.lockState = cursorFree ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = cursorFree;
-        }
-
-        // ------------
-        //  STATUS EFFECTS
-        // ------------
-        private void OnEffectAdded(StatusEffectData effect)
-        {
-            if (_effectIcons.ContainsKey(effect.id)) return;
-
-            var icon = BuildEffectIcon(effect);
-            _effectIcons[effect.id] = icon;
-        }
-
-        private void OnEffectRemoved(StatusEffectData effect)
-        {
-            if (!_effectIcons.TryGetValue(effect.id, out var data)) return;
-            Destroy(data.Root);
-            _effectIcons.Remove(effect.id);
-        }
-
-        private void RefreshEffectTimers()
-        {
-            if (PlayerStats.Instance == null) return;
-
-            foreach (var effect in PlayerStats.Instance.ActiveEffects)
-            {
-                if (!_effectIcons.TryGetValue(effect.id, out var data)) continue;
-
-                float t = effect.MaxDuration > 0f ? effect.remainingTime / effect.MaxDuration : 0f;
-                data.FillBar.fillAmount = Mathf.Clamp01(t);
-
-                if (data.StackText != null && effect.maxStacks > 1)
-                    data.StackText.text = effect.currentStacks > 1 ? $"x{effect.currentStacks}" : "";
-            }
-        }
-
-        private EffectIconData BuildEffectIcon(StatusEffectData effect)
-        {
-            Color iconColor = effect.effectType == EffectType.Debuff
-                ? new Color(0.9f, 0.25f, 0.1f)
-                : new Color(0.2f, 0.85f, 0.5f);
-
-            switch (effect.id)
-            {
-                case "poison": iconColor = new Color(0.5f, 0.9f, 0.1f); break;
-                case "regeneration": iconColor = new Color(0.2f, 0.9f, 0.4f); break;
-                case "mana_regen": iconColor = new Color(0.3f, 0.5f, 1.0f); break;
-                case "burn": iconColor = new Color(1.0f, 0.4f, 0.0f); break;
-                case "freeze": iconColor = new Color(0.5f, 0.9f, 1.0f); break;
-                case "stun": iconColor = new Color(1.0f, 0.9f, 0.1f); break;
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                rect.anchoredPosition = startPos + Vector2.up * (t * 50);
+                textComp.color = new Color(color.r, color.g, color.b, color.a * (1 - t));
+                yield return null;
             }
 
-            var root = MakeGO($"Effect_{effect.id}", _effectRow);
-            var rootRT = root.AddComponent<RectTransform>();
-            rootRT.sizeDelta = new Vector2(effectIconSize, effectIconSize + 10f);
-
-            var border = MakeGO("Border", root.transform);
-            var bRT = border.AddComponent<RectTransform>();
-            bRT.anchorMin = Vector2.zero; bRT.anchorMax = Vector2.one;
-            bRT.offsetMin = Vector2.zero; bRT.offsetMax = Vector2.zero;
-            border.AddComponent<Image>().color = new Color(0.1f, 0.1f, 0.1f);
-
-            var bg = MakeGO("BG", root.transform);
-            var bgRT = bg.AddComponent<RectTransform>();
-            bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
-            bgRT.offsetMin = new Vector2(2, 2); bgRT.offsetMax = new Vector2(-2, -2);
-            bg.AddComponent<Image>().color = new Color(0.15f, 0.15f, 0.18f);
-
-            var iconGO = MakeGO("Icon", root.transform);
-            var iconRT = iconGO.AddComponent<RectTransform>();
-            float pad = effectIconSize * 0.15f;
-            iconRT.anchorMin = new Vector2(0f, 0.25f);
-            iconRT.anchorMax = new Vector2(1f, 1f);
-            iconRT.offsetMin = new Vector2(pad, 2f);
-            iconRT.offsetMax = new Vector2(-pad, -2f);
-            var iconImg = iconGO.AddComponent<Image>();
-            iconImg.color = iconColor;
-
-            if (effect.icon != null) iconImg.sprite = effect.icon;
-
-            var barBG = MakeGO("DurBarBG", root.transform);
-            var barBGRT = barBG.AddComponent<RectTransform>();
-            barBGRT.anchorMin = new Vector2(0f, 0f);
-            barBGRT.anchorMax = new Vector2(1f, 0f);
-            barBGRT.pivot = new Vector2(0.5f, 0f);
-            barBGRT.offsetMin = new Vector2(2f, 2f);
-            barBGRT.offsetMax = new Vector2(-2f, 2f);
-            barBGRT.sizeDelta = new Vector2(0f, 6f);
-            barBG.AddComponent<Image>().color = new Color(0.05f, 0.05f, 0.05f);
-
-            var barFillGO = MakeGO("DurBarFill", barBG.transform);
-            var barFillRT = barFillGO.AddComponent<RectTransform>();
-            barFillRT.anchorMin = Vector2.zero; barFillRT.anchorMax = Vector2.one;
-            barFillRT.offsetMin = Vector2.zero; barFillRT.offsetMax = Vector2.zero;
-            var barFill = barFillGO.AddComponent<Image>();
-            barFill.color = iconColor;
-            barFill.type = Image.Type.Filled;
-            barFill.fillMethod = Image.FillMethod.Horizontal;
-            barFill.fillAmount = 1f;
-
-            TextMeshProUGUI stackTmp = null;
-            if (effect.maxStacks > 1)
-            {
-                var stackGO = MakeGO("Stacks", root.transform);
-                var stackRT = stackGO.AddComponent<RectTransform>();
-                stackRT.anchorMin = new Vector2(0f, 0.55f);
-                stackRT.anchorMax = new Vector2(1f, 1f);
-                stackRT.offsetMin = Vector2.zero;
-                stackRT.offsetMax = Vector2.zero;
-                stackTmp = stackGO.AddComponent<TextMeshProUGUI>();
-                stackTmp.fontSize = 10f;
-                stackTmp.color = Color.white;
-                stackTmp.alignment = TextAlignmentOptions.BottomRight;
-            }
-
-            return new EffectIconData
-            {
-                Root = root,
-                FillBar = barFill,
-                StackText = stackTmp,
-                MaxDuration = effect.duration,
-            };
+            Destroy(textGO);
         }
 
-        // ------------
-        //  HOTBAR
-        // ------------
+        private void ShowNotification(string message)
+        {
+            if (string.IsNullOrEmpty(message)) return;
+            StartCoroutine(NotificationRoutine(message));
+        }
+
+        private IEnumerator NotificationRoutine(string message)
+        {
+            // Simple notification at top center
+            var notifGO = new GameObject("Notification");
+            notifGO.transform.SetParent(_hudRoot.transform);
+            var rect = notifGO.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0, -200);
+            rect.sizeDelta = new Vector2(600, 60);
+
+            var bg = notifGO.AddComponent<Image>();
+            bg.color = new Color(0, 0, 0, 0.8f);
+
+            var textComp = notifGO.AddComponent<TextMeshProUGUI>();
+            textComp.fontSize = 20;
+            textComp.alignment = TextAlignmentOptions.Center;
+            textComp.color = Color.white;
+            textComp.text = message;
+
+            yield return new WaitForSeconds(3f);
+            Destroy(notifGO);
+        }
+
+        #endregion
+
+        #region Hotbar System
+
         private void HandleHotbarInput()
         {
-            if (_kb == null) return;
-            if (GameManager.Instance != null &&
-                GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
-
-            Key[] numKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
-            for (int i = 0; i < Mathf.Min(numKeys.Length, hotbarSlotCount); i++)
+            for (int i = 0; i < hotbarSlotCount; i++)
             {
-                if (_kb[numKeys[i]].wasPressedThisFrame)
+                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
                 {
                     SetActiveSlot(i);
-                    UseActiveSlotItem();
-                    break;
                 }
             }
         }
 
         private void SetActiveSlot(int index)
         {
-            _activeSlot = index;
-            for (int i = 0; i < hotbarSlotCount; i++)
+            if (index < 0 || index >= hotbarSlotCount) return;
+
+            _activeHotbarSlot = index;
+            UpdateHotbarDisplay();
+
+            // Use item from slot
+            if (_inventory != null)
             {
-                if (_hotbarBorders == null || i >= _hotbarBorders.Length) break;
-                _hotbarBorders[i].color = (i == _activeSlot) ? hotbarActiveColor : hotbarBorderColor;
+                _inventory.UseItem(index, GameObject.FindGameObjectWithTag("Player"));
             }
         }
 
-        private void UseActiveSlotItem()
+        private void UpdateHotbarDisplay()
         {
-            var inv = Inventory.Instance;
-            if (inv == null) return;
-
-            var player = FindFirstObjectByType<PlayerController>();
-            if (player == null) return;
-
-            inv.UseItem(_activeSlot, player.gameObject);
-        }
-
-        private void RefreshHotbar()
-        {
-            var inv = Inventory.Instance;
-            if (inv == null || _hotbarIconImages == null) return;
+            if (_hotbarBorders == null) return;
 
             for (int i = 0; i < hotbarSlotCount; i++)
             {
-                var slot = inv.GetSlot(i);
-                bool hasItem = slot != null && !slot.IsEmpty;
-
-                _hotbarIconImages[i].enabled = hasItem;
-                if (hasItem && slot.item?.icon != null)
-                    _hotbarIconImages[i].sprite = slot.item.icon;
-
-                if (hasItem)
-                    _hotbarIconImages[i].color = RarityColor(slot.item.rarity);
-
-                if (_hotbarQtyTexts[i] != null)
+                if (_hotbarBorders[i] != null)
                 {
-                    _hotbarQtyTexts[i].text = (hasItem && slot.quantity > 1) ? slot.quantity.ToString() : "";
-                    _hotbarQtyTexts[i].enabled = hasItem && slot.quantity > 1;
+                    _hotbarBorders[i].color = (i == _activeHotbarSlot) ? hotbarActiveColor : hotbarInactiveColor;
                 }
             }
         }
 
-        private Color RarityColor(System.Enum rarity) => rarity.ToString() switch
-        {
-            "Common" => new Color(0.75f, 0.75f, 0.75f),
-            "Uncommon" => new Color(0.30f, 0.80f, 0.30f),
-            "Rare" => new Color(0.20f, 0.45f, 0.95f),
-            "Epic" => new Color(0.65f, 0.20f, 0.85f),
-            "Legendary" => new Color(1.00f, 0.55f, 0.05f),
-            _ => Color.white,
-        };
+        #endregion
 
-        // ------------
-        //  API PUBLIQUE
-        // ------------
-        public void ShowPopup(string message)
-        {
-            if (popupText == null) return;
-            if (_popupRoutine != null) StopCoroutine(_popupRoutine);
-            _popupRoutine = StartCoroutine(PopupRoutine(message));
-        }
+        #region Status Effects System
 
-        private IEnumerator PopupRoutine(string message)
+        /// <summary>
+        /// Add a status effect to the display.
+        /// Called via EventHandler when status effects are applied.
+        /// </summary>
+        public void AddStatusEffect(StatusEffectData effectData, float duration, int stacks = 1)
         {
-            popupText.text = message;
-            popupText.enabled = true;
-            yield return new WaitForSeconds(popupDuration);
-            popupText.enabled = false;
-        }
+            if (_effectsContent == null) return;
 
-        // --------
-        //  CONSTRUCTION HUD
-        // --------
-        private void EnsureCanvas()
-        {
-            if (targetCanvas != null) return;
-            targetCanvas = FindFirstObjectByType<Canvas>();
-            if (targetCanvas == null)
+            string effectKey = effectData.effectName;
+            
+            // If effect already exists, update stacks
+            if (_activeEffects.ContainsKey(effectKey))
             {
-                var go = new GameObject("HUDCanvas");
-                targetCanvas = go.AddComponent<Canvas>();
-                targetCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                targetCanvas.sortingOrder = 100;
-                var scaler = go.AddComponent<CanvasScaler>();
-                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                scaler.referenceResolution = new Vector2(1920, 1080);
-                scaler.matchWidthOrHeight = 0.5f;
-                go.AddComponent<GraphicRaycaster>();
+                UpdateStatusEffect(effectKey, stacks, duration);
+                return;
+            }
+
+            // Create new effect icon
+            var effectGO = CreateEffectIcon(effectData, stacks);
+            _activeEffects[effectKey] = effectGO;
+        }
+
+        /// <summary>
+        /// Remove a status effect from the display.
+        /// </summary>
+        public void RemoveStatusEffect(string effectName)
+        {
+            if (_activeEffects.ContainsKey(effectName))
+            {
+                Destroy(_activeEffects[effectName]);
+                _activeEffects.Remove(effectName);
             }
         }
 
-        private void BuildHUDIfNeeded()
+        /// <summary>
+        /// Update an existing status effect.
+        /// </summary>
+        private void UpdateStatusEffect(string effectKey, int stacks, float duration)
         {
-            if (healthFill != null && manaFill != null && staminaFill != null) return;
+            var effectGO = _activeEffects[effectKey];
+            if (effectGO == null) return;
 
-            var canvas = targetCanvas.transform;
-
-            _hudRoot = MakeGO("HUD_Root", canvas);
-            var rootRT = _hudRoot.AddComponent<RectTransform>();
-            Anchor(rootRT, Vector2.up, Vector2.up, new Vector2(0f, 1f));
-            rootRT.anchoredPosition = new Vector2(20f, -20f);
-            rootRT.sizeDelta = new Vector2(280f, 110f);
-
-            healthFill = BuildBar(_hudRoot.transform, "HealthBar", colorHealthHigh, 0f);
-            manaFill = BuildBar(_hudRoot.transform, "ManaBar", colorMana, 32f);
-            staminaFill = BuildBar(_hudRoot.transform, "StaminaBar", colorStamina, 64f);
-
-            healthText = BuildBarLabel(_hudRoot.transform, "HealthText", 0f);
-            manaText = BuildBarLabel(_hudRoot.transform, "ManaText", 32f);
-            staminaText = BuildBarLabel(_hudRoot.transform, "StaminaText", 64f);
-
-            BuildPixelBarLabel(_hudRoot.transform, "\u2665", colorHealthHigh, 0f);
-            BuildPixelBarLabel(_hudRoot.transform, "\u2666", colorMana, 32f);
-            BuildPixelBarLabel(_hudRoot.transform, "\u2663", colorStamina, 64f);
-
-            scoreText = BuildLabel("ScoreText", canvas,
-                new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f),
-                new Vector2(-20f, -20f), new Vector2(200f, 36f), 22, TextAlignmentOptions.TopRight);
-
-            interactionPrompt = BuildLabel("InteractPrompt", canvas,
-                new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                new Vector2(0f, 100f), new Vector2(400f, 36f), 20, TextAlignmentOptions.Center);
-            interactionPrompt.enabled = false;
-
-            popupText = BuildLabel("PopupText", canvas,
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0f, 120f), new Vector2(500f, 50f), 26, TextAlignmentOptions.Center);
-            popupText.color = new Color(1f, 0.92f, 0.3f);
-            popupText.enabled = false;
-
-            BuildEffectRow(canvas);
-            BuildHotbar(canvas);
-
-            pausePanel = BuildOverlayPanel("PausePanel", canvas, new Color(0f, 0f, 0f, 0.65f), "PAUSE");
-            gameOverPanel = BuildOverlayPanel("GameOverPanel", canvas, new Color(0.4f, 0f, 0f, 0.75f), "GAME OVER");
-            victoryPanel = BuildOverlayPanel("VictoryPanel", canvas, new Color(0f, 0.3f, 0f, 0.75f), "VICTOIRE !");
-            pausePanel.SetActive(false);
-            gameOverPanel.SetActive(false);
-            victoryPanel.SetActive(false);
-
-            Debug.Log("[HUDSystem] HUD v2 construit (barres + effects + hotbar).");
-        }
-
-        private void BuildEffectRow(Transform canvas)
-        {
-            var go = MakeGO("EffectRow", canvas);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0f, 0f);
-            rt.anchorMax = new Vector2(0f, 0f);
-            rt.pivot = new Vector2(0f, 0f);
-            rt.anchoredPosition = new Vector2(20f, 80f);
-            rt.sizeDelta = new Vector2(300f, effectIconSize + 12f);
-
-            var layout = go.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 6f;
-            layout.childControlHeight = true;
-            layout.childControlWidth = false;
-            layout.childForceExpandHeight = true;
-            layout.childForceExpandWidth = false;
-
-            _effectRow = go.transform;
-        }
-
-        private void BuildHotbar(Transform canvas)
-        {
-            _hotbarBorders = new Image[hotbarSlotCount];
-            _hotbarIconImages = new Image[hotbarSlotCount];
-            _hotbarQtyTexts = new TextMeshProUGUI[hotbarSlotCount];
-            _hotbarKeyTexts = new TextMeshProUGUI[hotbarSlotCount];
-
-            float totalW = hotbarSlotCount * (hotbarSlotSize + 4f) + 8f;
-
-            var bar = MakeGO("Hotbar", canvas);
-            var barRT = bar.AddComponent<RectTransform>();
-            barRT.anchorMin = new Vector2(0.5f, 0f);
-            barRT.anchorMax = new Vector2(0.5f, 0f);
-            barRT.pivot = new Vector2(0.5f, 0f);
-            barRT.anchoredPosition = new Vector2(0f, 18f);
-            barRT.sizeDelta = new Vector2(totalW, hotbarSlotSize + 20f);
-
-            BuildPixelFrame(bar.transform, hotbarBgColor, new Color(0.05f, 0.05f, 0.05f));
-
-            var layout = bar.AddComponent<HorizontalLayoutGroup>();
-            layout.padding = new RectOffset(6, 6, 10, 4);
-            layout.spacing = 4f;
-            layout.childControlHeight = false;
-            layout.childControlWidth = false;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-
-            for (int i = 0; i < hotbarSlotCount; i++)
+            // Update stacks text
+            var stackText = effectGO.GetComponentInChildren<TextMeshProUGUI>();
+            if (stackText != null && stacks > 1)
             {
-                int slotIdx = i;
-                var slot = MakeGO($"Slot_{i + 1}", bar.transform);
-                var slotRT = slot.AddComponent<RectTransform>();
-                slotRT.sizeDelta = new Vector2(hotbarSlotSize, hotbarSlotSize);
-
-                var border = MakeGO("Border", slot.transform);
-                var bRT = border.AddComponent<RectTransform>();
-                bRT.anchorMin = Vector2.zero; bRT.anchorMax = Vector2.one;
-                bRT.offsetMin = Vector2.zero; bRT.offsetMax = Vector2.zero;
-                var borderImg = border.AddComponent<Image>();
-                borderImg.color = (i == 0) ? hotbarActiveColor : hotbarBorderColor;
-                _hotbarBorders[i] = borderImg;
-
-                var inner = MakeGO("Inner", slot.transform);
-                var iRT = inner.AddComponent<RectTransform>();
-                iRT.anchorMin = Vector2.zero; iRT.anchorMax = Vector2.one;
-                iRT.offsetMin = new Vector2(2, 2); iRT.offsetMax = new Vector2(-2, -2);
-                inner.AddComponent<Image>().color = hotbarBgColor;
-
-                var iconGO = MakeGO("Icon", slot.transform);
-                var iconRT = iconGO.AddComponent<RectTransform>();
-                iconRT.anchorMin = new Vector2(0.1f, 0.15f);
-                iconRT.anchorMax = new Vector2(0.9f, 0.9f);
-                iconRT.offsetMin = Vector2.zero; iconRT.offsetMax = Vector2.zero;
-                var iconImg = iconGO.AddComponent<Image>();
-                iconImg.enabled = false;
-                iconImg.preserveAspect = true;
-                _hotbarIconImages[i] = iconImg;
-
-                var qty = MakeGO("Qty", slot.transform);
-                var qtyRT = qty.AddComponent<RectTransform>();
-                qtyRT.anchorMin = new Vector2(0.5f, 0f);
-                qtyRT.anchorMax = new Vector2(1f, 0.45f);
-                qtyRT.offsetMin = Vector2.zero; qtyRT.offsetMax = Vector2.zero;
-                var qtyTmp = qty.AddComponent<TextMeshProUGUI>();
-                qtyTmp.fontSize = 11f;
-                qtyTmp.color = Color.white;
-                qtyTmp.alignment = TextAlignmentOptions.BottomRight;
-                qtyTmp.enabled = false;
-                _hotbarQtyTexts[i] = qtyTmp;
-
-                var key = MakeGO("Key", slot.transform);
-                var keyRT = key.AddComponent<RectTransform>();
-                keyRT.anchorMin = Vector2.zero;
-                keyRT.anchorMax = new Vector2(0.55f, 0.42f);
-                keyRT.offsetMin = new Vector2(3f, 3f);
-                keyRT.offsetMax = Vector2.zero;
-                var keyTmp = key.AddComponent<TextMeshProUGUI>();
-                keyTmp.text = (i + 1).ToString();
-                keyTmp.fontSize = 10f;
-                keyTmp.color = new Color(0.7f, 0.7f, 0.7f);
-                keyTmp.alignment = TextAlignmentOptions.TopLeft;
-                _hotbarKeyTexts[i] = keyTmp;
+                stackText.text = stacks.ToString();
             }
 
-            RefreshHotbar();
-        }
-
-        // ------------
-        //  HELPERS DE CONSTRUCTION
-        // ------------
-        private Image BuildBar(Transform parent, string id, Color fillColor, float yOffset)
-        {
-            var bgGO = MakeGO(id + "_BG", parent);
-            var bgRT = bgGO.AddComponent<RectTransform>();
-            bgRT.anchorMin = new Vector2(0f, 1f);
-            bgRT.anchorMax = new Vector2(0f, 1f);
-            bgRT.pivot = new Vector2(0f, 1f);
-            bgRT.anchoredPosition = new Vector2(18f, -yOffset);
-            bgRT.sizeDelta = new Vector2(200f, 22f);
-            var bgImg = bgGO.AddComponent<Image>();
-            bgImg.color = new Color(0.06f, 0.06f, 0.08f, 0.85f);
-
-            BuildPixelFrame(bgGO.transform, new Color(0, 0, 0, 0), new Color(0.25f, 0.25f, 0.28f));
-
-            var fillGO = MakeGO(id + "_Fill", bgGO.transform);
-            var fillRT = fillGO.AddComponent<RectTransform>();
-            fillRT.anchorMin = Vector2.zero;
-            fillRT.anchorMax = Vector2.one;
-            fillRT.offsetMin = new Vector2(2f, 2f);
-            fillRT.offsetMax = new Vector2(-2f, -2f);
-            var fillImg = fillGO.AddComponent<Image>();
-            fillImg.color = fillColor;
-            fillImg.type = Image.Type.Filled;
-            fillImg.fillMethod = Image.FillMethod.Horizontal;
-            fillImg.fillAmount = 1f;
-            return fillImg;
-        }
-
-        private void BuildPixelBarLabel(Transform parent, string symbol, Color color, float yOffset)
-        {
-            var go = MakeGO("BarIcon_" + symbol, parent);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(0f, -yOffset);
-            rt.sizeDelta = new Vector2(16f, 22f);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.text = symbol;
-            tmp.fontSize = 13f;
-            tmp.color = color;
-            tmp.alignment = TextAlignmentOptions.Midline;
-        }
-
-        private TextMeshProUGUI BuildBarLabel(Transform parent, string id, float yOffset)
-        {
-            var go = MakeGO(id, parent);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0f, 1f);
-            rt.anchorMax = new Vector2(0f, 1f);
-            rt.pivot = new Vector2(0f, 1f);
-            rt.anchoredPosition = new Vector2(222f, -yOffset);
-            rt.sizeDelta = new Vector2(60f, 22f);
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.fontSize = 11f;
-            tmp.color = new Color(0.8f, 0.8f, 0.8f);
-            tmp.alignment = TextAlignmentOptions.MidlineLeft;
-            return tmp;
-        }
-
-        private TextMeshProUGUI BuildLabel(string id, Transform parent,
-            Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot,
-            Vector2 anchoredPos, Vector2 size, float fontSize, TextAlignmentOptions alignment)
-        {
-            var go = MakeGO(id, parent);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = anchorMin; rt.anchorMax = anchorMax; rt.pivot = pivot;
-            rt.anchoredPosition = anchoredPos; rt.sizeDelta = size;
-            var tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.fontSize = fontSize;
-            tmp.color = Color.white;
-            tmp.alignment = alignment;
-            return tmp;
-        }
-
-        private GameObject BuildOverlayPanel(string id, Transform parent, Color bgColor, string title)
-        {
-            var go = MakeGO(id, parent);
-            var rt = go.AddComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
-            go.AddComponent<Image>().color = bgColor;
-
-            var lblGO = MakeGO("Title", go.transform);
-            var lblRT = lblGO.AddComponent<RectTransform>();
-            lblRT.anchorMin = new Vector2(0.5f, 0.5f); lblRT.anchorMax = new Vector2(0.5f, 0.5f);
-            lblRT.pivot = new Vector2(0.5f, 0.5f); lblRT.anchoredPosition = Vector2.zero;
-            lblRT.sizeDelta = new Vector2(600f, 80f);
-            var lbl = lblGO.AddComponent<TextMeshProUGUI>();
-            lbl.text = title; lbl.fontSize = 52f; lbl.color = Color.white;
-            lbl.alignment = TextAlignmentOptions.Center;
-            return go;
-        }
-
-        private void BuildPixelFrame(Transform parent, Color bgColor, Color borderColor)
-        {
-            var bg = MakeGO("PixBG", parent);
-            bg.transform.SetAsFirstSibling();
-            var bgRT = bg.AddComponent<RectTransform>();
-            bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
-            bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
-            bg.AddComponent<Image>().color = bgColor;
-
-            foreach (var (anchor0, anchor1, off0, off1) in new[]
+            // Update duration bar if present
+            var durationBar = effectGO.GetComponentInChildren<Image>();
+            if (durationBar != null)
             {
-                (new Vector2(0f,1f), new Vector2(1f,1f), new Vector2(0f,-2f), new Vector2(0f,0f)),
-                (new Vector2(0f,0f), new Vector2(1f,0f), new Vector2(0f,0f),  new Vector2(0f,2f)),
-                (new Vector2(0f,0f), new Vector2(0f,1f), new Vector2(0f,0f),  new Vector2(2f,0f)),
-                (new Vector2(1f,0f), new Vector2(1f,1f), new Vector2(-2f,0f), new Vector2(0f,0f)),
-            })
-            {
-                var edge = MakeGO("Edge", parent);
-                var eRT = edge.AddComponent<RectTransform>();
-                eRT.anchorMin = anchor0; eRT.anchorMax = anchor1;
-                eRT.offsetMin = off0; eRT.offsetMax = off1;
-                edge.AddComponent<Image>().color = borderColor;
+                StartCoroutine(UpdateDurationBar(durationBar, duration));
             }
         }
 
-        // --------
-        //  UTILITAIRES
-        // --------
-        private static GameObject MakeGO(string name, Transform parent)
+        private GameObject CreateEffectIcon(StatusEffectData effectData, int stacks)
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            return go;
+            var effectGO = new GameObject("Effect_" + effectData.effectName);
+            effectGO.transform.SetParent(_effectsContent);
+            var rect = effectGO.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(effectIconSize, effectIconSize);
+
+            // Icon background
+            var bg = effectGO.AddComponent<Image>();
+            bg.color = effectData.effectType == EffectType.Buff ? 
+                new Color(0.2f, 0.5f, 0.2f, 0.8f) : 
+                new Color(0.5f, 0.2f, 0.2f, 0.8f);
+
+            // Duration bar (child)
+            var barGO = new GameObject("DurationBar");
+            barGO.transform.SetParent(effectGO.transform);
+            var barRect = barGO.AddComponent<RectTransform>();
+            barRect.anchorMin = Vector2.zero;
+            barRect.anchorMax = new Vector2(1, 0);
+            barRect.pivot = new Vector2(0, 0);
+            barRect.anchoredPosition = new Vector2(0, 0);
+            barRect.sizeDelta = new Vector2(0, 4);
+            var barImage = barGO.AddComponent<Image>();
+            barImage.color = effectData.effectType == EffectType.Buff ? Color.green : Color.red;
+            barImage.type = Image.Type.Filled;
+            barImage.fillMethod = Image.FillMethod.Horizontal;
+            barImage.fillAmount = 1f;
+
+            // Stacks text (if > 1)
+            if (stacks > 1)
+            {
+                var stackTextGO = new GameObject("Stacks");
+                stackTextGO.transform.SetParent(effectGO.transform);
+                var stackRect = stackTextGO.AddComponent<RectTransform>();
+                stackRect.anchorMin = new Vector2(1, 0);
+                stackRect.anchorMax = new Vector2(1, 0);
+                stackRect.pivot = new Vector2(1, 0);
+                stackRect.anchoredPosition = new Vector2(-5, 5);
+                stackRect.sizeDelta = new Vector2(30, 30);
+                var stackText = stackTextGO.AddComponent<TextMeshProUGUI>();
+                stackText.fontSize = 14;
+                stackText.color = Color.white;
+                stackText.text = stacks.ToString();
+            }
+
+            return effectGO;
         }
 
-        private static void Anchor(RectTransform rt, Vector2 min, Vector2 max, Vector2 pivot)
+        private IEnumerator UpdateDurationBar(Image bar, float duration)
         {
-            rt.anchorMin = min; rt.anchorMax = max; rt.pivot = pivot;
+            float elapsed = 0;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                bar.fillAmount = 1f - (elapsed / duration);
+                yield return null;
+            }
+            bar.fillAmount = 0f;
         }
+
+        #endregion
+
+        #region Public Methods
+
+        public void SetInteractionPrompt(string prompt)
+        {
+            if (_interactionText != null)
+            {
+                _interactionText.text = string.IsNullOrEmpty(prompt) ? "" : $"[E] {prompt}";
+            }
+        }
+
+        public void ShowNotification(string message, float duration = 3f)
+        {
+            StartCoroutine(NotificationRoutine(message, duration));
+        }
+
+        private IEnumerator NotificationRoutine(string message, float duration)
+        {
+            // Simple notification at top center
+            var notifGO = new GameObject("Notification");
+            notifGO.transform.SetParent(_hudRoot.transform);
+            var rect = notifGO.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0, -200);
+            rect.sizeDelta = new Vector2(600, 60);
+
+            var bg = notifGO.AddComponent<Image>();
+            bg.color = new Color(0, 0, 0, 0.8f);
+
+            var textComp = notifGO.AddComponent<TextMeshProUGUI>();
+            textComp.fontSize = 20;
+            textComp.alignment = TextAlignmentOptions.Center;
+            textComp.color = Color.white;
+            textComp.text = message;
+
+            yield return new WaitForSeconds(duration);
+            Destroy(notifGO);
+        }
+
+        #endregion
     }
 }

@@ -22,18 +22,26 @@ namespace Code.Lavos.Core
     public class ItemEngine : MonoBehaviour
     {
         private static ItemEngine _instance;
+        private static readonly object _lock = new object();
+        
         public static ItemEngine Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = FindAnyObjectByType<ItemEngine>();
-                    if (_instance == null)
+                    lock (_lock)
                     {
-                        GameObject go = new GameObject("ItemEngine");
-                        _instance = go.AddComponent<ItemEngine>();
-                        DontDestroyOnLoad(go);
+                        if (_instance == null)
+                        {
+                            _instance = FindAnyObjectByType<ItemEngine>();
+                            if (_instance == null)
+                            {
+                                GameObject go = new GameObject("ItemEngine");
+                                _instance = go.AddComponent<ItemEngine>();
+                                DontDestroyOnLoad(go);
+                            }
+                        }
                     }
                 }
                 return _instance;
@@ -365,6 +373,13 @@ namespace Code.Lavos.Core
             if (_instance == this)
             {
                 _instance = null;
+                
+                // Destroy the auto-created singleton GameObject when exiting play mode
+                // This prevents "objects not cleaned up" warnings
+                if (Application.isPlaying && gameObject.scene.name == null)
+                {
+                    Destroy(gameObject);
+                }
             }
         }
     }

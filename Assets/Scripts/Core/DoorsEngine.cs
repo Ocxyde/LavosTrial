@@ -1,7 +1,7 @@
 // DoorsEngine.cs
 // Randomized door system with low traps and interactions
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
-// 
+//
 // Plug-in-and-Out Architecture:
 // - Inherits from BehaviorEngine for ItemEngine integration
 // - Event-driven via EventHandler
@@ -10,6 +10,8 @@
 using System;
 using UnityEngine;
 using Code.Lavos.Status;
+
+#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
 
 namespace Code.Lavos.Core
 {
@@ -47,8 +49,9 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Procedural door system with randomized variants and traps.
     /// Plug-in-and-Out: Inherits from BehaviorEngine for ItemEngine integration.
+    /// Implements IInteractable for E-key interaction.
     /// </summary>
-    public class DoorsEngine : BehaviorEngine
+    public class DoorsEngine : BehaviorEngine, IInteractable
     {
         #region Inspector Fields
 
@@ -56,7 +59,7 @@ namespace Code.Lavos.Core
         [SerializeField] private DoorVariant doorVariant = DoorVariant.Normal;
         [SerializeField] private DoorTrapType doorTrap = DoorTrapType.None;
         [SerializeField] private float trapDamage = 10f;
-        [SerializeField] private float trapDuration = 3f;
+        [SerializeField] private float trapDuration = 3f;  // Reserved for future DoT implementation
         
         [Header("Visual")]
         [SerializeField] private Color normalColor = Color.white;
@@ -66,6 +69,7 @@ namespace Code.Lavos.Core
         
         [Header("Audio")]
         [SerializeField] private AudioClip openSound;
+        [SerializeField] private AudioClip closeSound;
         [SerializeField] private AudioClip lockedSound;
         [SerializeField] private AudioClip trapSound;
         
@@ -73,7 +77,7 @@ namespace Code.Lavos.Core
         [Range(0.5f, 5f)]
         [SerializeField] private new float interactionRange = 3f;
         [SerializeField] private bool requireKey = false;
-        [SerializeField] private string requiredKeyName = "DoorKey";
+        [SerializeField] private string requiredKeyName = "DoorKey";  // Reserved for future key system
         
         [Header("Events")]
         [SerializeField] private bool broadcastOnOpen = true;
@@ -91,6 +95,7 @@ namespace Code.Lavos.Core
         private Collider _doorCollider;
         private EventHandler _eventHandler;
         private PlayerStats _playerStats;
+        private DoorAnimation _doorAnimation;
 
         #endregion
 
@@ -101,6 +106,7 @@ namespace Code.Lavos.Core
         public bool IsOpen => _isOpen;
         public bool IsLocked => _isLocked;
         public bool TrapTriggered => _trapTriggered;
+        public bool IsAnimating => _doorAnimation != null && _doorAnimation.IsAnimating;
 
         #endregion
 
@@ -110,10 +116,16 @@ namespace Code.Lavos.Core
         {
             // Set item type for ItemEngine
             SetItemType(ItemType.Door);
-            this.interactionRange = interactionRange;
-
+            
             // Get references
             _eventHandler = FindFirstObjectByType<EventHandler>();
+            
+            // Get or add DoorAnimation component
+            _doorAnimation = GetComponent<DoorAnimation>();
+            if (_doorAnimation == null)
+            {
+                _doorAnimation = gameObject.AddComponent<DoorAnimation>();
+            }
             
             // Setup door
             SetupDoor();
@@ -133,6 +145,17 @@ namespace Code.Lavos.Core
         #endregion
 
         #region Initialization
+
+        /// <summary>
+        /// Set panel references from DoorFactory.
+        /// </summary>
+        public void SetPanelReferences(Transform leftPanel, Transform rightPanel)
+        {
+            if (_doorAnimation != null)
+            {
+                _doorAnimation.SetPanelReferences(leftPanel, rightPanel);
+            }
+        }
 
         /// <summary>
         /// Initialize door with random variant and trap.
@@ -165,8 +188,18 @@ namespace Code.Lavos.Core
             doorVariant = variant;
             doorTrap = trap;
             _isLocked = locked || (variant == DoorVariant.Locked);
-            
+
             SetupDoor();
+        }
+
+        /// <summary>
+        /// Set door sounds from DoorSFXManager.
+        /// </summary>
+        public void SetDoorSounds(AudioClip openSfx, AudioClip closeSfx, AudioClip lockedSfx)
+        {
+            openSound = openSfx;
+            closeSound = closeSfx;
+            lockedSound = lockedSfx;
         }
 
         private void SetupDoor()
@@ -275,7 +308,18 @@ namespace Code.Lavos.Core
 
             // Open the door
             _isOpen = true;
-            DisableCollider();
+            
+            // Use animation if available
+            if (_doorAnimation != null)
+            {
+                _doorAnimation.Open();
+                // Disable collider after animation completes
+                Invoke(nameof(DisableCollider), 0.5f);
+            }
+            else
+            {
+                DisableCollider();
+            }
 
             // Broadcast event
             if (broadcastOnOpen && _eventHandler != null)
@@ -303,7 +347,18 @@ namespace Code.Lavos.Core
             if (!_isOpen) return;
 
             _isOpen = false;
-            EnableCollider();
+            
+            // Use animation if available
+            if (_doorAnimation != null)
+            {
+                _doorAnimation.Close();
+                // Re-enable collider immediately
+                EnableCollider();
+            }
+            else
+            {
+                EnableCollider();
+            }
 
             // Broadcast event
             if (broadcastOnClose && _eventHandler != null)
@@ -353,6 +408,55 @@ namespace Code.Lavos.Core
             
             // Try to open after unlocking
             OpenDoor(interactor);
+        }
+
+        #endregion
+
+        #region IInteractable Implementation (E-Key Interaction)
+
+        /// <summary>
+        /// IInteractable: Get interaction prompt.
+        /// </summary>
+        public string InteractionPrompt => _isOpen ? "Close" : (_isLocked ? "Locked" : "Open");
+
+        /// <summary>
+        /// IInteractable: Check if player can interact.
+        /// </summary>
+        public new bool CanInteract(PlayerController player)
+        {
+            if (player == null) return false;
+
+            // Check distance
+            float distance = Vector3.Distance(player.transform.position, transform.position);
+            return distance <= interactionRange;
+        }
+
+        /// <summary>
+        /// IInteractable: Interact with door (E key).
+        /// </summary>
+        public new void OnInteract(PlayerController player)
+        {
+            if (!CanInteract(player)) return;
+
+            // Call base Interact with player GameObject
+            Interact(player.gameObject);
+        }
+
+        /// <summary>
+        /// IInteractable: Show highlight when player looks at door.
+        /// </summary>
+        public void OnHighlightEnter(PlayerController player)
+        {
+            // Could add visual highlight effect here
+            Debug.Log($"[DoorsEngine] Highlight enter: {InteractionPrompt}");
+        }
+
+        /// <summary>
+        /// IInteractable: Hide highlight when player looks away.
+        /// </summary>
+        public void OnHighlightExit(PlayerController player)
+        {
+            // Could remove visual highlight effect here
         }
 
         #endregion

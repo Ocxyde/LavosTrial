@@ -4,7 +4,7 @@
 //
 // CORE: MonoBehaviour integration for StatsEngine
 
-using Unity6.LavosTrial.HUD;
+using Code.Lavos.HUD;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using Code.Lavos.Status;
@@ -282,22 +282,32 @@ namespace Code.Lavos.Core
 
         private void SpawnUIBars()
         {
-            if (UIBarsSystem.Instance != null) return;
+            // Delay HUD initialization to ensure all systems are ready
+            Invoke(nameof(DelayedHUDInitialization), 0.2f);
+        }
 
-            var oldHud = GameObject.Find("HUDSystem");
-            if (oldHud != null) Object.Destroy(oldHud);
-
-            var uiGO = new GameObject("UIBarsSystem");
-            var system = uiGO.AddComponent<UIBarsSystem>();
-
-            if (system == null)
+        private void DelayedHUDInitialization()
+        {
+            // Check if HUDSystem already exists (NEW system - PREFERRED)
+            var hudSystem = FindFirstObjectByType<HUDSystem>();
+            if (hudSystem != null)
             {
-                Object.Destroy(uiGO);
-                Debug.LogError("[PlayerStats] Failed to add UIBarsSystem component");
+                Debug.Log("[PlayerStats] HUDSystem found - using new HUD system");
                 return;
             }
 
-            Object.DontDestroyOnLoad(uiGO);
+            // Check if UIBarsSystem already exists (LEGACY)
+            if (UIBarsSystem.Instance != null)
+            {
+                Debug.Log("[PlayerStats] UIBarsSystem already exists - using legacy HUD");
+                return;
+            }
+
+            // Create HUDSystem as priority (NEW system)
+            var hudGO = new GameObject("HUDSystem");
+            var hud = hudGO.AddComponent<HUDSystem>();
+            Object.DontDestroyOnLoad(hudGO);
+            Debug.Log("[PlayerStats] Created new HUDSystem");
         }
     }
 }

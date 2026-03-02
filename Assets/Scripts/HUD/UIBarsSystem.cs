@@ -18,7 +18,7 @@ using Code.Lavos;
 using Code.Lavos.Status;
 using Code.Lavos.Core;
 
-namespace Unity6.LavosTrial.HUD
+namespace Code.Lavos.HUD
 {
     /// <summary>
     /// Screen-space responsive UI bars system.
@@ -99,7 +99,16 @@ namespace Unity6.LavosTrial.HUD
             {
                 transform.SetParent(null, true);
             }
-            
+
+            // Check if new HUDSystem exists - if so, destroy this legacy system
+            var newHud = FindFirstObjectByType<HUDSystem>();
+            if (newHud != null)
+            {
+                Debug.Log("[UIBarsSystem] HUDSystem exists - destroying legacy system");
+                Destroy(gameObject);
+                return;
+            }
+
             DontDestroyOnLoad(gameObject);
             Debug.Log("[UIBarsSystem] Awake - Instance initialized");
         }

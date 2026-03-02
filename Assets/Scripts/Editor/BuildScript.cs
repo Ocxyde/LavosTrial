@@ -14,7 +14,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace Unity6.LavosTrial.Build
+namespace Code.Lavos.Build
 {
     /// <summary>
     /// Unity6 Build Script - LavosTrial

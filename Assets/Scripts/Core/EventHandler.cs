@@ -121,6 +121,37 @@ namespace Code.Lavos.Core
             }
         }
 
+        void Start()
+        {
+            // Delay subscription to ensure all systems are initialized
+            Invoke(nameof(DelayedPlayerStatsSubscription), 0.2f);
+            Invoke(nameof(RetryPlayerStatsSubscription), 1.0f); // Retry after 1s if first fails
+        }
+
+        private void DelayedPlayerStatsSubscription()
+        {
+            var playerStats = FindFirstObjectByType<PlayerStats>();
+            if (playerStats != null)
+            {
+                SubscribeToPlayerStats(playerStats);
+                Debug.Log("[EventHandler] Successfully subscribed to PlayerStats events");
+            }
+            else
+            {
+                Debug.LogWarning("[EventHandler] PlayerStats not found for subscription - will retry");
+            }
+        }
+
+        private void RetryPlayerStatsSubscription()
+        {
+            // Check if already subscribed via PlayerStats.OnHealthChanged subscribers count
+            var playerStats = FindFirstObjectByType<PlayerStats>();
+            if (playerStats != null)
+            {
+                SubscribeToPlayerStats(playerStats);
+            }
+        }
+
         #region Player Event Invokers
 
         public void InvokePlayerHealthChanged(float current, float max)
@@ -327,31 +358,6 @@ namespace Code.Lavos.Core
 
         #endregion
 
-        #region Utility
-
-        /// <summary>
-        /// Subscribe to all player stat events from PlayerStats.
-        /// </summary>
-        public void SubscribeToPlayerStats(PlayerStats stats)
-        {
-            if (stats == null)
-            {
-                Debug.LogWarning("[EventHandler] Cannot subscribe - PlayerStats is null");
-                return;
-            }
-
-            stats.OnManaChanged += InvokePlayerManaChanged;
-            stats.OnStaminaChanged += InvokePlayerStaminaChanged;
-            PlayerStats.OnHealthChanged += InvokePlayerHealthChanged;
-            PlayerStats.OnPlayerDied += InvokePlayerDied;
-
-            if (debugEvents)
-            {
-                Debug.Log("[EventHandler] Subscribed to PlayerStats events");
-            }
-        }
-
-        #endregion
         #region Door Event Invokers
 
         public void InvokeDoorOpened(Vector3 position, DoorVariant variant)
@@ -379,5 +385,45 @@ namespace Code.Lavos.Core
         }
 
         #endregion
+
+        #region Utility
+
+        /// <summary>
+        /// Subscribe to all player stat events from PlayerStats.
+        /// </summary>
+        public void SubscribeToPlayerStats(PlayerStats stats)
+        {
+            if (stats == null)
+            {
+                Debug.LogWarning("[EventHandler] Cannot subscribe - PlayerStats is null");
+                return;
+            }
+
+            stats.OnManaChanged += InvokePlayerManaChanged;
+            stats.OnStaminaChanged += InvokePlayerStaminaChanged;
+            PlayerStats.OnHealthChanged += InvokePlayerHealthChanged;
+            PlayerStats.OnPlayerDied += InvokePlayerDied;
+
+            if (debugEvents)
+            {
+                Debug.Log("[EventHandler] Subscribed to PlayerStats events");
+            }
+        }
+
+        #endregion
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+                
+                // Destroy the auto-created singleton GameObject when exiting play mode
+                if (Application.isPlaying && gameObject.scene.name == null)
+                {
+                    Destroy(gameObject);
+                }
+            }
+        }
     }
 }

@@ -9,7 +9,7 @@
 //  4. Select type in Inspector
 
 using UnityEngine;
-using Unity6.LavosTrial.HUD;
+using Code.Lavos.HUD;
 using Code.Lavos.Status;
 
 namespace Code.Lavos.Core
@@ -81,7 +81,7 @@ namespace Code.Lavos.Core
         }
 
         if (!string.IsNullOrEmpty(popupMsg))
-            HUDSystem.Instance?.ShowPopup(popupMsg);
+            HUDSystem.Instance?.ShowFloatingText(popupMsg, Color.white, 2f);
 
         if (collectVFX != null)
             Instantiate(collectVFX, transform.position, Quaternion.identity);

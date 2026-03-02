@@ -6,3 +6,5 @@ store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
 Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
 My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
 Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchize

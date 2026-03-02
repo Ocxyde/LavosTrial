@@ -21,9 +21,6 @@ namespace Code.Lavos.Core
     [SerializeField] public int width = 31;
     [SerializeField] public int height = 31;
 
-    [Header("Seed")]
-    [SerializeField] private string seedString = "";
-
     public Wall[,] Grid { get; private set; }
     public int Width => width;
     public int Height => height;
@@ -38,6 +35,19 @@ namespace Code.Lavos.Core
 
     public void Generate()
     {
+        // Plug-in-out: Get seed from SeedManager
+        string seedString = "";
+        if (SeedManager.Instance != null)
+        {
+            seedString = SeedManager.Instance.CurrentSeed;
+            Debug.Log($"[MazeGenerator] Using SeedManager - Level {SeedManager.Instance.CurrentLevel}: {seedString}");
+        }
+        else
+        {
+            seedString = "DEFAULT";
+            Debug.LogWarning("[MazeGenerator] SeedManager not found - using default seed");
+        }
+        
         _seed = ComputeSeed(seedString);
 
         Grid = new Wall[width, height];
@@ -47,8 +57,55 @@ namespace Code.Lavos.Core
 
         GenerateMazeDFS();
         SetEntryExit();
+        
+        // Calculate complexity based on seed
+        int complexity = CalculateComplexity();
 
-        Debug.Log($"[MazeGenerator] Generated {width}x{height} | Seed: {_seed}");
+        Debug.Log($"[MazeGenerator] Generated {width}x{height} | Seed: {_seed} (String: {seedString}) | Complexity: {complexity}");
+    }
+    
+    /// <summary>
+    /// Calculate maze complexity based on seed and dimensions.
+    /// </summary>
+    private int CalculateComplexity()
+    {
+        // Complexity = maze size + seed length factor
+        int sizeFactor = width * height;
+        string seedString = SeedManager.Instance?.CurrentSeed ?? "DEFAULT";
+        int seedFactor = seedString.Length * 10;
+        return (sizeFactor + seedFactor) / 100;
+    }
+
+    /// <summary>
+    /// Generate maze and advance seed progression.
+    /// Plug-in-out: Call this when loading a new level/scene.
+    /// </summary>
+    public void GenerateNextLevel()
+    {
+        if (SeedManager.Instance != null)
+        {
+            SeedManager.Instance.NextLevel();
+        }
+        Generate();
+    }
+
+    /// <summary>
+    /// Generate maze with specific seed (bypass SeedManager).
+    /// For testing only.
+    /// </summary>
+    public void GenerateWithSeed(string seed)
+    {
+        _seed = ComputeSeed(seed);
+
+        Grid = new Wall[width, height];
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                Grid[x, y] = Wall.All;
+
+        GenerateMazeDFS();
+        SetEntryExit();
+
+        Debug.Log($"[MazeGenerator] Generated {width}x{height} | Seed: {_seed} (Test: {seed})");
     }
 
     private uint ComputeSeed(string input)
@@ -59,6 +116,30 @@ namespace Code.Lavos.Core
         using var sha = SHA256.Create();
         byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
         return BitConverter.ToUInt32(hash, 0) ^ BitConverter.ToUInt32(hash, 4) ^ BitConverter.ToUInt32(hash, 8);
+    }
+
+    /// <summary>
+    /// Generate a random alpha-digital seed string.
+    /// </summary>
+    public static string GenerateRandomSeed(int length = 8)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 0; i < length; i++)
+        {
+            sb.Append(chars[UnityEngine.Random.Range(0, chars.Length)]);
+        }
+        
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Get human-readable seed string from SeedManager.
+    /// </summary>
+    public string GetSeedString()
+    {
+        return SeedManager.Instance?.CurrentSeed ?? _seed.ToString();
     }
 
     private void GenerateMazeDFS()

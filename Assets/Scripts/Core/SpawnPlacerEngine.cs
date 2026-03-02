@@ -13,11 +13,12 @@ namespace Code.Lavos.Core
     /// Places items (doors, chests, etc.) procedurally in the maze.
     /// Integrates with ItemEngine for centralized management.
     /// </summary>
+    [RequireComponent(typeof(MazeGenerator))]
     public class SpawnPlacerEngine : MonoBehaviour
     {
         [Header("General Settings")]
         [SerializeField] private bool autoPlaceOnStart = true;
-        [SerializeField] private bool showDebugGizmos = true;
+        [SerializeField] private bool showDebugGizmos = false;  // Disabled by default to prevent visual clutter
 
         // DOORS DISABLED - No door placement
         // [Header("Door Settings")]
@@ -55,8 +56,8 @@ namespace Code.Lavos.Core
         [SerializeField] private List<Vector2Int> excludedCells = new();
 
         [Header("Dimensions")]
-        [SerializeField] protected float cellSize = 4f;
-        [SerializeField] protected float wallHeight = 3f;
+        [SerializeField] protected float cellSize = 6f;  // Match MazeRenderer cellSize for consistency
+        [SerializeField] protected float wallHeight = 3.5f;  // Match MazeRenderer wallHeight
 
         private MazeGenerator _mazeGenerator;
         private ItemEngine _itemEngine;

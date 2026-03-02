@@ -7,6 +7,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
+
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -22,7 +24,7 @@ namespace Code.Lavos.Core
         [SerializeField] private int maxRoomHeight = 8;
         
         [Header("Room Density")]
-        [SerializeField] [Range(0f, 1f)] private float roomDensity = 0.3f;  // Reserved for density-based placement
+        [SerializeField] [Range(0f, 1f)] private float roomDensity = 0.3f;  // Reserved for density-based room placement
         [SerializeField] private int minRooms = 1;
         [SerializeField] private int maxRooms = 5;
         
@@ -50,6 +52,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Generate rooms integrated with the maze.
         /// Call after maze generation.
+        /// Seed complexity determines room count and size.
         /// </summary>
         public void GenerateRooms()
         {
@@ -61,7 +64,10 @@ namespace Code.Lavos.Core
             
             _generatedRooms.Clear();
             
-            int targetRooms = Random.Range(minRooms, maxRooms + 1);
+            // Calculate room count based on maze complexity (seed-derived)
+            int mazeComplexity = (mazeGenerator.Width * mazeGenerator.Height) / 100;
+            int targetRooms = Mathf.Clamp(mazeComplexity, minRooms, maxRooms * 2);
+            
             int attempts = 0;
             int maxAttempts = targetRooms * 10;
             
@@ -78,18 +84,44 @@ namespace Code.Lavos.Core
                 }
             }
             
-            // Ensure at least one room exists
-            if (_generatedRooms.Count == 0 && minRooms > 0)
-            {
-                RoomData fallback = CreateFallbackRoom();
-                if (fallback != null)
-                {
-                    _generatedRooms.Add(fallback);
-                    CarveRoomIntoMaze(fallback);
-                }
-            }
+            // Ensure entrance and exit are clear
+            EnsureClearEntrance();
+            EnsureClearExit();
             
-            Debug.Log($"[RoomGenerator] Generated {_generatedRooms.Count} rooms");
+            Debug.Log($"[RoomGenerator] Generated {_generatedRooms.Count} rooms (complexity: {mazeComplexity})");
+        }
+        
+        /// <summary>
+        /// Ensure spawn point (0,0) is clear for player entrance.
+        /// Only clears the spawn cell, not a large area.
+        /// </summary>
+        private void EnsureClearEntrance()
+        {
+            // Clear only the spawn cell (1x1)
+            if (0 < mazeGenerator.Width && 0 < mazeGenerator.Height)
+            {
+                mazeGenerator.Grid[0, 0] = MazeGenerator.Wall.None;
+            }
+
+            Debug.Log("[RoomGenerator] Entrance cleared at (0,0)");
+        }
+
+        /// <summary>
+        /// Ensure exit point is clear for player progression.
+        /// Only clears the exit cell, not a large area.
+        /// </summary>
+        private void EnsureClearExit()
+        {
+            int exitX = mazeGenerator.Width - 1;
+            int exitY = mazeGenerator.Height - 1;
+
+            // Clear only the exit cell (1x1)
+            if (exitX >= 0 && exitX < mazeGenerator.Width && exitY >= 0 && exitY < mazeGenerator.Height)
+            {
+                mazeGenerator.Grid[exitX, exitY] = MazeGenerator.Wall.None;
+            }
+
+            Debug.Log($"[RoomGenerator] Exit cleared at ({exitX},{exitY})");
         }
         
         /// <summary>
@@ -119,20 +151,25 @@ namespace Code.Lavos.Core
         
         private RoomData TryGenerateRoom()
         {
+            // Room dimensions based on maze complexity
+            int complexity = (mazeGenerator.Width * mazeGenerator.Height) / 100;
+            
+            // More complex maze = bigger rooms
+            int currentMinWidth = Mathf.Max(3, minRoomWidth + complexity / 5);
+            int currentMaxWidth = Mathf.Max(currentMinWidth, maxRoomWidth + complexity / 3);
+            int currentMinHeight = Mathf.Max(3, minRoomHeight + complexity / 5);
+            int currentMaxHeight = Mathf.Max(currentMinHeight, maxRoomHeight + complexity / 3);
+            
             // Random room dimensions
-            int width = Random.Range(minRoomWidth, maxRoomWidth + 1);
-            int height = Random.Range(minRoomHeight, maxRoomHeight + 1);
+            int width = Random.Range(currentMinWidth, currentMaxWidth + 1);
+            int height = Random.Range(currentMinHeight, currentMaxHeight + 1);
             
             // Random position (keep within maze bounds with padding)
-            int startX = Random.Range(1, mazeGenerator.Width - width - 1);
-            int startY = Random.Range(1, mazeGenerator.Height - height - 1);
+            int startX = Random.Range(2, mazeGenerator.Width - width - 2);
+            int startY = Random.Range(2, mazeGenerator.Height - height - 2);
             
-            // Determine room type
-            RoomType type = RoomType.Normal;
-            if (allowSpecialRooms && Random.value < specialRoomChance)
-            {
-                type = (RoomType)Random.Range(1, System.Enum.GetNames(typeof(RoomType)).Length);
-            }
+            // Determine room type based on position and randomness
+            RoomType type = DetermineRoomType(startX, startY, width, height);
             
             return new RoomData
             {
@@ -144,15 +181,49 @@ namespace Code.Lavos.Core
             };
         }
         
+        /// <summary>
+        /// Determine room type based on position and maze layout.
+        /// </summary>
+        private RoomType DetermineRoomType(int x, int y, int width, int height)
+        {
+            // Exit area - Boss or Combat room
+            if (x > mazeGenerator.Width * 0.7f && y > mazeGenerator.Height * 0.7f)
+            {
+                if (Random.value < 0.3f)
+                    return RoomType.Boss;
+                return RoomType.Combat;
+            }
+            
+            // Start area - Safe room
+            if (x < mazeGenerator.Width * 0.3f && y < mazeGenerator.Height * 0.3f)
+            {
+                return RoomType.Safe;
+            }
+            
+            // Random special rooms
+            if (allowSpecialRooms && Random.value < specialRoomChance)
+            {
+                int roll = Random.Range(0, 100);
+                if (roll < 15) return RoomType.Treasure;
+                if (roll < 30) return RoomType.Combat;
+                if (roll < 45) return RoomType.Trap;
+                if (roll < 55) return RoomType.Secret;
+                if (roll < 65) return RoomType.Puzzle;
+                return RoomType.Safe;
+            }
+            
+            return RoomType.Normal;
+        }
+        
         private RoomData CreateFallbackRoom()
         {
-            // Create a simple room near the start position
+            // Create a simple room near the start position (entrance)
             return new RoomData
             {
                 Position = new Vector2Int(2, 2),
                 Width = 4,
                 Height = 4,
-                Type = RoomType.Normal,
+                Type = RoomType.Safe,
                 Seed = 12345
             };
         }
@@ -186,68 +257,93 @@ namespace Code.Lavos.Core
         #endregion
         
         #region Maze Integration
-        
+
         private void CarveRoomIntoMaze(RoomData room)
         {
-            // Clear walls inside room
-            for (int x = room.Position.x; x < room.Position.x + room.Width; x++)
+            // Clear walls inside room only (keep perimeter walls intact)
+            for (int x = room.Position.x + 1; x < room.Position.x + room.Width - 1; x++)
             {
-                for (int y = room.Position.y; y < room.Position.y + room.Height; y++)
+                for (int y = room.Position.y + 1; y < room.Position.y + room.Height - 1; y++)
                 {
                     mazeGenerator.Grid[x, y] = MazeGenerator.Wall.None;
                 }
             }
-            
-            // Create entrances/exits (at least 2 per room)
+
+            // Create exactly 1 entrance and 1 exit
             CreateRoomEntrances(room);
         }
-        
+
         private void CreateRoomEntrances(RoomData room)
         {
-            List<Vector2Int> possibleEntrances = new();
+            // Select exactly 2 positions: 1 entrance, 1 exit
+            // Place them on opposite sides of the room for better flow
             
-            // North wall
-            for (int x = room.Position.x + 1; x < room.Position.x + room.Width - 1; x++)
+            List<Vector2Int> northPositions = new();
+            List<Vector2Int> southPositions = new();
+            List<Vector2Int> westPositions = new();
+            List<Vector2Int> eastPositions = new();
+
+            // North wall (center position only)
+            int northX = room.Position.x + room.Width / 2;
+            if (northX > room.Position.x && northX < room.Position.x + room.Width - 1)
             {
-                possibleEntrances.Add(new Vector2Int(x, room.Position.y));
+                northPositions.Add(new Vector2Int(northX, room.Position.y));
             }
-            
-            // South wall
-            for (int x = room.Position.x + 1; x < room.Position.x + room.Width - 1; x++)
+
+            // South wall (center position only)
+            int southX = room.Position.x + room.Width / 2;
+            if (southX > room.Position.x && southX < room.Position.x + room.Width - 1)
             {
-                possibleEntrances.Add(new Vector2Int(x, room.Position.y + room.Height - 1));
+                southPositions.Add(new Vector2Int(southX, room.Position.y + room.Height - 1));
             }
-            
-            // West wall
-            for (int y = room.Position.y + 1; y < room.Position.y + room.Height - 1; y++)
+
+            // West wall (center position only)
+            int westY = room.Position.y + room.Height / 2;
+            if (westY > room.Position.y && westY < room.Position.y + room.Height - 1)
             {
-                possibleEntrances.Add(new Vector2Int(room.Position.x, y));
+                westPositions.Add(new Vector2Int(room.Position.x, westY));
             }
-            
-            // East wall
-            for (int y = room.Position.y + 1; y < room.Position.y + room.Height - 1; y++)
+
+            // East wall (center position only)
+            int eastY = room.Position.y + room.Height / 2;
+            if (eastY > room.Position.y && eastY < room.Position.y + room.Height - 1)
             {
-                possibleEntrances.Add(new Vector2Int(room.Position.x + room.Width - 1, y));
+                eastPositions.Add(new Vector2Int(room.Position.x + room.Width - 1, eastY));
             }
+
+            // Choose 2 opposite sides for entrance and exit
+            List<List<Vector2Int>> allSides = new() { northPositions, southPositions, westPositions, eastPositions };
             
-            // Select at least 2 entrances (more for larger rooms)
-            int entranceCount = Mathf.Max(2, (room.Width + room.Height) / 3);
-            entranceCount = Mathf.Min(entranceCount, possibleEntrances.Count);
-            
-            // Shuffle and select
-            for (int i = 0; i < entranceCount; i++)
+            // Shuffle sides
+            for (int i = allSides.Count - 1; i > 0; i--)
             {
-                int index = Random.Range(i, possibleEntrances.Count);
-                Vector2Int entrance = possibleEntrances[index];
-                
-                // Swap to prevent duplicates
-                possibleEntrances[index] = possibleEntrances[i];
-                
-                // Remove wall at entrance
-                mazeGenerator.Grid[entrance.x, entrance.y] = MazeGenerator.Wall.None;
-                
-                // Store entrance
-                room.Entrances.Add(entrance);
+                int j = Random.Range(0, i + 1);
+                var temp = allSides[i];
+                allSides[i] = allSides[j];
+                allSides[j] = temp;
+            }
+
+            // Pick first 2 sides that have valid positions
+            int entrancesCreated = 0;
+            foreach (var side in allSides)
+            {
+                if (side.Count > 0 && entrancesCreated < 2)
+                {
+                    Vector2Int entrance = side[0];
+                    
+                    // Remove wall at entrance position
+                    mazeGenerator.Grid[entrance.x, entrance.y] = MazeGenerator.Wall.None;
+                    
+                    // Store entrance
+                    room.Entrances.Add(entrance);
+                    entrancesCreated++;
+                }
+            }
+
+            // Ensure we have at least 2 entrances
+            if (room.Entrances.Count < 2)
+            {
+                Debug.LogWarning($"[RoomGenerator] Room at ({room.Position.x},{room.Position.y}) has only {room.Entrances.Count} entrance(s)");
             }
         }
         
