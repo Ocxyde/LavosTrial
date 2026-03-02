@@ -10,7 +10,8 @@
     "Code.Lavos.Player",
     "Code.Lavos.HUD",
     "Code.Lavos.Inventory",
-    "Code.Lavos.Interaction"
+    "Code.Lavos.Interaction",
+    "Code.Lavos.Ressources"
   ],
   "generateProgrammingAssets": false,
   "excludePlatforms": [],
