@@ -27,7 +27,7 @@ namespace Code.Lavos.Core
     [SerializeField] private float wallHeight = 3.5f;  // Increased from 3f for better proportions
 
     [Header("Torches")]
-    [SerializeField] private float torchProbability = 0.33f;  // 1 in 3 walls (33% chance)
+    [SerializeField] private float torchProbability = 0.5f;  // 1 in 2 walls (50% chance) - INCREASED for more light
     [SerializeField] private float torchHeightRatio = 0.55f;
 
     [Header("Player")]
@@ -35,8 +35,8 @@ namespace Code.Lavos.Core
     [SerializeField] private float playerSpawnOffsetY = 1.5f;
 
     [Header("Ambiance")]
-    [SerializeField] private Color ambientColor = new Color(0.15f, 0.1f, 0.08f);
-    [SerializeField] private float ambientIntensity = 0.3f;  // Added for lighting control
+    [SerializeField] private Color ambientColor = new Color(0.25f, 0.2f, 0.15f);  // Brighter ambient light
+    [SerializeField] private float ambientIntensity = 0.6f;  // Increased from 0.3 for better visibility
 
     [Header("Lighting")]
     [SerializeField] private bool useBakedLighting = false;  // Disable realtime GI
@@ -254,12 +254,27 @@ namespace Code.Lavos.Core
                 float cz = (y + 0.5f) * cellSize;
                 float wx = x * cellSize;
                 float wz = y * cellSize;
-                
-                // Floor - quad facing up
-                CreateQuad(new Vector3(cx, 0f, cz), Quaternion.Euler(90f, 0f, 0f), cellSize, cellSize, _floorMat);
-                
+
+                // Floor - quad facing up (with material check)
+                if (_floorMat != null)
+                {
+                    CreateQuad(new Vector3(cx, 0f, cz), Quaternion.Euler(90f, 0f, 0f), cellSize, cellSize, _floorMat);
+                }
+                else
+                {
+                    Debug.LogWarning($"[MazeRenderer] Floor material is null at ({x},{y})! Using fallback.");
+                    CreateQuad(new Vector3(cx, 0f, cz), Quaternion.Euler(90f, 0f, 0f), cellSize, cellSize, GetDefaultWhiteMaterial());
+                }
+
                 // Ceiling - use solid cube instead of quad to prevent light bleeding
-                CreateCeiling(new Vector3(cx, wallHeight, cz), cellSize, _ceilMat);
+                if (_ceilMat != null)
+                {
+                    CreateCeiling(new Vector3(cx, wallHeight, cz), cellSize, _ceilMat);
+                }
+                else
+                {
+                    CreateCeiling(new Vector3(cx, wallHeight, cz), cellSize, GetDefaultWhiteMaterial());
+                }
                 
                 // Walls
                 if (_gen.HasWall(x, y, MazeGenerator.Wall.North)) { var p = new Vector3(cx, wallHeight * .5f, wz + cellSize); var r = Quaternion.Euler(0f, 180f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
@@ -276,7 +291,14 @@ namespace Code.Lavos.Core
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.transform.position = pos;
         go.transform.localScale = new Vector3(size, 0.2f, size);  // Thin but solid
-        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        
+        // Use material if available, otherwise use fallback
+        var renderer = go.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            renderer.sharedMaterial = (mat != null) ? mat : GetDefaultWhiteMaterial();
+        }
+        
         go.isStatic = true;
     }
 
@@ -285,7 +307,14 @@ namespace Code.Lavos.Core
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.transform.SetPositionAndRotation(pos, rot);
         go.transform.localScale = new Vector3(cellSize, wallHeight, 0.3f);
-        go.GetComponent<MeshRenderer>().sharedMaterial = _wallMat;
+        
+        // Use wall material if available, otherwise use fallback
+        var renderer = go.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            renderer.sharedMaterial = (_wallMat != null) ? _wallMat : GetDefaultWhiteMaterial();
+        }
+        
         go.isStatic = true;
     }
 
@@ -294,8 +323,27 @@ namespace Code.Lavos.Core
         var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
         go.transform.SetPositionAndRotation(pos, rot);
         go.transform.localScale = new Vector3(w, h, 1f);
-        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        
+        // Use material if available, otherwise use default white
+        var renderer = go.GetComponent<MeshRenderer>();
+        if (renderer != null)
+        {
+            renderer.sharedMaterial = (mat != null) ? mat : GetDefaultWhiteMaterial();
+        }
+        
         go.isStatic = true;
+    }
+
+    private static Material _defaultWhiteMat;
+    private Material GetDefaultWhiteMaterial()
+    {
+        if (_defaultWhiteMat == null)
+        {
+            _defaultWhiteMat = new Material(Shader.Find("Standard"));
+            _defaultWhiteMat.color = Color.white;
+            _defaultWhiteMat.SetFloat("_Smoothness", 0.5f);
+        }
+        return _defaultWhiteMat;
     }
 
     private void PlaceTorches(List<(Vector3, Quaternion)> wallFaces)

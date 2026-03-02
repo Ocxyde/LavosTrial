@@ -374,9 +374,9 @@ namespace Code.Lavos.Core
             {
                 _instance = null;
                 
-                // Destroy the auto-created singleton GameObject when exiting play mode
+                // Destroy the GameObject when exiting play mode
                 // This prevents "objects not cleaned up" warnings
-                if (Application.isPlaying && gameObject.scene.name == null)
+                if (Application.isPlaying)
                 {
                     Destroy(gameObject);
                 }

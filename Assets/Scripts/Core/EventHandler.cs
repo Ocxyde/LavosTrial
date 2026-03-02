@@ -81,6 +81,15 @@ namespace Code.Lavos.Core
 
         #endregion
 
+        #region Chest Events
+
+        public event Action<Vector3, int> OnChestOpened;
+        public event Action<Vector3> OnChestClosed;
+        public event Action<Vector3, int, GameObject> OnChestLootGenerated;
+        public event Action<Vector3, LootTable> OnChestItemSpawned;
+
+        #endregion
+
         #region Game Events
 
         public event Action<int> OnScoreChanged;
@@ -382,6 +391,34 @@ namespace Code.Lavos.Core
         {
             OnDoorTrapTriggered?.Invoke(position, trap);
             if (debugEvents) Debug.Log($"[EventHandler] DoorTrapTriggered: {trap} at {position}");
+        }
+
+        #endregion
+
+        #region Chest Event Invokers
+
+        public void InvokeChestOpened(Vector3 position, int goldAmount)
+        {
+            OnChestOpened?.Invoke(position, goldAmount);
+            if (debugEvents) Debug.Log($"[EventHandler] ChestOpened: {goldAmount} gold at {position}");
+        }
+
+        public void InvokeChestClosed(Vector3 position)
+        {
+            OnChestClosed?.Invoke(position);
+            if (debugEvents) Debug.Log($"[EventHandler] ChestClosed at {position}");
+        }
+
+        public void InvokeChestLootGenerated(Vector3 position, int goldAmount, GameObject looter)
+        {
+            OnChestLootGenerated?.Invoke(position, goldAmount, looter);
+            if (debugEvents) Debug.Log($"[EventHandler] ChestLootGenerated: {goldAmount} gold at {position}");
+        }
+
+        public void InvokeChestItemSpawned(Vector3 position, LootTable lootTable)
+        {
+            OnChestItemSpawned?.Invoke(position, lootTable);
+            if (debugEvents) Debug.Log($"[EventHandler] ChestItemSpawned at {position}");
         }
 
         #endregion

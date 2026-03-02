@@ -205,82 +205,29 @@ namespace Code.Lavos.HUD
 
         private void SubscribeToEvents()
         {
-            // Subscribe to PlayerStats events (unified system) using reflection
-            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
-            MonoBehaviour playerStatsInstance = null;
-            
-            if (statsType != null)
+            // Use EventHandler (Unity 6 standard - recommended)
+            if (EventHandler.Instance != null)
             {
-                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
-            }
-            
-            if (playerStatsInstance != null)
-            {
-                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onManaEvent = playerStatsInstance.GetType().GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onStaminaEvent = playerStatsInstance.GetType().GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onEffectAddedEvent = playerStatsInstance.GetType().GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onEffectRemovedEvent = playerStatsInstance.GetType().GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                EventHandler.Instance.OnPlayerHealthChanged += OnHealthChanged;
+                EventHandler.Instance.OnPlayerManaChanged += OnManaChanged;
+                EventHandler.Instance.OnPlayerStaminaChanged += OnStaminaChanged;
                 
-                if (onHealthEvent != null) onHealthEvent.AddEventHandler(null, new System.Action<float, float>(OnHealthChanged));
-                if (onManaEvent != null) onManaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
-                if (onStaminaEvent != null) onStaminaEvent.AddEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
-                if (onEffectAddedEvent != null) onEffectAddedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
-                if (onEffectRemovedEvent != null) onEffectRemovedEvent.AddEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
-                
-                Debug.Log("[UIBarsSystem] Subscribed to PlayerStats events");
-                return; // Exit early - no need to retry
+                Debug.Log("[UIBarsSystem] Subscribed to EventHandler events (Unity 6 standard)");
+                return;
             }
 
-            // Fallback to PlayerHealth (legacy system)
-            var playerHealth = FindFirstObjectByType<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                PlayerHealth.OnHealthChanged += OnHealthChangedLegacy;
-                PlayerHealth.OnPlayerDied += OnPlayerDied;
-                Debug.Log("[UIBarsSystem] Subscribed to PlayerHealth events (legacy mode)");
-                return; // Exit early - no need to retry
-            }
-            
-            Debug.LogWarning("[UIBarsSystem] No PlayerStats or PlayerHealth found! Will retry...");
-            // Retry after a short delay in case components haven't initialized yet
+            Debug.LogWarning("[UIBarsSystem] EventHandler not found! Will retry...");
             Invoke(nameof(SubscribeToEvents), 0.5f);
         }
 
         private void UnsubscribeFromEvents()
         {
-            // Unsubscribe from PlayerStats using reflection
-            var statsType = System.Type.GetType("Code.Lavos.Core.PlayerStats, Code.Lavos.Status");
-            MonoBehaviour playerStatsInstance = null;
-            
-            if (statsType != null)
+            // Unsubscribe from EventHandler (Unity 6 standard)
+            if (EventHandler.Instance != null)
             {
-                var instanceProp = statsType.GetProperty("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                playerStatsInstance = instanceProp?.GetValue(null) as MonoBehaviour;
-            }
-            
-            if (playerStatsInstance != null)
-            {
-                var onHealthEvent = statsType.GetEvent("OnHealthChanged", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                var onManaEvent = playerStatsInstance.GetType().GetEvent("OnManaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onStaminaEvent = playerStatsInstance.GetType().GetEvent("OnStaminaChanged", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onEffectAddedEvent = playerStatsInstance.GetType().GetEvent("OnEffectAdded", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                var onEffectRemovedEvent = playerStatsInstance.GetType().GetEvent("OnEffectRemoved", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
-                
-                if (onHealthEvent != null) onHealthEvent.RemoveEventHandler(null, new System.Action<float, float>(OnHealthChanged));
-                if (onManaEvent != null) onManaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnManaChanged));
-                if (onStaminaEvent != null) onStaminaEvent.RemoveEventHandler(playerStatsInstance, new System.Action<float, float>(OnStaminaChanged));
-                if (onEffectAddedEvent != null) onEffectAddedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectAdded));
-                if (onEffectRemovedEvent != null) onEffectRemovedEvent.RemoveEventHandler(playerStatsInstance, new System.Action<Code.Lavos.Status.StatusEffectData>(OnEffectRemoved));
-            }
-
-            // Unsubscribe from PlayerHealth
-            var playerHealth = FindFirstObjectByType<PlayerHealth>();
-            if (playerHealth != null)
-            {
-                PlayerHealth.OnHealthChanged -= OnHealthChangedLegacy;
-                PlayerHealth.OnPlayerDied -= OnPlayerDied;
+                EventHandler.Instance.OnPlayerHealthChanged -= OnHealthChanged;
+                EventHandler.Instance.OnPlayerManaChanged -= OnManaChanged;
+                EventHandler.Instance.OnPlayerStaminaChanged -= OnStaminaChanged;
             }
         }
 

@@ -257,35 +257,19 @@ namespace Code.Lavos.Core
         // Jump with flat stamina cost
         if (_kb.spaceKey.wasPressedThisFrame && _isGrounded)
         {
-            bool jumpSuccess = false;
-
-            // Prefer CombatSystem if available (provides better event integration)
-            if (_combatSystem != null)
+            // Always allow jump (fallback mode - no stamina check for now)
+            _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            
+            // Try to consume stamina if systems are available
+            if (_combatSystem != null && _combatSystem.CanJump())
             {
-                if (_combatSystem.CanJump())
-                {
-                    _combatSystem.UseStamina(jumpCost);
-                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                    jumpSuccess = true;
-                }
+                _combatSystem.UseStamina(jumpCost);
             }
-            else if (PlayerStats.Instance != null && PlayerStats.Instance.Engine != null)
+            else if (PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina >= jumpCost)
             {
-                float currentStamina = PlayerStats.Instance.CurrentStamina;
-
-                if (currentStamina >= jumpCost)
-                {
-                    PlayerStats.Instance.UseStamina(jumpCost);
-                    _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                    jumpSuccess = true;
-                }
+                PlayerStats.Instance.UseStamina(jumpCost);
             }
-            else
-            {
-                // Fallback: jump without stamina cost if systems not initialized
-                _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-                jumpSuccess = true;
-            }
+            // Jump always works, stamina consumption is secondary
         }
 
         _velocity.y += gravity * Time.deltaTime;

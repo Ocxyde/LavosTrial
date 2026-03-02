@@ -2,6 +2,8 @@
 // Treasure chest with 8-bit pixel art style and glowing effects
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Inherits from BehaviorEngine for ItemEngine integration
+// Uses PixelArtTextureFactory for procedural textures
+// Integrates with EventHandler for plug-in-out architecture
 
 using UnityEngine;
 
@@ -11,6 +13,8 @@ namespace Code.Lavos.Core
     /// Procedural treasure chest with 8-bit pixel art style.
     /// Features: Glowing aura, randomized contents, open/close animation.
     /// Inherits from BehaviorEngine for ItemEngine integration.
+    /// Uses PixelArtTextureFactory for procedural textures.
+    /// Integrates with EventHandler for plug-in-out architecture.
     /// </summary>
     public class ChestBehavior : BehaviorEngine
     {
@@ -38,18 +42,23 @@ namespace Code.Lavos.Core
         [SerializeField] private AudioClip openSound;
         [SerializeField] private AudioClip closeSound;
 
+        [Header("Events")]
+        [SerializeField] private bool raiseEvents = true;
+
         private Material _chestMat;
         private Material _glowMat;
         private Light _glowLight;
         private Transform _lidTransform;
         private bool _isOpen = false;
         private float _pulseTimer = 0f;
+        private int _goldAmount = 0;
 
         private static Shader _unlitShader;
         private static Shader _litShader;
 
         public bool IsOpen => _isOpen;
         public LootTable LootTable => lootTable;
+        public int GoldAmount => _goldAmount;
 
         private new void Awake()
         {
@@ -73,7 +82,7 @@ namespace Code.Lavos.Core
             else
             {
                 Open();
-                GenerateLoot();
+                GenerateLoot(interactor);
             }
 
             base.Interact(interactor);
@@ -119,50 +128,153 @@ namespace Code.Lavos.Core
             const int h = 32;
             var canvas = new ChestPixelCanvas(w, h);
 
-            // 8-bit color palette
-            var woodDark = new Color32(60, 40, 20, 255);
-            var woodMid = new Color32(80, 55, 30, 255);
-            var woodLight = new Color32(100, 70, 40, 255);
-            var gold = new Color32(255, 215, 0, 255);
-            var iron = new Color32(80, 85, 90, 255);
+            // 8-bit pixel art color palette (vibrant, classic style)
+            var woodDark = new Color32(52, 28, 12, 255);      // Dark brown
+            var woodMid = new Color32(88, 50, 20, 255);       // Medium brown
+            var woodLight = new Color32(120, 75, 35, 255);    // Light brown
+            var goldBright = new Color32(255, 220, 60, 255);  // Bright gold
+            var goldDark = new Color32(200, 160, 40, 255);    // Dark gold
+            var iron = new Color32(70, 75, 85, 255);          // Iron/steel
+            var ironHighlight = new Color32(120, 130, 145, 255); // Iron highlight
+            var gemRed = new Color32(220, 40, 40, 255);       // Ruby gem
+            var gemGlow = new Color32(255, 100, 100, 255);    // Gem glow
 
-            // Draw wood body
+            // Draw pixel art chest (front view)
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
                 {
-                    // Wood grain
-                    int grainPattern = ((x / 4) + (y / 3)) % 3;
-                    Color32 woodColor = grainPattern switch
-                    {
-                        0 => woodDark,
-                        1 => woodMid,
-                        _ => woodLight
-                    };
+                    Color32 pixel = woodMid;
 
-                    // Metal bands
-                    if (y < 3 || y >= h - 3 || x < 3 || x >= w - 3)
+                    // === LID SECTION (top 40%) ===
+                    bool isLid = y < h * 0.4f;
+                    
+                    if (isLid)
                     {
-                        woodColor = iron;
+                        // Lid wood with curved top
+                        int grainPattern = ((x / 3) + (y / 2)) % 3;
+                        pixel = grainPattern switch
+                        {
+                            0 => woodDark,
+                            1 => woodMid,
+                            _ => woodLight
+                        };
+
+                        // Lid gold trim (border)
+                        if (y < 4 || x < 3 || x >= w - 3)
+                        {
+                            pixel = ((x + y) % 2 == 0) ? goldBright : goldDark;
+                        }
+
+                        // Decorative gold pattern on lid
+                        if (y >= 4 && y < 8 && x >= 8 && x < w - 8)
+                        {
+                            if ((x + y) % 4 == 0)
+                                pixel = goldBright;
+                        }
+
+                        // Center gem on lid
+                        if (y >= 5 && y <= 9 && x >= w/2 - 3 && x <= w/2 + 3)
+                        {
+                            int gemDist = Mathf.Abs(x - w/2) + Mathf.Abs(y - 7);
+                            if (gemDist <= 2)
+                                pixel = gemRed;
+                            else if (gemDist == 3)
+                                pixel = gemGlow;
+                        }
+                    }
+                    // === BODY SECTION (bottom 60%) ===
+                    else
+                    {
+                        // Body wood grain (horizontal planks)
+                        int plankRow = (y - h/2) / 5;
+                        int grainPattern = ((x / 4) + plankRow) % 3;
+                        pixel = grainPattern switch
+                        {
+                            0 => woodDark,
+                            1 => woodMid,
+                            _ => woodLight
+                        };
+
+                        // Metal bands (horizontal reinforcement)
+                        int bodyY = y - h/2;
+                        if (bodyY < 3 || bodyY >= (h/2) - 3)
+                        {
+                            // Band with rivets
+                            pixel = ((x % 8) < 2) ? ironHighlight : iron;
+                        }
+
+                        // Vertical metal straps
+                        if ((x < 4 || x >= w - 4 || x >= w/2 - 2 && x <= w/2 + 1))
+                        {
+                            if (y >= h * 0.4f + 2 && y < h - 3)
+                            {
+                                pixel = ((y % 6) < 2) ? ironHighlight : iron;
+                            }
+                        }
+
+                        // Ornate lock plate (center)
+                        int lockCenterY = h/2 + 4;
+                        int lockCenterX = w/2;
+                        int lockDist = Mathf.Max(Mathf.Abs(x - lockCenterX), Mathf.Abs(y - lockCenterY));
+                        
+                        if (lockDist <= 4 && y >= h * 0.45f)
+                        {
+                            // Lock plate background
+                            pixel = goldDark;
+                            
+                            // Lock keyhole
+                            int keyholeDist = Mathf.Max(Mathf.Abs(x - lockCenterX), Mathf.Abs(y - lockCenterY));
+                            if (keyholeDist <= 2)
+                            {
+                                pixel = iron;
+                            }
+                            // Keyhole opening (cross shape)
+                            if ((x == lockCenterX && Mathf.Abs(y - lockCenterY) <= 1) ||
+                                (y == lockCenterY && Mathf.Abs(x - lockCenterX) <= 1))
+                            {
+                                pixel = new Color32(30, 30, 35, 255); // Dark keyhole
+                            }
+                            
+                            // Gold studs around lock
+                            if (lockDist == 4 && (x + y) % 2 == 0)
+                            {
+                                pixel = goldBright;
+                            }
+                        }
                     }
 
-                    // Gold trim on lid
-                    if (y < 8 && (x == 4 || x == w - 5))
-                    {
-                        woodColor = gold;
-                    }
+                    // Edge highlighting (3D effect)
+                    if (!isLid && x == 3)
+                        pixel = LightenColor(pixel, 30);
+                    if (!isLid && x == w - 4)
+                        pixel = DarkenColor(pixel, 30);
 
-                    // Lock in center
-                    if (y >= h/2 - 2 && y <= h/2 + 2 && x >= w/2 - 2 && x <= w/2 + 2)
-                    {
-                        woodColor = gold;
-                    }
-
-                    canvas.SetPixel(x, y, woodColor);
+                    canvas.SetPixel(x, y, pixel);
                 }
             }
 
             return canvas.ToTexture();
+        }
+
+        private static Color32 LightenColor(Color32 c, int amount)
+        {
+            return new Color32(
+                (byte)Mathf.Min(255, c.r + amount),
+                (byte)Mathf.Min(255, c.g + amount),
+                (byte)Mathf.Min(255, c.b + amount),
+                c.a
+            );
+        }
+
+        private static Color32 DarkenColor(Color32 c, int amount)
+        {
+            return new Color32(
+                (byte)Mathf.Max(0, c.r - amount),
+                (byte)Mathf.Max(0, c.g - amount),
+                (byte)Mathf.Max(0, c.b - amount),
+                c.a
+            );
         }
 
         private Material MakeMaterial(Texture2D tex, bool useLitShader)
@@ -287,7 +399,7 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Open the chest.
+        /// Open the chest and raise events.
         /// </summary>
         public void Open()
         {
@@ -310,10 +422,16 @@ namespace Code.Lavos.Core
             {
                 _glowLight.intensity = glowIntensity * 1.5f;
             }
+
+            // Raise event through EventHandler (plug-in-out architecture)
+            if (raiseEvents && EventHandler.Instance != null)
+            {
+                EventHandler.Instance.InvokeChestOpened(transform.position, _goldAmount);
+            }
         }
 
         /// <summary>
-        /// Close the chest.
+        /// Close the chest and raise events.
         /// </summary>
         public void Close()
         {
@@ -336,21 +454,38 @@ namespace Code.Lavos.Core
             {
                 _glowLight.intensity = glowIntensity;
             }
+
+            // Raise event through EventHandler
+            if (raiseEvents && EventHandler.Instance != null)
+            {
+                EventHandler.Instance.InvokeChestClosed(transform.position);
+            }
         }
 
         /// <summary>
-        /// Generate random loot for this chest.
+        /// Generate random loot for this chest and notify through EventHandler.
         /// </summary>
-        private void GenerateLoot()
+        private void GenerateLoot(GameObject looter)
         {
-            int goldAmount = Random.Range(minGold, maxGold + 1);
-            Debug.Log($"[ChestBehavior] Generated loot: {goldAmount} gold");
+            _goldAmount = Random.Range(minGold, maxGold + 1);
+            Debug.Log($"[ChestBehavior] Generated loot: {_goldAmount} gold");
+
+            // Raise loot event through EventHandler
+            if (raiseEvents && EventHandler.Instance != null)
+            {
+                EventHandler.Instance.InvokeChestLootGenerated(transform.position, _goldAmount, looter);
+            }
 
             // Additional item chance
             if (Random.value < itemChance && lootTable != null)
             {
                 // Spawn item from loot table
                 Debug.Log($"[ChestBehavior] Additional item spawned");
+                
+                if (EventHandler.Instance != null)
+                {
+                    EventHandler.Instance.InvokeChestItemSpawned(transform.position, lootTable);
+                }
             }
         }
 

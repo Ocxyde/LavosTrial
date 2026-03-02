@@ -1,0 +1,13 @@
+{
+    "name": "Code.Lavos.Ressources",
+    "rootNamespace": "Code.Lavos.Ressources",
+    "references": [
+        "Code.Lavos.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateProgrammingAssets": false
+}

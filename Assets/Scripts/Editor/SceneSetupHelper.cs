@@ -40,13 +40,13 @@ namespace Code.Lavos.Editor
             GUILayout.Space(10);
 
             // Verify button
-            if (GUILayout.Button("🔍 Verify Scene Setup", GUILayout.Height(30)))
+            if (GUILayout.Button("?? Verify Scene Setup", GUILayout.Height(30)))
             {
                 VerifySceneSetup();
             }
 
             // Auto-setup button
-            if (GUILayout.Button("⚡ Auto-Setup Missing Components", GUILayout.Height(30)))
+            if (GUILayout.Button("? Auto-Setup Missing Components", GUILayout.Height(30)))
             {
                 AutoSetupScene();
             }
@@ -54,14 +54,14 @@ namespace Code.Lavos.Editor
             GUILayout.Space(15);
 
             // Status sections
-            DrawSectionHeader("🎮 Core Systems");
+            DrawSectionHeader("?? Core Systems");
             DrawStatusItem("GameManager", CheckGameManager(), "Main game state singleton");
             DrawStatusItem("EventHandler", CheckEventHandler(), "Central event hub");
             DrawStatusItem("ItemEngine", CheckItemEngine(), "Item registry manager");
 
             GUILayout.Space(10);
 
-            DrawSectionHeader("👤 Player System");
+            DrawSectionHeader("?? Player System");
             DrawStatusItem("Player GameObject", CheckPlayer(), "Player with CharacterController");
             DrawStatusItem("PlayerController", CheckPlayerController(), "Movement and input");
             DrawStatusItem("PlayerStats", CheckPlayerStats(), "Health/Mana/Stamina");
@@ -69,13 +69,12 @@ namespace Code.Lavos.Editor
 
             GUILayout.Space(10);
 
-            DrawSectionHeader("🎨 UI System");
-            DrawStatusItem("Canvas", CheckCanvas(), "UI Canvas for all HUD elements");
-            DrawStatusItem("HUDSystem", CheckHUDSystem(), "Complete dynamic HUD (bars, hotbar, effects)");
+            DrawSectionHeader("UI System");
+            DrawStatusItem("UIBarsSystem", CheckUIBars(), "Health/Mana/Stamina bars (screen edges)");
 
             GUILayout.Space(10);
 
-            DrawSectionHeader("🏰 Maze System");
+            DrawSectionHeader("?? Maze System");
             DrawStatusItem("MazeGenerator", CheckMazeGenerator(), "Procedural maze generation");
             DrawStatusItem("RoomGenerator", CheckRoomGenerator(), "Room generation");
             DrawStatusItem("DoorHolePlacer", CheckDoorHolePlacer(), "Door hole placement");
@@ -87,7 +86,7 @@ namespace Code.Lavos.Editor
 
             GUILayout.Space(10);
 
-            DrawSectionHeader("⚔️ Combat & Items");
+            DrawSectionHeader("?? Combat & Items");
             DrawStatusItem("CombatSystem", CheckCombatSystem(), "Damage calculation");
             DrawStatusItem("Inventory", CheckInventory(), "Player inventory");
 
@@ -96,22 +95,22 @@ namespace Code.Lavos.Editor
             // Quick setup buttons
             GUILayout.Label("Quick Setup", EditorStyles.boldLabel);
 
-            if (GUILayout.Button("📦 Setup Complete Game Scene"))
+            if (GUILayout.Button("?? Setup Complete Game Scene"))
             {
                 SetupCompleteGameScene();
             }
 
-            if (GUILayout.Button("🎮 Setup Player Only"))
+            if (GUILayout.Button("?? Setup Player Only"))
             {
                 SetupPlayer();
             }
 
-            if (GUILayout.Button("🎨 Setup UI Only"))
+            if (GUILayout.Button("?? Setup UI Only"))
             {
                 SetupUI();
             }
 
-            if (GUILayout.Button("🏰 Setup Maze System Only"))
+            if (GUILayout.Button("?? Setup Maze System Only"))
             {
                 AddDoorSystemToMaze();
             }
@@ -131,7 +130,7 @@ namespace Code.Lavos.Editor
             EditorGUILayout.BeginHorizontal();
 
             // Status icon
-            GUILayout.Label(ok ? "✅" : "❌", GUILayout.Width(30));
+            GUILayout.Label(ok ? "?" : "?", GUILayout.Width(30));
 
             // Name
             GUILayout.Label(name, GUILayout.Width(150));
@@ -172,8 +171,7 @@ namespace Code.Lavos.Editor
             return camera != null;
         }
 
-        private bool CheckCanvas() => FindFirstObjectByType<Canvas>() != null;
-        private bool CheckHUDSystem() => FindFirstObjectByType<HUDSystem>() != null;
+        private bool CheckUIBars() => FindFirstObjectByType<UIBarsSystem>() != null;
 
         private bool CheckMazeGenerator() => FindFirstObjectByType<MazeGenerator>() != null;
         private bool CheckRoomGenerator() => FindFirstObjectByType<RoomGenerator>() != null;
@@ -208,8 +206,7 @@ namespace Code.Lavos.Editor
                     SetupPlayer();
                     break;
                 case "Canvas":
-                    SetupCanvas();
-                    break;
+                case "UIBarsSystem":
                 case "HUDSystem":
                     SetupUI();
                     break;
@@ -239,7 +236,7 @@ namespace Code.Lavos.Editor
         private void VerifySceneSetup()
         {
             Debug.Log("=============================");
-            Debug.Log("🔍 Verifying Scene Setup...");
+            Debug.Log("?? Verifying Scene Setup...");
             Debug.Log("=============================");
 
             int missing = 0;
@@ -256,8 +253,7 @@ namespace Code.Lavos.Editor
             LogStatus("Player Camera", CheckPlayerCamera(), ref missing);
 
             // UI
-            LogStatus("Canvas", CheckCanvas(), ref missing);
-            LogStatus("HUDSystem", CheckHUDSystem(), ref missing);
+            LogStatus("UIBarsSystem", CheckUIBars(), ref missing);
 
             // Maze
             LogStatus("MazeGenerator", CheckMazeGenerator(), ref missing);
@@ -276,11 +272,11 @@ namespace Code.Lavos.Editor
             Debug.Log("=============================");
             if (missing == 0)
             {
-                Debug.Log("✅ All systems verified! Scene is ready.");
+                Debug.Log("? All systems verified! Scene is ready.");
             }
             else
             {
-                Debug.LogWarning($"⚠️ {missing} component(s) missing. Use Auto-Setup to fix.");
+                Debug.LogWarning($"?? {missing} component(s) missing. Use Auto-Setup to fix.");
             }
             Debug.Log("=============================");
         }
@@ -288,7 +284,7 @@ namespace Code.Lavos.Editor
         private void AutoSetupScene()
         {
             Debug.Log("=============================");
-            Debug.Log("⚡ Auto-Setting Up Scene...");
+            Debug.Log("? Auto-Setting Up Scene...");
             Debug.Log("=============================");
 
             SetupCoreSystems();
@@ -297,9 +293,9 @@ namespace Code.Lavos.Editor
             AddDoorSystemToMaze();
 
             Debug.Log("=============================");
-            Debug.Log("✅ Auto-Setup Complete!");
+            Debug.Log("? Auto-Setup Complete!");
             Debug.Log("=============================");
-            Debug.Log("▶️ Press Play to test!");
+            Debug.Log("?? Press Play to test!");
         }
 
         private void SetupCoreSystems()
@@ -313,46 +309,46 @@ namespace Code.Lavos.Editor
         {
             if (CheckGameManager())
             {
-                Debug.Log("✅ GameManager already exists");
+                Debug.Log("? GameManager already exists");
                 return;
             }
 
             var go = new GameObject("GameManager");
             go.AddComponent<GameManager>();
-            Debug.Log("✅ Created GameManager");
+            Debug.Log("? Created GameManager");
         }
 
         private void SetupEventHandler()
         {
             if (CheckEventHandler())
             {
-                Debug.Log("✅ EventHandler already exists");
+                Debug.Log("? EventHandler already exists");
                 return;
             }
 
             var go = new GameObject("EventHandler");
             go.AddComponent<EventHandler>();
-            Debug.Log("✅ Created EventHandler");
+            Debug.Log("? Created EventHandler");
         }
 
         private void SetupItemEngine()
         {
             if (CheckItemEngine())
             {
-                Debug.Log("✅ ItemEngine already exists");
+                Debug.Log("? ItemEngine already exists");
                 return;
             }
 
             var go = new GameObject("ItemEngine");
             go.AddComponent<ItemEngine>();
-            Debug.Log("✅ Created ItemEngine");
+            Debug.Log("? Created ItemEngine");
         }
 
         private void SetupPlayer()
         {
             if (CheckPlayer())
             {
-                Debug.Log("✅ Player already exists");
+                Debug.Log("? Player already exists");
                 return;
             }
 
@@ -383,50 +379,28 @@ namespace Code.Lavos.Editor
             camera.transform.SetParent(player.transform);
             camera.transform.localPosition = new Vector3(0f, 0.75f, 0f);
 
-            Debug.Log("✅ Created Player with all components");
+            Debug.Log("? Created Player with all components");
         }
 
         private void SetupUI()
         {
-            SetupCanvas();
-
-            // Add HUDSystem (Complete dynamic HUD with EventHandler integration)
-            if (!CheckHUDSystem())
+            // Create UIBarsSystem (PROVEN WORKING - bars on screen edges)
+            if (!CheckUIBars())
             {
-                var hudSystem = new GameObject("HUDSystem");
-                hudSystem.AddComponent<HUDSystem>();
-                Debug.Log("✅ Added HUDSystem (Complete dynamic HUD)");
+                var uiGO = new GameObject("UIBarsSystem");
+                uiGO.AddComponent<UIBarsSystem>();
+                Debug.Log("✅ Added UIBarsSystem (bars on screen edges)");
             }
             else
             {
-                Debug.Log("✅ HUDSystem already exists");
+                Debug.Log("✅ UIBarsSystem already exists");
             }
-
-            // Note: HUDSystem handles all UI (bars, hotbar, status effects, floating text)
-            // UIBarsSystem is NOT needed - HUDSystem does everything dynamically via EventHandler
-        }
-
-        private void SetupCanvas()
-        {
-            if (CheckCanvas())
-            {
-                Debug.Log("✅ Canvas already exists");
-                return;
-            }
-
-            var canvas = new GameObject("Canvas");
-            var canvasComp = canvas.AddComponent<Canvas>();
-            canvasComp.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.AddComponent<CanvasScaler>();
-            canvas.AddComponent<GraphicRaycaster>();
-
-            Debug.Log("✅ Created Canvas");
         }
 
         private void SetupCompleteGameScene()
         {
             Debug.Log("=============================");
-            Debug.Log("📦 Setting Up Complete Game Scene...");
+            Debug.Log("?? Setting Up Complete Game Scene...");
             Debug.Log("=============================");
 
             SetupCoreSystems();
@@ -435,9 +409,9 @@ namespace Code.Lavos.Editor
             AddDoorSystemToMaze();
 
             Debug.Log("=============================");
-            Debug.Log("✅ Complete Game Scene Ready!");
+            Debug.Log("? Complete Game Scene Ready!");
             Debug.Log("=============================");
-            Debug.Log("▶️ Press Play to test!");
+            Debug.Log("?? Press Play to test!");
         }
 
         private void AddDoorSystemToMaze()
@@ -449,13 +423,13 @@ namespace Code.Lavos.Editor
             if (mazeGen != null)
             {
                 maze = mazeGen.gameObject;
-                Debug.Log("✅ Found existing Maze");
+                Debug.Log("? Found existing Maze");
             }
             else
             {
                 maze = new GameObject("Maze");
                 maze.AddComponent<MazeGenerator>();
-                Debug.Log("✅ Created Maze GameObject");
+                Debug.Log("? Created Maze GameObject");
             }
 
             // Add missing components
@@ -476,11 +450,11 @@ namespace Code.Lavos.Editor
             if (go.GetComponent<T>() == null)
             {
                 go.AddComponent<T>();
-                Debug.Log($"✅ Added {typeof(T).Name}");
+                Debug.Log($"? Added {typeof(T).Name}");
             }
             else
             {
-                Debug.Log($"✅ {typeof(T).Name} already exists");
+                Debug.Log($"? {typeof(T).Name} already exists");
             }
         }
 
@@ -488,11 +462,11 @@ namespace Code.Lavos.Editor
         {
             if (ok)
             {
-                Debug.Log($"✅ {name}");
+                Debug.Log($"? {name}");
             }
             else
             {
-                Debug.LogWarning($"❌ {name} - MISSING");
+                Debug.LogWarning($"? {name} - MISSING");
                 missing++;
             }
         }
@@ -501,3 +475,4 @@ namespace Code.Lavos.Editor
     }
 }
 #endif
+

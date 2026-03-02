@@ -117,12 +117,8 @@ namespace Code.Lavos.HUD
 
         private void CreateCanvas()
         {
-            // Try to find existing canvas
-#if UNITY_6000_0_OR_NEWER
+            // Try to find existing canvas (Unity 6 standard)
             _canvas = FindFirstObjectByType<Canvas>();
-#else
-            _canvas = FindObjectOfType<Canvas>();
-#endif
 
             if (_canvas == null)
             {

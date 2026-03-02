@@ -446,6 +446,11 @@ namespace Code.Lavos.Core
 
         private void OnGUI()
         {
+            // Debug UI disabled for production
+            return;
+            
+            // Original code below (disabled)
+            /*
             if (!Application.isEditor) return;
 
             GUILayout.BeginArea(new Rect(10, 10, 350, 300));
@@ -457,7 +462,7 @@ namespace Code.Lavos.Core
             GUILayout.Label($"Complexity: {GetCurrentComplexity()}");
 
             GUILayout.Space(10);
-            
+
             if (GUILayout.Button("Next Level"))
             {
                 NextLevel();
@@ -475,28 +480,29 @@ namespace Code.Lavos.Core
 
             GUILayout.Space(10);
             GUILayout.Label("Change Mode:");
-            
+
             if (GUILayout.Button("Progressive"))
             {
                 SetSeedMode(SeedMode.Progressive);
             }
-            
+
             if (GUILayout.Button("Fixed"))
             {
                 SetSeedMode(SeedMode.Fixed);
             }
-            
+
             if (GUILayout.Button("Random"))
             {
                 SetSeedMode(SeedMode.Random);
             }
-            
+
             if (GUILayout.Button("Daily"))
             {
                 SetSeedMode(SeedMode.Daily);
             }
 
             GUILayout.EndArea();
+            */
         }
 
         #endregion

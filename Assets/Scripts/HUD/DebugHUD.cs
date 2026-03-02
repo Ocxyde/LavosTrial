@@ -19,8 +19,8 @@ namespace Code.Lavos.HUD
     public class DebugHUD : MonoBehaviour
     {
         [Header("Debug Settings")]
-        [SerializeField] private bool showDebugInfo = true;
-        [SerializeField] private Key toggleKey = Key.F1;
+        [SerializeField] private bool showDebugInfo = false;  // Disabled by default
+        [SerializeField] private bool enableDebugHUD = false;  // Set to true to enable, false to disable completely
 
         private Rect _windowRect;
         private string _healthInfo = "N/A";
@@ -31,6 +31,13 @@ namespace Code.Lavos.HUD
 
         void Awake()
         {
+            // If DebugHUD is disabled, destroy this GameObject immediately
+            if (!enableDebugHUD)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             _keyboard = Keyboard.current;
             _windowRect = new Rect(10, 10, 300, 150);
             
@@ -51,9 +58,11 @@ namespace Code.Lavos.HUD
 
         void Update()
         {
-            if (_keyboard != null && _keyboard[toggleKey].wasPressedThisFrame)
+            // Toggle debug info with F1
+            if (_keyboard != null && _keyboard[Key.F1] != null && _keyboard[Key.F1].wasPressedThisFrame)
             {
                 showDebugInfo = !showDebugInfo;
+                Debug.Log($"[DebugHUD] Debug info {(showDebugInfo ? "enabled" : "disabled")}");
             }
 
             UpdateInfo();

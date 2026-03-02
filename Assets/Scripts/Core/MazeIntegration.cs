@@ -237,11 +237,13 @@ namespace Code.Lavos.Core
 
         #region Debug
 
+        // Debug GUI disabled for production
+        // Uncomment to enable debug UI in editor
+        /*
         private void OnGUI()
         {
             if (!showDebugUI) return;
 
-            GUILayout.BeginArea(new Rect(10, 10, 300, 200));
             GUILayout.BeginVertical("box");
 
             GUILayout.Label($"Seed: {manualSeed}");
@@ -279,6 +281,7 @@ namespace Code.Lavos.Core
         }
 
         [SerializeField] private bool showDebugUI = true;
+        */
 
         #endregion
     }

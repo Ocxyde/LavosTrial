@@ -1,0 +1,15 @@
+# Deprecated Files Cleanup - Backup List
+# Generated: 2026-03-02 11:02:12
+# Mode: DELETE
+#
+# This file records all files that were identified for deletion.
+# Keep this file for reference in case you need to restore any files.
+#
+# ============================================================================
+
+NOT FOUND: Assets/Scripts/HUD/UIBarsSystemInitializer.cs
+NOT FOUND: Assets/Scripts/Player/PlayerHealth.cs
+NOT FOUND: Assets/Scripts/Core/SeedProgression.cs
+NOT FOUND: Assets/Scripts/Tests/MazeGeneratorTests.cs.disabled
+NOT FOUND: Assets/Scripts/Tests/StatsEngineTests.cs.disabled
+

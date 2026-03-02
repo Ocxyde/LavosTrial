@@ -63,10 +63,13 @@ namespace Code.Lavos.HUD
         private GameObject _hudRoot;
         private Canvas _canvas;
 
-        // Bars
-        private Image _healthBarFill;
-        private Image _manaBarFill;
-        private Image _staminaBarFill;
+        // Bars (UIBarsSystem-style)
+        private RectTransform _healthBarRoot;
+        private RectTransform _manaBarRoot;
+        private RectTransform _staminaBarRoot;
+        private Image _healthFill;
+        private Image _manaFill;
+        private Image _staminaFill;
         private TextMeshProUGUI _healthText;
         private TextMeshProUGUI _manaText;
         private TextMeshProUGUI _staminaText;
@@ -218,82 +221,182 @@ namespace Code.Lavos.HUD
             _hudRoot = new GameObject("HUDContainer");
             _hudRoot.transform.SetParent(transform);
             _hudRoot.transform.SetAsFirstSibling(); // Keep at top of hierarchy
+            
+            Debug.Log("[HUDSystem] Canvas and HUDContainer created successfully");
+        }
+
+        private enum BarPosition { LeftEdge, RightEdge, BottomEdge }
+
+        /// <summary>
+        /// Create a bar container positioned on screen edge (proven UIBarsSystem method).
+        /// </summary>
+        private RectTransform CreateBarContainerEdge(
+            string name, Transform parent,
+            Image.FillMethod fillMethod, Color fillColor,
+            BarPosition position)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+
+            var rt = go.AddComponent<RectTransform>();
+            // Use center anchors for absolute positioning
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.localPosition = Vector3.zero;
+            rt.localRotation = Quaternion.identity;
+            rt.localScale = Vector3.one;
+
+            // Set position and size based on bar type
+            if (fillMethod == Image.FillMethod.Vertical)
+            {
+                // Vertical bars (Health/Mana) - 70% screen height
+                rt.sizeDelta = new Vector2(25f, 1080f * 0.70f);
+                
+                if (position == BarPosition.LeftEdge)
+                {
+                    rt.anchoredPosition = new Vector2(-960f + 25f, 0f); // Left edge
+                }
+                else if (position == BarPosition.RightEdge)
+                {
+                    rt.anchoredPosition = new Vector2(960f - 25f, 0f); // Right edge
+                }
+            }
+            else
+            {
+                // Horizontal bar (Stamina) - 70% screen width
+                rt.sizeDelta = new Vector2(1920f * 0.70f, 25f);
+                rt.anchoredPosition = new Vector2(0f, -540f + 25f); // Bottom edge
+            }
+
+            // Background
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+
+            // Border
+            CreateBarBorder(go.transform, new Color(0.3f, 0.3f, 0.35f));
+
+            // Fill
+            var fillGO = new GameObject("Fill");
+            fillGO.transform.SetParent(go.transform, false);
+
+            var fillRT = fillGO.AddComponent<RectTransform>();
+            fillRT.anchorMin = Vector2.zero;
+            fillRT.anchorMax = Vector2.one;
+            fillRT.offsetMin = new Vector2(2, 2);
+            fillRT.offsetMax = new Vector2(-2, -2);
+
+            var fillImg = fillGO.AddComponent<Image>();
+            fillImg.color = fillColor;
+            fillImg.type = Image.Type.Filled;
+            fillImg.fillMethod = fillMethod;
+            fillImg.fillOrigin = (fillMethod == Image.FillMethod.Vertical) ? 0 : 0;
+            fillImg.fillAmount = 1f;
+
+            return rt;
+        }
+
+        /// <summary>
+        /// Create a 4-pixel dark border around the bar.
+        /// </summary>
+        private void CreateBarBorder(Transform parent, Color color)
+        {
+            float borderSize = 4f;
+
+            // Top border
+            CreateBorderEdge("Border_Top", parent,
+                new Vector2(0, 1), new Vector2(1, 1),
+                new Vector2(0, -borderSize), Vector2.zero, color);
+
+            // Bottom border
+            CreateBorderEdge("Border_Bottom", parent,
+                new Vector2(0, 0), new Vector2(1, 0),
+                Vector2.zero, new Vector2(0, borderSize), color);
+
+            // Left border
+            CreateBorderEdge("Border_Left", parent,
+                new Vector2(0, 0), new Vector2(0, 1),
+                new Vector2(-borderSize, 0), Vector2.zero, color);
+
+            // Right border
+            CreateBorderEdge("Border_Right", parent,
+                new Vector2(1, 0), new Vector2(1, 1),
+                Vector2.zero, new Vector2(borderSize, 0), color);
+        }
+
+        private void CreateBorderEdge(string name, Transform parent,
+            Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Color color)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+            rt.localScale = Vector3.one;
+
+            go.AddComponent<Image>().color = color;
         }
 
         private void CreateBars()
         {
-            // Health Bar - Left edge, vertical (stretches full height)
-            var healthGO = new GameObject("HealthBar");
-            healthGO.transform.SetParent(_hudRoot.transform);
-            var healthRect = healthGO.AddComponent<RectTransform>();
-            healthRect.anchorMin = new Vector2(0f, 0.15f); // Start at 15% from bottom
-            healthRect.anchorMax = new Vector2(0f, 0.85f); // End at 85% from bottom
-            healthRect.pivot = new Vector2(0f, 0.5f);
-            healthRect.anchoredPosition = new Vector2(20, 0); // 20px from left edge
-            healthRect.sizeDelta = new Vector2(25f, 0f); // 25px wide, height from anchors
+            // Ensure _hudRoot exists
+            if (_hudRoot == null)
+            {
+                Debug.LogError("[HUDSystem] HUDContainer not created! Cannot create bars.");
+                return;
+            }
+            
+            // Ensure Canvas exists
+            if (_canvas == null)
+            {
+                Debug.LogError("[HUDSystem] Canvas not created! Cannot create bars.");
+                return;
+            }
 
-            // Background
-            var healthBG = healthGO.AddComponent<Image>();
-            healthBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+            Debug.Log("[HUDSystem] Creating bars with screen-edge layout...");
 
-            // Fill bar
-            _healthBarFill = healthGO.AddComponent<Image>();
-            _healthBarFill.color = healthColorHigh;
-            _healthBarFill.type = Image.Type.Filled;
-            _healthBarFill.fillMethod = Image.FillMethod.Vertical;
-            _healthBarFill.fillOrigin = 0; // Bottom
-            _healthBarFill.fillAmount = 1f;
+            // Initialize colors with defaults if not set
+            Color healthCol = (healthColorHigh.a > 0) ? healthColorHigh : Color.red;
+            Color manaCol = (manaColor.a > 0) ? manaColor : Color.blue;
+            Color staminaCol = (staminaColor.a > 0) ? staminaColor : Color.yellow;
 
-            // Text
-            _healthText = CreateOverlayText(healthGO, "HealthText", "1000/1000");
+            // Health Bar (Left edge - Vertical) - using UIBarsSystem proven method
+            _healthBarRoot = CreateBarContainerEdge(
+                "HealthBar", _hudRoot.transform,
+                Image.FillMethod.Vertical, healthCol,
+                BarPosition.LeftEdge
+            );
+            _healthFill = _healthBarRoot.Find("Fill").GetComponent<Image>();
+            _healthText = CreateBarText(_healthBarRoot, "HealthText");
+            Debug.Log($"[HUDSystem] Health bar created: {_healthBarRoot != null}");
 
-            // Mana Bar - Right edge, vertical
-            var manaGO = new GameObject("ManaBar");
-            manaGO.transform.SetParent(_hudRoot.transform);
-            var manaRect = manaGO.AddComponent<RectTransform>();
-            manaRect.anchorMin = new Vector2(1f, 0.15f);
-            manaRect.anchorMax = new Vector2(1f, 0.85f);
-            manaRect.pivot = new Vector2(1f, 0.5f);
-            manaRect.anchoredPosition = new Vector2(-20, 0); // 20px from right edge
-            manaRect.sizeDelta = new Vector2(25f, 0f);
+            // Mana Bar (Right edge - Vertical)
+            _manaBarRoot = CreateBarContainerEdge(
+                "ManaBar", _hudRoot.transform,
+                Image.FillMethod.Vertical, manaCol,
+                BarPosition.RightEdge
+            );
+            _manaFill = _manaBarRoot.Find("Fill").GetComponent<Image>();
+            _manaText = CreateBarText(_manaBarRoot, "ManaText");
+            Debug.Log($"[HUDSystem] Mana bar created: {_manaBarRoot != null}");
 
-            var manaBG = manaGO.AddComponent<Image>();
-            manaBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
-
-            _manaBarFill = manaGO.AddComponent<Image>();
-            _manaBarFill.color = manaColor;
-            _manaBarFill.type = Image.Type.Filled;
-            _manaBarFill.fillMethod = Image.FillMethod.Vertical;
-            _manaBarFill.fillOrigin = 0; // Bottom
-            _manaBarFill.fillAmount = 1f;
-
-            _manaText = CreateOverlayText(manaGO, "ManaText", "50/50");
-
-            // Stamina Bar - Bottom edge, horizontal
-            var staminaGO = new GameObject("StaminaBar");
-            staminaGO.transform.SetParent(_hudRoot.transform);
-            var staminaRect = staminaGO.AddComponent<RectTransform>();
-            staminaRect.anchorMin = new Vector2(0.15f, 0f); // Start at 15% from left
-            staminaRect.anchorMax = new Vector2(0.85f, 0f); // End at 85% from left
-            staminaRect.pivot = new Vector2(0.5f, 0f);
-            staminaRect.anchoredPosition = new Vector2(0, 20); // 20px from bottom
-            staminaRect.sizeDelta = new Vector2(0f, 25f); // 25px tall, width from anchors
-
-            var staminaBG = staminaGO.AddComponent<Image>();
-            staminaBG.color = new Color(0.1f, 0.1f, 0.1f, 0.9f);
-
-            _staminaBarFill = staminaGO.AddComponent<Image>();
-            _staminaBarFill.color = staminaColor;
-            _staminaBarFill.type = Image.Type.Filled;
-            _staminaBarFill.fillMethod = Image.FillMethod.Horizontal;
-            _staminaBarFill.fillOrigin = 0; // Left
-            _staminaBarFill.fillAmount = 1f;
-
-            _staminaText = CreateOverlayText(staminaGO, "StaminaText", "100/100");
+            // Stamina Bar (Bottom edge - Horizontal)
+            _staminaBarRoot = CreateBarContainerEdge(
+                "StaminaBar", _hudRoot.transform,
+                Image.FillMethod.Horizontal, staminaCol,
+                BarPosition.BottomEdge
+            );
+            _staminaFill = _staminaBarRoot.Find("Fill").GetComponent<Image>();
+            _staminaText = CreateBarText(_staminaBarRoot, "StaminaText");
+            Debug.Log($"[HUDSystem] Stamina bar created: {_staminaBarRoot != null}");
 
             // Interaction prompt - Top center
             var interactionGO = new GameObject("InteractionPrompt");
-            interactionGO.transform.SetParent(_hudRoot.transform);
+            if (_hudRoot != null)
+                interactionGO.transform.SetParent(_hudRoot.transform);
             var interactionRect = interactionGO.AddComponent<RectTransform>();
             interactionRect.anchorMin = new Vector2(0.5f, 1f);
             interactionRect.anchorMax = new Vector2(0.5f, 1f);
@@ -307,6 +410,29 @@ namespace Code.Lavos.HUD
             _interactionText.color = Color.white;
             _interactionText.text = "";
             _interactionText.textWrappingMode = TextWrappingModes.NoWrap;
+
+            Debug.Log("[HUDSystem] All bars created with screen-edge layout!");
+        }
+
+        private TextMeshProUGUI CreateBarText(RectTransform parent, string name)
+        {
+            var textGO = new GameObject(name);
+            textGO.transform.SetParent(parent, false);
+            var textRect = textGO.AddComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.pivot = new Vector2(0.5f, 0.5f);
+            textRect.anchoredPosition = Vector2.zero;
+            textRect.sizeDelta = Vector2.zero;
+
+            var textComp = textGO.AddComponent<TextMeshProUGUI>();
+            textComp.fontSize = 16;
+            textComp.alignment = TextAlignmentOptions.Center;
+            textComp.color = Color.white;
+            textComp.text = "100/100";
+            textComp.textWrappingMode = TextWrappingModes.NoWrap;
+
+            return textComp;
         }
 
         private TextMeshProUGUI CreateOverlayText(GameObject parent, string name, string text)
@@ -492,13 +618,13 @@ namespace Code.Lavos.HUD
         {
             _currentHealth = current;
             _maxHealth = max;
-            UpdateBar(_healthBarFill, _healthText, current, max, healthColorHigh, healthColorLow, healthColorCritical);
+            UpdateBar(_healthFill, _healthText, current, max, healthColorHigh, healthColorLow, healthColorCritical);
         }
 
         private void OnPlayerDamaged(float amount)
         {
             // Flash health bar red
-            StartCoroutine(FlashBar(_healthBarFill, Color.red, 0.3f));
+            StartCoroutine(FlashBar(_healthFill, Color.red, 0.3f));
             
             // Show damage floating text
             ShowFloatingText($"-{Mathf.CeilToInt(amount)}", Color.red, 1.5f);
@@ -514,14 +640,14 @@ namespace Code.Lavos.HUD
         {
             _currentMana = current;
             _maxMana = max;
-            UpdateBar(_manaBarFill, _manaText, current, max, manaColor, manaColor, manaColor);
+            UpdateBar(_manaFill, _manaText, current, max, manaColor, manaColor, manaColor);
         }
 
         private void OnStaminaChanged(float current, float max)
         {
             _currentStamina = current;
             _maxStamina = max;
-            UpdateBar(_staminaBarFill, _staminaText, current, max, staminaColor, staminaColor, staminaColor);
+            UpdateBar(_staminaFill, _staminaText, current, max, staminaColor, staminaColor, staminaColor);
         }
 
         private void OnStatChanged(string statName, float newValue)
@@ -531,9 +657,9 @@ namespace Code.Lavos.HUD
 
         private void UpdateAllBars()
         {
-            UpdateBar(_healthBarFill, _healthText, _currentHealth, _maxHealth, healthColorHigh, healthColorLow, healthColorCritical);
-            UpdateBar(_manaBarFill, _manaText, _currentMana, _maxMana, manaColor, manaColor, manaColor);
-            UpdateBar(_staminaBarFill, _staminaText, _currentStamina, _maxStamina, staminaColor, staminaColor, staminaColor);
+            UpdateBar(_healthFill, _healthText, _currentHealth, _maxHealth, healthColorHigh, healthColorLow, healthColorCritical);
+            UpdateBar(_manaFill, _manaText, _currentMana, _maxMana, manaColor, manaColor, manaColor);
+            UpdateBar(_staminaFill, _staminaText, _currentStamina, _maxStamina, staminaColor, staminaColor, staminaColor);
         }
 
         private void UpdateBar(Image fill, TextMeshProUGUI text, float current, float max, Color high, Color mid, Color low)
@@ -644,9 +770,19 @@ namespace Code.Lavos.HUD
 
         private void HandleHotbarInput()
         {
+            // Use Keyboard.current from New Input System
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard == null) return;
+
             for (int i = 0; i < hotbarSlotCount; i++)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1 + i))
+                var key = keyboard[i == 0 ? UnityEngine.InputSystem.Key.Digit1 : 
+                                   i == 1 ? UnityEngine.InputSystem.Key.Digit2 :
+                                   i == 2 ? UnityEngine.InputSystem.Key.Digit3 :
+                                   i == 3 ? UnityEngine.InputSystem.Key.Digit4 :
+                                   UnityEngine.InputSystem.Key.Digit5];
+                
+                if (key != null && key.wasPressedThisFrame)
                 {
                     SetActiveSlot(i);
                 }
