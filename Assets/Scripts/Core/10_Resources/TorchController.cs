@@ -35,10 +35,6 @@ namespace Code.Lavos.Core
         [Tooltip("Orange flame light color (8-bit shading)")]
         [SerializeField] private Color lightColor = new Color(1f, 0.7f, 0.3f);  // Warm orange
 
-        [Header("State")]
-        [Tooltip("Start torch in ON state")]
-        [SerializeField] private bool startOn = true;
-
         #endregion
 
         #region Private Fields

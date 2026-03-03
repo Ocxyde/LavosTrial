@@ -54,9 +54,9 @@ namespace Code.Lavos.Core
         [Header("Settings")]
         [Tooltip("Parent object for all instantiated lights")]
         [SerializeField] private string parentName = "Lights";
-        
+
         [Tooltip("Start with lights ON")]
-        [SerializeField] private bool startOn = true;
+        [SerializeField] private bool startOn = false;  // Default OFF for manual activation
         
         [Tooltip("Show debug info")]
         [SerializeField] private bool showDebugInfo = true;
@@ -169,44 +169,89 @@ namespace Code.Lavos.Core
             }
             
             float startTime = Time.realtimeSinceStartup;
-            
+
             // Batch instantiate all torches
             foreach (var torchRecord in torchRecords)
             {
                 GameObject torchObj = Instantiate(torchPrefab, torchRecord.position, torchRecord.rotation, _lightsParent);
                 _instantiatedLights.Add(torchObj);
-                
+
                 // Get controller and store reference
                 TorchController controller = torchObj.GetComponent<TorchController>();
                 if (controller != null)
                 {
-                    string guid = string.IsNullOrEmpty(torchRecord.guid) ? 
+                    string guid = string.IsNullOrEmpty(torchRecord.guid) ?
                                  $"torch_{_torchControllers.Count:D4}" : torchRecord.guid;
-                    
+
                     _torchControllers[guid] = controller;
-                    
-                    // Set initial state
-                    if (startOn)
+
+                    // First torch ON, all others OFF
+                    if (_torchControllers.Count == 1)
                     {
-                        controller.TurnOn();
+                        controller.TurnOn();  // First torch ON
                     }
                     else
                     {
-                        controller.TurnOff();
+                        controller.TurnOff();  // All others OFF
                     }
                 }
             }
-            
+
             float elapsed = Time.realtimeSinceStartup - startTime;
-            
+
             if (showDebugInfo)
             {
-                Debug.Log($"[LightPlacementEngine] Instantiated {torchRecords.Count} torches in {elapsed * 1000:F2}ms");
+                Debug.Log($"[LightPlacementEngine] Instantiated {torchRecords.Count} torches (1 ON, {torchRecords.Count - 1} OFF)");
             }
         }
+
+        #endregion
+
+        #region Public API - Manual Activation
+        
+        /// <summary>
+        /// Turn on ALL torches at once (for testing/emergency).
+        /// </summary>
+        [ContextMenu("Turn On All Torches")]
+        public void TurnOnAllTorches()
+        {
+            foreach (var kvp in _torchControllers)
+            {
+                kvp.Value.TurnOn();
+            }
+            
+            Debug.Log($"[LightPlacementEngine] All {_torchControllers.Count} torches turned ON");
+        }
+        
+        /// <summary>
+        /// Turn off ALL torches at once.
+        /// </summary>
+        [ContextMenu("Turn Off All Torches")]
+        public void TurnOffAllTorches()
+        {
+            foreach (var kvp in _torchControllers)
+            {
+                kvp.Value.TurnOff();
+            }
+            
+            Debug.Log($"[LightPlacementEngine] All {_torchControllers.Count} torches turned OFF");
+        }
+        
+        /// <summary>
+        /// Get all torch GUIDs.
+        /// </summary>
+        public System.Collections.Generic.List<string> GetAllTorchGuids()
+        {
+            return new System.Collections.Generic.List<string>(_torchControllers.Keys);
+        }
+        
+        /// <summary>
+        /// Get torch count.
+        /// </summary>
+        public int GetTorchCount() => _torchControllers.Count;
         
         #endregion
-        
+
         #region Public API - Light State Control
         
         /// <summary>
