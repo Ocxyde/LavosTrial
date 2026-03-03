@@ -214,7 +214,7 @@ namespace Code.Lavos.Core
             bool interactPressed = _interactAction?.IsPressed() == true ||
                                  Keyboard.current?.eKey?.isPressed == true;
 
-            if (interactPressed && _currentInteractable?.CanInteract(playerController.gameObject) == true)
+            if (interactPressed && _currentInteractable?.CanInteract(playerController) == true)
             {
                 PerformInteraction(_currentInteractable);
             }
@@ -231,18 +231,18 @@ namespace Code.Lavos.Core
             if (EventHandler.Instance != null)
             {
                 EventHandler.Instance.InvokeItemUsed(
-                    new ItemData { itemName = interactable.GetInteractionPrompt() },
+                    new ItemData { itemName = interactable.InteractionPrompt },
                     1
                 );
             }
 
             // Execute interaction
-            interactable.OnInteract(playerController.gameObject);
+            interactable.OnInteract(playerController);
 
             // Log interaction
             OnInteractionPerformed?.Invoke("Interact", playerController?.gameObject);
 
-            Debug.Log($"[InteractionSystem] Interacted with: {interactable.GetInteractionPrompt()}");
+            Debug.Log($"[InteractionSystem] Interacted with: {interactable.InteractionPrompt}");
         }
 
         #endregion
@@ -486,20 +486,20 @@ namespace Code.Lavos.Core
                 {
                     if (_highlightedInteractable != found)
                     {
-                        _highlightedInteractable?.OnHighlightExit(playerController.gameObject);
+                        _highlightedInteractable?.OnHighlightExit(playerController);
                         _highlightedInteractable = found;
-                        _highlightedInteractable.OnHighlightEnter(playerController.gameObject);
+                        _highlightedInteractable.OnHighlightEnter(playerController);
                     }
 
                     _currentInteractable = found;
-                    OnInteractableChanged?.Invoke(found.GetInteractionPrompt());
-                    OnInteractableChangedStatic?.Invoke(found.GetInteractionPrompt());
+                    OnInteractableChanged?.Invoke(found.InteractionPrompt);
+                    OnInteractableChangedStatic?.Invoke(found.InteractionPrompt);
                     return;
                 }
             }
 
             // Nothing found
-            _highlightedInteractable?.OnHighlightExit(playerController.gameObject);
+            _highlightedInteractable?.OnHighlightExit(playerController);
             _highlightedInteractable = null;
             _currentInteractable = null;
             OnInteractableChanged?.Invoke(string.Empty);
@@ -644,7 +644,7 @@ namespace Code.Lavos.Core
         /// </summary>
         public void ClearInteraction()
         {
-            _highlightedInteractable?.OnHighlightExit(playerController.gameObject);
+            _highlightedInteractable?.OnHighlightExit(playerController);
             _highlightedInteractable = null;
             _currentInteractable = null;
             OnInteractableChanged?.Invoke(string.Empty);

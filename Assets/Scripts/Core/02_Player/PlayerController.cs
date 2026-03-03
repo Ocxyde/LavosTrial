@@ -121,7 +121,18 @@ namespace Code.Lavos.Core
         _controller.skinWidth = 0.08f;
         _controller.minMoveDistance = 0.001f;
 
+        // Force initialize Input System
         RefreshInputReferences();
+        
+        // Debug: Verify input is available
+        if (_kb == null)
+        {
+            Debug.LogWarning("[PlayerController] Keyboard not available in Awake - will retry in Update");
+        }
+        else
+        {
+            Debug.Log("[PlayerController] Input system initialized successfully");
+        }
 
         // ── Positionne la caméra à hauteur des yeux ──────────────────────────
         if (playerCamera == null)
@@ -141,8 +152,22 @@ namespace Code.Lavos.Core
     void Update()
     {
         RefreshInputReferences();
-        if (_kb == null || _mouse == null) return;
+        
+        // Debug: Check input system
+        if (_kb == null)
+        {
+            if (Time.frameCount % 120 == 0)
+                Debug.Log("[PlayerController] Keyboard input not available!");
+            return;
+        }
+        if (_mouse == null)
+        {
+            if (Time.frameCount % 120 == 0)
+                Debug.Log("[PlayerController] Mouse input not available!");
+            return;
+        }
 
+        // Only check GameManager if it exists (optional in test scenes)
         if (GameManager.Instance != null &&
             GameManager.Instance.CurrentState != GameManager.GameState.Playing)
             return;
@@ -169,8 +194,16 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────────────────
     private void RefreshInputReferences()
     {
-        _kb ??= Keyboard.current;
-        _mouse ??= Mouse.current;
+        if (_kb == null)
+            _kb = Keyboard.current;
+        if (_mouse == null)
+            _mouse = Mouse.current;
+            
+        // Debug: Log if input is still null after refresh
+        if (_kb == null && Time.frameCount % 180 == 0)
+        {
+            Debug.LogWarning("[PlayerController] Keyboard.current is null - New Input System issue?");
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -211,9 +244,21 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────────────────
     private void HandleMovement()
     {
-        if (Cursor.lockState != CursorLockMode.Locked) return;
+        // Debug: Check cursor lock
+        if (Cursor.lockState != CursorLockMode.Locked)
+        {
+            Debug.Log($"[PlayerController] Cursor not locked! State: {Cursor.lockState}");
+            return;
+        }
 
         _isGrounded = _controller.isGrounded;
+        
+        // Debug: Log grounded state
+        if (Time.frameCount % 60 == 0) // Log once per second
+        {
+            Debug.Log($"[PlayerController] Grounded: {_isGrounded} | Position: {_controller.transform.position}");
+        }
+        
         if (_isGrounded && _velocity.y < 0f) _velocity.y = -2f;
 
         float h = (_kb.dKey.isPressed || _kb.rightArrowKey.isPressed ? 1f : 0f)
@@ -222,6 +267,12 @@ namespace Code.Lavos.Core
                 - (_kb.sKey.isPressed || _kb.downArrowKey.isPressed ? 1f : 0f);
 
         _isMoving = (h != 0f || v != 0f);
+        
+        // Debug: Log input
+        if (_isMoving && Time.frameCount % 60 == 0)
+        {
+            Debug.Log($"[PlayerController] Input: h={h}, v={v} | Sprint: {_isSprinting}");
+        }
         
         // Check sprint condition: shift held + moving + grounded + has stamina
         _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded &&
@@ -325,8 +376,8 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────────────────
     private void HandleInteraction()
     {
-        if (_kb.eKey.wasPressedThisFrame && _currentInteractable?.CanInteract(gameObject) == true)
-            _currentInteractable.OnInteract(gameObject);
+        if (_kb.eKey.wasPressedThisFrame && _currentInteractable?.CanInteract(this) == true)
+            _currentInteractable.OnInteract(this);
 
         CheckForInteractable();
     }
@@ -345,19 +396,19 @@ namespace Code.Lavos.Core
             {
                 if (_highlightedInteractable != found)
                 {
-                    _highlightedInteractable?.OnHighlightExit(gameObject);
+                    _highlightedInteractable?.OnHighlightExit(this);
                     _highlightedInteractable = found;
-                    _highlightedInteractable.OnHighlightEnter(gameObject);
+                    _highlightedInteractable.OnHighlightEnter(this);
                 }
                 _currentInteractable = found;
-                UpdateInteractionPrompt(found.GetInteractionPrompt());
-                OnInteractableChanged?.Invoke(found.GetInteractionPrompt());
+                UpdateInteractionPrompt(found.InteractionPrompt);
+                OnInteractableChanged?.Invoke(found.InteractionPrompt);
                 return;
             }
         }
 
         // Rien trouvé
-        _highlightedInteractable?.OnHighlightExit(gameObject);
+        _highlightedInteractable?.OnHighlightExit(this);
         _highlightedInteractable = null;
         _currentInteractable = null;
         ClearInteractionPrompt();

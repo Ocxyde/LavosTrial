@@ -1,0 +1,304 @@
+﻿// SimpleMazeTest.cs
+// CLEAN & SIMPLE: Maze + Player + Torches only
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// FEATURES:
+// - Wide maze (41x41 cells)
+// - Bigger corridors (8m wide)
+// - Many torches (50+)
+// - Player with camera
+// - No rooms, no doors, no complexity
+//
+// USAGE:
+//   1. Create empty GameObject
+//   2. Add this component
+//   3. Press Play
+
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace Code.Lavos.Core
+{
+    public class SimpleMazeTest : MonoBehaviour
+    {
+        #region Settings
+
+        [Header("Maze Settings")]
+        [SerializeField] private int mazeWidth = 41;
+        [SerializeField] private int mazeHeight = 41;
+        [SerializeField] private float cellSize = 8f;  // Bigger corridors (8m wide)
+        [SerializeField] private float wallHeight = 4f;
+
+        [Header("Torch Settings")]
+        [SerializeField] private int torchCount = 60;  // More torches
+        [SerializeField] private float minTorchDistance = 5f;
+
+        [Header("Player Settings")]
+        [SerializeField] private bool spawnPlayer = true;
+        [SerializeField] private float cameraDistance = 4f;
+
+        [Header("Debug")]
+        [SerializeField] private bool showDebugUI = true;
+
+        #endregion
+
+        #region State
+
+        private MazeGenerator _mazeGenerator;
+        private MazeRenderer _mazeRenderer;
+        private TorchPool _torchPool;
+        private SpatialPlacer _spatialPlacer;
+        private GameObject _player;
+        private bool _mazeGenerated = false;
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        void Awake()
+        {
+            // Add required components
+            _mazeGenerator = gameObject.AddComponent<MazeGenerator>();
+            _mazeRenderer = gameObject.AddComponent<MazeRenderer>();
+            _torchPool = gameObject.AddComponent<TorchPool>();
+            _spatialPlacer = gameObject.AddComponent<SpatialPlacer>();
+
+            // Configure maze
+            _mazeGenerator.width = mazeWidth;
+            _mazeGenerator.height = mazeHeight;
+
+            // Configure torches
+            ConfigureTorches();
+        }
+
+        void Start()
+        {
+            // Generate ground plane
+            CreateGroundPlane();
+
+            // Generate maze
+            GenerateMaze();
+
+            // Spawn player
+            if (spawnPlayer)
+            {
+                SpawnPlayer();
+            }
+        }
+
+        void Update()
+        {
+            HandleInput();
+        }
+
+        #endregion
+
+        #region Setup
+
+        private void CreateGroundPlane()
+        {
+            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            ground.name = "GroundPlane";
+            ground.transform.position = new Vector3(0f, 0f, 0f);
+            ground.transform.localScale = new Vector3(30f, 1f, 30f);  // Large enough for 41x41 maze
+
+            var renderer = ground.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = new Color(0.15f, 0.15f, 0.15f, 1f);
+            }
+
+            Debug.Log("[SimpleMazeTest] Ground plane created (240x240m)");
+        }
+
+        private void ConfigureTorches()
+        {
+            // Set torch count via reflection
+            var torchCountField = _spatialPlacer.GetType().GetField("torchCount",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (torchCountField != null)
+                torchCountField.SetValue(_spatialPlacer, torchCount);
+
+            // Set min distance
+            var minDistField = _spatialPlacer.GetType().GetField("minDistanceBetweenTorches",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (minDistField != null)
+                minDistField.SetValue(_spatialPlacer, minTorchDistance);
+
+            // Enable torch placement
+            var placeTorchesField = _spatialPlacer.GetType().GetField("placeTorches",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (placeTorchesField != null)
+                placeTorchesField.SetValue(_spatialPlacer, true);
+
+            Debug.Log($"[SimpleMazeTest] Torches configured: {torchCount} torches, min distance {minTorchDistance}m");
+        }
+
+        #endregion
+
+        #region Generation
+
+        [ContextMenu("Generate Maze")]
+        public void GenerateMaze()
+        {
+            Debug.Log("=== Simple Maze Test ===");
+            Debug.Log($"Maze Size: {mazeWidth}x{mazeHeight} cells");
+            Debug.Log($"Corridor Width: {cellSize}m");
+            Debug.Log($"Torch Count: {torchCount}");
+
+            // Generate maze data
+            _mazeGenerator.Generate();
+
+            // Build geometry
+            _mazeRenderer.BuildMaze();
+
+            // Place torches (via SpatialPlacer PLUG-IN)
+            _spatialPlacer.PlaceTorches();
+
+            _mazeGenerated = true;
+
+            Debug.Log("=== Maze Generation Complete ===");
+        }
+
+        #endregion
+
+        #region Player
+
+        private void SpawnPlayer()
+        {
+            // Find spawn position (center of maze, in a corridor)
+            int centerX = mazeWidth / 2;
+            int centerZ = mazeHeight / 2;
+            float spawnX = (centerX + 0.5f) * cellSize;
+            float spawnZ = (centerZ + 0.5f) * cellSize;
+            float spawnY = 1f;
+
+            Vector3 spawnPos = new Vector3(spawnX, spawnY, spawnZ);
+
+            // Create player
+            _player = new GameObject("Player");
+            _player.tag = "Player";
+            _player.transform.position = spawnPos;
+
+            // Add CharacterController
+            var controller = _player.AddComponent<CharacterController>();
+            controller.radius = 0.4f;
+            controller.height = 1.8f;
+            controller.center = new Vector3(0f, 0.9f, 0f);
+            controller.skinWidth = 0.08f;
+
+            // Add PlayerStats
+            _player.AddComponent<PlayerStats>();
+
+            // Add PlayerController
+            var playerController = _player.AddComponent<PlayerController>();
+
+            // Add CameraFollow
+            var cameraPivot = new GameObject("CameraPivot");
+            cameraPivot.transform.SetParent(_player.transform);
+            var cameraFollow = cameraPivot.AddComponent<CameraFollow>();
+            cameraFollow.SetTarget(_player.transform);
+            cameraFollow.SetDistance(cameraDistance);
+
+            Debug.Log($"[SimpleMazeTest] Player spawned at {spawnPos:F1}");
+            Debug.Log("[SimpleMazeTest] Controls: WASD=Move, Shift=Sprint, Space=Jump, Mouse=Look");
+        }
+
+        #endregion
+
+        #region Input
+
+        private void HandleInput()
+        {
+            if (Keyboard.current == null) return;
+
+            var keyboard = Keyboard.current;
+
+            // Regenerate maze with R
+            if (keyboard[Key.R].wasPressedThisFrame && _mazeGenerated)
+            {
+                Debug.Log("[SimpleMazeTest] Regenerating maze...");
+                GenerateMaze();
+            }
+
+            // Toggle torches with T
+            if (keyboard[Key.T].wasPressedThisFrame)
+            {
+                ToggleTorches();
+            }
+        }
+
+        private void ToggleTorches()
+        {
+            if (_torchPool == null) return;
+
+            if (_torchPool.ActiveCount > 0)
+            {
+                _torchPool.ReleaseAll();
+                Debug.Log("[SimpleMazeTest] Torches removed");
+            }
+            else
+            {
+                _spatialPlacer.PlaceTorches();
+                Debug.Log("[SimpleMazeTest] Torches placed");
+            }
+        }
+
+        #endregion
+
+        #region Debug UI
+
+        void OnGUI()
+        {
+            if (!showDebugUI) return;
+
+            GUILayout.BeginArea(new Rect(10, 10, 350, 400));
+            GUILayout.BeginVertical("box");
+
+            GUILayout.Label("═══ Simple Maze Test ═══", GUILayout.Height(25));
+            GUILayout.Space(5);
+
+            GUILayout.Label($"Maze: {mazeWidth}x{mazeHeight} cells");
+            GUILayout.Label($"Corridor: {cellSize}m wide");
+            GUILayout.Label($"Status: {(_mazeGenerated ? "✅ Generated" : "⏳ Not Generated")}");
+            GUILayout.Space(5);
+
+            if (_torchPool != null)
+            {
+                GUILayout.Label($"Torches Active: {_torchPool.ActiveCount}");
+                GUILayout.Label($"Torches Pooled: {_torchPool.PooledCount}");
+            }
+            GUILayout.Space(5);
+
+            if (_player != null)
+            {
+                GUILayout.Label($"Player: {_player.transform.position:F1}");
+            }
+            GUILayout.Space(5);
+
+            GUILayout.Label("═══ Controls ═══");
+            GUILayout.Label("[WASD] Move");
+            GUILayout.Label("[Shift] Sprint");
+            GUILayout.Label("[Space] Jump");
+            GUILayout.Label("[Mouse] Look");
+            GUILayout.Label("[R] Regenerate Maze");
+            GUILayout.Label("[T] Toggle Torches");
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("Generate Maze", GUILayout.Height(30)))
+                GenerateMaze();
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Place Torches"))
+                _spatialPlacer?.PlaceTorches();
+            if (GUILayout.Button("Remove Torches"))
+                _torchPool?.ReleaseAll();
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
+        }
+
+        #endregion
+    }
+}

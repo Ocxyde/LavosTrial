@@ -97,7 +97,7 @@ namespace Code.Lavos.Core
             {
                 var braseroFlame = go.transform.Find("BraseroFlame")?.GetComponent<BraseroFlame>();
                 var light = go.transform.Find("FlameLight")?.GetComponent<Light>();
-                
+
                 if (braseroFlame != null && light != null)
                 {
                     ctrl.InitializeBrasero(light, braseroFlame);
@@ -112,6 +112,10 @@ namespace Code.Lavos.Core
             {
                 SetupSpriteMode(go, flameFrames, ctrl);
             }
+
+            // NOTE: Light registration is handled by TorchController.TurnOn()
+            // The torch starts in its default state (ON by default)
+            // Don't register here - let the controller manage its own state
 
             _active.Add(ctrl);
             return ctrl;
@@ -169,6 +173,11 @@ namespace Code.Lavos.Core
             {
                 if (ctrl == null) continue;
                 var go = ctrl.gameObject;
+
+                // Turn off torch (this unregisters from LightEngine)
+                ctrl.TurnOff();
+
+                // Deactivate and return to pool
                 go.SetActive(false);
                 go.transform.SetParent(_poolRoot);
                 _pool.Add(go);
@@ -221,28 +230,72 @@ namespace Code.Lavos.Core
 
             if (useBraseroFlame)
             {
+                Debug.Log($"[TorchPool] Creating BraseroFlame torch at position");
+                
                 // ─── Brasero Flame (Particle System) ───────────────────────────
                 var flame = new GameObject("BraseroFlame");
                 flame.transform.SetParent(torchGO.transform);
                 flame.transform.localPosition = new Vector3(0f, 0.25f, 0.05f);
-                flame.transform.localRotation = Quaternion.identity;
-                flame.AddComponent<BraseroFlame>();
+                flame.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                flame.transform.localScale = new Vector3(1f, 1f, 1f);
+                var brasero = flame.AddComponent<BraseroFlame>();
+                Debug.Log($"[TorchPool] BraseroFlame component added, active={flame.activeSelf}");
+
+                // ─── FALLBACK: Simple visible flame quad ───────────────────────
+                var flameQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                flameQuad.name = "FlameVisual";
+                flameQuad.transform.SetParent(torchGO.transform);
+                flameQuad.transform.localPosition = new Vector3(0f, 0.45f, 0.2f);
+                flameQuad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                flameQuad.transform.localScale = new Vector3(0.6f, 0.8f, 1f);
+                var quadRenderer = flameQuad.GetComponent<MeshRenderer>();
+                Debug.Log($"[TorchPool] Flame quad created, renderer={quadRenderer != null}");
+                
+                if (quadRenderer != null)
+                {
+                    var flameMat = new Material(Shader.Find("Unlit/Color"));
+                    Debug.Log($"[TorchPool] Unlit/Color shader found: {Shader.Find("Unlit/Color") != null}");
+                    
+                    if (flameMat == null || flameMat.shader == null)
+                    {
+                        Debug.Log("[TorchPool] Unlit/Color not found, trying Standard");
+                        flameMat = new Material(Shader.Find("Standard"));
+                    }
+                    if (flameMat != null && flameMat.shader != null)
+                    {
+                        flameMat.color = new Color(1f, 0.5f, 0.1f, 1f);
+                        quadRenderer.material = flameMat;
+                        quadRenderer.enabled = true;
+                        Debug.Log($"[TorchPool] Flame material applied: {flameMat.shader.name}, color={flameMat.color}");
+                    }
+                    else
+                    {
+                        Debug.LogError("[TorchPool] FAILED to create flame material!");
+                    }
+                }
+                Destroy(flameQuad.GetComponent<MeshCollider>());
 
                 // ─── Light ─────────────────────────────────────────────────────
                 var lightGO = new GameObject("FlameLight");
                 lightGO.transform.SetParent(torchGO.transform);
-                lightGO.transform.localPosition = new Vector3(0f, 0.4f, 0.08f);
+                lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
 
                 var pointLight = lightGO.AddComponent<Light>();
                 pointLight.type = LightType.Point;
-                pointLight.range = 10f;
-                pointLight.intensity = 2.5f;
-                pointLight.color = new Color(1f, 0.6f, 0.3f);
-                pointLight.shadows = LightShadows.None;
+                pointLight.range = 15f;
+                pointLight.intensity = 5f;
+                pointLight.color = new Color(1f, 0.7f, 0.3f);
+                pointLight.shadows = LightShadows.Soft;
+                pointLight.enabled = true;
+                pointLight.bounceIntensity = 1.5f;
+                
+                Debug.Log($"[TorchPool] Light created: type={pointLight.type}, range={pointLight.range}, intensity={pointLight.intensity}, enabled={pointLight.enabled}, color={pointLight.color}");
+                Debug.Log($"[TorchPool] Light world position: {lightGO.transform.position}");
 
                 // ─── Controller ────────────────────────────────────────────────
                 var ctrl = torchGO.AddComponent<TorchController>();
                 ctrl.InitializeBrasero(pointLight, flame.GetComponent<BraseroFlame>());
+                Debug.Log($"[TorchPool] TorchController added and initialized");
             }
             else
             {
@@ -262,14 +315,16 @@ namespace Code.Lavos.Core
                 // ─── Light ─────────────────────────────────────────────────────
                 var lightGO = new GameObject("FlameLight");
                 lightGO.transform.SetParent(torchGO.transform);
-                lightGO.transform.localPosition = new Vector3(0f, 0.3f, 0.08f);
+                lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
 
                 var pointLight = lightGO.AddComponent<Light>();
                 pointLight.type = LightType.Point;
-                pointLight.range = 10f;
-                pointLight.intensity = 2.5f;
-                pointLight.color = new Color(1f, 0.6f, 0.3f);
-                pointLight.shadows = LightShadows.None;
+                pointLight.range = 15f;
+                pointLight.intensity = 5f;
+                pointLight.color = new Color(1f, 0.7f, 0.3f);
+                pointLight.shadows = LightShadows.Soft;
+                pointLight.enabled = true;
+                pointLight.bounceIntensity = 1.5f;
 
                 // ─── Controller ────────────────────────────────────────────────
                 torchGO.AddComponent<TorchController>();
@@ -279,14 +334,57 @@ namespace Code.Lavos.Core
         }
 
         // ─── Stats (debug) ─────────────────────────────────────────────────────
-        
+
         /// <summary>Number of currently active torches</summary>
         public int ActiveCount => _active.Count;
-        
+
         /// <summary>Number of torches in the inactive pool</summary>
         public int PooledCount => _pool.Count;
-        
+
         /// <summary>Total torches (active + pooled)</summary>
         public int TotalCount => _active.Count + _pool.Count;
+
+        // ─── Debug Controls ────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Turn all active torches ON.
+        /// </summary>
+        [ContextMenu("Turn All Torches ON")]
+        public void TurnAllOn()
+        {
+            foreach (var ctrl in _active)
+            {
+                if (ctrl != null)
+                    ctrl.TurnOn();
+            }
+            Debug.Log($"[TorchPool] Turned ON {_active.Count} torches");
+        }
+
+        /// <summary>
+        /// Turn all active torches OFF.
+        /// </summary>
+        [ContextMenu("Turn All Torches OFF")]
+        public void TurnAllOff()
+        {
+            foreach (var ctrl in _active)
+            {
+                if (ctrl != null)
+                    ctrl.TurnOff();
+            }
+            Debug.Log($"[TorchPool] Turned OFF {_active.Count} torches");
+        }
+
+        /// <summary>
+        /// Toggle all active torches.
+        /// </summary>
+        [ContextMenu("Toggle All Torches")]
+        public void ToggleAll()
+        {
+            foreach (var ctrl in _active)
+            {
+                if (ctrl != null)
+                    ctrl.Toggle();
+            }
+        }
     }
 }

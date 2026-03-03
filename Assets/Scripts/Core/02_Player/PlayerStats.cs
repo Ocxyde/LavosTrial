@@ -29,7 +29,7 @@ namespace Code.Lavos.Core
         [SerializeField] private float maxStamina = 100f;
         [SerializeField] private float healthRegen = 2f;
         [SerializeField] private float manaRegen = 5f;
-        [SerializeField] private float staminaRegen = 0.15f; // Nerfed hard: 0.15 stamina/sec (667 sec to full). Sprint costs 2/sec = net loss of 1.85/sec
+        [SerializeField] private float staminaRegen = 0.08f; // Heavily nerfed: 0.08 stamina/sec (1250 sec to full). Sprint costs 2/sec = net loss of 1.92/sec. Out-of-combat: 0.12/sec (833 sec to full)
 
         [Header("Combat")]
         [SerializeField] private float invincibilityTime = 0.5f;

@@ -38,6 +38,25 @@ namespace Code.Lavos.Core
         SetupParticleSystem();
     }
 
+    void Start()
+    {
+        // Ensure particles are playing
+        if (_particleSystem != null && !_particleSystem.isPlaying)
+        {
+            _particleSystem.Play();
+            Debug.Log($"[BraseroFlame] Particles started at {transform.position}");
+        }
+    }
+
+    void OnEnable()
+    {
+        // Restart particles when enabled
+        if (_particleSystem != null)
+        {
+            _particleSystem.Play();
+        }
+    }
+
     private void SetupParticleSystem()
     {
         if (gameObject == null) return;

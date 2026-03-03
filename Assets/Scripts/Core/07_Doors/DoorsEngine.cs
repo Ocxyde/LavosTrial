@@ -417,44 +417,44 @@ namespace Code.Lavos.Core
         /// <summary>
         /// IInteractable: Get interaction prompt.
         /// </summary>
-        public string GetInteractionPrompt() => _isOpen ? "Close" : (_isLocked ? "Locked" : "Open");
+        public string InteractionPrompt => _isOpen ? "Close" : (_isLocked ? "Locked" : "Open");
 
         /// <summary>
         /// IInteractable: Check if player can interact.
         /// </summary>
-        public new bool CanInteract(UnityEngine.GameObject interactor)
+        public new bool CanInteract(PlayerController player)
         {
-            if (interactor == null) return false;
+            if (player == null) return false;
 
             // Check distance
-            float distance = Vector3.Distance(interactor.transform.position, transform.position);
+            float distance = Vector3.Distance(player.transform.position, transform.position);
             return distance <= interactionRange;
         }
 
         /// <summary>
         /// IInteractable: Interact with door (E key).
         /// </summary>
-        public new void OnInteract(UnityEngine.GameObject interactor)
+        public new void OnInteract(PlayerController player)
         {
-            if (!CanInteract(interactor)) return;
+            if (!CanInteract(player)) return;
 
             // Call base Interact with player GameObject
-            Interact(interactor);
+            Interact(player.gameObject);
         }
 
         /// <summary>
         /// IInteractable: Show highlight when player looks at door.
         /// </summary>
-        public void OnHighlightEnter(UnityEngine.GameObject interactor)
+        public void OnHighlightEnter(PlayerController player)
         {
             // Could add visual highlight effect here
-            Debug.Log($"[DoorsEngine] Highlight enter: {GetInteractionPrompt()}");
+            Debug.Log($"[DoorsEngine] Highlight enter: {InteractionPrompt}");
         }
 
         /// <summary>
         /// IInteractable: Hide highlight when player looks away.
         /// </summary>
-        public void OnHighlightExit(UnityEngine.GameObject interactor)
+        public void OnHighlightExit(PlayerController player)
         {
             // Could remove visual highlight effect here
         }

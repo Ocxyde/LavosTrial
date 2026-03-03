@@ -54,15 +54,15 @@ namespace Code.Lavos.Core
     }
 
     /// <summary>
-    /// Interface for interactable objects - implemented in Core
+    /// Interface for interactable objects - implemented by InteractableObject in Interaction assembly
     /// </summary>
     public interface IInteractable
     {
-        string GetInteractionPrompt();
-        bool CanInteract(UnityEngine.GameObject interactor);
-        void OnInteract(UnityEngine.GameObject interactor);
-        void OnHighlightEnter(UnityEngine.GameObject interactor);
-        void OnHighlightExit(UnityEngine.GameObject interactor);
+        string InteractionPrompt { get; }
+        bool CanInteract(PlayerController player);
+        void OnInteract(PlayerController player);
+        void OnHighlightEnter(PlayerController player);
+        void OnHighlightExit(PlayerController player);
     }
 
     /// <summary>

@@ -115,13 +115,29 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
+            // Auto-find TorchPool if not assigned
+            if (torchPool == null)
+            {
+                torchPool = GetComponent<TorchPool>();
+                if (torchPool == null)
+                {
+                    Debug.LogWarning("[SpatialPlacer] TorchPool not found on this GameObject. Please add TorchPool component or assign reference.");
+                }
+            }
+
+            // Auto-find MazeGenerator if not assigned
+            if (mazeGenerator == null)
+            {
+                mazeGenerator = GetComponent<MazeGenerator>();
+            }
+
             InitializeSeed();
         }
 
         void Start()
         {
             InitializeSeed();
-            
+
             if (waitForMazeGeneration && mazeGenerator != null)
             {
                 // Wait for maze to be generated first
@@ -407,9 +423,11 @@ namespace Code.Lavos.Core
         [ContextMenu("Place Torches")]
         public void PlaceTorches()
         {
+            Debug.Log($"[SpatialPlacer] PlaceTorches called - placeTorches={placeTorches}");
+            
             if (!placeTorches)
             {
-                Debug.LogWarning("[SpatialPlacer] Torch placement is disabled!");
+                Debug.LogWarning("[SpatialPlacer] Torch placement is disabled! Set placeTorches=true or call PlaceTorchesEnabled=true");
                 return;
             }
 
@@ -442,6 +460,8 @@ namespace Code.Lavos.Core
                 return;
             }
 
+            Debug.Log($"[SpatialPlacer] Found {wallFaces.Count} wall faces, placing {torchCount} torches...");
+
             // Clear existing torches
             torchPool.ReleaseAll();
 
@@ -472,7 +492,7 @@ namespace Code.Lavos.Core
 
             foreach (var (wallPos, wallRot) in wallFaces)
             {
-                // Probability-based placement
+                // Probability-based placement (100% = place on every valid wall)
                 if (Random.value > GetTorchProbability()) continue;
 
                 // Spacing check
@@ -555,14 +575,18 @@ namespace Code.Lavos.Core
             return field.GetValue(renderer) as List<(Vector3, Quaternion)>;
         }
 
+        private Transform _torchRoot; // Cache torch root
+
         private Transform GetTorchRootFromTorchPool()
         {
-            var type = torchPool.GetType();
-            var field = type.GetField("_torchRoot",
-                System.Reflection.BindingFlags.NonPublic |
-                System.Reflection.BindingFlags.Instance);
-
-            return field?.GetValue(torchPool) as Transform;
+            // Create torch root if it doesn't exist
+            if (_torchRoot == null)
+            {
+                _torchRoot = new GameObject("ActiveTorches").transform;
+                _torchRoot.position = Vector3.zero;
+                Debug.Log($"[SpatialPlacer] Created torch root at {_torchRoot.position}");
+            }
+            return _torchRoot;
         }
 
         private Material GetSharedFlameMaterial()
@@ -587,9 +611,9 @@ namespace Code.Lavos.Core
 
         private float GetTorchProbability()
         {
-            // Calculate probability based on torchCount and wall faces
-            // This ensures consistent density regardless of maze size
-            return 0.5f; // 50% base probability
+            // 100% probability - we want ALL torches placed!
+            // Distance check will handle spacing
+            return 1.0f;
         }
 
         private float GetWallHeight()

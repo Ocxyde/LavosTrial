@@ -2,14 +2,14 @@ trackSelection = true
 refreshSearchWindowsInPlayMode = false
 pickerAdvancedUI = false
 fetchPreview = true
-defaultFlags = 0
+defaultFlags = 8
 keepOpen = true
 queryFolder = "Assets"
 onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.66F56946" = "packagemanager"
+	"last_search.66F56946" = "my asset"
 	"OpenInspectorPreview.66F56946" = "0"
 	"currentGroup.66F56946" = "all"
 	"picker_window_position_offset.00000000" = "560;38,39999;320;550,4"
@@ -92,6 +92,8 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"my asset"
+	"m"
 	"pa"
 	"unive"
 	"package mange"
@@ -108,7 +110,7 @@ expandedQueries = [
 ]
 queryBuilder = true
 ignoredProperties = "id;name;classname;imagecontentshash"
-helperWidgetCurrentArea = "all"
+helperWidgetCurrentArea = "adb:"
 disabledIndexers = ""
 minIndexVariations = 2
 findProviderIndexHelper = true

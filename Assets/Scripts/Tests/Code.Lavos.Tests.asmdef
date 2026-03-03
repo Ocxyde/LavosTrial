@@ -1,0 +1,17 @@
+﻿{
+  "autoReferenced": true,
+  "rootNamespace": "Code.Lavos.Core",
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "name": "Code.Lavos.Tests",
+  "references": [
+    "Code.Lavos.Core",
+    "Code.Lavos.Status",
+    "Code.Lavos.Player",
+    "Unity.InputSystem"
+  ],
+  "generateProgrammingAssets": false,
+  "excludePlatforms": [],
+  "precompiledReferences": [],
+  "includePlatforms": []
+}

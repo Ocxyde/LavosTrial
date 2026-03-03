@@ -197,10 +197,28 @@ namespace Code.Lavos.Core
 
     private static void InitShaders()
     {
-        _litShader ??= Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("URP/Lit") ?? Shader.Find("Standard");
-        _unlitShader ??= Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("URP/Unlit") ?? Shader.Find("Unlit/Transparent");
-        if (_unlitShader == null) _unlitShader = Shader.Find("Sprites/Default");
-        if (_litShader == null) _litShader = Shader.Find("Standard");
+        // Unity 6 URP shader paths
+        _litShader ??= Shader.Find("Universal Render Pipeline/Lit") 
+                    ?? Shader.Find("Universal Rendering/Lit")
+                    ?? Shader.Find("URP/Lit") 
+                    ?? Shader.Find("Standard");
+        
+        _unlitShader ??= Shader.Find("Universal Render Pipeline/Unlit") 
+                      ?? Shader.Find("Universal Rendering/Unlit")
+                      ?? Shader.Find("URP/Unlit") 
+                      ?? Shader.Find("Unlit/Transparent")
+                      ?? Shader.Find("Sprites/Default");
+        
+        if (_unlitShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] No unlit shader found! Using fallback.");
+            _unlitShader = Shader.Find("Standard");
+        }
+        if (_litShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] No lit shader found! Using fallback.");
+            _litShader = Shader.Find("Standard");
+        }
     }
 
     private Material MakeMaterial(Texture2D tex, float tilingX, float tilingY, bool transparent = false)
@@ -279,7 +297,7 @@ namespace Code.Lavos.Core
                 if (_gen.HasWall(x, y, MazeGenerator.Wall.East)) { var p = new Vector3(wx + cellSize, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, -90f, 0f); CreateWall(p, r); _cachedWallFaces.Add((p, r)); }
                 if (_gen.HasWall(x, y, MazeGenerator.Wall.West)) { var p = new Vector3(wx, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, 90f, 0f); CreateWall(p, r); _cachedWallFaces.Add((p, r)); }
             }
-        // Torches are NOT placed automatically - call PlaceTorches() independently
+        // Torches are placed by external plug-in (MazeTorchPlacer.cs) when called
     }
 
     private void CreateCeiling(Vector3 pos, float size, Material mat)
