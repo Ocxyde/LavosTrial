@@ -4,16 +4,16 @@
 //
 // USAGE:
 //   1. Add this component to same GameObject as LightPlacementEngine
-//   2. Press Play - all torches start OFF
-//   3. Press [F] to activate next torch
+//   2. Press Play - first torch ON, others OFF
+//   3. Press [T] to activate next torch (one at a time)
 //   4. Press [H] to activate all remaining torches at once
 //   5. Press [X] to turn off all torches
 //
-// Location: Assets/Scripts/Core/10_Resources/
+// Location: Assets/Scripts/Tests/
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Tests
 {
     /// <summary>
     /// TorchManualActivator - Manual torch activation helper.
