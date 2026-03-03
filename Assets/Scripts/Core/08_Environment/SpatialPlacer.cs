@@ -138,7 +138,7 @@ namespace Code.Lavos.Core
                 lightPlacementEngine = GetComponent<LightPlacementEngine>();
                 if (lightPlacementEngine == null)
                 {
-                    lightPlacementEngine = FindObjectOfType<LightPlacementEngine>();
+                    lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
                 }
             }
 
@@ -561,8 +561,16 @@ namespace Code.Lavos.Core
                 Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z);
                 Vector3 wallNormal = -(wallRot * Vector3.forward);
                 torchPos += wallNormal * torchInset;
-                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 0f);
                 
+                // ═══════════════════════════════════════════════════════════
+                // TORCH ROTATION - Y 180° + Z 25° OUTWARD FROM WALL
+                // ═══════════════════════════════════════════════════════════
+                // wallRot = rotation that faces INTO the wall
+                // Step 1: Rotate 180° on Y to face OUTWARD
+                // Step 2: Tilt 25° on Z outward for better visibility
+                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 25f);
+                // ═══════════════════════════════════════════════════════════
+
                 // Create record
                 string guid = $"torch_{torchRecords.Count:D4}";
                 torchRecords.Add(new WallPositionArchitect.TorchRecord
@@ -663,9 +671,9 @@ namespace Code.Lavos.Core
                 // Step 4: Move torch OUT from wall surface
                 torchPos += wallNormal * torchInset;
 
-                // Step 5: Rotate torch to face OUTWARD (wallRot faces INTO wall, so rotate 180° on Y)
-                // wallRot * Quaternion.Euler(0, 180, 0) rotates around LOCAL Y axis
-                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 0f);
+                // Step 5: Rotate torch to face OUTWARD with Z tilt
+                // wallRot * Quaternion.Euler(0, 180, 25) rotates around LOCAL Y axis + Z tilt outward
+                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 25f);
 
                 // Debug: Log torch positions (every 10th torch to reduce spam)
                 if (torchesPlaced < 5 || torchesPlaced % 10 == 0)

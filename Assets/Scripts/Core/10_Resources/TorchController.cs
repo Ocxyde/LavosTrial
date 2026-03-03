@@ -27,12 +27,13 @@ namespace Code.Lavos.Core
         [SerializeField] private float bobSpeed = 3f;
         [SerializeField] private bool enableFlameFlicker = true;
 
-        [Header("Light")]
+        [Header("Light - Orange Flame")]
         [SerializeField] private float lightBaseIntensity = 1.8f;
         [SerializeField] private float lightFlickerAmount = 0.5f;
         [SerializeField] private float lightFlickerSpeed = 12f;
         [SerializeField] private float lightRange = 7f;
-        [SerializeField] private Color lightColor = new Color(1f, 0.55f, 0.1f);
+        [Tooltip("Orange flame light color (8-bit shading)")]
+        [SerializeField] private Color lightColor = new Color(1f, 0.7f, 0.3f);  // Warm orange
 
         [Header("State")]
         [Tooltip("Start torch in ON state")]

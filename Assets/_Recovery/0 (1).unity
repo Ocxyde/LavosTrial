@@ -366,7 +366,7 @@ MonoBehaviour:
   maxRooms: 8
   generateDoors: 0
   doorChance: 0.6
-  placeTorches: 1
+  placeTorches: 0
   mazeGenerator: {fileID: 1565235127}
   roomGenerator: {fileID: 0}
   doorHolePlacer: {fileID: 0}

@@ -1,8 +1,14 @@
 // BraseroFlame.cs
-// Brazier flame effect with 8-bit pixel art style
+// Brazier flame effect with 2D 8-bit pixel art style
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // Part of the Core system - works with FlameAnimator.cs
+//
+// 8-BIT PIXEL ART FEATURES:
+// - Discrete color bands (no smooth gradient)
+// - 3 orange shades for retro shading
+// - Particle-based animation (not deleted)
+// - Pixel-perfect billboard rendering
 
 using UnityEngine;
 
@@ -19,10 +25,15 @@ namespace Code.Lavos.Core
     [SerializeField] private float flameHeight = 0.6f;
     [SerializeField] private float flameWidth = 0.25f;
 
-    [Header("Colors")]
-    [SerializeField] private Color coreColor = new Color(1f, 0.9f, 0.3f);
-    [SerializeField] private Color middleColor = new Color(1f, 0.5f, 0.1f);
-    [SerializeField] private Color outerColor = new Color(0.8f, 0.2f, 0.05f);
+    [Header("2D 8-bit Flame Colors")]
+    [Tooltip("Bright orange-yellow (8-bit shade: brightest pixel)")]
+    [SerializeField] private Color coreColor = new Color(1f, 0.8f, 0.2f);  // Bright orange-yellow
+    
+    [Tooltip("Pure orange (8-bit shade: medium pixel)")]
+    [SerializeField] private Color middleColor = new Color(1f, 0.5f, 0.1f);  // Pure orange
+    
+    [Tooltip("Dark orange-red (8-bit shade: dark pixel)")]
+    [SerializeField] private Color outerColor = new Color(0.9f, 0.3f, 0.05f);  // Dark orange-red
 
     [Header("Movement")]
     [SerializeField] private float turbulence = 0.3f;
@@ -115,11 +126,29 @@ namespace Code.Lavos.Core
 
     private Gradient CreateFireGradient()
     {
+        // 8-BIT STYLE: Sharp color transitions (no smooth gradient)
+        // Creates discrete color bands for retro pixel art shading
         return ParticleGenerator.CreateGradient(
-            new Color[] { coreColor, middleColor, outerColor, outerColor },
-            new float[] { 0f, 0.3f, 0.7f, 1f },
-            new float[] { 1f, 0.8f, 0.4f, 0f },
-            new float[] { 0f, 0.3f, 0.7f, 1f }
+            new Color[] { 
+                coreColor,   // Bright orange (top)
+                coreColor,   // Hold bright
+                middleColor, // Pure orange (middle)
+                middleColor, // Hold pure
+                outerColor,  // Dark orange-red (bottom)
+                outerColor,  // Hold dark
+                Color.clear  // Fade out at end
+            },
+            new float[] { 
+                0.0f,  // Bright starts
+                0.15f, // Bright holds
+                0.2f,  // Middle starts
+                0.5f,  // Middle holds
+                0.55f, // Dark starts
+                0.8f,  // Dark holds
+                1.0f   // Fade out
+            },
+            new float[] { 1f, 1f, 1f, 1f, 1f, 1f, 0f }, // Alpha
+            new float[] { 0f, 0.15f, 0.2f, 0.5f, 0.55f, 0.8f, 1f } // Keys
         );
     }
 
