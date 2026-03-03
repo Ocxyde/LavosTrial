@@ -4,11 +4,6 @@
 //
 // CORE: Pure C# stat management (no MonoBehaviour)
 
-// StatsEngine.cs
-// Central stat calculation engine
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// CORE: Pure C# stat management (no MonoBehaviour)
 using System;
 using System.Collections.Generic;
 using UnityEngine;

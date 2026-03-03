@@ -32,21 +32,21 @@ namespace Code.Lavos.Core
     private void Start()
     {
         _keyboard = Keyboard.current;
-        
+
         // Validate required references
         if (Inventory.Instance == null)
         {
             Debug.LogWarning("[InventoryUI] No Inventory found!");
             return;
         }
-        
+
         if (slotsContainer == null)
         {
             Debug.LogError("[InventoryUI] slotsContainer is not assigned!");
             enabled = false;
             return;
         }
-        
+
         if (slotPrefab == null)
         {
             Debug.LogError("[InventoryUI] slotPrefab is not assigned!");
@@ -54,6 +54,9 @@ namespace Code.Lavos.Core
             return;
         }
 
+        // Initialize arrays with safe defaults
+        _slotObjects = new GameObject[Inventory.Instance.Capacity];
+        
         CreateSlots();
 
         if (Inventory.Instance != null)
@@ -77,6 +80,12 @@ namespace Code.Lavos.Core
 
     private void CreateSlots()
     {
+        if (Inventory.Instance == null)
+        {
+            Debug.LogError("[InventoryUI] Cannot create slots - Inventory not initialized");
+            return;
+        }
+        
         int slotCount = Inventory.Instance.Capacity;
 
         _slotObjects = new GameObject[slotCount];
@@ -84,7 +93,11 @@ namespace Code.Lavos.Core
         for (int i = 0; i < slotCount; i++)
         {
             GameObject slotObj = Instantiate(slotPrefab, slotsContainer);
-            slotObj.GetComponent<InventorySlotUI>().Initialize(i, OnSlotClicked, OnSlotHovered, OnSlotHoverEnded);
+            var slotUI = slotObj.GetComponent<InventorySlotUI>();
+            if (slotUI != null)
+            {
+                slotUI.Initialize(i, OnSlotClicked, OnSlotHovered, OnSlotHoverEnded);
+            }
             _slotObjects[i] = slotObj;
         }
     }

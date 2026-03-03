@@ -4,11 +4,6 @@
 //
 // Part of the Interaction system - implements IInteractable
 
-// InteractableObject.cs
-// Base class for interactable objects
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// Part of the Interaction system - implements IInteractable
 using UnityEngine;
 
 namespace Code.Lavos.Core

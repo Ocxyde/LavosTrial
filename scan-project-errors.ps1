@@ -69,11 +69,17 @@ if ($urpAsset) {
 $graphicsSettings = "ProjectSettings\GraphicsSettings.asset"
 if (Test-Path $graphicsSettings) {
     $content = Get-Content $graphicsSettings -Raw
-    if ($content -match "m_CustomRenderPipeline.*Universal") {
+    # Check if m_CustomRenderPipeline has a valid guid reference (not null)
+    # URP is configured if m_CustomRenderPipeline points to an asset (has a non-zero guid)
+    if ($content -match "m_CustomRenderPipeline:\s*\{fileID:\s*\d+,\s*guid:\s*[a-f0-9]{32}") {
         Write-Host "  [OK] URP is set as active render pipeline" -ForegroundColor Green
+    } elseif ($content -match "m_CustomRenderPipeline:\s*\{fileID:\s*0") {
+        $warnings += "URP WARNING: GraphicsSettings has null render pipeline"
     } else {
-        $warnings += "URP WARNING: GraphicsSettings may not use URP"
+        $warnings += "URP WARNING: Could not verify URP configuration in GraphicsSettings"
     }
+} else {
+    $warnings += "URP WARNING: GraphicsSettings.asset not found"
 }
 Write-Host ""
 

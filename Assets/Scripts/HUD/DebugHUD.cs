@@ -27,7 +27,7 @@ namespace Code.Lavos.HUD
         private string _manaInfo = "N/A";
         private string _staminaInfo = "N/A";
         private Keyboard _keyboard;
-        private MonoBehaviour _playerStats;
+        private PlayerStats _playerStats;
 
         void Awake()
         {
@@ -40,18 +40,10 @@ namespace Code.Lavos.HUD
 
             _keyboard = Keyboard.current;
             _windowRect = new Rect(10, 10, 300, 150);
-            
-            // Find PlayerStats using reflection to avoid circular dependency
-            var allObjects = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-            foreach (var obj in allObjects)
-            {
-                if (obj.GetType().Name == "PlayerStats")
-                {
-                    _playerStats = obj;
-                    break;
-                }
-            }
-            
+
+            // Find PlayerStats
+            _playerStats = FindFirstObjectByType<PlayerStats>();
+
             SubscribeToEvents();
             UpdateInfo();
         }
@@ -135,10 +127,10 @@ namespace Code.Lavos.HUD
             }
             else
             {
-                var playerHealth = FindFirstObjectByType<PlayerHealth>();
-                if (playerHealth != null)
+                var playerStats = FindFirstObjectByType<PlayerStats>();
+                if (playerStats != null)
                 {
-                    PlayerHealth.OnHealthChanged += OnHealthChangedLegacy;
+                    _playerStats = playerStats;
                 }
             }
         }
@@ -147,33 +139,15 @@ namespace Code.Lavos.HUD
         {
             if (_playerStats != null)
             {
-                var statsType = _playerStats.GetType();
-                var currentHealthProp = statsType.GetProperty("CurrentHealth");
-                var maxHealthProp = statsType.GetProperty("MaxHealth");
-                var currentManaProp = statsType.GetProperty("CurrentMana");
-                var maxManaProp = statsType.GetProperty("MaxMana");
-                var currentStaminaProp = statsType.GetProperty("CurrentStamina");
-                var maxStaminaProp = statsType.GetProperty("MaxStamina");
-
-                _healthInfo = $"Health: {(currentHealthProp?.GetValue(_playerStats) is float ch ? ch : 0f):F0}/{(maxHealthProp?.GetValue(_playerStats) is float mh ? mh : 0f):F0}";
-                _manaInfo = $"Mana: {(currentManaProp?.GetValue(_playerStats) is float cm ? cm : 0f):F0}/{(maxManaProp?.GetValue(_playerStats) is float mm ? mm : 0f):F0}";
-                _staminaInfo = $"Stamina: {(currentStaminaProp?.GetValue(_playerStats) is float cs ? cs : 0f):F0}/{(maxStaminaProp?.GetValue(_playerStats) is float ms ? ms : 0f):F0}";
+                _healthInfo = $"Health: {_playerStats.CurrentHealth:F0}/{_playerStats.MaxHealth:F0}";
+                _manaInfo = $"Mana: {_playerStats.CurrentMana:F0}/{_playerStats.MaxMana:F0}";
+                _staminaInfo = $"Stamina: {_playerStats.CurrentStamina:F0}/{_playerStats.MaxStamina:F0}";
             }
             else
             {
-                var playerHealth = FindFirstObjectByType<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    _healthInfo = $"Health: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth} (PlayerHealth)";
-                    _manaInfo = "Mana: N/A";
-                    _staminaInfo = "Stamina: N/A";
-                }
-                else
-                {
-                    _healthInfo = "Health: No player found!";
-                    _manaInfo = "Mana: N/A";
-                    _staminaInfo = "Stamina: N/A";
-                }
+                _healthInfo = "Health: No player found!";
+                _manaInfo = "Mana: N/A";
+                _staminaInfo = "Stamina: N/A";
             }
         }
 
@@ -203,20 +177,6 @@ namespace Code.Lavos.HUD
                         healMethod.Invoke(_playerStats, new object[] { diff });
                     else if (diff < 0 && takeDamageMethod != null)
                         takeDamageMethod.Invoke(_playerStats, new object[] { -diff });
-                }
-            }
-            else
-            {
-                var playerHealth = FindFirstObjectByType<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    // Set health by dealing damage or healing
-                    float targetHealth = playerHealth.MaxHealth * percent;
-                    float diff = targetHealth - playerHealth.CurrentHealth;
-                    if (diff > 0)
-                        playerHealth.Heal(diff);
-                    else
-                        playerHealth.TakeDamage(-diff);
                 }
             }
         }

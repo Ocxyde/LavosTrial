@@ -9,6 +9,13 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
+	"last_search.66F56946" = "packagemanager"
+	"OpenInspectorPreview.66F56946" = "0"
+	"currentGroup.66F56946" = "all"
+	"picker_window_position_offset.00000000" = "560;38,39999;320;550,4"
+	"picker_visibility_flags.00000000" = "0"
+	"picker_item_size.00000000" = "1"
+	"picker_inspector.00000000" = "0"
 }
 providers = {
 	asset = {
@@ -85,6 +92,10 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"pa"
+	"unive"
+	"package mange"
+	"package"
 ]
 searchItemFavorites = [
 ]

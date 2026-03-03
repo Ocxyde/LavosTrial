@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "Code.Lavos.Editor",
     "rootNamespace": "Code.Lavos.Editor",
     "references": [
@@ -9,7 +9,9 @@
         "Code.Lavos.Inventory",
         "Code.Lavos.Ressources",
         "Code.Lavos.Ennemies",
-        "Code.Lavos.Gameplay"
+        "Code.Lavos.Gameplay",
+        "Code.Lavos.Interaction",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

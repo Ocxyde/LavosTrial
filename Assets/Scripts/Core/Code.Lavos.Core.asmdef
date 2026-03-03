@@ -6,7 +6,7 @@
   "name": "Code.Lavos.Core",
   "references": [
     "Code.Lavos.Status",
-    "GUID:6280726566d84ea0be05b4f0a91fd88d"
+    "Unity.InputSystem"
   ],
   "generateProgrammingAssets": false,
   "excludePlatforms": [],

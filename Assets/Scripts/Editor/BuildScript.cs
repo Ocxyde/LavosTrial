@@ -4,11 +4,6 @@
 //
 // Editor tool - builds Windows, macOS, Linux
 
-// BuildScript.cs
-// Automated build script for all platforms
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// Editor tool - builds Windows, macOS, Linux
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;

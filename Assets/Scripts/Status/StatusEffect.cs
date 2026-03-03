@@ -4,11 +4,6 @@
 //
 // Part of the Status system - effect data
 
-// StatusEffect.cs
-// Status effect data wrapper
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// Part of the Status system - effect data
 using UnityEngine;
 
 namespace Code.Lavos.Status

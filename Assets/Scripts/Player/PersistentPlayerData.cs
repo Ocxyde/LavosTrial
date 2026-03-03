@@ -4,11 +4,6 @@
 //
 // Part of the Player system - save/load data
 
-// PersistentPlayerData.cs
-// Persistent player data between sessions
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// Part of the Player system - save/load data
 using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Status;

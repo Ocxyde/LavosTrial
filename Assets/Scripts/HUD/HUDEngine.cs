@@ -28,19 +28,27 @@ namespace Code.Lavos.HUD
     public class HUDEngine : MonoBehaviour
     {
         private static HUDEngine _instance;
+        private static bool _applicationIsQuitting = false;
+        
         public static HUDEngine Instance
         {
             get
             {
+                if (_applicationIsQuitting)
+                {
+                    Debug.LogWarning("[HUDEngine] Instance already destroyed, returning null");
+                    return null;
+                }
+                
+                if (_instance != null) return _instance;
+                
+                _instance = FindFirstObjectByType<HUDEngine>();
                 if (_instance == null)
                 {
-                    _instance = FindFirstObjectByType<HUDEngine>();
-                    if (_instance == null)
-                    {
-                        GameObject go = new GameObject("HUDEngine");
-                        _instance = go.AddComponent<HUDEngine>();
-                        DontDestroyOnLoad(go);
-                    }
+                    GameObject go = new GameObject("HUDEngine");
+                    _instance = go.AddComponent<HUDEngine>();
+                    DontDestroyOnLoad(go);
+                    Debug.Log("[HUDEngine] Auto-created instance");
                 }
                 return _instance;
             }
@@ -398,6 +406,7 @@ namespace Code.Lavos.HUD
             if (_instance == this)
             {
                 _instance = null;
+                _applicationIsQuitting = true;
             }
 
             // Cleanup all modules

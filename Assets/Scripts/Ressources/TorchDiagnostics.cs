@@ -4,11 +4,6 @@
 //
 // Part of the Ressources system - debugging
 
-// TorchDiagnostics.cs
-// Diagnostic tools for torch system
-// Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// Part of the Ressources system - debugging
 using UnityEngine;
 using Code.Lavos.Core;
 

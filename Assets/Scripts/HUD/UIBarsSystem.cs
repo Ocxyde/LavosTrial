@@ -172,14 +172,14 @@ namespace Code.Lavos.HUD
             }
             else
             {
-                // Fallback to PlayerHealth
-                var playerHealth = FindFirstObjectByType<PlayerHealth>();
-                if (playerHealth != null)
+                // Fallback to PlayerStats
+                var playerStats = FindFirstObjectByType<PlayerStats>();
+                if (playerStats != null)
                 {
-                    SetHealth(playerHealth.CurrentHealth, playerHealth.MaxHealth);
-                    SetMana(100f, 100f);
-                    SetStamina(100f, 100f);
-                    Debug.Log($"[UIBarsSystem] Initial values from PlayerHealth - HP: {playerHealth.CurrentHealth}/{playerHealth.MaxHealth}");
+                    SetHealth(playerStats.CurrentHealth, playerStats.MaxHealth);
+                    SetMana(playerStats.CurrentMana, playerStats.MaxMana);
+                    SetStamina(playerStats.CurrentStamina, playerStats.MaxStamina);
+                    Debug.Log($"[UIBarsSystem] Initial values from PlayerStats - HP: {playerStats.CurrentHealth}/{playerStats.MaxHealth}");
                 }
                 else
                 {
@@ -195,6 +195,17 @@ namespace Code.Lavos.HUD
         void OnDestroy()
         {
             UnsubscribeFromEvents();
+            
+            // Clean up effect icons
+            if (_effectIcons != null)
+            {
+                foreach (var effectData in _effectIcons.Values)
+                {
+                    if (effectData.Root != null)
+                        Destroy(effectData.Root);
+                }
+                _effectIcons.Clear();
+            }
         }
 
         void LateUpdate()
@@ -223,6 +234,7 @@ namespace Code.Lavos.HUD
         private void UnsubscribeFromEvents()
         {
             // Unsubscribe from EventHandler (Unity 6 standard)
+            // Use safe unsubscription pattern to avoid null reference exceptions
             if (EventHandler.Instance != null)
             {
                 EventHandler.Instance.OnPlayerHealthChanged -= OnHealthChanged;
@@ -237,17 +249,6 @@ namespace Code.Lavos.HUD
         private void OnStaminaChanged(float current, float max) => SetStamina(current, max, showFloatingText: true);
         private void OnEffectAdded(StatusEffectData effect) => AddStatusEffect(effect);
         private void OnEffectRemoved(StatusEffectData effect) => RemoveStatusEffect(effect);
-        
-        // PlayerHealth legacy event handler (converts to PlayerStats-like format)
-        private void OnHealthChangedLegacy(float current, float max)
-        {
-            SetHealth(current, max);
-            // Set default mana and stamina for legacy mode
-            SetMana(100f, 100f);
-            SetStamina(100f, 100f);
-        }
-        
-        private void OnPlayerDied() { /* Handle player death */ }
 
         /// <summary>
         /// Update bar positions based on screen resolution.

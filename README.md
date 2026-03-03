@@ -1,10 +1,10 @@
 # PeuImporte - Unity 6 Game Project
 
-**Unity Version:** 6000.3.7f1  
-**Render Pipeline:** URP Standard  
-**Input System:** New Input System  
-**Coding Standard:** Unity 6  
-**Last Updated:** 2026-03-01  
+**Unity Version:** 6000.3.7f1
+**Render Pipeline:** URP Standard
+**Input System:** New Input System
+**Coding Standard:** Unity 6
+**Last Updated:** 2026-03-02
 **Status:** ✅ **PRODUCTION READY - PLAYABLE BUILD**
 
 ---
@@ -228,7 +228,45 @@ EventHandler.Instance.InvokeFloatingText("-50", Color.red);
 
 ---
 
-### **7. Database System** (`Assets/DB_SQLite/`)
+### **7. Door System** (`Assets/Scripts/Core/07_Doors/`)
+
+| Script | Purpose | Status |
+|--------|---------|--------|
+| `DoorsEngine.cs` | Base door behavior & interactions | ✅ Complete |
+| `DoorAnimation.cs` | Door animation controller | ✅ Complete |
+| `DoorCubeFactory.cs` | 3D door mesh generation | ✅ Complete |
+| `DoorHolePlacer.cs` | Procedural door hole placement | ✅ Complete |
+| `RoomDoorPlacer.cs` | Room-based door placement | ✅ Complete |
+| `DoorSFXManager.cs` | Door sound effects | ✅ Complete |
+| `TestDoubleDoor.cs` | **6 swing modes test tool** | ✅ Complete |
+| `TestSingleDoor.cs` | **Inswing/Outswing test** | ✅ Complete |
+
+**Door Features:**
+- ✅ **6 Swing Modes:**
+  1. Both OUTSWING (hinges on outer edges)
+  2. Both INSWING (hinges on outer edges)
+  3. Left IN / Right OUT (asymmetric)
+  4. Left OUT / Right IN (asymmetric)
+  5. **CENTER POST** (vertical mullion between doors)
+  6. **AUTO-CLOSE ON IMPACT** (opens on collision, closes after delay)
+- ✅ Pivot magnetization to hole cutting edges
+- ✅ Proper door fitting math (clearances on all sides)
+- ✅ Inswing/Outswing configurations
+- ✅ Center post/mullion support
+- ✅ Auto-close timer system
+- ✅ Pixel art textures with glow effects
+- ✅ Sound effects integration
+
+**Test Controls (TestDoubleDoor.cs):**
+- **C** - Create wall + double doors
+- **X** - Clear
+- **SPACE** - Toggle doors
+- **1-6** - Switch swing modes
+- **I** - Simulate impact (mode 6 only)
+
+---
+
+### **8. Database System** (`Assets/DB_SQLite/`)
 
 | Script | Purpose | Status |
 |--------|---------|--------|

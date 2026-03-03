@@ -161,6 +161,18 @@ namespace Code.Lavos.HUD
         private void OnDestroy()
         {
             UnsubscribeFromEvents();
+            
+            // Clean up active effects
+            if (_activeEffects != null)
+            {
+                foreach (var effectGO in _activeEffects.Values)
+                {
+                    if (effectGO != null)
+                        Destroy(effectGO);
+                }
+                _activeEffects.Clear();
+            }
+            
             if (Instance == this)
                 Instance = null;
         }
@@ -593,6 +605,7 @@ namespace Code.Lavos.HUD
 
         private void UnsubscribeFromEvents()
         {
+            // Use safe unsubscription pattern to avoid null reference exceptions
             if (EventHandler.Instance == null) return;
 
             // Player stat events
