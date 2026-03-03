@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 100002}
   - component: {fileID: -4946501535591832204}
   - component: {fileID: -4946501535591832205}
+  - component: {fileID: 5566260813800665533}
   m_Layer: 0
   m_Name: TorchHandlePrefab
   m_TagString: Untagged
@@ -164,6 +165,27 @@ MonoBehaviour:
   groundSize: 200
   showDebugUI: 1
   verboseLogging: 0
+--- !u!114 &5566260813800665533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad86bf6073cedc44a6b3d38b50647e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.TorchController
+  frameRate: 8
+  bobAmplitude: 0.04
+  bobSpeed: 3
+  enableFlameFlicker: 1
+  lightBaseIntensity: 1.8
+  lightFlickerAmount: 0.5
+  lightFlickerSpeed: 12
+  lightRange: 7
+  lightColor: {r: 1, g: 0.7, b: 0.3, a: 1}
 --- !u!1 &6360313140322898534
 GameObject:
   m_ObjectHideFlags: 0

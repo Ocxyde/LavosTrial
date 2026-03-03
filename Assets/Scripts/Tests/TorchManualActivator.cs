@@ -12,6 +12,7 @@
 // Location: Assets/Scripts/Tests/
 
 using UnityEngine;
+using Code.Lavos.Core;  // Reference Core namespace for LightPlacementEngine
 
 namespace Code.Lavos.Tests
 {

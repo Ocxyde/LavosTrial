@@ -113,7 +113,7 @@ namespace Code.Lavos.Core
             sizeMultiplier = 1f,
             renderMode = ParticleSystemRenderMode.Billboard,
             enableEmissionKeyword = true,
-            emissionColor = coreColor * 2f
+            emissionColor = new Color(1f, 0.7f, 0.3f, 1f)  // Orange emission (no pink)
         };
 
         // Ensure curves exist; fallback to simple linear curves if helper missing

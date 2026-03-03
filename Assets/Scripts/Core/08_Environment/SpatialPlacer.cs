@@ -563,12 +563,13 @@ namespace Code.Lavos.Core
                 torchPos += wallNormal * torchInset;
                 
                 // ═══════════════════════════════════════════════════════════
-                // TORCH ROTATION - Y 180° + X 35° OUTWARD FROM WALL
+                // TORCH ROTATION - Handle snaps to wall, flame faces OUTWARD
                 // ═══════════════════════════════════════════════════════════
                 // wallRot = rotation that faces INTO the wall
-                // Step 1: Rotate 180° on Y to face OUTWARD
-                // Step 2: Tilt 35° on X outward for better visibility
-                Quaternion torchRot = wallRot * Quaternion.Euler(35f, 180f, 0f);
+                // Torch handle should face the wall (no Y flip)
+                // Flame should face outward (away from wall)
+                // Tilt 35° on X for better visibility
+                Quaternion torchRot = Quaternion.Euler(35f, wallRot.eulerAngles.y, 0f);
                 // ═══════════════════════════════════════════════════════════
 
                 // Create record
@@ -671,9 +672,10 @@ namespace Code.Lavos.Core
                 // Step 4: Move torch OUT from wall surface
                 torchPos += wallNormal * torchInset;
 
-                // Step 5: Rotate torch to face OUTWARD with X tilt
-                // wallRot * Quaternion.Euler(35, 180, 0) rotates around LOCAL X axis + Y outward
-                Quaternion torchRot = wallRot * Quaternion.Euler(35f, 180f, 0f);
+                // Step 5: Rotate torch - handle snaps to wall, flame faces outward
+                // Use wall rotation directly (handle faces wall, flame faces outward)
+                // Tilt 35° on X for better visibility
+                Quaternion torchRot = Quaternion.Euler(35f, wallRot.eulerAngles.y, 0f);
 
                 // Debug: Log torch positions (every 10th torch to reduce spam)
                 if (torchesPlaced < 5 || torchesPlaced % 10 == 0)
