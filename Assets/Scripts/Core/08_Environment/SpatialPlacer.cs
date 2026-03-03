@@ -95,10 +95,17 @@ namespace Code.Lavos.Core
         [Header("Torches")]
         [SerializeField] private bool placeTorches = false;  // Torches are NOT placed by default
         [SerializeField] private TorchPool torchPool;
+        [SerializeField] private LightPlacementEngine lightPlacementEngine;
         [SerializeField] private int torchCount = 15;
         [SerializeField] private float torchHeightRatio = 0.55f;
-        [SerializeField] private float torchInset = 0.35f;
+        [SerializeField] private float torchInset = 0.5f;  // Increased: torches stick OUT from wall
         [SerializeField] private float minDistanceBetweenTorches = 6f;
+        
+        [Header("Binary Storage (New System)")]
+        [Tooltip("Use binary storage for torch positions (recommended for performance)")]
+        [SerializeField] private bool useBinaryStorage = true;
+        [Tooltip("Maze ID for binary file naming")]
+        [SerializeField] private string mazeId = "Maze_001";
 
         // Public accessor for placeTorches
         public bool PlaceTorchesEnabled { get => placeTorches; set => placeTorches = value; }
@@ -122,6 +129,16 @@ namespace Code.Lavos.Core
                 if (torchPool == null)
                 {
                     Debug.LogWarning("[SpatialPlacer] TorchPool not found on this GameObject. Please add TorchPool component or assign reference.");
+                }
+            }
+
+            // Auto-find LightPlacementEngine if not assigned
+            if (lightPlacementEngine == null)
+            {
+                lightPlacementEngine = GetComponent<LightPlacementEngine>();
+                if (lightPlacementEngine == null)
+                {
+                    lightPlacementEngine = FindObjectOfType<LightPlacementEngine>();
                 }
             }
 
@@ -419,12 +436,17 @@ namespace Code.Lavos.Core
         /// Place torches on maze walls (plug-in system).
         /// Torches are placed independently from maze generation.
         /// Uses TorchPool for object pooling and MazeRenderer for wall data.
+        /// 
+        /// NEW: Supports binary storage for performance (no runtime teleportation).
         /// </summary>
         [ContextMenu("Place Torches")]
         public void PlaceTorches()
         {
-            Debug.Log($"[SpatialPlacer] PlaceTorches called - placeTorches={placeTorches}");
-            
+            Debug.Log($"[SpatialPlacer] PlaceTorches called - placeTorches={placeTorches}, useBinaryStorage={useBinaryStorage}");
+
+            // Clear architect RAM before new placement
+            WallPositionArchitect.Clear();
+
             if (!placeTorches)
             {
                 Debug.LogWarning("[SpatialPlacer] Torch placement is disabled! Set placeTorches=true or call PlaceTorchesEnabled=true");
@@ -451,6 +473,120 @@ namespace Code.Lavos.Core
                 return;
             }
 
+            // NEW: Use binary storage system
+            if (useBinaryStorage && lightPlacementEngine != null)
+            {
+                PlaceTorchesWithBinaryStorage(mazeRenderer);
+                return;
+            }
+
+            // LEGACY: Direct placement (old system)
+            PlaceTorchesLegacy(mazeRenderer);
+        }
+        
+        /// <summary>
+        /// NEW SYSTEM: Place torches using binary storage for performance.
+        /// 1. Calculate all positions
+        /// 2. Save to encrypted binary
+        /// 3. Load and instantiate in batch (no teleportation)
+        /// </summary>
+        private void PlaceTorchesWithBinaryStorage(MazeRenderer mazeRenderer)
+        {
+            Debug.Log("[SpatialPlacer] Using BINARY STORAGE system for torch placement");
+            
+            // Get wall faces
+            var wallFaces = GetWallFacesFromMazeRenderer(mazeRenderer);
+            if (wallFaces == null || wallFaces.Count == 0)
+            {
+                Debug.LogWarning("[SpatialPlacer] No wall faces found. Build maze first!");
+                return;
+            }
+            
+            // Calculate all torch positions
+            List<WallPositionArchitect.TorchRecord> torchRecords = CalculateTorchPositions(wallFaces);
+            
+            if (torchRecords.Count == 0)
+            {
+                Debug.LogWarning("[SpatialPlacer] No valid torch positions found");
+                return;
+            }
+            
+            // Save to encrypted binary
+            lightPlacementEngine.SaveTorches(mazeId, currentSeed, torchRecords);
+            
+            // Load and instantiate in batch (no teleportation!)
+            lightPlacementEngine.LoadAndInstantiateTorches(mazeId, currentSeed);
+            
+            // Record in Architect RAM for reference
+            foreach (var record in torchRecords)
+            {
+                WallPositionArchitect.RecordTorchWithGUID(record.position, record.rotation, record.height, record.inset, record.guid);
+            }
+            
+            Debug.Log($"[SpatialPlacer] ✅ Binary storage: {torchRecords.Count} torches saved and instantiated");
+        }
+        
+        /// <summary>
+        /// Calculate all torch positions (returns records for binary storage).
+        /// </summary>
+        private List<WallPositionArchitect.TorchRecord> CalculateTorchPositions(List<(Vector3, Quaternion)> wallFaces)
+        {
+            var torchRecords = new List<WallPositionArchitect.TorchRecord>();
+            var placedPositions = new List<Vector3>();
+            
+            // Shuffle wall faces for random distribution
+            ShuffleWallFaces(wallFaces);
+            
+            foreach (var (wallPos, wallRot) in wallFaces)
+            {
+                if (torchRecords.Count >= torchCount) break;
+                
+                // Probability check
+                if (Random.value > GetTorchProbability()) continue;
+                
+                // Spacing check
+                bool tooClose = false;
+                foreach (var p in placedPositions)
+                {
+                    if (Vector3.Distance(wallPos, p) < minDistanceBetweenTorches)
+                    {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose) continue;
+                
+                // Calculate position
+                float torchY = torchHeightRatio * GetWallHeight();
+                Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z);
+                Vector3 wallNormal = -(wallRot * Vector3.forward);
+                torchPos += wallNormal * torchInset;
+                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 0f);
+                
+                // Create record
+                string guid = $"torch_{torchRecords.Count:D4}";
+                torchRecords.Add(new WallPositionArchitect.TorchRecord
+                {
+                    position = torchPos,
+                    rotation = torchRot,
+                    height = torchY,
+                    inset = torchInset,
+                    guid = guid
+                });
+                
+                placedPositions.Add(wallPos);
+            }
+            
+            return torchRecords;
+        }
+        
+        /// <summary>
+        /// LEGACY SYSTEM: Direct torch placement (old method, kept for compatibility).
+        /// </summary>
+        private void PlaceTorchesLegacy(MazeRenderer mazeRenderer)
+        {
+            Debug.Log("[SpatialPlacer] Using LEGACY direct placement system");
+            
             // Get wall faces from MazeRenderer (via reflection for encapsulation)
             var wallFaces = GetWallFacesFromMazeRenderer(mazeRenderer);
 
@@ -490,6 +626,8 @@ namespace Code.Lavos.Core
             var placedTorches = new List<Vector3>();
             int torchesPlaced = 0;
 
+            Debug.Log($"[SpatialPlacer] Starting torch placement - wallFaces.Count: {wallFaces.Count}, torchCount: {torchCount}");
+
             foreach (var (wallPos, wallRot) in wallFaces)
             {
                 // Probability-based placement (100% = place on every valid wall)
@@ -507,17 +645,46 @@ namespace Code.Lavos.Core
                 }
                 if (tooClose) continue;
 
-                // Calculate torch position
-                Vector3 inward = wallRot * Vector3.forward;
+                // ═══════════════════════════════════════════════════════════
+                // TORCH PLACEMENT - SIMPLE (NO Y ROTATION)
+                // ═══════════════════════════════════════════════════════════
+                // wallPos = center of wall face
+                // wallRot = rotation that faces INTO the wall
+
+                // Step 1: Calculate torch height on wall
                 float torchY = torchHeightRatio * GetWallHeight();
-                Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z) + inward * torchInset;
+
+                // Step 2: Position at wall face center, at torch height
+                Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z);
+
+                // Step 3: Get wall normal (pointing OUT from the wall)
+                Vector3 wallNormal = -(wallRot * Vector3.forward);
+
+                // Step 4: Move torch OUT from wall surface
+                torchPos += wallNormal * torchInset;
+
+                // Step 5: Rotate torch to face OUTWARD (wallRot faces INTO wall, so rotate 180° on Y)
+                // wallRot * Quaternion.Euler(0, 180, 0) rotates around LOCAL Y axis
+                Quaternion torchRot = wallRot * Quaternion.Euler(0f, 180f, 0f);
+
+                // Debug: Log torch positions (every 10th torch to reduce spam)
+                if (torchesPlaced < 5 || torchesPlaced % 10 == 0)
+                {
+                    Debug.Log($"[SpatialPlacer] Torch #{torchesPlaced + 1} | Pos: {torchPos} | Rot: {torchRot.eulerAngles}");
+                }
+                // ═══════════════════════════════════════════════════════════
 
                 // Get materials from TorchPool
                 var flameMat = GetSharedFlameMaterial();
                 var handleMat = GetSharedHandleMaterial();
 
-                // Get torch from pool
-                torchPool.Get(torchPos, wallRot, torchRoot, flameFrames, flameMat, handleMat);
+                // Get torch from pool (with corrected outward rotation)
+                torchPool.Get(torchPos, torchRot, torchRoot, flameFrames, flameMat, handleMat);
+
+                // Record in Architect RAM with generated GUID
+                string torchGUID = System.Guid.NewGuid().ToString();
+                WallPositionArchitect.RecordTorchWithGUID(torchPos, torchRot, torchY, torchInset, torchGUID);
+
                 placedTorches.Add(wallPos);
                 torchesPlaced++;
 
@@ -527,6 +694,12 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log($"[SpatialPlacer] Placed {torchesPlaced} torches on {wallFaces.Count} wall faces");
+                WallPositionArchitect.PrintBlueprint();
+            }
+            else
+            {
+                // Always log final count
+                Debug.Log($"[SpatialPlacer] ✅ Placement complete: {torchesPlaced}/{torchCount} torches placed in RAM");
             }
         }
 

@@ -1,8 +1,14 @@
 // TorchPool.cs
-// Object pool for torch prefabs
+// Single torch instancing system - ONE torch prefab, instanced at all wall positions
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Part of the Ressources system - torch pooling
+// PLUG-IN-AND-OUT:
+// - Creates ONE torch with particles + light
+// - Instances it at all wall positions
+// - All instances share same visual/light settings
+// - No pooling - just position instances
+//
+// SETUP: Attach to the same GameObject as MazeRenderer.
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,83 +16,63 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// TORCHPOOL - Object pool for torch objects in the maze.
-    ///
-    /// FEATURES:
-    /// - Torches are created once and disabled (not destroyed) for zero allocation on reuse
-    /// - Automatically creates new torches if pool is exhausted
-    /// - Supports both BraseroFlame (particle) and sprite-based flame modes
-    /// - Shared materials to reduce memory footprint
-    ///
-    /// SETUP: Attach to the same GameObject as MazeRenderer.
+    /// TORCHPOOL - Single torch instancing system.
+    /// Creates ONE torch prefab and instances it at all wall positions.
     /// </summary>
     public class TorchPool : MonoBehaviour
     {
-        // ─── Pool ──────────────────────────────────────────────────────────────
-        private readonly List<GameObject> _pool = new List<GameObject>();
-        private readonly List<TorchController> _active = new List<TorchController>();
-        private Transform _poolRoot;
+        // ─── Single Torch Prefab ───────────────────────────────────────────────
+        [Header("Torch Prefab")]
+        [Tooltip("Torch handle with EffectSocket + LightSocket inside")]
+        [SerializeField] private GameObject torchHandlePrefab;
+        
+        [Tooltip("Use BraseroFlame particle system")]
+        [SerializeField] private bool useBraseroFlame = true;
 
-        // ─── Shared Materials (avoid allocations per torch) ────────────────────
+        // ─── Active Instances ──────────────────────────────────────────────────
+        private readonly List<GameObject> _instances = new List<GameObject>();
+        private readonly List<TorchController> _controllers = new List<TorchController>();
+
+        // ─── Shared Materials ──────────────────────────────────────────────────
         private Material _sharedFlameMat;
         private Material _sharedHandleMat;
         private bool _materialsInitialized;
 
-        // ─── Brasero Flame ─────────────────────────────────────────────────────
-        [Tooltip("Use BraseroFlame particle system instead of sprite-based flames")]
-        [SerializeField] private bool useBraseroFlame = true;
-
-        // ─── Unity Lifecycle ───────────────────────────────────────────────────
-        void Awake()
-        {
-            _poolRoot = new GameObject("TorchPool_Inactive").transform;
-            _poolRoot.SetParent(transform);
-            _poolRoot.gameObject.SetActive(false);
-        }
-
         // ───────────────────────────────────────────────────────────────────────
-        //  GET A TORCH (from pool or new creation)
+        //  GET TORCH INSTANCE AT POSITION
         // ───────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Gets a torch from the pool or creates a new one, positioned and ready to use.
+        /// Create or reuse a torch instance at the specified position.
         /// </summary>
-        /// <param name="position">World position for the torch</param>
-        /// <param name="rotation">Rotation for the torch</param>
-        /// <param name="activeParent">Parent transform for active torches</param>
-        /// <param name="flameFrames">Flame animation frames (for sprite mode)</param>
-        /// <param name="flameMat">Flame material (optional, fallback created if null)</param>
-        /// <param name="handleMat">Handle material</param>
-        /// <returns>TorchController for the activated torch</returns>
         public TorchController Get(Vector3 position, Quaternion rotation,
-                                   Transform activeParent, Texture2D[] flameFrames,
+                                   Transform parent, Texture2D[] flameFrames,
                                    Material flameMat, Material handleMat)
         {
             InitializeMaterials(flameMat, handleMat, flameFrames);
 
             GameObject go;
 
-            if (_pool.Count > 0)
+            if (torchHandlePrefab != null)
             {
-                // Reuse from pool
-                go = _pool[_pool.Count - 1];
-                _pool.RemoveAt(_pool.Count - 1);
+                // Instance from prefab
+                go = Instantiate(torchHandlePrefab, parent);
             }
             else
             {
                 // Create new torch
                 go = BuildTorchObject();
+                go.transform.SetParent(parent);
             }
 
-            // Reposition and attach to active parent
-            go.transform.SetParent(activeParent);
+            // Set position and rotation
             go.transform.position = position;
             go.transform.rotation = rotation;
             go.SetActive(true);
 
             // Initialize controller
             var ctrl = go.GetComponent<TorchController>();
-            
+
             if (ctrl == null)
             {
                 Debug.LogError("[TorchPool] TorchController component missing!");
@@ -95,16 +81,30 @@ namespace Code.Lavos.Core
 
             if (useBraseroFlame)
             {
-                var braseroFlame = go.transform.Find("BraseroFlame")?.GetComponent<BraseroFlame>();
-                var light = go.transform.Find("FlameLight")?.GetComponent<Light>();
+                // Find components by searching ALL children recursively
+                var effectSocket = go.GetComponentInChildren<ParticleSystem>();
+                var light = go.GetComponentInChildren<Light>();
 
-                if (braseroFlame != null && light != null)
+                if (light != null)
                 {
-                    ctrl.InitializeBrasero(light, braseroFlame);
+                    // Initialize controller with just the light
+                    ctrl.InitializeBrasero(light, null);
+                    ctrl.TurnOn();
+                    
+                    // Enable particle system if it exists
+                    if (effectSocket != null)
+                    {
+                        effectSocket.Play();
+                        Debug.Log($"[TorchPool] ✅ Torch at {position} - Light ON + Particles playing");
+                    }
+                    else
+                    {
+                        Debug.Log($"[TorchPool] ✅ Torch at {position} - Light ON (no particles)");
+                    }
                 }
                 else
                 {
-                    Debug.LogWarning("[TorchPool] BraseroFlame setup incomplete, falling back to sprite mode");
+                    Debug.LogWarning($"[TorchPool] ❌ Light missing at {position}!");
                     SetupSpriteMode(go, flameFrames, ctrl);
                 }
             }
@@ -113,11 +113,9 @@ namespace Code.Lavos.Core
                 SetupSpriteMode(go, flameFrames, ctrl);
             }
 
-            // NOTE: Light registration is handled by TorchController.TurnOn()
-            // The torch starts in its default state (ON by default)
-            // Don't register here - let the controller manage its own state
-
-            _active.Add(ctrl);
+            _instances.Add(go);
+            _controllers.Add(ctrl);
+            
             return ctrl;
         }
 
@@ -164,45 +162,40 @@ namespace Code.Lavos.Core
         // ───────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Deactivates all active torches and returns them to the pool.
+        /// Destroys all torch instances.
         /// Call before each maze regeneration.
         /// </summary>
         public void ReleaseAll()
         {
-            foreach (var ctrl in _active)
+            foreach (var go in _instances)
             {
-                if (ctrl == null) continue;
-                var go = ctrl.gameObject;
-
-                // Turn off torch (this unregisters from LightEngine)
-                ctrl.TurnOff();
-
-                // Deactivate and return to pool
-                go.SetActive(false);
-                go.transform.SetParent(_poolRoot);
-                _pool.Add(go);
+                if (go != null)
+                {
+                    // Turn off light first
+                    var ctrl = go.GetComponent<TorchController>();
+                    ctrl?.TurnOff();
+                    
+                    // Destroy instance
+                    if (Application.isPlaying)
+                        Destroy(go);
+                    else
+                        DestroyImmediate(go);
+                }
             }
-            _active.Clear();
-            Debug.Log($"[TorchPool] {_pool.Count} torch(es) returned to pool.");
+            _instances.Clear();
+            _controllers.Clear();
         }
 
         // ───────────────────────────────────────────────────────────────────────
-        //  COMPLETE DESTRUCTION (end of session)
+        //  DESTROY ALL TORCHES (end of session)
         // ───────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// Destroys all torches (pool + active). Call at end of game session.
+        /// Destroys all torches. Call at end of game session.
         /// </summary>
         public void DestroyAll()
         {
             ReleaseAll();
-            foreach (var go in _pool)
-                if (go != null) Destroy(go);
-            _pool.Clear();
-
-            if (_sharedFlameMat != null) { Destroy(_sharedFlameMat); _sharedFlameMat = null; }
-            if (_sharedHandleMat != null) { Destroy(_sharedHandleMat); _sharedHandleMat = null; }
-            _materialsInitialized = false;
         }
 
         void OnDestroy() => DestroyAll();
@@ -230,8 +223,6 @@ namespace Code.Lavos.Core
 
             if (useBraseroFlame)
             {
-                Debug.Log($"[TorchPool] Creating BraseroFlame torch at position");
-                
                 // ─── Brasero Flame (Particle System) ───────────────────────────
                 var flame = new GameObject("BraseroFlame");
                 flame.transform.SetParent(torchGO.transform);
@@ -239,26 +230,22 @@ namespace Code.Lavos.Core
                 flame.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
                 flame.transform.localScale = new Vector3(1f, 1f, 1f);
                 var brasero = flame.AddComponent<BraseroFlame>();
-                Debug.Log($"[TorchPool] BraseroFlame component added, active={flame.activeSelf}");
 
                 // ─── FALLBACK: Simple visible flame quad ───────────────────────
                 var flameQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 flameQuad.name = "FlameVisual";
                 flameQuad.transform.SetParent(torchGO.transform);
-                flameQuad.transform.localPosition = new Vector3(0f, 0.45f, 0.2f);
-                flameQuad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
-                flameQuad.transform.localScale = new Vector3(0.6f, 0.8f, 1f);
+                flameQuad.transform.localPosition = new Vector3(0f, 0.35f, 0.15f);
+                flameQuad.transform.localRotation = Quaternion.identity;
+                flameQuad.transform.localScale = new Vector3(0.2f, 0.3f, 1f);
                 var quadRenderer = flameQuad.GetComponent<MeshRenderer>();
-                Debug.Log($"[TorchPool] Flame quad created, renderer={quadRenderer != null}");
                 
                 if (quadRenderer != null)
                 {
                     var flameMat = new Material(Shader.Find("Unlit/Color"));
-                    Debug.Log($"[TorchPool] Unlit/Color shader found: {Shader.Find("Unlit/Color") != null}");
                     
                     if (flameMat == null || flameMat.shader == null)
                     {
-                        Debug.Log("[TorchPool] Unlit/Color not found, trying Standard");
                         flameMat = new Material(Shader.Find("Standard"));
                     }
                     if (flameMat != null && flameMat.shader != null)
@@ -266,11 +253,6 @@ namespace Code.Lavos.Core
                         flameMat.color = new Color(1f, 0.5f, 0.1f, 1f);
                         quadRenderer.material = flameMat;
                         quadRenderer.enabled = true;
-                        Debug.Log($"[TorchPool] Flame material applied: {flameMat.shader.name}, color={flameMat.color}");
-                    }
-                    else
-                    {
-                        Debug.LogError("[TorchPool] FAILED to create flame material!");
                     }
                 }
                 Destroy(flameQuad.GetComponent<MeshCollider>());
@@ -288,14 +270,11 @@ namespace Code.Lavos.Core
                 pointLight.shadows = LightShadows.Soft;
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
-                
-                Debug.Log($"[TorchPool] Light created: type={pointLight.type}, range={pointLight.range}, intensity={pointLight.intensity}, enabled={pointLight.enabled}, color={pointLight.color}");
-                Debug.Log($"[TorchPool] Light world position: {lightGO.transform.position}");
 
                 // ─── Controller ────────────────────────────────────────────────
                 var ctrl = torchGO.AddComponent<TorchController>();
                 ctrl.InitializeBrasero(pointLight, flame.GetComponent<BraseroFlame>());
-                Debug.Log($"[TorchPool] TorchController added and initialized");
+                ctrl.TurnOn();
             }
             else
             {
@@ -335,56 +314,7 @@ namespace Code.Lavos.Core
 
         // ─── Stats (debug) ─────────────────────────────────────────────────────
 
-        /// <summary>Number of currently active torches</summary>
-        public int ActiveCount => _active.Count;
-
-        /// <summary>Number of torches in the inactive pool</summary>
-        public int PooledCount => _pool.Count;
-
-        /// <summary>Total torches (active + pooled)</summary>
-        public int TotalCount => _active.Count + _pool.Count;
-
-        // ─── Debug Controls ────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Turn all active torches ON.
-        /// </summary>
-        [ContextMenu("Turn All Torches ON")]
-        public void TurnAllOn()
-        {
-            foreach (var ctrl in _active)
-            {
-                if (ctrl != null)
-                    ctrl.TurnOn();
-            }
-            Debug.Log($"[TorchPool] Turned ON {_active.Count} torches");
-        }
-
-        /// <summary>
-        /// Turn all active torches OFF.
-        /// </summary>
-        [ContextMenu("Turn All Torches OFF")]
-        public void TurnAllOff()
-        {
-            foreach (var ctrl in _active)
-            {
-                if (ctrl != null)
-                    ctrl.TurnOff();
-            }
-            Debug.Log($"[TorchPool] Turned OFF {_active.Count} torches");
-        }
-
-        /// <summary>
-        /// Toggle all active torches.
-        /// </summary>
-        [ContextMenu("Toggle All Torches")]
-        public void ToggleAll()
-        {
-            foreach (var ctrl in _active)
-            {
-                if (ctrl != null)
-                    ctrl.Toggle();
-            }
-        }
+        /// <summary>Number of currently active torch instances</summary>
+        public int ActiveCount => _instances.Count;
     }
 }

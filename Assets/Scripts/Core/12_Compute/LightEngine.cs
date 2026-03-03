@@ -239,6 +239,9 @@ namespace Code.Lavos.Core
 
         void OnDestroy()
         {
+            // Only cleanup if not in edit mode
+            if (!Application.isPlaying) return;
+            
             CleanupLights();
             if (_instance == this)
                 _instance = null;
@@ -299,26 +302,21 @@ namespace Code.Lavos.Core
                                    float? intensity = null, float? range = null,
                                    Color? color = null, Vector3? offset = null)
         {
-            Debug.Log($"[LightEngine] RegisterLight called - sourceId={sourceId}, enableDynamicLights={enableDynamicLights}, useBakedLighting={useBakedLighting}");
-            Debug.Log($"[LightEngine] Light pool: active={_activeLightCount}, max={maxDynamicLights}");
-            
             if (!enableDynamicLights || useBakedLighting)
             {
-                Debug.LogWarning($"[LightEngine] RegisterLight REJECTED - enableDynamicLights={enableDynamicLights}, useBakedLighting={useBakedLighting}");
                 return;
             }
 
             var lightData = GetAvailableLight();
             if (lightData.light == null)
             {
-                Debug.LogWarning($"[LightEngine] No available lights (max: {maxDynamicLights}, active: {_activeLightCount})");
                 return;
             }
 
             // Configure light
             lightData.light.color = color ?? lightData.baseColor;
-            lightData.light.range = ((range ?? lightData.baseRange) * 1.5f) * 2f; // DOUBLE RANGE FOR URP
-            lightData.light.intensity = (((intensity ?? lightData.baseIntensity) * 2f) * globalEmissionMultiplier) * 3f; // TRIPLE INTENSITY!
+            lightData.light.range = ((range ?? lightData.baseRange) * 1.5f) * 2f;
+            lightData.light.intensity = (((intensity ?? lightData.baseIntensity) * 2f) * globalEmissionMultiplier) * 3f;
             lightData.light.shadows = LightShadows.Soft;
             lightData.light.enabled = true;
 
@@ -328,18 +326,12 @@ namespace Code.Lavos.Core
             lightData.light.transform.localPosition = lightOffset;
             lightData.light.transform.localRotation = Quaternion.identity;
 
-            // Enable light
-            Debug.Log($"[LightEngine] Light ENABLED - intensity={lightData.light.intensity}, range={lightData.light.range}, color={lightData.light.color}, enabled={lightData.light.enabled}");
-            Debug.Log($"[LightEngine] Light world position: {lightData.light.transform.position}");
-
             // Store data
             lightData.isActive = true;
             lightData.sourceId = string.IsNullOrEmpty(sourceId) ? $"Light_{_activeLightCount}" : sourceId;
             lightData.offset = lightOffset;
 
             _activeLightCount++;
-
-            Debug.Log($"[LightEngine] ✅ Light registered: {lightData.sourceId} at {sourceTransform.position}");
         }
 
         /// <summary>

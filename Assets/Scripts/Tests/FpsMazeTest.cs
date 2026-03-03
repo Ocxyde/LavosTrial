@@ -396,14 +396,9 @@ namespace Code.Lavos.Core
 
             _lastGenTime = stopwatch.ElapsedMilliseconds / 1000f;
 
-            // Place torches via SpatialPlacer
-            if (enableTorches && _spatialPlacer != null)
-            {
-                stopwatch.Restart();
-                _spatialPlacer.PlaceTorches();
-                _lastTorchTime = stopwatch.ElapsedMilliseconds / 1000f;
-                _torchesActive = true;
-            }
+            // Torches are already placed by MazeIntegration.GenerateMaze() via SpatialPlacer.PlaceAllObjects()
+            // Just mark as active
+            _torchesActive = enableTorches;
 
             float totalTime = _lastGenTime + _lastTorchTime;
 

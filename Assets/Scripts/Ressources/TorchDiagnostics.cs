@@ -9,34 +9,34 @@ using Code.Lavos.Core;
 
 namespace Code.Lavos.Core
 {
-// Lightweight runtime diagnostics for the TorchPool system
-// Logs counts of active torches and pooled torches to help verify pool behavior.
-public class TorchDiagnostics : MonoBehaviour
-{
-    void Start()
+    // Lightweight runtime diagnostics for the TorchPool system
+    // Logs counts of active torches to help verify behavior.
+    public class TorchDiagnostics : MonoBehaviour
     {
-        var pool = UnityEngine.Object.FindFirstObjectByType<TorchPool>();
-        if (pool != null)
-        {
-            Debug.Log("[TorchDiagnostics] Initial: Active=" + pool.ActiveCount + ", Pooled=" + pool.PooledCount);
-        }
-        else
-        {
-            Debug.Log("[TorchDiagnostics] TorchPool not found in scene at Start");
-        }
-    }
-
-    void Update()
-    {
-        // Periodically log for ongoing visibility without being too noisy
-        if (Time.frameCount % 300 == 0)
+        void Start()
         {
             var pool = UnityEngine.Object.FindFirstObjectByType<TorchPool>();
             if (pool != null)
             {
-                Debug.Log("[TorchDiagnostics] Tick: Active=" + pool.ActiveCount + ", Pooled=" + pool.PooledCount);
+                Debug.Log("[TorchDiagnostics] Initial: Active=" + pool.ActiveCount);
+            }
+            else
+            {
+                Debug.Log("[TorchDiagnostics] TorchPool not found in scene at Start");
             }
         }
-    }
+
+        void Update()
+        {
+            // Periodically log for ongoing visibility without being too noisy
+            if (Time.frameCount % 300 == 0)
+            {
+                var pool = UnityEngine.Object.FindFirstObjectByType<TorchPool>();
+                if (pool != null)
+                {
+                    Debug.Log("[TorchDiagnostics] Tick: Active=" + pool.ActiveCount);
+                }
+            }
+        }
     }
 }

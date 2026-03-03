@@ -83,6 +83,9 @@ namespace Code.Lavos.Core
 
         [Tooltip("Particle system for flame/smoke")]
         [SerializeField] private ParticleSystem flameParticleSystem;
+        
+        // Use 'new' keyword to hide inherited Component.particleSystem property
+        new private ParticleSystem particleSystem;
 
         [Header("Audio")]
         [Tooltip("Sound played when turning on")]

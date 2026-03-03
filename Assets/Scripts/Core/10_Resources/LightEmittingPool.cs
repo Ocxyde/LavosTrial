@@ -213,7 +213,7 @@ namespace Code.Lavos.Core
             }
 
             // Configure and activate
-            go.transform.SetParent(parent);
+            go.transform.parent = parent;
             go.transform.position = position;
             go.transform.rotation = rotation == default ? Quaternion.identity : rotation;
             go.SetActive(true);

@@ -71,14 +71,7 @@ namespace Code.Lavos.Core
 
         void Start()
         {
-            if (startOn)
-            {
-                TurnOn();
-            }
-            else
-            {
-                TurnOff();
-            }
+            // TurnOn() is called by TorchPool.Get() after InitializeBrasero()
         }
 
         void Update()
@@ -191,29 +184,22 @@ namespace Code.Lavos.Core
             if (_isOn) return;
 
             _isOn = true;
-            
-            Debug.Log($"[TorchController] TurnOn called for {_lightId}");
-            Debug.Log($"[TorchController] Light component exists: {_light != null}");
-            Debug.Log($"[TorchController] LightEngine.Instance exists: {LightEngine.Instance != null}");
 
             // Enable flame visual
             if (_flameAnimator != null)
             {
                 _flameAnimator.enabled = true;
-                Debug.Log($"[TorchController] FlameAnimator enabled");
             }
 
             if (_braseroFlame != null)
             {
                 _braseroFlame.gameObject.SetActive(true);
-                Debug.Log($"[TorchController] BraseroFlame enabled");
             }
 
             // Register with LightEngine (PLUG-IN-OUT SYSTEM)
             var lightEngine = LightEngine.Instance;
             if (lightEngine != null)
             {
-                Debug.Log($"[TorchController] Calling LightEngine.RegisterLight...");
                 lightEngine.RegisterLight(
                     transform,
                     _lightId,
@@ -222,27 +208,20 @@ namespace Code.Lavos.Core
                     color: lightColor,
                     offset: new Vector3(0f, 0.1f, 0f)
                 );
-                Debug.Log($"[TorchController] LightEngine.RegisterLight called");
-            }
-            else
-            {
-                Debug.LogWarning($"[TorchController] LightEngine.Instance is NULL!");
             }
 
             // Enable local light as backup
             if (_light != null)
             {
                 _light.enabled = true;
-                _light.intensity = lightBaseIntensity * 2f;
-                _light.range = lightRange * 1.5f;
-                Debug.Log($"[TorchController] Local light enabled: intensity={_light.intensity}, range={_light.range}, enabled={_light.enabled}");
+                _light.intensity = lightBaseIntensity * 5f; // BOOSTED intensity
+                _light.range = lightRange * 2f; // DOUBLED range
+                Debug.Log($"[TorchController] {_lightId} light ENABLED - intensity={_light.intensity}, range={_light.range}");
             }
             else
             {
-                Debug.LogError($"[TorchController] _light is NULL!");
+                Debug.LogWarning($"[TorchController] {_lightId} has NO Light component!");
             }
-
-            Debug.Log($"[TorchController] {_lightId} turned ON (registered with LightEngine)");
         }
 
         /// <summary>

@@ -261,6 +261,7 @@ GameObject:
   - component: {fileID: 1565235123}
   - component: {fileID: 1565235122}
   - component: {fileID: 1565235130}
+  - component: {fileID: 1565235131}
   m_Layer: 0
   m_Name: MazeTest
   m_TagString: Untagged
@@ -382,7 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 273fcc8e88eab8f4286914069a804fb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  torchHandlePrefab: {fileID: 100000, guid: 9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f, type: 3}
+  torchEmissivePrefab: {fileID: 0}
   useBraseroFlame: 1
 --- !u!114 &1565235125
 MonoBehaviour:
@@ -471,6 +472,18 @@ MonoBehaviour:
   groundSize: 200
   showDebugUI: 1
   verboseLogging: 0
+--- !u!114 &1565235131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1565235117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

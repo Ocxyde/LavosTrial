@@ -18,12 +18,12 @@ RenderSettings:
   m_FogColor: {r: 0.08, g: 0.05, b: 0.03, a: 1}
   m_FogMode: 1
   m_FogDensity: 0
-  m_LinearFogStart: 15
-  m_LinearFogEnd: 120
-  m_AmbientSkyColor: {r: 0.35, g: 0.3, b: 0.25, a: 1}
-  m_AmbientEquatorColor: {r: 0.25, g: 0.22, b: 0.18, a: 1}
+  m_LinearFogStart: 10
+  m_LinearFogEnd: 80
+  m_AmbientSkyColor: {r: 0.3, g: 0.25, b: 0.2, a: 1}
+  m_AmbientEquatorColor: {r: 0.2, g: 0.15, b: 0.12, a: 1}
   m_AmbientGroundColor: {r: 0.15, g: 0.12, b: 0.1, a: 1}
-  m_AmbientIntensity: 1.5
+  m_AmbientIntensity: 0.8
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.3, g: 0.25, b: 0.2, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &476737448
+--- !u!1 &100000
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,198 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 476737451}
-  - component: {fileID: 476737450}
-  - component: {fileID: 476737449}
+  - component: {fileID: 100001}
+  - component: {fileID: 100002}
+  - component: {fileID: 100003}
+  - component: {fileID: 100004}
+  - component: {fileID: 100005}
+  - component: {fileID: 100006}
+  m_Layer: 0
+  m_Name: MazeTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &100001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &100002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98d3a1980ec651044a45e9e89a4398f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.MazeGenerator
+  width: 11
+  height: 11
+--- !u!114 &100003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 379324fa8afcb644f9682382289dfcd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.MazeRenderer
+  cellSize: 6
+  wallHeight: 4
+  torchProbability: 0
+  torchHeightRatio: 0.55
+  playerPrefab: {fileID: 0}
+  playerSpawnOffsetY: 1.5
+  ambientColor: {r: 0.25, g: 0.2, b: 0.15, a: 1}
+  ambientIntensity: 0.6
+  useBakedLighting: 0
+  torchLightRange: 8
+  torchLightColor: {r: 1, g: 0.9, b: 0.7, a: 1}
+  spawnExitDoor: 0
+--- !u!114 &100004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 273fcc8e88eab8f4286914069a804fb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.TorchPool
+  torchHandlePrefab: {fileID: 100000, guid: 9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f, type: 3}
+  useBraseroFlame: 1
+--- !u!114 &100005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1c00badc639c4a4b874db234e77376c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.SpatialPlacer
+  generationSeed: 0
+  useSeed: 0
+  mazeGenerator: {fileID: 100002}
+  waitForMazeGeneration: 1
+  cellMargin: 0.2
+  placeSpecialRooms: 0
+  specialRoomCount: 0
+  minDistanceBetweenRooms: 20
+  preferEdgePlacement: 0
+  proceduralRoomEffects: 0
+  roomColorPalette:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  fogDensityRange: {x: 0.1, y: 0.6}
+  lightIntensityRange: {x: 0.3, y: 0.8}
+  placeChests: 0
+  chestPrefab: {fileID: 0}
+  chestCount: 0
+  minDistanceFromChests: 3
+  placeEnemies: 0
+  enemyPrefabs: []
+  enemyCount: 0
+  minDistanceFromEnemies: 2
+  placeItems: 0
+  itemPrefabs: []
+  itemCount: 0
+  placeTorches: 1
+  torchPool: {fileID: 100004}
+  torchCount: 8
+  torchHeightRatio: 0.6
+  torchInset: 0.5
+  minDistanceBetweenTorches: 3
+  showGizmos: 1
+  showDebugLogs: 1
+--- !u!114 &100006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f43e219f6b3847e2a2f6a1905eb8118b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.MazeIntegration
+  autoGenerateOnStart: 1
+  useRandomSeed: 1
+  manualSeed: SimpleTest
+  mazeWidth: 11
+  mazeHeight: 11
+  generateRooms: 0
+  minRooms: 0
+  maxRooms: 0
+  generateDoors: 0
+  doorChance: 0
+  placeTorches: 0
+  mazeGenerator: {fileID: 100002}
+  roomGenerator: {fileID: 0}
+  doorHolePlacer: {fileID: 0}
+  roomDoorPlacer: {fileID: 0}
+  seedManager: {fileID: 0}
+  spatialPlacer: {fileID: 100005}
+--- !u!1 &200000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 200001}
+  - component: {fileID: 200002}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -137,42 +326,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &476737449
-MonoBehaviour:
+--- !u!4 &200001
+Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 476737448}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_CustomShadowLayers: 0
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
-  m_RenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ShadowRenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_Version: 4
-  m_LightLayerMask: 1
-  m_ShadowLayerMask: 1
-  m_RenderingLayers: 1
-  m_ShadowRenderingLayers: 1
---- !u!108 &476737450
+  m_GameObject: {fileID: 200000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalPosition: {x: 0, y: 10, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!108 &200002
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 476737448}
+  m_GameObject: {fileID: 200000}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
@@ -181,7 +356,7 @@ Light:
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -231,249 +406,9 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &476737451
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 476737448}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &1565235117
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1565235128}
-  - component: {fileID: 1565235127}
-  - component: {fileID: 1565235125}
-  - component: {fileID: 1565235124}
-  - component: {fileID: 1565235123}
-  - component: {fileID: 1565235122}
-  - component: {fileID: 1565235130}
-  m_Layer: 0
-  m_Name: MazeTest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1565235122
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1c00badc639c4a4b874db234e77376c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  generationSeed: 0
-  useSeed: 0
-  mazeGenerator: {fileID: 1565235127}
-  waitForMazeGeneration: 1
-  cellMargin: 0.2
-  placeSpecialRooms: 1
-  specialRoomCount: 3
-  minDistanceBetweenRooms: 20
-  preferEdgePlacement: 1
-  proceduralRoomEffects: 1
-  roomColorPalette:
-    serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  fogDensityRange: {x: 0.1, y: 0.6}
-  lightIntensityRange: {x: 0.3, y: 0.8}
-  placeChests: 1
-  chestPrefab: {fileID: 0}
-  chestCount: 5
-  minDistanceFromChests: 3
-  placeEnemies: 1
-  enemyPrefabs: []
-  enemyCount: 8
-  minDistanceFromEnemies: 2
-  placeItems: 1
-  itemPrefabs: []
-  itemCount: 10
-  placeTorches: 1
-  torchPool: {fileID: 1565235124}
-  torchCount: 40
-  torchHeightRatio: 0.6
-  torchInset: 0.35
-  minDistanceBetweenTorches: 4
-  showGizmos: 1
-  showDebugLogs: 1
---- !u!114 &1565235123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f43e219f6b3847e2a2f6a1905eb8118b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  autoGenerateOnStart: 0
-  useRandomSeed: 1
-  manualSeed: FpsMaze2026
-  mazeWidth: 31
-  mazeHeight: 31
-  generateRooms: 0
-  minRooms: 3
-  maxRooms: 8
-  generateDoors: 0
-  doorChance: 0.6
-  placeTorches: 0
-  mazeGenerator: {fileID: 1565235127}
-  roomGenerator: {fileID: 0}
-  doorHolePlacer: {fileID: 0}
-  roomDoorPlacer: {fileID: 0}
-  seedManager: {fileID: 0}
-  spatialPlacer: {fileID: 1565235122}
---- !u!114 &1565235124
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 273fcc8e88eab8f4286914069a804fb9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  torchHandlePrefab: {fileID: 100000, guid: 9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f, type: 3}
-  useBraseroFlame: 1
---- !u!114 &1565235125
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 379324fa8afcb644f9682382289dfcd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cellSize: 5
-  wallHeight: 4
-  torchProbability: 0.5
-  torchHeightRatio: 0.55
-  playerPrefab: {fileID: 0}
-  playerSpawnOffsetY: 1.5
-  ambientColor: {r: 0.25, g: 0.2, b: 0.15, a: 1}
-  ambientIntensity: 0.6
-  useBakedLighting: 0
-  torchLightRange: 8
-  torchLightColor: {r: 1, g: 0.9, b: 0.7, a: 1}
-  spawnExitDoor: 0
---- !u!114 &1565235127
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 98d3a1980ec651044a45e9e89a4398f9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  width: 31
-  height: 31
---- !u!4 &1565235128
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1565235130
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1565235117}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  autoGenerateOnStart: 1
-  useRandomSeed: 1
-  testSeed: FpsMaze2026
-  mazeWidth: 31
-  mazeHeight: 31
-  cellSize: 6
-  enableTorches: 1
-  torchCount: 40
-  minTorchDistance: 4
-  torchHeightRatio: 0.6
-  torchInset: 0.35
-  spawnTestPlayer: 1
-  eyeHeight: 1.7
-  enableHeadBob: 1
-  headBobFreqWalk: 8
-  headBobFreqSprint: 13
-  headBobAmpY: 0.05
-  headBobAmpX: 0.025
-  spawnGroundPlane: 1
-  groundSize: 200
-  showDebugUI: 1
-  verboseLogging: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 476737451}
-  - {fileID: 1565235128}
+  - {fileID: 100001}
+  - {fileID: 200001}
