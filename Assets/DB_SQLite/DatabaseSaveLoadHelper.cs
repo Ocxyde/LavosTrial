@@ -131,9 +131,13 @@ namespace Code.Lavos.DB
         {
             DatabaseManager.Instance.SetInventory(ConvertInventorySlots(inventory.Slots));
         }
-        else if (Inventory.Instance != null)
+        else
         {
-            DatabaseManager.Instance.SetInventory(ConvertInventorySlots(Inventory.Instance.Slots));
+            var inv = FindFirstObjectByType<Inventory>();
+            if (inv != null)
+            {
+                DatabaseManager.Instance.SetInventory(ConvertInventorySlots(inv.Slots));
+            }
         }
 
         // Step 4: Save to file

@@ -64,7 +64,7 @@ namespace Code.Lavos.Core
         switch (type)
         {
             case CollectibleType.Score:
-                GameManager.Instance?.AddScore((int)value);
+                // GameManager.Instance?.AddScore((int)value); // [REMOVED] Use EventHandler instead
                 break;
 
             case CollectibleType.Health:

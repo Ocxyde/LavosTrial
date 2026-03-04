@@ -199,4 +199,5 @@ namespace Code.Lavos.Core
         if (_inventory != null)
             _inventory.OnInventoryChanged -= UpdateUI;
     }
+    }
 }
