@@ -40,15 +40,8 @@ namespace Code.Lavos.Core
         [Tooltip("Enable binary storage for all maze objects")]
         [SerializeField] private bool useBinaryStorage = true;
         
-        [Tooltip("Auto-save on maze generation")]
-        [SerializeField] private bool autoSaveOnGeneration = true;
-        
         [Tooltip("Auto-load on scene start")]
         [SerializeField] private bool autoLoadOnStart = true;
-        
-        [Header("Storage Path")]
-        [Tooltip("Custom storage path (relative to Assets/)")]
-        [SerializeField] private string storagePath = "StreamingWorkFlow/MazeData";
         
         [Header("Debug")]
         [Tooltip("Show debug information")]
@@ -67,6 +60,9 @@ namespace Code.Lavos.Core
         
         void Start()
         {
+            // Don't run in editor pause mode
+            if (!Application.isPlaying) return;
+            
             if (autoLoadOnStart && useBinaryStorage)
             {
                 LoadMazeFromBinary();
@@ -133,9 +129,13 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogWarning("[MazePlacementEngine] No binary data found - maze needs to be generated first");
+                // Only log if actually playing (not in editor pause)
+                if (Application.isPlaying)
+                {
+                    Debug.Log("[MazePlacementEngine] No binary data found - maze needs to be generated first");
+                }
             }
-            
+
             return loaded;
         }
         

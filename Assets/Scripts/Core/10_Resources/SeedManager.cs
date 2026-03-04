@@ -109,15 +109,8 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            if (false)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            
             DontDestroyOnLoad(gameObject);
-            
+
             Initialize();
         }
 

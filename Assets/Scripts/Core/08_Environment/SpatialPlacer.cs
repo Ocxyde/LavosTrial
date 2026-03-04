@@ -161,10 +161,7 @@ namespace Code.Lavos.Core
                 // If still not found, create one automatically
                 if (lightPlacementEngine == null)
                 {
-                    Debug.LogWarning("[SpatialPlacer] LightPlacementEngine not found! Creating one automatically...");
-                    GameObject engineGO = new GameObject("LightPlacementEngine");
-                    lightPlacementEngine = engineGO.AddComponent<LightPlacementEngine>();
-                    Debug.Log("[SpatialPlacer] ✅ LightPlacementEngine created automatically");
+                    Debug.Log("[SpatialPlacer] LightPlacementEngine not found! Will create when needed");
                 }
             }
 
@@ -226,6 +223,9 @@ namespace Code.Lavos.Core
 
         void Start()
         {
+            // Don't run in editor pause mode
+            if (!Application.isPlaying) return;
+            
             InitializeSeed();
 
             if (waitForMazeGeneration && mazeGenerator != null)

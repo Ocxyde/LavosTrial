@@ -78,9 +78,12 @@ namespace Code.Lavos.Core
         
         private void Awake()
         {
+            // Don't initialize in editor pause mode
+            if (!Application.isPlaying) return;
+            
             // Create parent object for organization
             _lightsParent = new GameObject(parentName).transform;
-            
+
             Debug.Log("[LightPlacementEngine] Initialized");
         }
         

@@ -12,6 +12,7 @@
 // Location: Assets/Scripts/Tests/
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Code.Lavos.Core;  // Reference Core namespace for LightPlacementEngine
 
 namespace Code.Lavos.Tests
@@ -23,25 +24,15 @@ namespace Code.Lavos.Tests
     public class TorchManualActivator : MonoBehaviour
     {
         #region Inspector Settings
-        
+
         [Header("References")]
         [Tooltip("Reference to LightPlacementEngine")]
         [SerializeField] private LightPlacementEngine lightPlacementEngine;
-        
-        [Header("Controls")]
-        [Tooltip("Key to activate next torch (one at a time)")]
-        [SerializeField] private KeyCode activateNextKey = KeyCode.T;
-        
-        [Tooltip("Key to activate all torches at once")]
-        [SerializeField] private KeyCode activateAllKey = KeyCode.H;
-        
-        [Tooltip("Key to turn off all torches")]
-        [SerializeField] private KeyCode deactivateAllKey = KeyCode.X;
-        
+
         [Header("Debug")]
         [Tooltip("Show debug messages")]
         [SerializeField] private bool showDebugMessages = true;
-        
+
         #endregion
         
         #region Private Fields
@@ -82,21 +73,24 @@ namespace Code.Lavos.Tests
         void Update()
         {
             if (lightPlacementEngine == null) return;
-            
+            if (Keyboard.current == null) return;
+
+            var keyboard = Keyboard.current;
+
             // Activate next torch
-            if (Input.GetKeyDown(activateNextKey))
+            if (keyboard.tKey.wasPressedThisFrame)
             {
                 ActivateNextTorch();
             }
-            
+
             // Activate all torches
-            if (Input.GetKeyDown(activateAllKey))
+            if (keyboard.hKey.wasPressedThisFrame)
             {
                 ActivateAllTorches();
             }
-            
+
             // Turn off all torches
-            if (Input.GetKeyDown(deactivateAllKey))
+            if (keyboard.xKey.wasPressedThisFrame)
             {
                 TurnOffAllTorches();
             }

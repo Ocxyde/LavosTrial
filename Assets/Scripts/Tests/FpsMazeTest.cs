@@ -132,36 +132,58 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
+            // Don't run validation in editor pause mode
+            if (!Application.isPlaying) return;
+            
             FindComponents();
-            ValidateSetup();
+            
+            // Only validate if components are assigned
+            if (!ValidateSetup())
+            {
+                enabled = false;  // Disable this script if setup is invalid
+            }
         }
 
         void Start()
         {
+            Debug.Log("[FpsMazeTest] Start() called");
+            
+            // Don't run in editor pause mode
+            if (!Application.isPlaying) return;
+
             // Delete old binary files to ensure fresh torch positions
             DeleteOldBinaryFiles();
-            
+
             // Spawn ground plane first (creates ground + ceiling)
             if (spawnGroundPlane)
             {
+                Debug.Log("[FpsMazeTest] Spawning ground plane...");
                 SpawnGroundPlane();
             }
 
             // Generate maze FIRST
             if (autoGenerateOnStart)
             {
+                Debug.Log("[FpsMazeTest] Generating maze...");
                 GenerateMaze();
             }
 
             // Spawn FPS player AFTER maze is generated
             if (spawnTestPlayer)
             {
+                Debug.Log("[FpsMazeTest] Spawning FPS player...");
                 SpawnFpsPlayer();
+            }
+            else
+            {
+                Debug.LogWarning("[FpsMazeTest] spawnTestPlayer is FALSE - player not spawned!");
             }
 
             // Lock cursor for FPS
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            
+            Debug.Log("[FpsMazeTest] Start() complete - Cursor locked: " + Cursor.lockState);
         }
         
         /// <summary>
@@ -400,7 +422,7 @@ namespace Code.Lavos.Core
             );
         }
 
-        private void ValidateSetup()
+        private bool ValidateSetup()
         {
             bool hasErrors = false;
 
@@ -437,11 +459,12 @@ namespace Code.Lavos.Core
             if (hasErrors)
             {
                 Debug.LogError("[FpsMazeTest] All components must be on the SAME GameObject!");
-                enabled = false;
-                return;
+                Debug.LogError("[FpsMazeTest] Add missing components or use Tools → Fix MazeTest Scene");
+                return false;
             }
 
             Log("[FpsMazeTest] All components found. Ready to test.");
+            return true;
         }
 
         #endregion

@@ -198,12 +198,12 @@ namespace Code.Lavos.Core
             string relativePath = "StreamingWorkFlow/MazeData/" + fileName;
             string filePath = Path.Combine(Application.dataPath, relativePath);
 
-            Debug.Log($"[LightPlacementData] Trying to load from: {relativePath}");
-
             if (!File.Exists(filePath))
             {
-                Debug.LogWarning($"[LightPlacementData] File not found: {relativePath}");
-                Debug.LogWarning($"[LightPlacementData] This is NORMAL on first maze generation - will save new file");
+                // Expected on first run - not an error
+                #if UNITY_EDITOR
+                Debug.Log($"[LightPlacementData] First run - will create {fileName}");
+                #endif
                 return null;
             }
 

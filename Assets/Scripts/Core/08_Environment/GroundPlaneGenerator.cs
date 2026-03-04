@@ -28,8 +28,8 @@ namespace Code.Lavos.Core
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
             ground.name = "GroundPlane";
             
-            // Scale to flat wide cube (positioned at y=0 so top surface is at y=0)
-            ground.transform.position = new Vector3(0f, -0.05f, 0f);  // Just below y=0 (cube is 0.1m thick)
+            // Scale to flat wide cube (positioned BELOW y=0 to avoid z-fighting)
+            ground.transform.position = new Vector3(0f, -0.1f, 0f);  // Lower to prevent z-fighting
             ground.transform.localScale = new Vector3(size, 0.1f, size);  // Very flat (0.1m thick)
             
             // Remove collider if not needed (optional)
@@ -38,26 +38,49 @@ namespace Code.Lavos.Core
             
             // Generate pixel art stone texture
             Texture2D stoneTexture = CreatePixelArtStoneTexture(resolution, resolution);
-            
+            Debug.Log($"[GroundPlane] Generated {resolution}x{resolution} pixel art stone texture");
+
             // Apply texture to ground
             var renderer = ground.GetComponent<MeshRenderer>();
             if (renderer != null)
             {
-                // Create material with stone texture
-                var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-                if (material == null || material.shader == null)
+                // Try URP shader first, then Standard, then Unlit as fallback
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                if (shader == null)
                 {
-                    material = new Material(Shader.Find("Standard"));
+                    Debug.LogWarning("[GroundPlane] URP shader not found, trying Standard shader");
+                    shader = Shader.Find("Standard");
+                }
+                if (shader == null)
+                {
+                    Debug.LogWarning("[GroundPlane] Standard shader not found, using Unlit/Texture");
+                    shader = Shader.Find("Unlit/Texture");
                 }
                 
-                if (material != null)
+                if (shader != null)
                 {
+                    Material material = new Material(shader);
                     material.mainTexture = stoneTexture;
                     material.color = Color.white;
-                    material.SetFloat("_Glossiness", 0f);  // No smoothness (flat stone)
-                    material.SetFloat("_Metallic", 0f);   // Not metallic
+                    
+                    // Set material properties based on shader type
+                    if (shader.name.Contains("URP") || shader.name.Contains("Standard"))
+                    {
+                        material.SetFloat("_Glossiness", 0f);  // No smoothness
+                        material.SetFloat("_Metallic", 0f);   // Not metallic
+                    }
+                    
                     renderer.material = material;
+                    Debug.Log($"[GroundPlane] Material created with shader: {shader.name}");
                 }
+                else
+                {
+                    Debug.LogError("[GroundPlane] No valid shader found! Ground will be untextured.");
+                }
+            }
+            else
+            {
+                Debug.LogError("[GroundPlane] MeshRenderer not found on ground object!");
             }
             
             Debug.Log($"[GroundPlane] Created {size}x{size}m flat cube ground with pixel art stone texture");

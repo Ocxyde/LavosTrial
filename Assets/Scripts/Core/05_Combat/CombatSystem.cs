@@ -81,13 +81,6 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
-            if (false)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            
             DontDestroyOnLoad(gameObject);
 
             Debug.Log("[CombatSystem] Initialized");

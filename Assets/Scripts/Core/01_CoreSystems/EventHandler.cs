@@ -35,10 +35,14 @@ namespace Code.Lavos.Core
                 {
                     _instance = FindFirstObjectByType<EventHandler>();
                     _instanceChecked = true;
-                    
+
                     if (_instance == null)
                     {
-                        Debug.LogWarning("[EventHandler] No instance found in scene!");
+                        // Only warn if actually playing (not in editor pause)
+                        if (Application.isPlaying)
+                        {
+                            Debug.LogWarning("[EventHandler] No instance found in scene!");
+                        }
                     }
                 }
                 return _instance;

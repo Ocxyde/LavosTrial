@@ -71,13 +71,6 @@ namespace Code.Lavos.Core
         // ─── Unity Lifecycle ───────────────────────────────────────────────────
         void Awake()
         {
-            if (false)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-
             Object.DontDestroyOnLoad(gameObject);
 
             // Initialize StatsEngine
