@@ -28,10 +28,10 @@ namespace Code.Lavos.Core
         [SerializeField] private bool enableFlameFlicker = true;
 
         [Header("Light - Orange Flame")]
-        [SerializeField] private float lightBaseIntensity = 1.8f;
+        [SerializeField] private float lightBaseIntensity = 1.8f;  // Original intensity (good)
         [SerializeField] private float lightFlickerAmount = 0.5f;
         [SerializeField] private float lightFlickerSpeed = 12f;
-        [SerializeField] private float lightRange = 7f;
+        [SerializeField] private float lightRange = 12f;  // Increased from 7f for wider illumination
         [Tooltip("Orange flame light color (8-bit shading)")]
         [SerializeField] private Color lightColor = new Color(1f, 0.7f, 0.3f);  // Warm orange
 

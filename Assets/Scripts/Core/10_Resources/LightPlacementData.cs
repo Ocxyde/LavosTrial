@@ -160,7 +160,7 @@ namespace Code.Lavos.Core
         }
         
         /// <summary>
-        /// Save binary data to file in StreamingAssets folder.
+        /// Save binary data to file in custom StreamingWorkFlow folder (relative path).
         /// </summary>
         /// <param name="data">Binary data to save</param>
         /// <param name="mazeId">Unique maze identifier</param>
@@ -171,39 +171,44 @@ namespace Code.Lavos.Core
                 Debug.LogError("[LightPlacementData] No data to save");
                 return;
             }
-            
+
             string fileName = $"{mazeId}.bytes";
-            string filePath = Path.Combine(Application.streamingAssetsPath, "LightPlacements", fileName);
-            
+            string relativePath = "StreamingWorkFlow/MazeData/" + fileName;
+            string filePath = Path.Combine(Application.dataPath, relativePath);
+
             // Ensure directory exists
             string dir = Path.GetDirectoryName(filePath);
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
-            
+
             File.WriteAllBytes(filePath, data);
-            Debug.Log($"[LightPlacementData] Saved to {filePath}");
+            Debug.Log($"[LightPlacementData] Saved to {relativePath}");
         }
         
         /// <summary>
-        /// Load binary data from file.
+        /// Load binary data from custom StreamingWorkFlow folder (relative path).
         /// </summary>
         /// <param name="mazeId">Unique maze identifier</param>
         /// <returns>Binary data or null if not found</returns>
         public static byte[] LoadFromFile(string mazeId)
         {
             string fileName = $"{mazeId}.bytes";
-            string filePath = Path.Combine(Application.streamingAssetsPath, "LightPlacements", fileName);
-            
+            string relativePath = "StreamingWorkFlow/MazeData/" + fileName;
+            string filePath = Path.Combine(Application.dataPath, relativePath);
+
+            Debug.Log($"[LightPlacementData] Trying to load from: {relativePath}");
+
             if (!File.Exists(filePath))
             {
-                Debug.LogWarning($"[LightPlacementData] File not found: {filePath}");
+                Debug.LogWarning($"[LightPlacementData] File not found: {relativePath}");
+                Debug.LogWarning($"[LightPlacementData] This is NORMAL on first maze generation - will save new file");
                 return null;
             }
-            
+
             byte[] data = File.ReadAllBytes(filePath);
-            Debug.Log($"[LightPlacementData] Loaded from {filePath} ({data.Length} bytes)");
+            Debug.Log($"[LightPlacementData] Loaded from {relativePath} ({data.Length} bytes)");
             return data;
         }
         
@@ -213,22 +218,24 @@ namespace Code.Lavos.Core
         public static bool FileExists(string mazeId)
         {
             string fileName = $"{mazeId}.bytes";
-            string filePath = Path.Combine(Application.streamingAssetsPath, "LightPlacements", fileName);
+            string relativePath = "StreamingWorkFlow/MazeData/" + fileName;
+            string filePath = Path.Combine(Application.dataPath, relativePath);
             return File.Exists(filePath);
         }
-        
+
         /// <summary>
         /// Delete a maze placement file.
         /// </summary>
         public static void DeleteFile(string mazeId)
         {
             string fileName = $"{mazeId}.bytes";
-            string filePath = Path.Combine(Application.streamingAssetsPath, "LightPlacements", fileName);
-            
+            string relativePath = "StreamingWorkFlow/MazeData/" + fileName;
+            string filePath = Path.Combine(Application.dataPath, relativePath);
+
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-                Debug.Log($"[LightPlacementData] Deleted {filePath}");
+                Debug.Log($"[LightPlacementData] Deleted {relativePath}");
             }
         }
         

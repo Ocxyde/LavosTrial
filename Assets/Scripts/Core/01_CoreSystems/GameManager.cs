@@ -1,5 +1,5 @@
-// GameManager.cs
-// Central game state manager (Singleton)
+﻿// GameManager.cs
+// Central game state manager
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // CORE: Main pivot point for plug-in-and-out system
@@ -10,37 +10,28 @@ using UnityEngine.SceneManagement;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// GAMEMANAGER — Cerveau central du jeu (Singleton)
+    /// GAMEMANAGER — Cerveau central du jeu
     /// Attache ce script à un GameObject vide nommé "GameManager" dans ta scène.
     /// Coche "Don't Destroy On Load" pour qu'il persiste entre les scènes.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
-    // â”€â”€â”€ Singleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    public static GameManager Instance { get; private set; }
-
-    // â”€â”€â”€ Ã‰tats du jeu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── États du jeu ─────────────────────────────────────────────────────────────
     public enum GameState { Playing, Paused, GameOver, Victory }
     public GameState CurrentState { get; private set; }
 
-    // â”€â”€â”€ Score â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── Score ─────────────────────────────────────────────────────────────
     public int Score { get; private set; }
 
-    // â”€â”€â”€ Ã‰vÃ©nements (les autres scripts peuvent s'y abonner) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── Événements (les autres scripts peuvent s'y abonner) ─────────────────────
     public static event System.Action<int> OnScoreChanged;
     public static event System.Action<GameState> OnGameStateChanged;
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────────
     void Awake()
     {
-        // ImplÃ©mentation du Singleton
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject); // Persiste entre les scÃ¨nes
+        // Ensure this persists between scenes
+        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
@@ -48,39 +39,44 @@ namespace Code.Lavos.Core
         SetGameState(GameState.Playing);
     }
 
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  MÃ‰THODES PUBLIQUES
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─────────────────────────────────────────────────────────────────────────────
+    //  MÉTHODES PUBLIQUES
+    // ─────────────────────────────────────────────────────────────────────────────
 
     /// <summary>Ajoute des points au score.</summary>
     public void AddScore(int points)
     {
         Score += points;
-        OnScoreChanged?.Invoke(Score); // Notifie l'UI
+        OnScoreChanged?.Invoke(Score);
         Debug.Log($"[GameManager] Score : {Score}");
     }
 
-    /// <summary>Change l'Ã©tat global du jeu.</summary>
+    /// <summary>Change l'état global du jeu.</summary>
     public void SetGameState(GameState newState)
     {
         CurrentState = newState;
+
+        // PLUG-IN-AND-OUT: Invoke via EventHandler
+        if (EventHandler.Instance != null)
+        {
+            EventHandler.Instance.InvokeGameStateChanged(newState);
+
+            if (newState == GameState.Paused)
+                EventHandler.Instance.InvokeGamePaused();
+            else if (newState == GameState.Playing)
+                EventHandler.Instance.InvokeGameResumed();
+            else if (newState == GameState.GameOver)
+                EventHandler.Instance.InvokeGameOver();
+            else if (newState == GameState.Victory)
+                EventHandler.Instance.InvokeGameVictory();
+        }
+
         OnGameStateChanged?.Invoke(newState);
-
-        // Gestion du temps selon l'Ã©tat
         Time.timeScale = (newState == GameState.Paused) ? 0f : 1f;
-
-        Debug.Log($"[GameManager] Ã‰tat du jeu : {newState}");
+        Debug.Log($"[GameManager] État du jeu : {newState}");
     }
 
-    /// <summary>Active / dÃ©sactive la pause.</summary>
+    /// <summary>Active / désactive la pause.</summary>
     public void TogglePause()
     {
         if (CurrentState == GameState.Playing)
@@ -89,13 +85,13 @@ namespace Code.Lavos.Core
             SetGameState(GameState.Playing);
     }
 
-    /// <summary>DÃ©clenche le Game Over.</summary>
+    /// <summary>Déclenche le Game Over.</summary>
     public void TriggerGameOver()
     {
         SetGameState(GameState.GameOver);
     }
 
-    /// <summary>Recharge la scÃ¨ne courante (recommencer).</summary>
+    /// <summary>Recharge la scène courante (recommencer).</summary>
     public void RestartGame()
     {
         Score = 0;
@@ -103,11 +99,10 @@ namespace Code.Lavos.Core
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    /// <summary>Charge une scÃ¨ne par son nom.</summary>
-    public void LoadScene(string sceneName)
+    /// <summary>Déclenche la victoire.</summary>
+    public void TriggerVictory()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(sceneName);
+        SetGameState(GameState.Victory);
     }
 }
 }

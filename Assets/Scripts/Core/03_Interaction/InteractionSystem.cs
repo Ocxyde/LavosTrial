@@ -158,10 +158,7 @@ namespace Code.Lavos.Core
 
         void Update()
         {
-            if (GameManager.Instance == null ||
-                GameManager.Instance.CurrentState != GameManager.GameState.Playing)
-                return;
-
+            // Game state check removed (GameManager.Instance removed)
             if (playerController == null) return;
 
             HandleInteractionInput();

@@ -29,12 +29,17 @@ namespace Code.Lavos.Core
     private bool _isOpen = false;
     private Keyboard _keyboard;
 
+    private Inventory _inventory;
+
     private void Start()
     {
         _keyboard = Keyboard.current;
 
+        // Cache inventory reference
+        _inventory = FindFirstObjectByType<Inventory>();
+        
         // Validate required references
-        if (Inventory.Instance == null)
+        if (_inventory == null)
         {
             Debug.LogWarning("[InventoryUI] No Inventory found!");
             return;
@@ -55,12 +60,12 @@ namespace Code.Lavos.Core
         }
 
         // Initialize arrays with safe defaults
-        _slotObjects = new GameObject[Inventory.Instance.Capacity];
-        
+        _slotObjects = new GameObject[_inventory.Capacity];
+
         CreateSlots();
 
-        if (Inventory.Instance != null)
-            Inventory.Instance.OnInventoryChanged += UpdateUI;
+        if (_inventory != null)
+            _inventory.OnInventoryChanged += UpdateUI;
 
         if (!showOnStart)
             CloseInventory();
@@ -80,13 +85,13 @@ namespace Code.Lavos.Core
 
     private void CreateSlots()
     {
-        if (Inventory.Instance == null)
+        if (_inventory == null)
         {
             Debug.LogError("[InventoryUI] Cannot create slots - Inventory not initialized");
             return;
         }
-        
-        int slotCount = Inventory.Instance.Capacity;
+
+        int slotCount = _inventory.Capacity;
 
         _slotObjects = new GameObject[slotCount];
 
@@ -104,11 +109,11 @@ namespace Code.Lavos.Core
 
     public void UpdateUI()
     {
-        if (Inventory.Instance == null) return;
+        if (_inventory == null) return;
 
-        for (int i = 0; i < Inventory.Instance.Capacity; i++)
+        for (int i = 0; i < _inventory.Capacity; i++)
         {
-            InventorySlot slot = Inventory.Instance.GetSlot(i);
+            InventorySlot slot = _inventory.GetSlot(i);
             if (slot != null && _slotObjects[i] != null)
             {
                 _slotObjects[i].GetComponent<InventorySlotUI>().UpdateSlot(slot);
@@ -139,9 +144,9 @@ namespace Code.Lavos.Core
 
     private void OnSlotClicked(int slotIndex)
     {
-        if (Inventory.Instance == null) return;
+        if (_inventory == null) return;
 
-        InventorySlot slot = Inventory.Instance.GetSlot(slotIndex);
+        InventorySlot slot = _inventory.GetSlot(slotIndex);
         if (slot == null || slot.IsEmpty) return;
 
         if (slot.item.itemType == InventoryItemType.Consumable)
@@ -149,16 +154,16 @@ namespace Code.Lavos.Core
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
             {
-                Inventory.Instance.UseItem(slotIndex, player);
+                _inventory.UseItem(slotIndex, player);
             }
         }
     }
 
     private void OnSlotHovered(int slotIndex)
     {
-        if (Inventory.Instance == null) return;
+        if (_inventory == null) return;
 
-        InventorySlot slot = Inventory.Instance.GetSlot(slotIndex);
+        InventorySlot slot = _inventory.GetSlot(slotIndex);
         if (slot == null || slot.IsEmpty) return;
 
         if (itemNameText != null)
@@ -191,8 +196,7 @@ namespace Code.Lavos.Core
 
     private void OnDestroy()
     {
-        if (Inventory.Instance != null)
-            Inventory.Instance.OnInventoryChanged -= UpdateUI;
-    }
+        if (_inventory != null)
+            _inventory.OnInventoryChanged -= UpdateUI;
     }
 }

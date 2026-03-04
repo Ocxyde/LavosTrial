@@ -148,20 +148,31 @@ namespace Code.Lavos.Core
         int seedOffset = variant * 1000 + (int)_currentSeed;
         var rng = new System.Random(seedOffset);
 
-        var dark = new Color32((byte)(30 + rng.Next(-3, 4)), (byte)(26 + rng.Next(-3, 4)), (byte)(20 + rng.Next(-3, 4)), 255);
-        var mid = new Color32((byte)(48 + rng.Next(-5, 6)), (byte)(42 + rng.Next(-5, 6)), (byte)(32 + rng.Next(-5, 6)), 255);
-        var tileColor = new Color32(62, 55, 42, 255);
+        // STONE FLOOR COLORS (gray tones, not brown wood)
+        var dark = new Color32((byte)(40 + rng.Next(-5, 6)), (byte)(40 + rng.Next(-5, 6)), (byte)(45 + rng.Next(-5, 6)), 255);  // Dark gray
+        var mid = new Color32((byte)(60 + rng.Next(-5, 6)), (byte)(60 + rng.Next(-5, 6)), (byte)(65 + rng.Next(-5, 6)), 255);  // Medium gray
+        var light = new Color32((byte)(80 + rng.Next(-5, 6)), (byte)(80 + rng.Next(-5, 6)), (byte)(85 + rng.Next(-5, 6)), 255); // Light gray
+        var mortar = new Color32(30, 30, 35, 255);  // Dark gray mortar
 
+        // Stone tile pattern (not wood planks!)
         for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
             {
-                if (x % 16 == 0 || y % 16 == 0)
+                // Mortar lines between tiles (8x8 tiles)
+                if (x % 8 == 0 || y % 8 == 0)
                 {
-                    canvas.SetPixel(x, y, new Color32(20, 18, 14, 255));
+                    canvas.SetPixel(x, y, mortar);
                     continue;
                 }
-                int tile = ((x / 16 + y / 16) * 17 + x * 3 + y * 5 + variant) % 5;
-                canvas.SetPixel(x, y, tile switch { 0 or 1 => dark, 3 => tileColor, _ => mid });
+                // Random stone tiles
+                int tile = ((x / 8 + y / 8) * 17 + x * 3 + y * 5 + variant) % 5;
+                canvas.SetPixel(x, y, tile switch { 
+                    0 => dark,      // Dark stone
+                    1 => mid,       // Medium stone
+                    2 => light,     // Light stone
+                    3 => mid,       // Medium stone
+                    _ => dark       // Dark stone
+                });
             }
         return canvas.ToTexture();
     }

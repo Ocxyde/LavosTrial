@@ -282,16 +282,16 @@ namespace Code.Lavos.Core
         private static byte[] GenerateKeyFromSeed(int seed)
         {
             byte[] key = new byte[256];
-            int state = seed;
+            uint state = (uint)Mathf.Abs(seed);  // Use uint to avoid overflow
             
             // LCG parameters (same as glibc)
-            const int A = 1103515245;
-            const int C = 12345;
+            const uint A = 1103515245;
+            const uint C = 12345;
             
             for (int i = 0; i < 256; i++)
             {
-                // Generate next pseudo-random number
-                state = checked(state * A + C);
+                // Generate next pseudo-random number (unchecked to allow wrap-around)
+                state = (state * A + C);
                 
                 // Extract byte from middle bits (better distribution)
                 key[i] = (byte)((state >> 16) & 0xFF);

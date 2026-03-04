@@ -19,6 +19,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.IO;  // For Path, Directory, File
 
 namespace Code.Lavos.Core
 {
@@ -137,7 +138,10 @@ namespace Code.Lavos.Core
 
         void Start()
         {
-            // Spawn ground plane first
+            // Delete old binary files to ensure fresh torch positions
+            DeleteOldBinaryFiles();
+            
+            // Spawn ground plane first (creates ground + ceiling)
             if (spawnGroundPlane)
             {
                 SpawnGroundPlane();
@@ -158,6 +162,44 @@ namespace Code.Lavos.Core
             // Lock cursor for FPS
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+        
+        /// <summary>
+        /// Delete old binary files if they exist to ensure fresh torch positions each run.
+        /// </summary>
+        private void DeleteOldBinaryFiles()
+        {
+            string binaryPath = Path.Combine(Application.dataPath, "StreamingWorkFlow/MazeData");
+            
+            if (!Directory.Exists(binaryPath))
+            {
+                return;  // Directory doesn't exist, nothing to delete
+            }
+            
+            string[] files = Directory.GetFiles(binaryPath, "*.bytes");
+            
+            if (files.Length == 0)
+            {
+                return;  // No binary files to delete
+            }
+            
+            foreach (string file in files)
+            {
+                if (File.Exists(file))
+                {
+                    try
+                    {
+                        File.Delete(file);
+                        Debug.Log($"[FpsMazeTest] ✅ Deleted old binary: {Path.GetFileName(file)}");
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"[FpsMazeTest] ⚠️ Could not delete {file}: {e.Message}");
+                    }
+                }
+            }
+            
+            Debug.Log($"[FpsMazeTest] 🧹 Cleaned up {files.Length} old binary file(s)");
         }
 
         void Update()
@@ -189,22 +231,62 @@ namespace Code.Lavos.Core
 
         private void SpawnGroundPlane()
         {
-            var ground = GameObject.Find("GroundPlane");
-            if (ground == null)
+            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("  SPAWNING GROUND & CEILING");
+            Debug.Log("═══════════════════════════════════════════");
+            
+            // AGGRESSIVE CLEANUP - Find and delete ALL ground/ceiling objects
+            GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+            int deletedCount = 0;
+            foreach (var obj in allObjects)
             {
-                ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                ground.name = "GroundPlane";
-                ground.transform.position = new Vector3(0f, 0f, 0f);
-                ground.transform.localScale = new Vector3(groundSize / 10f, 1f, groundSize / 10f);
-
-                var renderer = ground.GetComponent<Renderer>();
-                if (renderer != null)
+                string objName = obj.name.ToLower();
+                if (objName.Contains("ground") || objName.Contains("ceiling") || 
+                    objName.Contains("plane") || objName.Contains("quad"))
                 {
-                    renderer.material.color = new Color(0.15f, 0.15f, 0.15f, 1f);
+                    // Destroy material first (clear cache)
+                    var renderer = obj.GetComponent<MeshRenderer>();
+                    if (renderer != null && renderer.sharedMaterial != null)
+                    {
+                        Debug.Log($"[FpsMazeTest] 🗑️ Destroying material: {renderer.sharedMaterial.name}");
+                        DestroyImmediate(renderer.sharedMaterial);
+                    }
+                    
+                    Debug.Log($"[FpsMazeTest] 🗑️ Deleting: {obj.name}");
+                    DestroyImmediate(obj);
+                    deletedCount++;
                 }
-
-                Log("[FpsMazeTest] Ground plane created at y=0");
             }
+            
+            if (deletedCount > 0)
+            {
+                Debug.Log($"[FpsMazeTest] 🧹 Cleaned up {deletedCount} old ground/ceiling objects");
+            }
+            
+            // FORCE UNITY TO CLEAR MATERIAL CACHE
+            Debug.Log("[FpsMazeTest] 🧽 Clearing Unity material cache...");
+            Resources.UnloadUnusedAssets();
+            System.GC.Collect();
+            
+            // CREATE FRESH GROUND
+            Debug.Log("[FpsMazeTest] Creating NEW ground cube...");
+            var ground = GroundPlaneGenerator.CreateGroundCube(groundSize, 32);
+            ground.layer = LayerMask.NameToLayer("Default");
+            Debug.Log($"[FpsMazeTest] ✅ Ground: {ground.name}");
+            Debug.Log($"[FpsMazeTest] ✅ Position: {ground.transform.position}");
+            Debug.Log($"[FpsMazeTest] ✅ Scale: {ground.transform.localScale}");
+            Debug.Log($"[FpsMazeTest] ✅ Layer: {LayerMask.LayerToName(ground.layer)}");
+            
+            // CREATE FRESH CEILING
+            Debug.Log("[FpsMazeTest] Creating NEW ceiling cube...");
+            var ceiling = CeilingGenerator.CreateCeilingCube(groundSize, 32);
+            ceiling.layer = LayerMask.NameToLayer("Default");
+            Debug.Log($"[FpsMazeTest] ✅ Ceiling: {ceiling.name}");
+            Debug.Log($"[FpsMazeTest] ✅ Position: {ceiling.transform.position}");
+            Debug.Log($"[FpsMazeTest] ✅ Scale: {ceiling.transform.localScale}");
+            Debug.Log($"[FpsMazeTest] ✅ Layer: {LayerMask.LayerToName(ceiling.layer)}");
+            
+            Debug.Log("═══════════════════════════════════════════");
         }
 
         private void SpawnFpsPlayer()
@@ -213,6 +295,8 @@ namespace Code.Lavos.Core
             if (existingPlayer != null)
             {
                 Log("[FpsMazeTest] Player already exists, skipping spawn");
+                _testPlayer = existingPlayer;
+                _fpsCamera = Camera.main;
                 return;
             }
 
@@ -246,6 +330,17 @@ namespace Code.Lavos.Core
 
         private void SetupFpsCamera()
         {
+            // Disable ALL existing cameras first to prevent conflicts
+            Camera[] allCameras = FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            foreach (var cam in allCameras)
+            {
+                if (cam.gameObject.name != "FPSCamera")
+                {
+                    cam.enabled = false;
+                    Debug.Log($"[FpsMazeTest] Disabled camera: {cam.gameObject.name}");
+                }
+            }
+
             // Create camera directly on player for FPS view
             var cameraGO = new GameObject("FPSCamera");
             cameraGO.transform.SetParent(_testPlayer.transform);
@@ -259,15 +354,10 @@ namespace Code.Lavos.Core
             _fpsCamera.fieldOfView = 75f;
             _fpsCamera.nearClipPlane = 0.1f;
             _fpsCamera.farClipPlane = 500f;
-
-            // Disable existing main camera if found
-            var existingMain = Camera.main;
-            if (existingMain != null && existingMain != _fpsCamera)
-            {
-                existingMain.enabled = false;
-            }
+            _fpsCamera.enabled = true;
 
             Log($"[FpsMazeTest] FPS camera positioned at eye height ({eyeHeight}m)");
+            Log($"[FpsMazeTest] FPS camera enabled: {_fpsCamera.enabled}");
         }
 
         private void UpdateHeadBob()

@@ -1,4 +1,4 @@
-// MazeGenerator.cs
+﻿// MazeGenerator.cs
 // Procedural maze generation algorithm
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -20,6 +20,44 @@ namespace Code.Lavos.Core
     [Header("Dimensions")]
     [SerializeField] public int width = 31;
     [SerializeField] public int height = 31;
+    
+    [Header("Dynamic Sizing (Level-Based)")]
+    [Tooltip("Enable dynamic maze size based on level")]
+    [SerializeField] private bool useDynamicSize = true;
+    [Tooltip("Minimum maze size (level 1-5)")]
+    [SerializeField] private int minMazeSize = 21;
+    [Tooltip("Maximum maze size (level 20+)")]
+    [SerializeField] private int maxMazeSize = 51;
+    [Tooltip("Level at which max size is reached")]
+    [SerializeField] private int maxLevel = 20;
+    
+    private int currentMazeLevel = 1;
+    
+    public void SetMazeLevel(int level)
+    {
+        currentMazeLevel = Mathf.Max(1, level);
+        if (useDynamicSize)
+        {
+            // Calculate maze size based on level
+            // Level 1-5: minMazeSize (21)
+            // Level 20+: maxMazeSize (51)
+            // Level 6-19: progressively larger
+            float progress = (float)(currentMazeLevel - 1) / (maxLevel - 1);
+            int size = Mathf.RoundToInt(Mathf.Lerp(minMazeSize, maxMazeSize, progress));
+            
+            // Ensure odd number for proper corridors
+            if (size % 2 == 0) size++;
+            
+            width = size;
+            height = size;
+            
+            Debug.Log($"[MazeGenerator] 📏 Level {currentMazeLevel}: {width}x{height} (dynamic size)");
+        }
+        else
+        {
+            Debug.Log($"[MazeGenerator] 📏 Level {currentMazeLevel}: {width}x{height} (fixed size)");
+        }
+    }
 
     public Wall[,] Grid { get; private set; }
     public int Width => width;
@@ -35,19 +73,10 @@ namespace Code.Lavos.Core
 
     public void Generate()
     {
-        // Plug-in-out: Get seed from SeedManager
-        string seedString = "";
-        if (SeedManager.Instance != null)
-        {
-            seedString = SeedManager.Instance.CurrentSeed;
-            Debug.Log($"[MazeGenerator] Using SeedManager - Level {SeedManager.Instance.CurrentLevel}: {seedString}");
-        }
-        else
-        {
-            seedString = "DEFAULT";
-            Debug.LogWarning("[MazeGenerator] SeedManager not found - using default seed");
-        }
-        
+        // Use default seed (SeedManager removed)
+        string seedString = "DEFAULT";
+        Debug.Log("[MazeGenerator] Using default seed");
+
         _seed = ComputeSeed(seedString);
 
         Grid = new Wall[width, height];
@@ -57,13 +86,13 @@ namespace Code.Lavos.Core
 
         GenerateMazeDFS();
         SetEntryExit();
-        
+
         // Calculate complexity based on seed
         int complexity = CalculateComplexity();
 
         Debug.Log($"[MazeGenerator] Generated {width}x{height} | Seed: {_seed} (String: {seedString}) | Complexity: {complexity}");
     }
-    
+
     /// <summary>
     /// Calculate maze complexity based on seed and dimensions.
     /// </summary>
@@ -71,7 +100,7 @@ namespace Code.Lavos.Core
     {
         // Complexity = maze size + seed length factor
         int sizeFactor = width * height;
-        string seedString = SeedManager.Instance?.CurrentSeed ?? "DEFAULT";
+        string seedString = "DEFAULT"; // SeedManager removed
         int seedFactor = seedString.Length * 10;
         return (sizeFactor + seedFactor) / 100;
     }
@@ -82,11 +111,7 @@ namespace Code.Lavos.Core
     /// </summary>
     public void GenerateNextLevel()
     {
-        if (SeedManager.Instance != null)
-        {
-            SeedManager.Instance.NextLevel();
-        }
-        Generate();
+        Generate(); // SeedManager removed
     }
 
     /// <summary>
@@ -158,11 +183,11 @@ namespace Code.Lavos.Core
     }
 
     /// <summary>
-    /// Get human-readable seed string from SeedManager.
+    /// Get human-readable seed string.
     /// </summary>
     public string GetSeedString()
     {
-        return SeedManager.Instance?.CurrentSeed ?? _seed.ToString();
+        return _seed.ToString(); // SeedManager removed
     }
 
     private void GenerateMazeDFS()

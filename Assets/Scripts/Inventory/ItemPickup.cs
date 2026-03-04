@@ -46,7 +46,8 @@ namespace Code.Lavos.Core
             return;
         }
 
-        if (Inventory.Instance == null)
+        var inventory = FindFirstObjectByType<Inventory>();
+        if (inventory == null)
         {
             Debug.LogWarning("[ItemPickup] No Inventory found!");
             return;
@@ -85,13 +86,14 @@ namespace Code.Lavos.Core
         if (!_canPickup || item == null) return;
 
         // Check Inventory exists
-        if (Inventory.Instance == null)
+        var inventory = FindFirstObjectByType<Inventory>();
+        if (inventory == null)
         {
             Debug.LogWarning("[ItemPickup] Cannot pickup - Inventory not found!");
             return;
         }
 
-        if (Inventory.Instance.AddItem(item, quantity))
+        if (inventory.AddItem(item, quantity))
         {
             item.OnPickup(picker);
 

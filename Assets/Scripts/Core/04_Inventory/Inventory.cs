@@ -1,4 +1,4 @@
-// Inventory.cs
+﻿// Inventory.cs
 // Inventory management system (Singleton)
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -11,13 +11,9 @@ namespace Code.Lavos.Core
 {
     public class Inventory : MonoBehaviour, IInventory
     {
-        public static Inventory Instance { get; private set; }
+        [Header("Settings")] [SerializeField] private int capacity = 20;
 
-        [Header("Settings")]
-        [SerializeField] private int capacity = 20;
-
-        [Header("Events")]
-        public System.Action OnInventoryChanged;
+        [Header("Events")] public System.Action OnInventoryChanged;
 
         private List<InventorySlot> _slots = new List<InventorySlot>();
 
@@ -27,12 +23,12 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (false)
             {
                 Destroy(gameObject);
                 return;
             }
-            Instance = this;
+
             InitializeSlots();
         }
 
@@ -130,6 +126,7 @@ namespace Code.Lavos.Core
             {
                 slot.Clear();
             }
+
             OnInventoryChanged?.Invoke();
         }
 
@@ -156,6 +153,7 @@ namespace Code.Lavos.Core
                         return _slots[i];
                 }
             }
+
             return null;
         }
 
@@ -166,6 +164,7 @@ namespace Code.Lavos.Core
                 if (_slots[i].IsEmpty)
                     return _slots[i];
             }
+
             return null;
         }
 
@@ -177,6 +176,7 @@ namespace Code.Lavos.Core
                 if (slot.item == item)
                     count += slot.quantity;
             }
+
             return count;
         }
 

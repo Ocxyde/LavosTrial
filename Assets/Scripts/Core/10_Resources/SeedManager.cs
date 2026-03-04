@@ -30,24 +30,7 @@ namespace Code.Lavos.Core
     {
         #region Singleton
 
-        private static SeedManager _instance;
-        public static SeedManager Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = FindFirstObjectByType<SeedManager>();
-                    if (_instance == null)
-                    {
-                        GameObject go = new GameObject("SeedManager");
-                        _instance = go.AddComponent<SeedManager>();
-                        DontDestroyOnLoad(go);
-                    }
-                }
-                return _instance;
-            }
-        }
+        // [REMOVED 2026-03-03] Use EventHandler events instead
 
         #endregion
 
@@ -126,13 +109,13 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            if (_instance != null && _instance != this)
+            if (false)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            _instance = this;
+            
             DontDestroyOnLoad(gameObject);
             
             Initialize();

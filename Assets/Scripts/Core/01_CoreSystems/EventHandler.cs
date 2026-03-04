@@ -1,4 +1,4 @@
-// EventHandler.cs
+﻿// EventHandler.cs
 // Central Event Management System for all game events
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -19,10 +19,31 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Central event manager for all game systems.
     /// Provides unified event subscription and invocation.
+    /// Performance: Cached singleton access for minimal overhead.
     /// </summary>
     public class EventHandler : MonoBehaviour
     {
-        public static EventHandler Instance { get; private set; }
+        // Cached singleton reference (performance optimization)
+        private static EventHandler _instance;
+        private static bool _instanceChecked = false;
+        
+        public static EventHandler Instance
+        {
+            get
+            {
+                if (_instance == null && !_instanceChecked)
+                {
+                    _instance = FindFirstObjectByType<EventHandler>();
+                    _instanceChecked = true;
+                    
+                    if (_instance == null)
+                    {
+                        Debug.LogWarning("[EventHandler] No instance found in scene!");
+                    }
+                }
+                return _instance;
+            }
+        }
 
         [Header("Settings")]
         [SerializeField] private bool dontDestroyOnLoad = true;
@@ -96,7 +117,27 @@ namespace Code.Lavos.Core
         public event Action<string> OnQuestUpdated;
         public event Action<string> OnQuestCompleted;
         public event Action<string> OnAchievementUnlocked;
-
+        
+        // Game State Management
+        public event Action<GameManager.GameState> OnGameStateChanged;
+        public event Action OnGamePaused;
+        public event Action OnGameResumed;
+        public event Action OnGameOver;
+        public event Action OnGameVictory;
+        
+        #endregion
+        
+        #region Maze Events
+        
+        public event Action<int> OnMazeLevelChanged;
+        
+        #endregion
+        
+        #region Material Events
+        
+        public event Action<ProceduralCompute.MaterialType, ProceduralCompute.TextureType> OnMaterialRequested;
+        public event Action<ProceduralCompute.TextureType, ProceduralCompute.MaterialType> OnTextureRequested;
+        
         #endregion
 
         #region UI Events
@@ -117,7 +158,7 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            Instance = this;
+            
 
             if (dontDestroyOnLoad)
             {
@@ -330,6 +371,65 @@ namespace Code.Lavos.Core
             OnAchievementUnlocked?.Invoke(achievementName);
             if (debugEvents) Debug.Log($"[EventHandler] AchievementUnlocked: {achievementName}");
         }
+        
+        public void InvokeMazeLevelChanged(int newLevel)
+        {
+            OnMazeLevelChanged?.Invoke(newLevel);
+            if (debugEvents) Debug.Log($"[EventHandler] MazeLevelChanged: {newLevel}");
+        }
+
+        public void RequestMaterial(ProceduralCompute.MaterialType type, ProceduralCompute.TextureType textureType)
+        {
+            // PLUG-IN-AND-OUT: Invoke event, don't call ProceduralCompute directly!
+            OnMaterialRequested?.Invoke(type, textureType);
+            if (debugEvents) Debug.Log($"[EventHandler] MaterialRequested: {type}_{textureType}");
+            
+            // Let subscribers respond to the event
+            // ProceduralCompute (or any other system) can listen and provide material
+        }
+        
+        public void RequestTexture(ProceduralCompute.TextureType type, ProceduralCompute.MaterialType material)
+        {
+            // PLUG-IN-AND-OUT: Invoke event, don't call ProceduralCompute directly!
+            OnTextureRequested?.Invoke(type, material);
+            if (debugEvents) Debug.Log($"[EventHandler] TextureRequested: {type}_{material}");
+            
+            // Let subscribers respond to the event
+        }
+
+        #endregion
+
+        #region Game State Invokers
+
+        public void InvokeGameStateChanged(GameManager.GameState newState)
+        {
+            OnGameStateChanged?.Invoke(newState);
+            if (debugEvents) Debug.Log($"[EventHandler] GameStateChanged: {newState}");
+        }
+        
+        public void InvokeGamePaused()
+        {
+            OnGamePaused?.Invoke();
+            if (debugEvents) Debug.Log("[EventHandler] GamePaused");
+        }
+        
+        public void InvokeGameResumed()
+        {
+            OnGameResumed?.Invoke();
+            if (debugEvents) Debug.Log("[EventHandler] GameResumed");
+        }
+        
+        public void InvokeGameOver()
+        {
+            OnGameOver?.Invoke();
+            if (debugEvents) Debug.Log("[EventHandler] GameOver");
+        }
+        
+        public void InvokeGameVictory()
+        {
+            OnGameVictory?.Invoke();
+            if (debugEvents) Debug.Log("[EventHandler] GameVictory");
+        }
 
         #endregion
 
@@ -452,15 +552,12 @@ namespace Code.Lavos.Core
 
         private void OnDestroy()
         {
-            if (Instance == this)
+            // Instance assignment removed (Instance property removed)
+            
+            // Destroy the auto-created singleton GameObject when exiting play mode
+            if (Application.isPlaying && gameObject.scene.name == null)
             {
-                Instance = null;
-                
-                // Destroy the auto-created singleton GameObject when exiting play mode
-                if (Application.isPlaying && gameObject.scene.name == null)
-                {
-                    Destroy(gameObject);
-                }
+                Destroy(gameObject);
             }
         }
     }

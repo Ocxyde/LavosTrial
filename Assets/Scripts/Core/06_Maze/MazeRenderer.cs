@@ -33,6 +33,12 @@ namespace Code.Lavos.Core
     [SerializeField] private Color ambientColor = new Color(0.25f, 0.2f, 0.15f);  // Brighter ambient light
     [SerializeField] private float ambientIntensity = 0.6f;  // Increased from 0.3 for better visibility
 
+    [Header("Floor Material")]
+    [Tooltip("Floor material type (saved to Assets/Materials/Floor/)")]
+    [SerializeField] private FloorMaterialFactory.FloorType floorType = FloorMaterialFactory.FloorType.Stone;
+    [Tooltip("Auto-generate floor materials on start")]
+    [SerializeField] private bool autoGenerateFloorMaterials = false;
+
     [Header("Lighting")]
     [SerializeField] private bool useBakedLighting = false;  // Disable realtime GI
     [SerializeField] private float torchLightRange = 8f;
@@ -184,8 +190,11 @@ namespace Code.Lavos.Core
         InitShaders();
         var wallTex = DrawingPool.Instance.GetWall(0);
         _wallMat = MakeMaterial(wallTex, cellSize / 2f, wallHeight / 2f);
-        var floorTex = DrawingPool.Instance.GetFloor(0);
-        _floorMat = MakeMaterial(floorTex, 1f, 1f);
+
+        // Get floor material from FloorMaterialFactory
+        _floorMat = FloorMaterialFactory.GetFloorMaterial(floorType);
+        Debug.Log($"[MazeRenderer] Floor material: {floorType}");
+
         var ceilTex = DrawingPool.Instance.GetCeiling(0);
         _ceilMat = MakeMaterial(ceilTex, 1f, 1f);
         _handleMat = MakeMaterial(DrawingPool.Instance.GetTorch(0), 1f, 1f);

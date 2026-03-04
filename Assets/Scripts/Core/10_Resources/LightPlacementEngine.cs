@@ -95,34 +95,44 @@ namespace Code.Lavos.Core
         
         /// <summary>
         /// Load torch positions from binary and instantiate all at once.
+        /// If binary doesn't exist, caller should save first then call this.
         /// </summary>
         /// <param name="mazeId">Unique maze identifier</param>
         /// <param name="seed">Seed for decryption</param>
-        public void LoadAndInstantiateTorches(string mazeId, int seed)
+        /// <returns>True if binary was loaded, false if needs to be saved first</returns>
+        public bool LoadAndInstantiateTorches(string mazeId, int seed)
         {
             _currentMazeId = mazeId;
             _currentSeed = seed;
-            
+
+            Debug.Log($"[LightPlacementEngine] Trying to load torches for maze: {mazeId}");
+            Debug.Log($"[LightPlacementEngine] Seed: {seed}");
+
             // Try to load from binary file
             byte[] data = LightPlacementData.LoadFromFile(mazeId);
-            
+
             if (data == null || data.Length == 0)
             {
-                Debug.LogWarning($"[LightPlacementEngine] No binary data found for maze '{mazeId}'. Lights must be saved first.");
-                return;
+                Debug.LogWarning($"[LightPlacementEngine] No binary data found for maze '{mazeId}'. Needs to be saved first.");
+                return false;  // Signal that binary needs to be saved
             }
-            
+
+            Debug.Log($"[LightPlacementEngine] Binary file loaded: {data.Length} bytes");
+
             // Decrypt and load torch records
             List<WallPositionArchitect.TorchRecord> torches = LightPlacementData.LoadTorches(data, seed);
-            
+
             if (torches.Count == 0)
             {
-                Debug.LogWarning("[LightPlacementEngine] No torches in data");
-                return;
+                Debug.LogError("[LightPlacementEngine] No torches in data after decryption!");
+                return false;
             }
-            
+
+            Debug.Log($"[LightPlacementEngine] Decrypted {torches.Count} torches from binary");
+
             // Instantiate all torches at once
             InstantiateTorchesBatch(torches);
+            return true;  // Successfully loaded from binary
         }
         
         /// <summary>
@@ -156,18 +166,23 @@ namespace Code.Lavos.Core
         {
             if (torchPrefab == null)
             {
-                Debug.LogError("[LightPlacementEngine] Torch prefab not assigned!");
+                Debug.LogError("[LightPlacementEngine] ❌ Torch prefab is NULL!");
+                Debug.LogError("[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector!");
                 return;
             }
+
+            Debug.Log($"[LightPlacementEngine] Prefab: {torchPrefab.name}");
+            Debug.Log($"[LightPlacementEngine] Has TorchController: {torchPrefab.GetComponent<TorchController>() != null}");
+            Debug.Log($"[LightPlacementEngine] Has BraseroFlame: {torchPrefab.GetComponentInChildren<BraseroFlame>() != null}");
             
             // Clear existing
             ClearAllLights();
-            
+
             if (showDebugInfo)
             {
                 Debug.Log($"[LightPlacementEngine] Instantiating {torchRecords.Count} torches...");
             }
-            
+
             float startTime = Time.realtimeSinceStartup;
 
             // Batch instantiate all torches
@@ -178,30 +193,27 @@ namespace Code.Lavos.Core
 
                 // Get controller and store reference
                 TorchController controller = torchObj.GetComponent<TorchController>();
-                if (controller != null)
+                if (controller == null)
                 {
-                    string guid = string.IsNullOrEmpty(torchRecord.guid) ?
-                                 $"torch_{_torchControllers.Count:D4}" : torchRecord.guid;
-
-                    _torchControllers[guid] = controller;
-
-                    // First torch ON, all others OFF
-                    if (_torchControllers.Count == 1)
-                    {
-                        controller.TurnOn();  // First torch ON
-                    }
-                    else
-                    {
-                        controller.TurnOff();  // All others OFF
-                    }
+                    Debug.LogError($"[LightPlacementEngine] ❌ TorchController missing on torch at {torchRecord.position}!");
+                    continue;
                 }
+
+                string guid = string.IsNullOrEmpty(torchRecord.guid) ?
+                             $"torch_{_torchControllers.Count:D4}" : torchRecord.guid;
+
+                _torchControllers[guid] = controller;
+
+                // ALL torches ON by default
+                controller.TurnOn();
+                Debug.Log($"[LightPlacementEngine] ✅ Torch {guid} turned ON at {torchRecord.position}");
             }
 
             float elapsed = Time.realtimeSinceStartup - startTime;
 
             if (showDebugInfo)
             {
-                Debug.Log($"[LightPlacementEngine] Instantiated {torchRecords.Count} torches (1 ON, {torchRecords.Count - 1} OFF)");
+                Debug.Log($"[LightPlacementEngine] Instantiated {torchRecords.Count} torches (ALL ON) in {elapsed * 1000:F2}ms");
             }
         }
 

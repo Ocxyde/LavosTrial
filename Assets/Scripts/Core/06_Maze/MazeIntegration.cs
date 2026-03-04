@@ -38,6 +38,13 @@ namespace Code.Lavos.Core
 
         [Header("Torch Settings")]
         [SerializeField] private bool placeTorches = false;  // Torches are NOT placed by default
+        
+        [Header("Level Settings")]
+        [Tooltip("Current maze level (affects maze size)")]
+        [SerializeField] private int currentLevel = 1;
+        
+        [Tooltip("Enable level progression (maze grows with level)")]
+        [SerializeField] private bool useLevelProgression = true;
 
         // Public accessors for editor script
         public bool AutoGenerateOnStart { get => autoGenerateOnStart; set => autoGenerateOnStart = value; }
@@ -45,6 +52,7 @@ namespace Code.Lavos.Core
         public string ManualSeed { get => manualSeed; set => manualSeed = value; }
         public int MazeWidth { get => mazeWidth; set => mazeWidth = value; }
         public int MazeHeight { get => mazeHeight; set => mazeHeight = value; }
+        public int CurrentLevel { get => currentLevel; set => currentLevel = value; }
         public bool GenerateRooms { get => generateRooms; set => generateRooms = value; }
         public bool GenerateDoors { get => generateDoors; set => generateDoors = value; }
         public float DoorChance { get => doorChance; set => doorChance = value; }
@@ -129,6 +137,24 @@ namespace Code.Lavos.Core
             }
 
             CurrentSeed = ComputeSeed(manualSeed);
+
+            // Set maze level for dynamic sizing (plug-in-and-out: each component listens to level events)
+            if (mazeGenerator != null && useLevelProgression)
+            {
+                mazeGenerator.SetMazeLevel(currentLevel);
+            }
+            else if (mazeGenerator != null)
+            {
+                Debug.Log($"[MazeIntegration] 📏 Level {currentLevel}: {mazeWidth}x{mazeHeight} (fixed size)");
+            }
+            
+            // PLUG-IN-AND-OUT: Invoke level changed event via EventHandler
+            // Other components (SpatialPlacer, Lighting, etc.) listen to this event
+            if (EventHandler.Instance != null)
+            {
+                EventHandler.Instance.InvokeMazeLevelChanged(currentLevel);
+                Debug.Log($"[MazeIntegration] 🔌 Invoked MazeLevelChanged event (Level {currentLevel})");
+            }
 
             // Configure maze dimensions
             if (mazeGenerator != null)

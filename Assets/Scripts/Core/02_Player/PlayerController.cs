@@ -1,4 +1,4 @@
-// PlayerController.cs
+﻿// PlayerController.cs
 // Player movement, camera, and input
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -71,6 +71,9 @@ namespace Code.Lavos.Core
     private Keyboard _kb;
     private Mouse _mouse;
 
+    // ─── Game State (Plug-in-and-Out) ───────────────────────────────────────
+    private bool _isGamePaused = false;
+
     // ─── État mouvement ──────────────────────────────────────────────────────
     private Vector3 _velocity;
     private float _xRotation;
@@ -105,8 +108,8 @@ namespace Code.Lavos.Core
     /// </summary>
     public bool TryCastSpell(float manaCost)
     {
-        if (PlayerStats.Instance == null) return false;
-        return PlayerStats.Instance.UseMana(manaCost);
+        if (_playerStats == null) return false;
+        return _playerStats.UseMana(manaCost);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -167,9 +170,8 @@ namespace Code.Lavos.Core
             return;
         }
 
-        // Only check GameManager if it exists (optional in test scenes)
-        if (GameManager.Instance != null &&
-            GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+        // PLUG-IN-AND-OUT: Check game state via event subscription (not direct GameManager access)
+        if (_isGamePaused)
             return;
 
         HandleCursorInput();
@@ -180,6 +182,73 @@ namespace Code.Lavos.Core
         // Interaction handling - see InteractionSystem.cs for full implementation
         HandleInteraction();
     }
+    
+    #region Game State Event Handlers (Plug-in-and-Out)
+    
+    void OnEnable()
+    {
+        // Subscribe to game state changes
+        if (EventHandler.Instance != null)
+        {
+            EventHandler.Instance.OnGameStateChanged += OnGameStateChanged;
+            EventHandler.Instance.OnGamePaused += OnGamePaused;
+            EventHandler.Instance.OnGameResumed += OnGameResumed;
+        }
+    }
+    
+    void OnDisable()
+    {
+        // Unsubscribe from game state changes
+        if (EventHandler.Instance != null)
+        {
+            EventHandler.Instance.OnGameStateChanged -= OnGameStateChanged;
+            EventHandler.Instance.OnGamePaused -= OnGamePaused;
+            EventHandler.Instance.OnGameResumed -= OnGameResumed;
+        }
+    }
+    
+    /// <summary>
+    /// Handle game state changes via event (plug-in-and-out).
+    /// </summary>
+    private void OnGameStateChanged(GameManager.GameState newState)
+    {
+        _isGamePaused = (newState != GameManager.GameState.Playing);
+        
+        if (newState == GameManager.GameState.Playing)
+        {
+            EnablePlayerInput();
+        }
+        else
+        {
+            DisablePlayerInput();
+        }
+    }
+    
+    private void OnGamePaused()
+    {
+        _isGamePaused = true;
+        DisablePlayerInput();
+    }
+    
+    private void OnGameResumed()
+    {
+        _isGamePaused = false;
+        EnablePlayerInput();
+    }
+    
+    private void EnablePlayerInput()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+    
+    private void DisablePlayerInput()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+    
+    #endregion
 
     private void Start()
     {
@@ -276,7 +345,7 @@ namespace Code.Lavos.Core
         
         // Check sprint condition: shift held + moving + grounded + has stamina
         _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded &&
-                       PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina > 1f;
+                       _playerStats != null && _playerStats.CurrentStamina > 1f;
 
         Vector3 moveDir = (transform.right * h + transform.forward * v).normalized;
 
@@ -295,9 +364,9 @@ namespace Code.Lavos.Core
             {
                 _combatSystem.UseStamina(jumpCost);
             }
-            else if (PlayerStats.Instance != null && PlayerStats.Instance.CurrentStamina >= jumpCost)
+            else if (_playerStats != null && _playerStats.CurrentStamina >= jumpCost)
             {
-                PlayerStats.Instance.UseStamina(jumpCost);
+                _playerStats.UseStamina(jumpCost);
             }
             // Jump always works, stamina consumption is secondary
         }
@@ -311,9 +380,9 @@ namespace Code.Lavos.Core
         {
             float drainAmount = sprintCostPerSecond * Time.deltaTime;
 
-            if (PlayerStats.Instance != null)
+            if (_playerStats != null)
             {
-                bool staminaUsed = PlayerStats.Instance.UseStamina(drainAmount);
+                bool staminaUsed = _playerStats.UseStamina(drainAmount);
                 if (!staminaUsed)
                 {
                     // Force stop sprinting when stamina depleted

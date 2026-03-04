@@ -1,4 +1,4 @@
-// PlayerStats.cs
+﻿// PlayerStats.cs
 // Player stats wrapper for StatsEngine
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -20,22 +20,24 @@ namespace Code.Lavos.Core
     /// </summary>
     public class PlayerStats : MonoBehaviour, IPlayerStats
     {
-        public static PlayerStats Instance { get; private set; }
-
         // ─── Inspector Settings ────────────────────────────────────────────────
-        [Header("Base Stats")]
-        [SerializeField] private float maxHealth = 1000f;
+        [Header("Base Stats")] [SerializeField]
+        private float maxHealth = 1000f;
+
         [SerializeField] private float maxMana = 50f;
         [SerializeField] private float maxStamina = 100f;
         [SerializeField] private float healthRegen = 2f;
         [SerializeField] private float manaRegen = 5f;
-        [SerializeField] private float staminaRegen = 0.08f; // Heavily nerfed: 0.08 stamina/sec (1250 sec to full). Sprint costs 2/sec = net loss of 1.92/sec. Out-of-combat: 0.12/sec (833 sec to full)
 
-        [Header("Combat")]
-        [SerializeField] private float invincibilityTime = 0.5f;
+        [SerializeField]
+        private float
+            staminaRegen =
+                0.08f; // Heavily nerfed: 0.08 stamina/sec (1250 sec to full). Sprint costs 2/sec = net loss of 1.92/sec. Out-of-combat: 0.12/sec (833 sec to full)
 
-        [Header("Status Effects")]
-        [SerializeField] private StatusEffectData[] startingEffects;
+        [Header("Combat")] [SerializeField] private float invincibilityTime = 0.5f;
+
+        [Header("Status Effects")] [SerializeField]
+        private StatusEffectData[] startingEffects;
 
         // ─── StatsEngine Core ──────────────────────────────────────────────────
         private StatsEngine _statsEngine;
@@ -69,13 +71,13 @@ namespace Code.Lavos.Core
         // ─── Unity Lifecycle ───────────────────────────────────────────────────
         void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (false)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            Instance = this;
+
             Object.DontDestroyOnLoad(gameObject);
 
             // Initialize StatsEngine
@@ -83,27 +85,26 @@ namespace Code.Lavos.Core
             _statsEngine.SetBaseStats(maxHealth, maxMana, maxStamina, healthRegen, manaRegen, staminaRegen);
 
             // Subscribe to StatsEngine events and relay through EventHandler
-            _statsEngine.OnHealthChanged += (current, max) => {
+            _statsEngine.OnHealthChanged += (current, max) =>
+            {
                 OnHealthChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerHealthChanged(current, max);
             };
-            _statsEngine.OnManaChanged += (current, max) => {
+            _statsEngine.OnManaChanged += (current, max) =>
+            {
                 OnManaChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerManaChanged(current, max);
             };
-            _statsEngine.OnStaminaChanged += (current, max) => {
+            _statsEngine.OnStaminaChanged += (current, max) =>
+            {
                 OnStaminaChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerStaminaChanged(current, max);
             };
-            _statsEngine.OnEffectAdded += (effect) => {
-                OnEffectAdded?.Invoke(effect);
-            };
-            _statsEngine.OnEffectRemoved += (effect) => {
-                OnEffectRemoved?.Invoke(effect);
-            };
+            _statsEngine.OnEffectAdded += (effect) => { OnEffectAdded?.Invoke(effect); };
+            _statsEngine.OnEffectRemoved += (effect) => { OnEffectRemoved?.Invoke(effect); };
 
             // Subscribe to EventHandler for centralized event management
             if (Core.EventHandler.Instance != null)
@@ -141,8 +142,7 @@ namespace Code.Lavos.Core
             OnPlayerDied = null;
             OnPlayerDamaged = null;
 
-            if (Instance == this)
-                Instance = null;
+            // Instance cleanup removed (Instance property removed)
         }
 
         void Update()
@@ -171,7 +171,8 @@ namespace Code.Lavos.Core
 
             OnPlayerDamaged?.Invoke(damageInfo, finalDamage);
 
-            Debug.Log($"[PlayerStats] Damage: {damageInfo.type} | Base: {damageInfo.amount} | Final: {finalDamage:F1} | Health: {_statsEngine.CurrentHealth:F0}/{_statsEngine.MaxHealth:F0}");
+            Debug.Log(
+                $"[PlayerStats] Damage: {damageInfo.type} | Base: {damageInfo.amount} | Final: {finalDamage:F1} | Health: {_statsEngine.CurrentHealth:F0}/{_statsEngine.MaxHealth:F0}");
 
             if (_statsEngine.CurrentHealth <= 0f) Die();
         }
@@ -233,7 +234,8 @@ namespace Code.Lavos.Core
 
         // ─── Stat Modifiers ────────────────────────────────────────────────────
 
-        public void AddModifier(string statName, string id, string sourceId, ModifierType type, float value, float duration = 0f)
+        public void AddModifier(string statName, string id, string sourceId, ModifierType type, float value,
+            float duration = 0f)
         {
             _statsEngine.AddModifier(statName, id, sourceId, type, value, duration);
         }
@@ -245,7 +247,8 @@ namespace Code.Lavos.Core
         public float GetResistanceMultiplier(DamageType type) => _statsEngine.GetResistanceMultiplier(type);
         public float GetResistancePercent(DamageType type) => _statsEngine.GetResistancePercent(type);
 
-        public void ModifyResistance(DamageType type, float amount, ModifierType modifierType, float duration = 0f, string sourceId = null)
+        public void ModifyResistance(DamageType type, float amount, ModifierType modifierType, float duration = 0f,
+            string sourceId = null)
         {
             _statsEngine.ModifyResistance(type, amount, modifierType, duration, sourceId);
         }
@@ -272,7 +275,7 @@ namespace Code.Lavos.Core
 
             Debug.Log("[PlayerStats] Player died!");
             OnPlayerDied?.Invoke();
-            GameManager.Instance?.TriggerGameOver();
+            // GameManager.Instance?.TriggerGameOver(); // [REMOVED] Use EventHandler instead
 
             var controller = GetComponent<PlayerController>();
             if (controller != null) controller.enabled = false;

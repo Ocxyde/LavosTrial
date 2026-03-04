@@ -1,4 +1,4 @@
-// CombatSystem.cs
+﻿// CombatSystem.cs
 // Combat engine for damage, healing, and resource management
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,8 +24,6 @@ namespace Code.Lavos.Core
     /// </summary>
     public class CombatSystem : MonoBehaviour
     {
-        public static CombatSystem Instance { get; private set; }
-
         #region Inspector Settings
 
         [Header("Combat Settings")]
@@ -83,13 +81,13 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (false)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            Instance = this;
+            
             DontDestroyOnLoad(gameObject);
 
             Debug.Log("[CombatSystem] Initialized");
@@ -102,8 +100,7 @@ namespace Code.Lavos.Core
 
         void OnDestroy()
         {
-            if (Instance == this)
-                Instance = null;
+            // Instance cleanup removed (Instance property removed)
         }
 
         #endregion

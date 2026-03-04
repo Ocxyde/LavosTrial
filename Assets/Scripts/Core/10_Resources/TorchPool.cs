@@ -223,39 +223,15 @@ namespace Code.Lavos.Core
 
             if (useBraseroFlame)
             {
-                // ─── Brasero Flame (Particle System) ───────────────────────────
+                // ─── Brasero Flame (Particle System) - ON TOP OF HANDLE ────────
                 var flame = new GameObject("BraseroFlame");
                 flame.transform.SetParent(torchGO.transform);
-                flame.transform.localPosition = new Vector3(0f, 0.25f, 0.05f);
-                flame.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                flame.transform.localPosition = new Vector3(0f, 0.5f, 0f);  // ON TOP of handle
+                flame.transform.localRotation = Quaternion.identity;
                 flame.transform.localScale = new Vector3(1f, 1f, 1f);
                 var brasero = flame.AddComponent<BraseroFlame>();
 
-                // ─── FALLBACK: Simple visible flame quad ───────────────────────
-                var flameQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                flameQuad.name = "FlameVisual";
-                flameQuad.transform.SetParent(torchGO.transform);
-                flameQuad.transform.localPosition = new Vector3(0f, 0.35f, 0.15f);
-                flameQuad.transform.localRotation = Quaternion.identity;
-                flameQuad.transform.localScale = new Vector3(0.2f, 0.3f, 1f);
-                var quadRenderer = flameQuad.GetComponent<MeshRenderer>();
-                
-                if (quadRenderer != null)
-                {
-                    var flameMat = new Material(Shader.Find("Unlit/Color"));
-                    
-                    if (flameMat == null || flameMat.shader == null)
-                    {
-                        flameMat = new Material(Shader.Find("Standard"));
-                    }
-                    if (flameMat != null && flameMat.shader != null)
-                    {
-                        flameMat.color = new Color(1f, 0.5f, 0.1f, 1f);
-                        quadRenderer.material = flameMat;
-                        quadRenderer.enabled = true;
-                    }
-                }
-                Destroy(flameQuad.GetComponent<MeshCollider>());
+                // NOTE: No fallback quad needed - BraseroFlame particles are visible!
 
                 // ─── Light ─────────────────────────────────────────────────────
                 var lightGO = new GameObject("FlameLight");
