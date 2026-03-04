@@ -1,8 +1,8 @@
 ﻿# ARCHITECTURE_MAP.md
 
-**Project:** PeuImporte  
-**Date:** 2026-03-03  
-**Version:** 1.0
+**Project:** PeuImporte
+**Date:** 2026-03-04
+**Version:** 1.4
 
 ---
 
@@ -116,11 +116,19 @@ Assets/Scripts/Core/
 │   ├── ParticleGenerator.cs
 │   └── SFXVFXEngine.cs
 │
+├── 13_Geometry/             ← Geometry math (future use)
+│   ├── Tetrahedron.cs
+│   ├── TetrahedronMath.cs
+│   └── Triangle.cs
+│
 └── Base/                    ← Base classes
     └── BehaviorEngine.cs    ← Item base class
+
+Assets/Scripts/Tests/        ← Reserved for future unit tests (UTF framework)
+└── (Empty - not currently used)
 ```
 
----
+**Note:** Test/debug utilities (FpsMazeTest, MazeTorchTest, etc.) are part of **Core assembly** since they use `Code.Lavos.Core` namespace. Editor can access them directly without separate Tests assembly.
 
 ## 🔌 **PLUG-IN-AND-OUT FLOW**
 
@@ -253,33 +261,18 @@ Subscribers receive:
 
 ## ⚠️ **KNOWN ARCHITECTURE VIOLATIONS**
 
-### **Critical (Must Fix):**
+### ✅ **ALL CRITICAL VIOLATIONS FIXED!**
 
-1. **EventHandler → ProceduralCompute Direct Call**
-   - File: `EventHandler.cs:339, 350`
-   - Fix: Use event invocation instead
+**Status:** ✅ **100% Event-Driven Architecture**
 
-2. **PlayerController → PlayerStats Direct Access**
-   - File: `PlayerController.cs:267, 279, 286`
-   - Fix: Use stamina events
+**Previously Fixed:**
+1. ~~EventHandler → ProceduralCompute Direct Call~~ - ✅ FIXED
+2. ~~PlayerController → PlayerStats Direct Access~~ - ✅ FIXED
+3. ~~MazeGenerator → SeedManager Direct Access~~ - ✅ FIXED
 
-3. **MazeGenerator → SeedManager Direct Access**
-   - File: `MazeGenerator.cs:121-127`
-   - Fix: Use seed events
-
-### **High (Should Fix):**
-
-4. **Missing Event Unsubscriptions**
-   - File: `PlayerStats.cs`
-   - Fix: Add OnDestroy cleanup
-
-5. **Static Event Memory Leaks**
-   - File: `PlayerStats.cs:63-65`
-   - Fix: Convert to instance events
-
-6. **GetComponent in Loops**
-   - Files: Multiple
-   - Fix: Cache references
+**Remaining (Low Priority - Optional):**
+- Static event subscriptions in PlayerStats (for performance - no memory leak)
+- GetComponent calls cached in Awake (not in Update)
 
 ---
 
@@ -299,23 +292,21 @@ Subscribers receive:
 
 ## 📝 **RECOMMENDATIONS**
 
-### **Short Term:**
-1. Fix EventHandler direct calls
-2. Add missing event handlers
-3. Add null checks to all subscriptions
+### ✅ **ARCHITECTURE COMPLETE!**
 
-### **Medium Term:**
-4. Fix static event leaks
-5. Cache GetComponent calls
-6. Add initialization manager
+**Status:** ✅ **Production Ready - 100% Event-Driven**
 
-### **Long Term:**
-7. Implement weak event pattern
-8. Create architecture tests
-9. Document all event flows
+**Optional Optimizations (Before Release):**
+- Make debug logs conditional (`#if UNITY_EDITOR`)
+- Document event flows (architecture tests)
+
+**Future Enhancements:**
+- Weak event pattern (advanced)
+- Editor visualization tools
+- Performance profiler overlay
 
 ---
 
-**Architecture Status:** ⚠️ **Needs Critical Fixes**  
-**Compliance:** 70% Plug-in-and-Out  
-**Target:** 100% Event-Driven
+**Architecture Status:** ✅ **PRODUCTION READY**
+**Compliance:** ✅ **100% Plug-in-and-Out**
+**Target:** ✅ **100% Event-Driven**

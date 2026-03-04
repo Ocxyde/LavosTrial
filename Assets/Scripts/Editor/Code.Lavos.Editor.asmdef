@@ -11,7 +11,8 @@
         "Code.Lavos.Ennemies",
         "Code.Lavos.Gameplay",
         "Code.Lavos.Interaction",
-        "Unity.RenderPipelines.Universal.Runtime"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Code.Lavos.Tests"
     ],
     "includePlatforms": [
         "Editor"

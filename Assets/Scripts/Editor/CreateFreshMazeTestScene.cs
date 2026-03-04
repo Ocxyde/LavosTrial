@@ -1,13 +1,15 @@
 ﻿// CreateFreshMazeTestScene.cs
 // Editor tool to create a fresh FpsMazeTest scene from scratch
-// Place in: Assets/Editor/CreateFreshMazeTestScene.cs
+// Place in: Assets/Scripts/Editor/CreateFreshMazeTestScene.cs
+//
+// Note: FpsMazeTest component is in Core assembly (Code.Lavos.Core namespace)
 
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using System.IO;
-using Code.Lavos.Core;  // For maze components
+using Code.Lavos.Core;  // For maze components including FpsMazeTest
 
 public class CreateFreshMazeTestScene : EditorWindow
 {
