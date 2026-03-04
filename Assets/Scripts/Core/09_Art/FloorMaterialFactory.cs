@@ -86,28 +86,55 @@ namespace Code.Lavos.Core
         private static Material CreateAndSaveFloorMaterial(FloorType type)
         {
             EnsureMaterialsFolder();
-            
+
             // Generate texture
             Texture2D texture = GenerateFloorTexture(type);
-            
-            // Create material
-            Material mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
-            mat.mainTexture = texture;
-            mat.mainTextureScale = new Vector2(1f, 1f);
-            mat.SetFloat("_Glossiness", 0.2f);
-            mat.SetFloat("_Metallic", 0f);
-            
-            // Save texture
+            if (texture == null)
+            {
+                Debug.LogError($"[FloorFactory] Failed to generate texture for {type}");
+                return null;
+            }
+
+            // Save and import texture first
             string texturePath = $"{MATERIALS_FOLDER}/{type}_Floor_Texture.png";
             SaveTexture(texture, texturePath);
-            
+            AssetDatabase.ImportAsset(texturePath);
+            Texture2D importedTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+
+            // Create material with URP Lit shader
+            Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (urpShader == null)
+            {
+                Debug.LogError("[FloorFactory] ❌ URP Lit shader not found!");
+                urpShader = Shader.Find("Standard");
+            }
+
+            Material mat = new Material(urpShader);
+
+            // Set texture using _BaseMap for URP (also set _MainTex for compatibility)
+            mat.SetTexture("_BaseMap", importedTexture);
+            mat.SetTexture("_MainTex", importedTexture);
+            mat.SetTextureScale("_BaseMap", new Vector2(1f, 1f));
+            mat.SetTextureScale("_MainTex", new Vector2(1f, 1f));
+
+            // URP uses _Smoothness instead of _Glossiness (they're inverses)
+            mat.SetFloat("_Smoothness", 0.2f);
+            mat.SetFloat("_Metallic", 0f);
+
+            // Set base color to white
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetColor("_Color", Color.white);
+
             // Save material
             string materialPath = $"{MATERIALS_FOLDER}/{type}_Floor.mat";
             AssetDatabase.CreateAsset(mat, materialPath);
-            
+            AssetDatabase.SaveAssets();
+
+            // Load and return the saved asset (not the runtime object)
+            Material savedMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             Debug.Log($"[FloorFactory] Saved: {materialPath}");
-            
-            return mat;
+
+            return savedMaterial;
         }
         
         private static Texture2D GenerateFloorTexture(FloorType type)
