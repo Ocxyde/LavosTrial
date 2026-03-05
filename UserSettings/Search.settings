@@ -2,20 +2,13 @@ trackSelection = true
 refreshSearchWindowsInPlayMode = false
 pickerAdvancedUI = false
 fetchPreview = true
-defaultFlags = 8
+defaultFlags = 0
 keepOpen = true
 queryFolder = "Assets"
 onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.66F56946" = "my asset"
-	"OpenInspectorPreview.66F56946" = "0"
-	"currentGroup.66F56946" = "all"
-	"picker_window_position_offset.00000000" = "560;38,39999;320;550,4"
-	"picker_visibility_flags.00000000" = "0"
-	"picker_item_size.00000000" = "1"
-	"picker_inspector.00000000" = "0"
 }
 providers = {
 	asset = {
@@ -68,36 +61,10 @@ providers = {
 		priority = 210
 		defaultAction = null
 	}
-	menu = {
-		active = true
-		priority = 80
-		defaultAction = null
-	}
-	settings = {
-		active = true
-		priority = 100
-		defaultAction = null
-	}
-	calculator = {
-		active = true
-		priority = 10
-		defaultAction = null
-	}
-	static_methods = {
-		active = false
-		priority = 85
-		defaultAction = null
-	}
 }
 objectSelectors = {
 }
 recentSearches = [
-	"my asset"
-	"m"
-	"pa"
-	"unive"
-	"package mange"
-	"package"
 ]
 searchItemFavorites = [
 ]
@@ -110,7 +77,7 @@ expandedQueries = [
 ]
 queryBuilder = true
 ignoredProperties = "id;name;classname;imagecontentshash"
-helperWidgetCurrentArea = "adb:"
+helperWidgetCurrentArea = "all"
 disabledIndexers = ""
 minIndexVariations = 2
 findProviderIndexHelper = true

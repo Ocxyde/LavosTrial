@@ -273,7 +273,7 @@ namespace Code.Lavos.Core
                 light.color = defaultLightColor;
                 light.range = defaultLightRange;
                 light.intensity = 0f; // Start disabled
-                light.shadows = LightShadows.Soft;
+                light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
                 light.enabled = false;
                 light.bounceIntensity = 1f;
 
@@ -317,7 +317,7 @@ namespace Code.Lavos.Core
             lightData.light.color = color ?? lightData.baseColor;
             lightData.light.range = ((range ?? lightData.baseRange) * 1.5f) * 2f;
             lightData.light.intensity = (((intensity ?? lightData.baseIntensity) * 2f) * globalEmissionMultiplier) * 3f;
-            lightData.light.shadows = LightShadows.Soft;
+            lightData.light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
             lightData.light.enabled = true;
 
             // Position light

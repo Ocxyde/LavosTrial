@@ -134,7 +134,7 @@ namespace Code.Lavos.Core
             {
                 _light = gameObject.AddComponent<Light>();
                 _light.type = UnityEngine.LightType.Point;
-                _light.shadows = LightShadows.Soft;
+                _light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
             }
 
             // Get or create AudioSource

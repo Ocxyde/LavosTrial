@@ -382,7 +382,7 @@ namespace Code.Lavos.Core
                 pointLight.range = 15f;
                 pointLight.intensity = 5f;
                 pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.Soft;
+                pointLight.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 
@@ -416,7 +416,7 @@ namespace Code.Lavos.Core
                 pointLight.range = 15f;
                 pointLight.intensity = 5f;
                 pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.Soft;
+                pointLight.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 

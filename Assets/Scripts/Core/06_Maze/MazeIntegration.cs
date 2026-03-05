@@ -24,8 +24,8 @@ namespace Code.Lavos.Core
         [SerializeField] private string manualSeed = "MyCustomSeed123";
 
         [Header("Maze Dimensions")]
-        [SerializeField] private int mazeWidth = 31;
-        [SerializeField] private int mazeHeight = 31;
+        [SerializeField] private int mazeWidth = 21;  // ✅ Reduced from 31 for better performance
+        [SerializeField] private int mazeHeight = 21;  // ✅ Reduced from 31 for better performance
 
         [Header("Room Settings")]
         [SerializeField] private bool generateRooms = true;
@@ -37,7 +37,7 @@ namespace Code.Lavos.Core
         [SerializeField] private float doorChance = 0.6f;
 
         [Header("Torch Settings")]
-        [SerializeField] private bool placeTorches = false;  // Torches are NOT placed by default
+        [SerializeField] private bool placeTorches = true;  // ✅ Torches ARE placed by default
         
         [Header("Level Settings")]
         [Tooltip("Current maze level (affects maze size)")]
@@ -213,16 +213,16 @@ namespace Code.Lavos.Core
                 mazeRenderer.BuildMaze();
             }
 
-            // Step 6: Place torches and other objects (optional, independent from maze generation)
-            // SpatialPlacer handles torches, chests, enemies, items, etc.
-            if (placeTorches && spatialPlacer != null)
+            // Step 6: Place ALL objects (torches, chests, enemies, items)
+            // SpatialPlacer handles all object placement in one call
+            if (spatialPlacer != null)
             {
-                Debug.Log("[MazeIntegration] Step 6: Placing torches via SpatialPlacer...");
-                spatialPlacer.PlaceTorches();
+                Debug.Log("[MazeIntegration] Step 6: Placing ALL objects via SpatialPlacer...");
+                spatialPlacer.PlaceAll();  // ✅ Places torches, chests, enemies, items
             }
-            else if (placeTorches && spatialPlacer == null)
+            else
             {
-                Debug.LogWarning("[MazeIntegration] placeTorches is true but SpatialPlacer component not found!");
+                Debug.LogWarning("[MazeIntegration] SpatialPlacer component not found!");
             }
 
             _isGenerated = true;

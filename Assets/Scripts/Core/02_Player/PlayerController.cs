@@ -313,21 +313,18 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────────────────
     private void HandleMovement()
     {
-        // Debug: Check cursor lock
-        if (Cursor.lockState != CursorLockMode.Locked)
-        {
-            Debug.Log($"[PlayerController] Cursor not locked! State: {Cursor.lockState}");
-            return;
-        }
-
-        _isGrounded = _controller.isGrounded;
+        // Lock cursor for FPS control
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         
-        // Debug: Log grounded state
-        if (Time.frameCount % 60 == 0) // Log once per second
+        _isGrounded = _controller.isGrounded;
+
+        // Debug: Log grounded state (less spam)
+        if (Time.frameCount % 120 == 0 && !_isGrounded)
         {
             Debug.Log($"[PlayerController] Grounded: {_isGrounded} | Position: {_controller.transform.position}");
         }
-        
+
         if (_isGrounded && _velocity.y < 0f) _velocity.y = -2f;
 
         float h = (_kb.dKey.isPressed || _kb.rightArrowKey.isPressed ? 1f : 0f)

@@ -145,7 +145,7 @@ namespace Code.Lavos.Core
                 _light.color = lightColor;
                 _light.range = lightRange;
                 _light.intensity = 0f; // Start off, will be set by TurnOn
-                _light.shadows = LightShadows.Soft;
+                _light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
                 _light.enabled = false;
             }
 
@@ -164,7 +164,7 @@ namespace Code.Lavos.Core
                 _light.color = lightColor;
                 _light.range = lightRange;
                 _light.intensity = 0f; // Start off
-                _light.shadows = LightShadows.Soft;
+                _light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
                 _light.enabled = false;
             }
         }

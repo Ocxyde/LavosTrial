@@ -45,7 +45,9 @@ namespace Code.Lavos.Core
             if (renderer != null)
             {
                 // Try URP shader first, then Standard, then Unlit as fallback
-                Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+                Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
+                Shader shader = urpShader;
+                
                 if (shader == null)
                 {
                     Debug.LogWarning("[GroundPlane] URP shader not found, trying Standard shader");
@@ -56,20 +58,37 @@ namespace Code.Lavos.Core
                     Debug.LogWarning("[GroundPlane] Standard shader not found, using Unlit/Texture");
                     shader = Shader.Find("Unlit/Texture");
                 }
-                
+
                 if (shader != null)
                 {
                     Material material = new Material(shader);
-                    material.mainTexture = stoneTexture;
-                    material.color = Color.white;
                     
-                    // Set material properties based on shader type
-                    if (shader.name.Contains("URP") || shader.name.Contains("Standard"))
+                    // Set texture - URP uses _BaseMap, Standard uses _MainTex
+                    if (urpShader != null && shader == urpShader)
                     {
-                        material.SetFloat("_Glossiness", 0f);  // No smoothness
-                        material.SetFloat("_Metallic", 0f);   // Not metallic
+                        // URP shader
+                        material.SetTexture("_BaseMap", stoneTexture);
+                        material.SetTexture("_MainTex", stoneTexture); // Compatibility
+                        material.SetColor("_BaseColor", Color.white);
+                        material.SetColor("_Color", Color.white);
+                        material.SetFloat("_Smoothness", 0f);  // URP uses Smoothness (not Glossiness)
+                        material.SetFloat("_Metallic", 0f);
                     }
-                    
+                    else if (shader.name.Contains("Standard"))
+                    {
+                        // Standard shader
+                        material.mainTexture = stoneTexture;
+                        material.color = Color.white;
+                        material.SetFloat("_Glossiness", 0f);
+                        material.SetFloat("_Metallic", 0f);
+                    }
+                    else
+                    {
+                        // Unlit shader (fallback)
+                        material.mainTexture = stoneTexture;
+                        material.color = Color.white;
+                    }
+
                     renderer.material = material;
                     Debug.Log($"[GroundPlane] Material created with shader: {shader.name}");
                 }

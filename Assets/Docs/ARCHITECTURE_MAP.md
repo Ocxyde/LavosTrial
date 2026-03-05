@@ -2,7 +2,7 @@
 
 **Project:** PeuImporte
 **Date:** 2026-03-04
-**Version:** 1.4
+**Version:** 1.5
 
 ---
 

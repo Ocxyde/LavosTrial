@@ -72,10 +72,9 @@ namespace Code.Lavos.Core
         [SerializeField] private AudioClip closeSound;
         [SerializeField] private AudioClip lockedSound;
         [SerializeField] private AudioClip trapSound;
-        
+
         [Header("Interaction")]
-        [Range(0.5f, 5f)]
-        [SerializeField] private new float interactionRange = 3f;
+        // Note: interactionRange inherited from BehaviorEngine (not serialized here to avoid conflict)
         [SerializeField] private bool requireKey = false;
         [SerializeField] private string requiredKeyName = "DoorKey";  // Reserved for future key system
         

@@ -5,25 +5,30 @@
 // PLUG-IN-AND-OUT:
 // - Generates floor textures (stone, wood, tile, etc.)
 // - Saves materials to Assets/Materials/Floor/
-// - Configurable via Inspector
-// - Reusable across scenes
+// - Reusable across scenes - independent plugin module
+// - EDITOR ONLY: Uses AssetDatabase (not available in builds)
 //
 // Location: Assets/Scripts/Core/09_Art/
 
 using UnityEngine;
-using UnityEditor;
 using System.IO;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Code.Lavos.Core
 {
     /// <summary>
     /// FloorMaterialFactory - Generates and saves floor materials.
     /// Supports multiple floor types: Stone, Wood, Tile, etc.
+    /// Plug-in module for Core system.
+    /// EDITOR ONLY: Uses AssetDatabase for material generation.
     /// </summary>
     public static class FloorMaterialFactory
     {
         #region Floor Types
-        
+
         public enum FloorType
         {
             Stone,      // Gray stone tiles
@@ -32,25 +37,26 @@ namespace Code.Lavos.Core
             Brick,      // Red brick
             Marble      // Fancy marble
         }
-        
+
         #endregion
-        
+
         #region Configuration
-        
+
         private const string MATERIALS_FOLDER = "Assets/Materials/Floor";
         private const int TEXTURE_SIZE = 32;
-        
+
         #endregion
-        
+
         #region Public API
-        
+
         /// <summary>
-        /// Get or create floor material.
+        /// Get or create floor material (Editor only).
         /// </summary>
+        #if UNITY_EDITOR
         public static Material GetFloorMaterial(FloorType type = FloorType.Stone)
         {
             string materialPath = $"{MATERIALS_FOLDER}/{type}_Floor.mat";
-            
+
             // Try to load existing material
             Material existingMat = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
             if (existingMat != null)
@@ -58,36 +64,35 @@ namespace Code.Lavos.Core
                 Debug.Log($"[FloorFactory] Loaded existing: {type}_Floor.mat");
                 return existingMat;
             }
-            
+
             // Create new material
             Debug.Log($"[FloorFactory] Creating new: {type}_Floor.mat");
             return CreateAndSaveFloorMaterial(type);
         }
-        
+
         /// <summary>
         /// Generate all floor material variants.
         /// </summary>
         public static void GenerateAllFloorMaterials()
         {
             EnsureMaterialsFolder();
-            
+
             foreach (FloorType type in System.Enum.GetValues(typeof(FloorType)))
             {
                 CreateAndSaveFloorMaterial(type);
             }
-            
+
             Debug.Log("[FloorFactory] ✅ All floor materials generated!");
         }
-        
-        #endregion
-        
-        #region Internal Methods
-        
+
+        /// <summary>
+        /// Create and save floor material (internal, Editor only).
+        /// </summary>
         private static Material CreateAndSaveFloorMaterial(FloorType type)
         {
             EnsureMaterialsFolder();
 
-            // Generate texture
+            // Generate texture using PixelCanvas from DrawingManager (global namespace)
             Texture2D texture = GenerateFloorTexture(type);
             if (texture == null)
             {
@@ -136,7 +141,19 @@ namespace Code.Lavos.Core
 
             return savedMaterial;
         }
-        
+
+        private static void SaveTexture(Texture2D texture, string path)
+        {
+            byte[] bytes = texture.EncodeToPNG();
+            File.WriteAllBytes(path, bytes);
+            AssetDatabase.Refresh();
+        }
+        #endif
+
+        #endregion
+
+        #region Internal Methods
+
         private static Texture2D GenerateFloorTexture(FloorType type)
         {
             return type switch
@@ -149,21 +166,21 @@ namespace Code.Lavos.Core
                 _ => GenerateStoneFloor()
             };
         }
-        
+
         #endregion
-        
+
         #region Texture Generators
-        
+
         private static Texture2D GenerateStoneFloor()
         {
             var canvas = new PixelCanvas(TEXTURE_SIZE, TEXTURE_SIZE);
-            
+
             // STONE COLORS (gray tones)
             var dark = new Color32(40, 40, 45, 255);   // Dark gray
             var mid = new Color32(60, 60, 65, 255);    // Medium gray
             var light = new Color32(80, 80, 85, 255);  // Light gray
             var mortar = new Color32(30, 30, 35, 255); // Mortar
-            
+
             // Stone tile pattern (8x8 tiles)
             for (int y = 0; y < TEXTURE_SIZE; y++)
             {
@@ -175,7 +192,7 @@ namespace Code.Lavos.Core
                         canvas.SetPixel(x, y, mortar);
                         continue;
                     }
-                    
+
                     // Random stone variation
                     int tile = ((x / 8 + y / 8) * 17 + x * 3 + y * 5) % 5;
                     canvas.SetPixel(x, y, tile switch {
@@ -186,20 +203,20 @@ namespace Code.Lavos.Core
                     });
                 }
             }
-            
+
             return canvas.ToTexture();
         }
-        
+
         private static Texture2D GenerateWoodFloor()
         {
             var canvas = new PixelCanvas(TEXTURE_SIZE, TEXTURE_SIZE);
-            
+
             // WOOD COLORS (brown tones)
             var dark = new Color32(60, 40, 25, 255);
             var mid = new Color32(88, 50, 20, 255);
             var light = new Color32(120, 75, 35, 255);
             var grain = new Color32(40, 28, 15, 255);
-            
+
             // Wood plank pattern (16 pixels wide)
             for (int y = 0; y < TEXTURE_SIZE; y++)
             {
@@ -211,7 +228,7 @@ namespace Code.Lavos.Core
                         canvas.SetPixel(x, y, grain);
                         continue;
                     }
-                    
+
                     // Wood grain
                     int grainPattern = (x + y * 3) % 5;
                     canvas.SetPixel(x, y, grainPattern switch {
@@ -222,18 +239,18 @@ namespace Code.Lavos.Core
                     });
                 }
             }
-            
+
             return canvas.ToTexture();
         }
-        
+
         private static Texture2D GenerateTileFloor()
         {
             var canvas = new PixelCanvas(TEXTURE_SIZE, TEXTURE_SIZE);
-            
+
             // TILE COLORS
             var tileColor = new Color32(180, 170, 160, 255);
             var mortar = new Color32(100, 100, 100, 255);
-            
+
             // Ceramic tile pattern
             for (int y = 0; y < TEXTURE_SIZE; y++)
             {
@@ -249,19 +266,19 @@ namespace Code.Lavos.Core
                     }
                 }
             }
-            
+
             return canvas.ToTexture();
         }
-        
+
         private static Texture2D GenerateBrickFloor()
         {
             var canvas = new PixelCanvas(TEXTURE_SIZE, TEXTURE_SIZE);
-            
+
             // BRICK COLORS
             var brickRed = new Color32(120, 60, 40, 255);
             var brickDark = new Color32(90, 45, 30, 255);
             var mortar = new Color32(120, 120, 115, 255);
-            
+
             // Brick pattern
             for (int y = 0; y < TEXTURE_SIZE; y++)
             {
@@ -278,19 +295,19 @@ namespace Code.Lavos.Core
                     }
                 }
             }
-            
+
             return canvas.ToTexture();
         }
-        
+
         private static Texture2D GenerateMarbleFloor()
         {
             var canvas = new PixelCanvas(TEXTURE_SIZE, TEXTURE_SIZE);
-            
+
             // MARBLE COLORS
             var white = new Color32(240, 240, 245, 255);
             var gray = new Color32(180, 180, 185, 255);
             var vein = new Color32(100, 100, 110, 255);
-            
+
             // Marble pattern with veins
             for (int y = 0; y < TEXTURE_SIZE; y++)
             {
@@ -312,14 +329,14 @@ namespace Code.Lavos.Core
                     }
                 }
             }
-            
+
             return canvas.ToTexture();
         }
-        
+
         #endregion
-        
+
         #region Utilities
-        
+
         private static void EnsureMaterialsFolder()
         {
             if (!Directory.Exists(MATERIALS_FOLDER))
@@ -328,14 +345,7 @@ namespace Code.Lavos.Core
                 Debug.Log($"[FloorFactory] Created folder: {MATERIALS_FOLDER}");
             }
         }
-        
-        private static void SaveTexture(Texture2D texture, string path)
-        {
-            byte[] bytes = texture.EncodeToPNG();
-            File.WriteAllBytes(path, bytes);
-            AssetDatabase.Refresh();
-        }
-        
+
         #endregion
     }
 }

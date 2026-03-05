@@ -43,10 +43,10 @@ namespace Code.Lavos.Core
 
         [Header("Maze Settings - Wide Corridors")]
         [Tooltip("Maze width (odd number for proper corridors)")]
-        [SerializeField] private int mazeWidth = 31;
+        [SerializeField] private int mazeWidth = 21;  // ✅ Reduced from 31 for better performance
 
         [Tooltip("Maze height (odd number for proper corridors)")]
-        [SerializeField] private int mazeHeight = 31;
+        [SerializeField] private int mazeHeight = 21;  // ✅ Reduced from 31 for better performance
 
         [Tooltip("Cell size for maze renderer")]
         [SerializeField] private float cellSize = 6f;
@@ -132,16 +132,24 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
+            // DISABLED: FpsMazeTest is deprecated - use CompleteMazeBuilder instead
+            // This prevents errors when torches are instantiated by CompleteMazeBuilder
+            Debug.LogWarning("[FpsMazeTest] ⚠️ FpsMazeTest is deprecated - use CompleteMazeBuilder instead. Disabling self.");
+            enabled = false;
+            return;
+            
+#pragma warning disable CS0162 // Intentional unreachable code (deprecated)
             // Don't run validation in editor pause mode
             if (!Application.isPlaying) return;
-            
+
             FindComponents();
-            
+
             // Only validate if components are assigned
             if (!ValidateSetup())
             {
                 enabled = false;  // Disable this script if setup is invalid
             }
+#pragma warning restore CS0162
         }
 
         void Start()

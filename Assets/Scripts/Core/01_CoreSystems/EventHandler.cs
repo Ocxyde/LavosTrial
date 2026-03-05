@@ -130,11 +130,12 @@ namespace Code.Lavos.Core
         public event Action OnGameVictory;
         
         #endregion
-        
+
         #region Maze Events
-        
+
         public event Action<int> OnMazeLevelChanged;
-        
+        public event Action OnMazeGenerated;  // Published when complete maze generation finishes
+
         #endregion
         
         #region Material Events
@@ -380,6 +381,12 @@ namespace Code.Lavos.Core
         {
             OnMazeLevelChanged?.Invoke(newLevel);
             if (debugEvents) Debug.Log($"[EventHandler] MazeLevelChanged: {newLevel}");
+        }
+
+        public void InvokeMazeGenerated()
+        {
+            OnMazeGenerated?.Invoke();
+            if (debugEvents) Debug.Log($"[EventHandler] MazeGenerated: Complete maze generation finished");
         }
 
         public void RequestMaterial(ProceduralCompute.MaterialType type, ProceduralCompute.TextureType textureType)

@@ -52,9 +52,9 @@ namespace Code.Lavos.Core
             var mazeGen = GetComponent<MazeGenerator>();
             if (mazeGen != null)
             {
-                mazeGen.width = 31;
-                mazeGen.height = 31;
-                Debug.Log("✅ MazeGenerator: 31x31");
+                mazeGen.width = 21;
+                mazeGen.height = 21;
+                Debug.Log("✅ MazeGenerator: 21x21");
             }
 
             // Configure RoomGenerator

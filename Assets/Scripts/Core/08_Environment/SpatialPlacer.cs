@@ -93,7 +93,7 @@ namespace Code.Lavos.Core
         [SerializeField] private int itemCount = 10;
 
         [Header("Torches")]
-        [SerializeField] private bool placeTorches = false;  // Torches are NOT placed by default
+        [SerializeField] private bool placeTorches = true;  // ✅ Torches ARE placed by default
         [SerializeField] private TorchPool torchPool;
         [SerializeField] private LightPlacementEngine lightPlacementEngine;
         
@@ -1050,6 +1050,46 @@ namespace Code.Lavos.Core
         float NextFloat(float min, float max)
         {
             return (float)(rng.NextDouble() * (max - min) + min);
+        }
+
+        #endregion
+
+        #region Unified Placement
+
+        /// <summary>
+        /// Place ALL objects at once (torches, chests, enemies, items).
+        /// Call this once after maze generation is complete.
+        /// </summary>
+        [ContextMenu("Place All Objects")]
+        public void PlaceAll()
+        {
+            Debug.Log("[SpatialPlacer] Placing ALL objects (torches, chests, enemies, items)...");
+
+            // Clear previous placements
+            placedObjects.Clear();
+
+            // Place all object types
+            if (placeTorches)
+            {
+                PlaceTorches();
+            }
+
+            if (placeChests)
+            {
+                PlaceChests();
+            }
+
+            if (placeEnemies)
+            {
+                PlaceEnemies();
+            }
+
+            if (placeItems)
+            {
+                PlaceItems();
+            }
+
+            Debug.Log($"[SpatialPlacer] ✅ All objects placed! Total: {placedObjects.Count}");
         }
 
         #endregion

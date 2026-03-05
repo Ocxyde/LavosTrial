@@ -80,7 +80,24 @@ namespace Code.Lavos.Core
         {
             // Don't initialize in editor pause mode
             if (!Application.isPlaying) return;
-            
+
+            // Auto-find torch prefab from TorchPool if not assigned
+            if (torchPrefab == null)
+            {
+                var torchPool = GetComponent<TorchPool>();
+                if (torchPool != null)
+                {
+                    Debug.Log("[LightPlacementEngine] ⚠️ TorchPool found - TorchPool will handle torch creation, LightPlacementEngine skipped");
+                    enabled = false;  // Disable this component, TorchPool handles it
+                    return;
+                }
+                else
+                {
+                    Debug.LogWarning("[LightPlacementEngine] ❌ No torchPrefab assigned and no TorchPool found!");
+                    Debug.LogWarning("[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector OR add TorchPool component");
+                }
+            }
+
             // Create parent object for organization
             _lightsParent = new GameObject(parentName).transform;
 
