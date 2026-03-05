@@ -1,54 +1,70 @@
 ﻿// AddDoorSystemToScene.cs
-// Editor script to add complete door system to existing maze
+// ⚠️ DEPRECATED - LEGACY DOOR SYSTEM SETUP ⚠️
+// Editor script to add LEGACY door system to existing maze
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// ⚠️ HELPS SETUP LEGACY DOOR SYSTEM - For new projects use CompleteMazeBuilder
+// ⚠️ WARNING: This adds DEPRECATED components!
+// For NEW development, use CompleteMazeBuilder + DoorsEngine + RealisticDoorFactory.
+//
+// Usage: Select Maze GameObject, run "Add Door System Components"
 
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
 
+// Import the namespace where legacy components are defined
+using Code.Lavos.Core;
+
 // Suppress obsolete warnings - this file intentionally helps with legacy system setup
 #pragma warning disable CS0618
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Editor
 {
     /// <summary>
-    /// AddDoorSystemToScene - Add missing door components to maze.
-    /// Run from Editor menu or Inspector context menu.
+    /// ⚠️ DEPRECATED - AddDoorSystemToScene - Legacy door system setup.
+    /// For new development, use CompleteMazeBuilder + DoorsEngine + RealisticDoorFactory.
     /// </summary>
     public class AddDoorSystemToScene : MonoBehaviour
     {
-        [MenuItem("Tools/PeuImporte/Add Door System to Maze")]
-        public static void AddDoorSystemToMaze()
+        [MenuItem("Tools/PeuImporte/Add Door System to Maze (LEGACY)")]
+        public static void AddDoorSystem()
         {
-            // Find MazeGenerator in scene using Unity 6 API
-            var mazeGenerators = Object.FindObjectsByType<MazeGenerator>(FindObjectsSortMode.None);
+            // Find maze object
+            GameObject mazeObj = Selection.activeGameObject;
 
-            GameObject mazeObj = null;
-            MazeGenerator mazeGen = null;
-
-            if (mazeGenerators.Length > 0)
+            if (mazeObj == null)
             {
-                mazeGen = mazeGenerators[0];
-                mazeObj = mazeGen.gameObject;
-                Debug.Log($"✅ Found existing Maze: {mazeObj.name}");
+                // Try to find existing maze
+                mazeObj = GameObject.Find("Maze");
+                
+                if (mazeObj == null)
+                {
+                    // Create new maze object
+                    mazeObj = new GameObject("Maze");
+                    Debug.Log("✅ Created new Maze GameObject");
+                }
+            }
+
+            Debug.Log($"=== Adding LEGACY Door System to {mazeObj.name} ===");
+            Debug.Log("⚠️  WARNING: These are DEPRECATED components!");
+            Debug.Log("");
+
+            int added = 0;
+
+            // Add MazeGenerator if not present
+            if (mazeObj.GetComponent<MazeGenerator>() == null)
+            {
+                mazeObj.AddComponent<MazeGenerator>();
+                Debug.Log("✅ Added MazeGenerator");
+                added++;
             }
             else
             {
-                // Create new Maze GameObject
-                mazeObj = new GameObject("Maze");
-                mazeGen = mazeObj.AddComponent<MazeGenerator>();
-                Debug.Log("✅ Created new Maze GameObject");
+                Debug.Log("✅ MazeGenerator already present");
             }
 
-            // Select it
-            Selection.activeGameObject = mazeObj;
-
-            // Add missing components
-            int added = 0;
-
+            // Add RoomGenerator if not present
             if (mazeObj.GetComponent<RoomGenerator>() == null)
             {
                 mazeObj.AddComponent<RoomGenerator>();
@@ -60,6 +76,7 @@ namespace Code.Lavos.Core
                 Debug.Log("✅ RoomGenerator already present");
             }
 
+            // Add DoorHolePlacer if not present
             if (mazeObj.GetComponent<DoorHolePlacer>() == null)
             {
                 mazeObj.AddComponent<DoorHolePlacer>();
@@ -71,6 +88,7 @@ namespace Code.Lavos.Core
                 Debug.Log("✅ DoorHolePlacer already present");
             }
 
+            // Add RoomDoorPlacer if not present
             if (mazeObj.GetComponent<RoomDoorPlacer>() == null)
             {
                 mazeObj.AddComponent<RoomDoorPlacer>();
@@ -82,17 +100,10 @@ namespace Code.Lavos.Core
                 Debug.Log("✅ RoomDoorPlacer already present");
             }
 
-            if (mazeObj.GetComponent<MazeRenderer>() == null)
-            {
-                mazeObj.AddComponent<MazeRenderer>();
-                Debug.Log("✅ Added MazeRenderer");
-                added++;
-            }
-            else
-            {
-                Debug.Log("✅ MazeRenderer already present");
-            }
+            // MazeRenderer is deprecated - skip
+            Debug.Log("⚠️  MazeRenderer skipped (deprecated)");
 
+            // Add MazeIntegration if not present
             if (mazeObj.GetComponent<MazeIntegration>() == null)
             {
                 mazeObj.AddComponent<MazeIntegration>();
@@ -104,40 +115,15 @@ namespace Code.Lavos.Core
                 Debug.Log("✅ MazeIntegration already present");
             }
 
-            if (mazeObj.GetComponent<SeedManager>() == null)
-            {
-                mazeObj.AddComponent<SeedManager>();
-                Debug.Log("✅ Added SeedManager");
-                added++;
-            }
-            else
-            {
-                Debug.Log("✅ SeedManager already present");
-            }
-
-            if (mazeObj.GetComponent<DrawingPool>() == null)
-            {
-                mazeObj.AddComponent<DrawingPool>();
-                Debug.Log("✅ Added DrawingPool");
-                added++;
-            }
-            else
-            {
-                Debug.Log("✅ DrawingPool already present");
-            }
-
-            Debug.Log($"=============================");
-            Debug.Log($"✅ Door System Setup Complete!");
-            Debug.Log($"   Components added: {added}");
-            Debug.Log($"   Maze GameObject: {mazeObj.name}");
-            Debug.Log($"=============================");
-            Debug.Log($"▶️ Press Play to generate maze with rooms and doors!");
-        }
-
-        [ContextMenu("Add Door System Components")]
-        public void AddComponents()
-        {
-            AddDoorSystemToMaze();
+            Debug.Log("");
+            Debug.Log("=== Summary ===");
+            Debug.Log($"✅ Added {added} LEGACY components");
+            Debug.Log("⚠️  These components are DEPRECATED");
+            Debug.Log("💡 For new projects, use:");
+            Debug.Log("   - CompleteMazeBuilder (maze generation)");
+            Debug.Log("   - DoorsEngine (door behavior)");
+            Debug.Log("   - RealisticDoorFactory (door creation)");
+            Debug.Log("================");
         }
     }
 }

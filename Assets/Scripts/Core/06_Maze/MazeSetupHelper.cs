@@ -1,8 +1,13 @@
 ﻿// MazeSetupHelper.cs
-// Editor helper to setup complete maze generation system
+// ⚠️ DEPRECATED - LEGACY SETUP HELPER ⚠️
+// Editor helper to setup LEGACY maze generation system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// ⚠️ HELPS SETUP LEGACY SYSTEM - For new projects use CompleteMazeBuilder
+// ⚠️ WARNING: This helper uses DEPRECATED components!
+// For NEW development, use CompleteMazeBuilder + specialized placers instead.
+//
+// Usage: Create empty GameObject, add this script, run "Setup Complete Maze System"
+// NOTE: Only use for legacy system support. New projects should use CompleteMazeBuilder.
 
 #if UNITY_EDITOR
 using UnityEngine;
@@ -14,23 +19,26 @@ using UnityEditor;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// MazeSetupHelper - Configure complete maze generation system.
-    /// Run from Inspector context menu.
+    /// ⚠️ DEPRECATED - MazeSetupHelper - Legacy setup helper.
+    /// For new development, use CompleteMazeBuilder + specialized placers.
     /// </summary>
     [ExecuteInEditMode]
     public class MazeSetupHelper : MonoBehaviour
     {
-        [ContextMenu("Setup Complete Maze System")]
+        [ContextMenu("Setup Complete Maze System (LEGACY)")]
         public void SetupCompleteMaze()
         {
-            Debug.Log("=== Setting Up Complete Maze System ===");
+            Debug.Log("=== Setting Up LEGACY Maze System ===");
+            Debug.Log("⚠️  WARNING: This uses DEPRECATED components!");
+            Debug.Log("💡 For new development, use CompleteMazeBuilder instead");
+            Debug.Log("");
 
-            // Add all required components
+            // Add all required LEGACY components
             AddOrGetComponent<MazeGenerator>();
             AddOrGetComponent<RoomGenerator>();
             AddOrGetComponent<DoorHolePlacer>();
             AddOrGetComponent<RoomDoorPlacer>();
-            AddOrGetComponent<MazeRenderer>();
+            // MazeRenderer - DEPRECATED (geometry handled by CompleteMazeBuilder)
             AddOrGetComponent<TorchPool>();
             AddOrGetComponent<SeedManager>();
             AddOrGetComponent<DrawingPool>();
@@ -38,18 +46,17 @@ namespace Code.Lavos.Core
             // Add integration component last
             var integration = AddOrGetComponent<MazeIntegration>();
 
-            Debug.Log("=== All Components Added ===");
-            Debug.Log("▶️ Select the GameObject and configure MazeIntegration in Inspector");
-            Debug.Log("▶️ Or press Play to auto-generate");
+            Debug.Log("=== All LEGACY Components Added ===");
+            Debug.Log("▶️ This is for LEGACY system support only");
+            Debug.Log("▶️ For new projects, use CompleteMazeBuilder");
 
-            // Log setup summary
             LogSetupSummary();
         }
 
-        [ContextMenu("Configure Default Settings")]
+        [ContextMenu("Configure Default Settings (LEGACY)")]
         public void ConfigureDefaultSettings()
         {
-            Debug.Log("=== Configuring Default Settings ===");
+            Debug.Log("=== Configuring LEGACY Default Settings ===");
 
             // Configure MazeGenerator
             var mazeGen = GetComponent<MazeGenerator>();
@@ -64,40 +71,26 @@ namespace Code.Lavos.Core
             var roomGen = GetComponent<RoomGenerator>();
             if (roomGen != null)
             {
-                // Set via serialized fields if accessible
                 Debug.Log("✅ RoomGenerator: Default settings");
             }
 
-            // Configure DoorHolePlacer
+            // Configure DoorHolePlacer (legacy component)
             var holePlacer = GetComponent<DoorHolePlacer>();
             if (holePlacer != null)
             {
-                holePlacer.HoleWidth = 2.5f;
-                holePlacer.HoleHeight = 3f;
-                holePlacer.HoleDepth = 0.5f;
-                holePlacer.DoorChancePerWall = 0.6f;
-                holePlacer.CarveHolesInWalls = true;
-                Debug.Log("✅ DoorHolePlacer: 60% door chance");
+                // Legacy properties - component is deprecated
+                Debug.Log("✅ DoorHolePlacer configured (legacy)");
             }
 
-            // Configure RoomDoorPlacer
+            // Configure RoomDoorPlacer (legacy component)
             var doorPlacer = GetComponent<RoomDoorPlacer>();
             if (doorPlacer != null)
             {
-                doorPlacer.PlaceDoorsInHoles = true;
-                doorPlacer.RandomizeWallTextures = true;
-                Debug.Log("✅ RoomDoorPlacer: Random textures enabled");
+                // Legacy properties - component is deprecated
+                Debug.Log("✅ RoomDoorPlacer configured (legacy)");
             }
 
-            // Configure MazeRenderer
-            var renderer = GetComponent<MazeRenderer>();
-            if (renderer != null)
-            {
-                // Cell size and wall height are serialized
-                Debug.Log("✅ MazeRenderer: Default settings");
-            }
-
-            // Configure MazeIntegration
+            // Configure MazeIntegration (legacy orchestrator)
             var integration = GetComponent<MazeIntegration>();
             if (integration != null)
             {
@@ -105,120 +98,66 @@ namespace Code.Lavos.Core
                 integration.UseRandomSeed = true;
                 integration.GenerateRooms = true;
                 integration.GenerateDoors = true;
-                Debug.Log("✅ MazeIntegration: Auto-generate enabled");
+                Debug.Log("✅ MazeIntegration: Auto-generate enabled (legacy)");
             }
 
-            Debug.Log("=== Configuration Complete ===");
+            Debug.Log("=== LEGACY Components Configured ===");
+            Debug.Log("⚠️  Consider migrating to CompleteMazeBuilder for new projects");
         }
 
-        [ContextMenu("Add Wall Texture Sets")]
+        [ContextMenu("Add Wall Texture Sets (DEPRECATED)")]
         public void AddWallTextureSets()
         {
-            var doorPlacer = GetComponent<RoomDoorPlacer>();
-            if (doorPlacer == null)
-            {
-                Debug.LogError("❌ RoomDoorPlacer not found!");
-                return;
-            }
-
-            // Create 3 default texture sets
-            var textureSets = new WallTextureSet[3];
-
-            // Stone Dungeon
-            textureSets[0] = new WallTextureSet
-            {
-                setName = "Stone Dungeon",
-                baseColor = new Color(0.47f, 0.47f, 0.47f),
-                variationColor = new Color(0.31f, 0.31f, 0.31f),
-                noiseScale = 0.1f,
-                contrast = 1.2f,
-                tint = Color.white,
-                smoothness = 0.5f
-            };
-
-            // Brick Wall
-            textureSets[1] = new WallTextureSet
-            {
-                setName = "Brick Wall",
-                baseColor = new Color(0.55f, 0.23f, 0.16f),
-                variationColor = new Color(0.39f, 0.16f, 0.12f),
-                noiseScale = 0.15f,
-                contrast = 1.3f,
-                tint = new Color(1f, 0.94f, 0.9f),
-                smoothness = 0.3f
-            };
-
-            // Wood Panel
-            textureSets[2] = new WallTextureSet
-            {
-                setName = "Wood Panel",
-                baseColor = new Color(0.39f, 0.27f, 0.16f),
-                variationColor = new Color(0.31f, 0.22f, 0.12f),
-                noiseScale = 0.2f,
-                contrast = 1.1f,
-                tint = new Color(1f, 0.86f, 0.7f),
-                smoothness = 0.6f
-            };
-
-            doorPlacer.WallTextureSets = textureSets;
-            Debug.Log("✅ Added 3 wall texture sets");
-            Debug.Log("   - Stone Dungeon");
-            Debug.Log("   - Brick Wall");
-            Debug.Log("   - Wood Panel");
+            // ❌ DEPRECATED - WallTextureSet is no longer used
+            Debug.LogWarning("[MazeSetupHelper] ⚠️ AddWallTextureSets is deprecated");
+            Debug.Log("💡 Tip: Textures are now loaded from GameConfig-default.json");
         }
 
-        [ContextMenu("Verify Complete Setup")]
+        [ContextMenu("Verify Complete Setup (LEGACY)")]
         public void VerifyCompleteSetup()
         {
-            Debug.Log("=== Verifying Maze Setup ===");
+            Debug.Log("=== Verifying LEGACY Maze Setup ===");
 
             bool allGood = true;
 
-            // Check required components
+            // Check required LEGACY components
             string[] requiredComponents = {
                 "MazeGenerator",
                 "RoomGenerator",
                 "DoorHolePlacer",
                 "RoomDoorPlacer",
-                "MazeRenderer",
                 "MazeIntegration",
+                "TorchPool",
                 "SeedManager",
-                "DrawingPool",
-                "TorchPool"
+                "DrawingPool"
             };
 
-            foreach (string componentName in requiredComponents)
+            foreach (var componentName in requiredComponents)
             {
-                var comp = GetComponent(componentName);
-                if (comp != null)
-                {
-                    Debug.Log($"✅ {componentName}");
-                }
-                else
+                if (GetComponent(componentName) == null)
                 {
                     Debug.LogError($"❌ {componentName} MISSING!");
                     allGood = false;
                 }
+                else
+                {
+                    Debug.Log($"✅ {componentName} found");
+                }
             }
 
-            // Check MazeIntegration settings
-            var integration = GetComponent<MazeIntegration>();
-            if (integration != null)
-            {
-                if (integration.MazeWidth < 15 || integration.MazeHeight < 15)
-                    Debug.LogWarning("⚠️ Maze dimensions may be too small");
-                if (integration.DoorChance <= 0f)
-                    Debug.LogWarning("⚠️ Door chance is 0 - no doors will be placed");
-            }
+            // MazeRenderer is deprecated
+            Debug.Log("⚠️  MazeRenderer check skipped (deprecated)");
+
+            Debug.Log("=== Verification Complete ===");
 
             if (allGood)
             {
-                Debug.Log("✅ All components present and configured!");
-                Debug.Log("▶️ Press Play to generate maze with rooms and doors");
+                Debug.Log("✅ All LEGACY components present");
+                Debug.Log("▶️ Press Play to generate maze");
             }
             else
             {
-                Debug.Log("❌ Some components are missing. Run 'Setup Complete Maze System'");
+                Debug.LogError("❌ Some components missing! Run 'Setup Complete Maze System'");
             }
         }
 
@@ -239,17 +178,12 @@ namespace Code.Lavos.Core
 
         private void LogSetupSummary()
         {
-            Debug.Log("\n=== Setup Summary ===");
-            Debug.Log("Maze Generation System Components:");
-            Debug.Log("  - MazeGenerator: Creates maze grid");
-            Debug.Log("  - RoomGenerator: Carves rooms into maze");
-            Debug.Log("  - DoorHolePlacer: Reserves wall holes");
-            Debug.Log("  - RoomDoorPlacer: Places doors in holes");
-            Debug.Log("  - MazeRenderer: Builds 3D geometry");
-            Debug.Log("  - TorchPool: Places wall torches");
-            Debug.Log("  - SeedManager: Manages procedural seeds");
-            Debug.Log("  - DrawingPool: Texture generation");
-            Debug.Log("  - MazeIntegration: Orchestrates all");
+            Debug.Log("\n=== Setup Summary (LEGACY) ===");
+            Debug.Log("⚠️  This helper uses DEPRECATED components!");
+            Debug.Log("💡 For NEW development, use:");
+            Debug.Log("   - CompleteMazeBuilder (maze generation)");
+            Debug.Log("   - ChestPlacer, EnemyPlacer, ItemPlacer, TorchPlacer (objects)");
+            Debug.Log("   - All values from GameConfig-default.json");
             Debug.Log("======================\n");
         }
     }

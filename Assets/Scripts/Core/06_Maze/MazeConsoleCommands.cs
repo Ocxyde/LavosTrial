@@ -30,9 +30,10 @@ namespace Code.Lavos.Core
         }
 
         // Command: maze.verbosity [full|short|mute]
+        // REMOVED: Verbosity system removed - all logs show by default
         public static void SetVerbosity(string level)
         {
-            CompleteMazeBuilder.SetVerbosity(level);
+            Debug.Log("[MazeConsole] ℹ️ Verbosity removed - all logs show by default");
         }
 
         // Command: maze.generate
@@ -59,7 +60,9 @@ namespace Code.Lavos.Core
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log("  MAZE STATUS");
                 Debug.Log("═══════════════════════════════════════");
-                Debug.Log($"  Verbosity: {CompleteMazeBuilder.CurrentVerbosity}");
+                Debug.Log($"  Level: {builder.CurrentLevel}");
+                Debug.Log($"  Maze Size: {builder.MazeSize}x{builder.MazeSize}");
+                Debug.Log($"  Seed: {builder.CurrentSeed}");
                 Debug.Log("═══════════════════════════════════════");
             }
             else
@@ -74,12 +77,9 @@ namespace Code.Lavos.Core
             Debug.Log("═══════════════════════════════════════");
             Debug.Log("  MAZE CONSOLE COMMANDS");
             Debug.Log("═══════════════════════════════════════");
-            Debug.Log("  maze.verbosity full   → All debug messages");
-            Debug.Log("  maze.verbosity short  → Critical only");
-            Debug.Log("  maze.verbosity mute   → No output");
-            Debug.Log("  maze.generate         → Generate new maze");
-            Debug.Log("  maze.status           → Show status");
-            Debug.Log("  maze.help             → Show this help");
+            Debug.Log("  maze.generate    → Generate new maze");
+            Debug.Log("  maze.status      → Show current status");
+            Debug.Log("  maze.help        → Show this help");
             Debug.Log("═══════════════════════════════════════");
         }
     }

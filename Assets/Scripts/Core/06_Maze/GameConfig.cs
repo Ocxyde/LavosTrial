@@ -85,7 +85,12 @@ namespace Code.Lavos.Core
         [Header("🚪 Door Visual")]
         public bool randomizeWallTextures = true;
         public bool showDebugGizmos = false;
-        
+
+        [Header("👤 Player Settings")]
+        public float defaultPlayerEyeHeight = 1.7f;    // FPS camera height (average adult eyes)
+        public float defaultPlayerSpawnOffset = 0.5f;  // Random offset to prevent wall clipping
+        public float defaultPlayerHeight = 2.0f;       // Player collider height
+
         [Header("🏛️ Room Settings")]
         public bool generateRooms = true;
         public int minRooms = 3;

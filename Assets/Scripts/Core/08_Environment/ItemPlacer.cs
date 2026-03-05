@@ -39,7 +39,10 @@ namespace Code.Lavos.Core
         [SerializeField] private GameObject itemPrefab;
 
         [Header("🔌 Component References (Plug-in-Out)")]
-        [Tooltip("Auto-finds GridMazeGenerator in scene")]
+        [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
+        [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
+        
+        [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
         [Header("🐛 Debug")]
@@ -50,6 +53,7 @@ namespace Code.Lavos.Core
         #region Private Data
 
         private int _itemsSpawned;
+        private Material _itemMaterial;
 
         #endregion
 

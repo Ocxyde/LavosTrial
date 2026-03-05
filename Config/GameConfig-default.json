@@ -37,7 +37,10 @@
     "enableSecretDoors": true,
     "randomizeWallTextures": true,
     "showDebugGizmos": false,
-    
+    "defaultPlayerEyeHeight": 1.7,
+    "defaultPlayerSpawnOffset": 0.5,
+    "defaultPlayerHeight": 2.0,
+
     "minRooms": 3,
     "maxRooms": 8,
     "generateRooms": true,

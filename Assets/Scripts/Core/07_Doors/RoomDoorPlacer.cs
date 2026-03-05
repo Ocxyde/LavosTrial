@@ -65,6 +65,8 @@ namespace Code.Lavos.Core
         public List<GameObject> PlacedDoors => _placedDoors;
         public int DoorCount => _placedDoors.Count;
         public List<DoorData> PlacedDoorData => _placedDoorData;
+        public bool PlaceDoorsInHoles { get => placeDoorsInHoles; set => placeDoorsInHoles = value; }
+        public bool RandomizeWallTextures { get => randomizeWallTextures; set => randomizeWallTextures = value; }
 
         #endregion
 

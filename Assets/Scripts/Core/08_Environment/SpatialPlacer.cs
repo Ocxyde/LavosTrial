@@ -332,10 +332,6 @@ namespace Code.Lavos.Core
             }
         }
 
-        #endregion
-
-        #region Binary Storage Data Classes
-
         [System.Serializable]
         public class ObjectPlacementRecord
         {
@@ -431,8 +427,8 @@ namespace Code.Lavos.Core
                     File.Delete(file);
                 }
             }
-        }
+        }  // BinaryObjectStorage class closes
 
         #endregion
-    }
-}
+    }  // SpatialPlacer class closes
+}  // Namespace closes

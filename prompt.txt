@@ -17,5 +17,7 @@ I my computer , dont exec cmd file w/o asking me todo so
 remind me for use of git for my repo.
 and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
 Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
 ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+
 happy coding with me coder firend of mine :) 

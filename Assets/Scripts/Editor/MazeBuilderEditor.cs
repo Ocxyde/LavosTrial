@@ -4,7 +4,7 @@
 //
 // USAGE:
 //   1. Tools → Generate Maze (or Ctrl+Alt+G)
-//   2. Auto-creates CompleteMazeBuilder + required components
+//   2. Auto-creates CompleteMazeBuilder + required components + PlayerSetup
 //   3. Generates maze instantly for testing
 //   4. Press Play to test with player
 //
@@ -19,7 +19,7 @@ namespace Code.Lavos.Editor
 {
     /// <summary>
     /// MazeBuilderEditor - Editor tool for testing maze generation.
-    /// Auto-creates CompleteMazeBuilder and required components for quick testing.
+    /// Auto-creates CompleteMazeBuilder, required components, and PlayerSetup for quick testing.
     /// </summary>
     public class MazeBuilderEditor : EditorWindow
     {
@@ -33,7 +33,7 @@ namespace Code.Lavos.Editor
             // Load config values from JSON (source of truth!)
             var config = GameConfig.Instance;
             Debug.Log($"[MazeBuilderEditor] 📖 Config loaded from JSON:");
-            Debug.Log($"  • Maze Size: {config.defaultMazeWidth}x{config.defaultMazeHeight}");
+            Debug.Log($"  • Maze Size: {config.defaultGridSize}x{config.defaultGridSize}");
             Debug.Log($"  • Cell Size: {config.defaultCellSize}m");
             Debug.Log($"  • Room Size: {config.defaultRoomSize}x{config.defaultRoomSize}");
             Debug.Log($"  • Corridor Width: {config.defaultCorridorWidth} cells");
@@ -50,8 +50,6 @@ namespace Code.Lavos.Editor
                 Debug.Log("✅ Created MazeBuilder GameObject");
 
                 // Add required components for testing (editor tool only!)
-                // Note: GridMazeGenerator is a plain C# class, not a MonoBehaviour
-                // CompleteMazeBuilder will initialize it from JSON config automatically
                 var spatialPlacer = mazeGO.AddComponent<SpatialPlacer>();
                 var lightPlacementEngine = mazeGO.AddComponent<LightPlacementEngine>();
                 var torchPool = mazeGO.AddComponent<TorchPool>();
@@ -59,68 +57,133 @@ namespace Code.Lavos.Editor
 
                 // Configure components from JSON config
                 Debug.Log("[MazeBuilderEditor] 🔧 Configuring components from JSON...");
-                
-                // SpatialPlacer - finds TorchPool automatically
-                Debug.Log($"  • SpatialPlacer: will use TorchPool reference");
 
-                // LightPlacementEngine - load torch prefab from Resources (no extension needed)
+                // LightPlacementEngine - load torch prefab from Resources
                 var torchPrefab = Resources.Load<GameObject>(config.torchPrefab.Replace(".prefab", ""));
                 if (torchPrefab != null)
                 {
                     lightPlacementEngine.SetTorchPrefab(torchPrefab);
-                    Debug.Log($"  • LightPlacementEngine: torch prefab loaded from {config.torchPrefab}");
+                    Debug.Log($"  • LightPlacementEngine: torch prefab loaded");
                 }
                 else
                 {
-                    Debug.LogWarning($"  ⚠️ LightPlacementEngine: torch prefab not found at Resources/{config.torchPrefab}");
-                    Debug.LogWarning($"  💡 Make sure TorchHandlePrefab.prefab is in Assets/Resources/ folder");
+                    Debug.LogWarning($"  ⚠️ LightPlacementEngine: torch prefab not found");
+                    Debug.LogWarning($"  💡 Run: Tools → Quick Setup Prefabs");
                 }
 
                 // TorchPool - auto-initializes
-                Debug.Log($"  • TorchPool: ready (prefab: {config.torchPrefab})");
+                Debug.Log($"  • TorchPool: ready");
 
-                // Also add EventHandler if not present (editor-safe - no DontDestroyOnLoad)
+                // Also add EventHandler if not present
                 var eventHandler = FindFirstObjectByType<EventHandler>();
                 if (eventHandler == null)
                 {
                     var eventGO = new GameObject("EventHandler");
                     eventHandler = eventGO.AddComponent<EventHandler>();
-                    Debug.Log("✅ Created EventHandler (scene-only, not persistent in editor)");
+                    Debug.Log("✅ Created EventHandler");
                 }
 
                 Debug.Log("🔌 All components configured from JSON!");
-                Debug.Log("🔌 All components ready for testing!");
             }
             else
             {
                 Debug.Log("✓ Found existing CompleteMazeBuilder");
-                Debug.Log($"[MazeBuilderEditor] 📖 Using existing instance - config already loaded from JSON");
             }
 
-            // Generate maze geometry ONLY (NO player in editor!)
-            // Player will spawn automatically in Start() when entering Play mode
-            mazeBuilder.GenerateMazeGeometryOnly();
+            // Ensure player exists with PlayerSetup component
+            EnsurePlayerWithSetup();
+
+            // Generate maze
+            mazeBuilder.GenerateMaze();
 
             Debug.Log("═══════════════════════════════════════════");
             Debug.Log("  ✅ MAZE GENERATED!");
-            Debug.Log("  💡 Press Play to spawn player inside maze");
+            Debug.Log($"  📏 Maze Size: {mazeBuilder.MazeSize}x{mazeBuilder.MazeSize}");
+            Debug.Log($"  🎮 Level: {mazeBuilder.CurrentLevel}");
+            Debug.Log("  💡 Press Play to test");
             Debug.Log("═══════════════════════════════════════════");
+        }
+
+        /// <summary>
+        /// Ensure player exists with PlayerSetup component for proper initialization.
+        /// Creates player GameObject with PlayerSetup, PlayerController, PlayerStats, and Camera.
+        /// </summary>
+        private static void EnsurePlayerWithSetup()
+        {
+            // Check if player already exists
+            var existingPlayer = FindFirstObjectByType<PlayerSetup>();
+            
+            if (existingPlayer != null)
+            {
+                Debug.Log("✅ Player with PlayerSetup already in scene");
+                return;
+            }
+
+            // Create player GameObject
+            GameObject playerGO = new GameObject("Player");
+            playerGO.transform.position = Vector3.zero;
+            playerGO.transform.rotation = Quaternion.identity;
+
+            // Add PlayerSetup (orchestrates player initialization)
+            var playerSetup = playerGO.AddComponent<PlayerSetup>();
+            Debug.Log("✅ Added PlayerSetup component");
+
+            // Add required components for PlayerSetup
+            playerGO.AddComponent<PlayerController>();
+            Debug.Log("✅ Added PlayerController");
+
+            playerGO.AddComponent<PlayerStats>();
+            Debug.Log("✅ Added PlayerStats");
+
+            // Create camera as child
+            GameObject cameraGO = new GameObject("Main Camera");
+            cameraGO.transform.SetParent(playerGO.transform);
+            cameraGO.transform.localPosition = new Vector3(0f, 1.7f, 0f);  // Eye height
+            cameraGO.transform.localRotation = Quaternion.identity;
+
+            // Add Camera component
+            var camera = cameraGO.AddComponent<Camera>();
+            camera.tag = "MainCamera";
+            camera.nearClipPlane = 0.1f;
+            camera.farClipPlane = 1000f;
+            camera.fieldOfView = 60f;
+
+            // Add CameraFollow for smooth camera movement
+            cameraGO.AddComponent<CameraFollow>();
+            Debug.Log("✅ Added Main Camera with CameraFollow (eye height: 1.7m)");
+
+            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("  ✅ PLAYER CREATED WITH PLAYERSETUP!");
+            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("  PlayerSetup will handle:");
+            Debug.Log("    • Component initialization");
+            Debug.Log("    • Camera positioning");
+            Debug.Log("    • Event subscription");
+            Debug.Log("    • Spawn point positioning");
+            Debug.Log("═══════════════════════════════════════════");
+        }
+
+        [MenuItem("Tools/Maze/Next Level (Harder)")]
+        public static void NextLevel()
+        {
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+
+            if (mazeBuilder != null)
+            {
+                mazeBuilder.NextLevel();
+                Debug.Log($"[MazeBuilderEditor] 🎮 Advanced to Level {mazeBuilder.CurrentLevel} - Maze {mazeBuilder.MazeSize}x{mazeBuilder.MazeSize}");
+            }
+            else
+            {
+                Debug.LogWarning("[MazeBuilderEditor] ⚠️ No CompleteMazeBuilder found in scene!");
+            }
         }
 
         [MenuItem("Tools/Maze/Validate Paths")]
         public static void ValidatePaths()
         {
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
-            
-            if (mazeBuilder != null)
-            {
-                mazeBuilder.ValidatePaths();
-            }
-            else
-            {
-                Debug.LogWarning("[MazeBuilderEditor] ⚠️ No CompleteMazeBuilder found in scene!");
-                Debug.LogWarning("[MazeBuilderEditor] 💡 Run: Tools → Maze → Generate Maze");
-            }
+            Debug.Log("[MazeBuilderEditor] ℹ️ Path validation is now automatic - prefabs loaded from JSON config");
+            Debug.Log("[MazeBuilderEditor] 💡 If maze generates, paths are valid!");
         }
 
         [MenuItem("Tools/Maze/Clear Maze Objects")]
@@ -139,12 +202,11 @@ namespace Code.Lavos.Editor
             CleanUpObject("Doors");
             CleanUpObject("Rooms");
 
-            // Clear stored spawn position
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
-            if (mazeBuilder != null)
-            {
-                mazeBuilder.ClearSpawnPosition();
-            }
+            // Clear PlayerPrefs spawn position (if any)
+            PlayerPrefs.DeleteKey("MazeSpawnX");
+            PlayerPrefs.DeleteKey("MazeSpawnY");
+            PlayerPrefs.Save();
+            Debug.Log("  ✅ Spawn position cleared");
 
             // Don't delete MazeBuilder or Player
             Debug.Log("  ✅ Maze objects cleared");
@@ -154,8 +216,8 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Maze/Show Documentation")]
         public static void ShowDocumentation()
         {
-            string docPath = "Assets/Docs/CompleteMazeBuilder_Documentation.md";
-            
+            string docPath = "Assets/Docs/README.md";
+
             if (System.IO.File.Exists(docPath))
             {
                 UnityEditor.EditorUtility.RevealInFinder(docPath);
@@ -191,28 +253,28 @@ namespace Code.Lavos.Editor
         private void OnGUI()
         {
             GUILayout.Label("Maze Builder Settings", EditorStyles.boldLabel);
-            
+
             GUILayout.Space(10);
-            
+
             if (GUILayout.Button("Generate Maze", GUILayout.Height(30)))
             {
                 GenerateMaze();
             }
-            
-            if (GUILayout.Button("Validate Paths"))
+
+            if (GUILayout.Button("Next Level (Harder)"))
             {
-                ValidatePaths();
+                NextLevel();
             }
-            
+
             if (GUILayout.Button("Clear Maze Objects"))
             {
                 ClearMazeObjects();
             }
-            
+
             GUILayout.Space(20);
-            
+
             GUILayout.Label("Documentation", EditorStyles.boldLabel);
-            
+
             if (GUILayout.Button("Show Documentation"))
             {
                 ShowDocumentation();

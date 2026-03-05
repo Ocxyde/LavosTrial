@@ -233,7 +233,7 @@ namespace Code.Lavos.Core
             if (spatialPlacer != null)
             {
                 Debug.Log("[MazeIntegration] Step 6: Placing ALL objects via SpatialPlacer...");
-                spatialPlacer.PlaceAll();  // ✅ Places torches, chests, enemies, items
+                spatialPlacer.PlaceAllObjects();  // ✅ Places torches, chests, enemies, items
             }
             else
             {

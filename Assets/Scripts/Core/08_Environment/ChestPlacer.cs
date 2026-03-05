@@ -35,15 +35,18 @@ namespace Code.Lavos.Core
         [SerializeField] private int maxChests;
 
         [Header("📦 Prefab Reference")]
-        [Tooltip("Chest prefab (assign in Inspector or Resources/)")]
+        [Tooltip("Chest prefab (assign in Inspector or place in Resources/)")]
         [SerializeField] private GameObject chestPrefab;
+        
+        [Tooltip("Auto-load from Resources/ChestPrefab if not assigned")]
+        [SerializeField] private bool autoLoadFromResources = true;
 
         [Header("🔌 Component References (Plug-in-Out)")]
-        [Tooltip("Auto-finds GridMazeGenerator in scene")]
-        [SerializeField] private GridMazeGenerator gridMazeGenerator;
-        
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
+        
+        [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
+        [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
         [Header("🐛 Debug")]
         [SerializeField] private bool showDebugLogs = true;
@@ -53,6 +56,7 @@ namespace Code.Lavos.Core
         #region Private Data
 
         private int _chestsSpawned;
+        private Material _chestMaterial;
 
         #endregion
 
@@ -68,9 +72,12 @@ namespace Code.Lavos.Core
         {
             // PLUG-IN-OUT: Find components (never create!)
             FindComponents();
-            
+
             // LOAD ALL VALUES FROM JSON CONFIG (NO HARDCODING!)
             LoadConfig();
+            
+            // LOAD DEFAULT PREFAB WITH TEXTURE
+            LoadDefaultPrefab();
         }
 
         #endregion
@@ -237,6 +244,51 @@ namespace Code.Lavos.Core
         private float GetCellSize()
         {
             return GameConfig.Instance.defaultCellSize;
+        }
+
+        #endregion
+
+        #region Prefab Loading
+
+        /// <summary>
+        /// Load default chest prefab from Resources with texture.
+        /// </summary>
+        private void LoadDefaultPrefab()
+        {
+            if (!autoLoadFromResources) return;
+            
+            if (chestPrefab != null)
+            {
+                if (showDebugLogs)
+                    Debug.Log("[ChestPlacer] ✅ Chest prefab already assigned");
+                return;
+            }
+            
+            // Try to load from Resources
+            chestPrefab = Resources.Load<GameObject>("ChestPrefab");
+            
+            if (chestPrefab != null)
+            {
+                // Apply material if available
+                _chestMaterial = Resources.Load<Material>("Materials/ChestMaterial");
+                
+                if (_chestMaterial != null && chestPrefab != null)
+                {
+                    var renderer = chestPrefab.GetComponent<MeshRenderer>();
+                    if (renderer != null)
+                    {
+                        renderer.sharedMaterial = _chestMaterial;
+                    }
+                }
+                
+                if (showDebugLogs)
+                    Debug.Log("[ChestPlacer] ✅ Loaded ChestPrefab from Resources with material");
+            }
+            else
+            {
+                if (showDebugLogs)
+                    Debug.LogWarning("[ChestPlacer] ⚠️ No ChestPrefab in Resources - will skip chest spawning");
+            }
         }
 
         #endregion

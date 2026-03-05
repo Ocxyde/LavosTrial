@@ -44,7 +44,10 @@ namespace Code.Lavos.Core
         [SerializeField] private GameObject torchPrefab;
 
         [Header("🔌 Component References (Plug-in-Out)")]
-        [Tooltip("Auto-finds GridMazeGenerator in scene")]
+        [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
+        [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
+        
+        [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
         [Tooltip("Auto-finds LightPlacementEngine for binary storage")]
@@ -248,7 +251,7 @@ namespace Code.Lavos.Core
                 if (placedPositions.Exists(p => Vector3.Distance(wallPos, p) < actualMinDistance))
                     continue;
 
-                float torchY = wallHeight * 0.55f;
+                float torchY = GetWallHeight() * 0.55f;
                 float torchInset = 0.5f;
                 Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z);
                 torchPos += wallRot * Vector3.forward * torchInset;
@@ -292,6 +295,19 @@ namespace Code.Lavos.Core
 
         private float GetCellSize() => GameConfig.Instance.defaultCellSize;
         private float GetWallHeight() => GameConfig.Instance.defaultWallHeight;
+
+        #endregion
+
+        #region Binary Storage Integration
+
+        private SpatialPlacer _storageReference;
+        private LightPlacementEngine _binaryStorage;
+
+        public void SetStorageReference(SpatialPlacer placer, LightPlacementEngine engine)
+        {
+            _storageReference = placer;
+            _binaryStorage = engine;
+        }
 
         #endregion
     }
