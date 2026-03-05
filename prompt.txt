@@ -1,4 +1,4 @@
-here's my hole saint order :p 
+here's my holy saint order :p 
 
 
 first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
@@ -18,6 +18,8 @@ remind me for use of git for my repo.
 and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
 Always use unity6 v 6000.3.7f1 for C# coding ; 
 compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
-ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
 
-happy coding with me coder firend of mine :) 
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 

@@ -1,4 +1,20 @@
-﻿// TorchPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// TorchPlacer.cs
 // Specialized torch placement system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -26,7 +42,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (From JSON)
 
-        [Header("🔥 Torch Settings (From JSON Config)")]
+        [Header(" Torch Settings (From JSON Config)")]
         [Tooltip("Enable torch spawning (loaded from JSON)")]
         [SerializeField] private bool enableTorchSpawning;
 
@@ -39,11 +55,11 @@ namespace Code.Lavos.Core
         [Tooltip("Min distance between torches (loaded from JSON)")]
         [SerializeField] private float minDistanceBetweenTorches;
 
-        [Header("🔥 Prefab Reference")]
+        [Header(" Prefab Reference")]
         [Tooltip("Torch prefab (assign in Inspector or Resources/)")]
         [SerializeField] private GameObject torchPrefab;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
         
@@ -56,7 +72,7 @@ namespace Code.Lavos.Core
         [Tooltip("Auto-finds TorchPool in scene")]
         [SerializeField] private TorchPool torchPool;
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
         #endregion
@@ -113,7 +129,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[TorchPlacer] 📖 Config loaded from JSON:");
+                Debug.Log($"[TorchPlacer]  Config loaded from JSON:");
                 Debug.Log($"  • Enable: {enableTorchSpawning}");
                 Debug.Log($"  • Dynamic Lighting: {useDynamicLighting}");
                 Debug.Log($"  • Torch Count: {torchCount}");
@@ -140,7 +156,7 @@ namespace Code.Lavos.Core
 
             if (gridMazeGenerator == null || lightPlacementEngine == null || torchPool == null)
             {
-                Debug.LogError("[TorchPlacer] ❌ Required components not initialized!");
+                Debug.LogError("[TorchPlacer]  Required components not initialized!");
                 return;
             }
 
@@ -149,12 +165,12 @@ namespace Code.Lavos.Core
 
             if (loadedFromBinary)
             {
-                Debug.Log($"[TorchPlacer] ✅ Loaded torches from binary (RAM)");
+                Debug.Log($"[TorchPlacer]  Loaded torches from binary (RAM)");
                 return;
             }
 
             // Binary not found - calculate and save
-            Debug.Log("[TorchPlacer] 💾 Binary not found - calculating positions...");
+            Debug.Log("[TorchPlacer]  Binary not found - calculating positions...");
 
             var wallFaces = GetWallFacesFromGrid();
             if (wallFaces.Count == 0)
@@ -172,7 +188,7 @@ namespace Code.Lavos.Core
 
             // Save to binary via LightPlacementEngine
             lightPlacementEngine.SaveTorches(mazeId, seed, torchRecords);
-            Debug.Log($"[TorchPlacer] ✅ Saved {torchRecords.Count} torches to binary");
+            Debug.Log($"[TorchPlacer]  Saved {torchRecords.Count} torches to binary");
 
             _torchesSpawned = torchRecords.Count;
         }

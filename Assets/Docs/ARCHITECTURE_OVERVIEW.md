@@ -1,9 +1,20 @@
 ﻿# ARCHITECTURE_OVERVIEW.md
 
-**Project:** PeuImporte  
-**Unity Version:** 6000.3.7f1  
-**Architecture:** Plug-in-Out  
+**Project:** CodeDotLavos
+**Unity Version:** 6000.3.7f1
+**Architecture:** Plug-in-Out
+**License:** GPL-3.0
 **Last Updated:** 2026-03-06
+
+---
+
+## 📜 **LICENSE**
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+
+See [COPYING](../../COPYING) file for full license text.
+
+**Copyright © 2026 CodeDotLavos. All rights reserved.**
 
 ---
 

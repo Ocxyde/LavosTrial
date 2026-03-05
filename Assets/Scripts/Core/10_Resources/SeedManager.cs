@@ -1,4 +1,20 @@
-﻿// SeedManager.cs
+// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// SeedManager.cs
 // Centralized seed management with plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -414,71 +430,6 @@ namespace Code.Lavos.Core
                 GenerateSeed();
             }
             Debug.Log($"[SeedManager] Custom seed set: {seed}");
-        }
-
-        #endregion
-
-        #region Debug GUI
-
-        private void OnGUI()
-        {
-            // Debug UI disabled for production
-            return;
-            
-            // Original code below (disabled)
-            /*
-            if (!Application.isEditor) return;
-
-            GUILayout.BeginArea(new Rect(10, 10, 350, 300));
-            GUILayout.Label($"[SeedManager DEBUG]");
-            GUILayout.Label($"Mode: {seedMode}");
-            GUILayout.Label($"Level: {_currentLevel}");
-            GUILayout.Label($"Seed: {_currentSeed}");
-            GUILayout.Label($"Seed Length: {_currentSeed.Length}");
-            GUILayout.Label($"Complexity: {GetCurrentComplexity()}");
-
-            GUILayout.Space(10);
-
-            if (GUILayout.Button("Next Level"))
-            {
-                NextLevel();
-            }
-
-            if (GUILayout.Button("Reset Progress"))
-            {
-                ResetProgress();
-            }
-
-            if (GUILayout.Button("Clear Save"))
-            {
-                ClearSavedProgress();
-            }
-
-            GUILayout.Space(10);
-            GUILayout.Label("Change Mode:");
-
-            if (GUILayout.Button("Progressive"))
-            {
-                SetSeedMode(SeedMode.Progressive);
-            }
-
-            if (GUILayout.Button("Fixed"))
-            {
-                SetSeedMode(SeedMode.Fixed);
-            }
-
-            if (GUILayout.Button("Random"))
-            {
-                SetSeedMode(SeedMode.Random);
-            }
-
-            if (GUILayout.Button("Daily"))
-            {
-                SetSeedMode(SeedMode.Daily);
-            }
-
-            GUILayout.EndArea();
-            */
         }
 
         #endregion

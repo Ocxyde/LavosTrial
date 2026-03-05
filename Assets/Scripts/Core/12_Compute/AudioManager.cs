@@ -1,4 +1,20 @@
-﻿// AudioManager.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// AudioManager.cs
 // Professional audio management system with pooling and mixing
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -9,7 +25,7 @@
 // - Audio mixing via Unity Audio Mixer
 // - Pre-warmed sound effect pool
 //
-// ⚠️ IMPORTANT: Add AudioManager to your scene manually.
+// ️ IMPORTANT: Add AudioManager to your scene manually.
 // Do NOT rely on auto-creation (plug-in-out violation).
 //
 // SETUP:
@@ -28,7 +44,7 @@ namespace Code.Lavos.Core
     /// AUDIOMANAGER - Professional audio management with pooling.
     /// Singleton pattern (DontDestroyOnLoad) for persistent audio across scenes.
     /// 
-    /// ⚠️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// ️ Must be added to scene manually. Auto-creation is a fallback only.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -47,8 +63,8 @@ namespace Code.Lavos.Core
 
                     if (_instance == null)
                     {
-                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[AudioManager] ⚠️ Not found in scene - auto-creating (add manually!)");
+                        // ️ FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[AudioManager] ️ Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("AudioManager");
                         _instance = go.AddComponent<AudioManager>();
                     }
@@ -152,7 +168,7 @@ namespace Code.Lavos.Core
             if (prewarmSFXPool)
             {
                 PrewarmSFXPool(initialPoolSizePerType * 5); // Pool for 5 sound types
-                Debug.Log($"[AudioManager] ✅ Pre-warmed SFX pool ({_sfxPool.Count} sources)");
+                Debug.Log($"[AudioManager]  Pre-warmed SFX pool ({_sfxPool.Count} sources)");
             }
 
             // Start background music
@@ -193,7 +209,7 @@ namespace Code.Lavos.Core
             SetMusicVolume(_musicVolume);
             SetSFXVolume(_sfxVolume);
 
-            Debug.Log("[AudioManager] ✅ Audio system initialized");
+            Debug.Log("[AudioManager]  Audio system initialized");
         }
 
         private void CreateMusicSources()
@@ -237,7 +253,7 @@ namespace Code.Lavos.Core
                 _sfxPool.Enqueue(source);
             }
 
-            Debug.Log($"[AudioManager] ✅ SFX pool pre-warmed: {count} sources");
+            Debug.Log($"[AudioManager]  SFX pool pre-warmed: {count} sources");
         }
 
         private AudioSource CreateSFXSource()
@@ -263,17 +279,17 @@ namespace Code.Lavos.Core
             {
                 source = _sfxPool.Dequeue();
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ♻️ SFX reused from pool (remaining: {_sfxPool.Count})");
+                    Debug.Log($"[AudioManager] ️ SFX reused from pool (remaining: {_sfxPool.Count})");
             }
             else if (canExpandSFXPool)
             {
                 source = CreateSFXSource();
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] 🆕 SFX source created (pool was empty)");
+                    Debug.Log($"[AudioManager]  SFX source created (pool was empty)");
             }
             else
             {
-                Debug.LogWarning("[AudioManager] ⚠️ SFX pool exhausted!");
+                Debug.LogWarning("[AudioManager] ️ SFX pool exhausted!");
                 return null;
             }
 
@@ -295,13 +311,13 @@ namespace Code.Lavos.Core
             {
                 _sfxPool.Enqueue(source);
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ♻️ SFX returned to pool (size: {_sfxPool.Count})");
+                    Debug.Log($"[AudioManager] ️ SFX returned to pool (size: {_sfxPool.Count})");
             }
             else
             {
                 Destroy(source.gameObject);
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] 🗑️ SFX destroyed (pool full)");
+                    Debug.Log($"[AudioManager] ️ SFX destroyed (pool full)");
             }
         }
 
@@ -324,7 +340,7 @@ namespace Code.Lavos.Core
             var clip = musicPlaylist[_currentMusicIndex];
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🎵 Playing music: {clip.name}");
+                Debug.Log($"[AudioManager]  Playing music: {clip.name}");
 
             _activeMusicSource.clip = clip;
             _activeMusicSource.Play();
@@ -358,7 +374,7 @@ namespace Code.Lavos.Core
             _isCrossfading = true;
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🎵 Crossfading to: {newTrack.name}");
+                Debug.Log($"[AudioManager]  Crossfading to: {newTrack.name}");
 
             // Set up inactive source
             _inactiveMusicSource.clip = newTrack;
@@ -419,7 +435,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log("[AudioManager] ⏹️ Music stopped");
+                Debug.Log("[AudioManager] ️ Music stopped");
         }
 
         /// <summary>
@@ -433,7 +449,7 @@ namespace Code.Lavos.Core
                 _activeMusicSource.UnPause();
             
             if (debugAudio)
-                Debug.Log(pause ? "[AudioManager] ⏸️ Music paused" : "[AudioManager] ▶️ Music resumed");
+                Debug.Log(pause ? "[AudioManager] ️ Music paused" : "[AudioManager] ️ Music resumed");
         }
 
         private System.Collections.IEnumerator FadeVolume(AudioSource source, float from, float to, float duration, System.Action onComplete = null)
@@ -463,7 +479,7 @@ namespace Code.Lavos.Core
         {
             if (clip == null)
             {
-                Debug.LogWarning("[AudioManager] ⚠️ Null SFX clip!");
+                Debug.LogWarning("[AudioManager] ️ Null SFX clip!");
                 return;
             }
 
@@ -486,7 +502,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🔊 Playing SFX: {clip.name}");
+                Debug.Log($"[AudioManager]  Playing SFX: {clip.name}");
         }
 
         /// <summary>
@@ -527,7 +543,7 @@ namespace Code.Lavos.Core
             Destroy(go, clip.length + 0.1f);
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🔊 One-shot SFX: {clip.name}");
+                Debug.Log($"[AudioManager]  One-shot SFX: {clip.name}");
         }
 
         /// <summary>
@@ -545,7 +561,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log("[AudioManager] ⏹️ All SFX stopped");
+                Debug.Log("[AudioManager] ️ All SFX stopped");
         }
 
         /// <summary>
@@ -592,7 +608,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🔊 Master Volume: {_masterVolume:P0}");
+                Debug.Log($"[AudioManager]  Master Volume: {_masterVolume:P0}");
         }
 
         /// <summary>
@@ -612,7 +628,7 @@ namespace Code.Lavos.Core
             _musicSourceB.volume = _musicVolume;
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🎵 Music Volume: {_musicVolume:P0}");
+                Debug.Log($"[AudioManager]  Music Volume: {_musicVolume:P0}");
         }
 
         /// <summary>
@@ -636,7 +652,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log($"[AudioManager] 🔊 SFX Volume: {_sfxVolume:P0}");
+                Debug.Log($"[AudioManager]  SFX Volume: {_sfxVolume:P0}");
         }
 
         /// <summary>
@@ -646,7 +662,7 @@ namespace Code.Lavos.Core
         {
             AudioListener.volume = mute ? 0f : 1f;
             if (debugAudio)
-                Debug.Log(mute ? "[AudioManager] 🔇 Muted" : "[AudioManager] 🔊 Unmuted");
+                Debug.Log(mute ? "[AudioManager]  Muted" : "[AudioManager]  Unmuted");
         }
 
         /// <summary>
@@ -702,7 +718,7 @@ namespace Code.Lavos.Core
             {
                 musicPlaylist.Add(clip);
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ➕ Added to playlist: {clip.name}");
+                    Debug.Log($"[AudioManager]  Added to playlist: {clip.name}");
             }
         }
 
@@ -714,7 +730,7 @@ namespace Code.Lavos.Core
             if (musicPlaylist.Remove(clip))
             {
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ➖ Removed from playlist: {clip.name}");
+                    Debug.Log($"[AudioManager]  Removed from playlist: {clip.name}");
             }
         }
 
@@ -726,7 +742,7 @@ namespace Code.Lavos.Core
             musicPlaylist.Clear();
             StopMusic();
             if (debugAudio)
-                Debug.Log("[AudioManager] 🗑️ Playlist cleared");
+                Debug.Log("[AudioManager] ️ Playlist cleared");
         }
 
         #endregion

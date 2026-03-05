@@ -1,9 +1,20 @@
 # TODO.md - Project Tasks & Priorities
 
-**Project:** PeuImporte (Unity 6000.3.7f1)
-**Last Updated:** 2026-03-06
-**Timezone:** Europe/Paris (GMT+1)
+**Project:** CodeDotLavos (Unity 6000.3.7f1)  
+**Last Updated:** 2026-03-06  
+**Timezone:** Europe/Paris (GMT+1)  
+**License:** GPL-3.0  
 **Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON**
+
+---
+
+## 📜 **LICENSE**
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+
+See [COPYING](../../COPYING) file for full license text.
+
+**Copyright © 2026 CodeDotLavos. All rights reserved.**
 
 ---
 
@@ -11,6 +22,10 @@
 
 | Date | Update | Author |
 |------|--------|--------|
+| 2026-03-06 | MazeBuilderEditor reworked for full plug-in-out compliance (no component creation) | Ocxyde & BetsyBoop |
+| 2026-03-06 | SpawnPlacerEngine references updated to SpatialPlacer in comments | Ocxyde & BetsyBoop |
+| 2026-03-06 | Commented code cleaned from MazeIntegration.cs and SeedManager.cs | Ocxyde & BetsyBoop |
+| 2026-03-06 | Verified LightEngine.cs and ParticleGenerator.cs are complete (not truncated) | Ocxyde & BetsyBoop |
 | 2026-03-06 | CompleteMazeBuilder SIMPLIFIED (verbosity removed, ~500 lines, short logging only) | Ocxyde |
 | 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~550 lines, verbosity logging restored) | Ocxyde & BetsyBoop |
 | 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~500 lines, better perf) | Ocxyde & BetsyBoop |
@@ -101,31 +116,33 @@ Tools → Next Level (Harder)
 ## 📋 **PENDING TASKS**
 
 ### **Phase 2: Remove Redundancy** (HIGH PRIORITY)
-- [ ] **Delete `SpawnPlacerEngine.cs`** - Duplicates `SpatialPlacer.cs`
-- [ ] Update references to use `SpatialPlacer.cs`
+- [x] **Delete `SpawnPlacerEngine.cs`** - Already deleted (verified 2026-03-06)
+- [x] **Update references to use `SpatialPlacer.cs`** - Comments updated in:
+  - `TrapBehavior.cs`
+  - `LootTable.cs`
+  - `ItemTypes.cs`
 - [ ] Test in Unity
 
 ### **Phase 4: Clean Up Commented Code** (MEDIUM PRIORITY)
-- [ ] Remove large commented blocks from `MazeIntegration.cs`
-- [ ] Remove commented code from `SeedManager.cs`
-- [ ] Remove commented code from `SpawnPlacerEngine.cs`
-- [ ] Verify truncated files:
-  - [ ] `LightEngine.cs` (truncated at 750/910)
-  - [ ] `ParticleGenerator.cs` (truncated at 761/880)
+- [x] **Remove large commented blocks from `MazeIntegration.cs`** - Done (OnGUI debug block)
+- [x] **Remove commented code from `SeedManager.cs`** - Done (OnGUI debug block)
+- [x] **Verify truncated files:**
+  - [x] `LightEngine.cs` - Complete (927 lines, ends properly)
+  - [x] `ParticleGenerator.cs` - Complete (896 lines, ends properly)
 
 ### **Phase 5: Full Deprecated File Removal** (LOW PRIORITY)
 
 #### **Test Files:**
-- [ ] **Delete `FpsMazeTest.cs`** - Create new with CompleteMazeBuilder
-- [ ] **Delete `MazeTorchTest.cs`** - Create new with CompleteMazeBuilder
-- [ ] **Delete `DebugCameraIssue.cs`** - Debug helper for legacy
+- [x] **Delete `FpsMazeTest.cs`** - Already deleted
+- [x] **Delete `MazeTorchTest.cs`** - Already deleted
+- [x] **Delete `DebugCameraIssue.cs`** - Already deleted
 
 #### **Core Files:**
 - [ ] **Delete `MazeRenderer.cs`** - Geometry handled by CompleteMazeBuilder
-- [ ] **KEEP `MazeIntegration.cs`** - Still used by door system
-- [ ] **KEEP `DoorHolePlacer.cs`** - Core door engine (updated)
-- [ ] **KEEP `RoomDoorPlacer.cs`** - Core door engine (updated)
-- [ ] **KEEP `SFXVFXEngine.cs`** - Visual FX (NOT audio!)
+- [x] **KEEP `MazeIntegration.cs`** - Legacy system, still functional
+- [x] **KEEP `DoorHolePlacer.cs`** - Core door engine (updated)
+- [x] **KEEP `RoomDoorPlacer.cs`** - Core door engine (updated)
+- [x] **KEEP `SFXVFXEngine.cs`** - Visual FX (NOT audio!)
 
 ---
 
@@ -233,16 +250,35 @@ Tools → Next Level (Harder)
 
 ## 🚀 **NEXT STEPS**
 
-1. **HIGH:** Test in Unity - Verify maze generation works
-2. **HIGH:** Delete `SpawnPlacerEngine.cs` (Phase 2)
-3. **MEDIUM:** Clean up commented code (Phase 4)
-4. **LOW:** Migrate test files to CompleteMazeBuilder (Phase 5)
+1. **MEDIUM:** Remove emoji from C# files - Run `.\remove-emoji-from-cs.ps1`
+2. **MEDIUM:** Fix TODOs in geometry files (`Triangle.cs`, `TetrahedronMath.cs`)
+3. **LOW:** Delete `MazeRenderer.cs` - Geometry handled by CompleteMazeBuilder
+4. **HIGH:** Test in Unity - Verify maze generation with new MazeBuilderEditor
+
+---
+
+## 📝 **COMPLETED TODAY (2026-03-06)**
+
+### **HIGH PRIORITY:**
+- ✅ Reworked `MazeBuilderEditor.cs` - Full plug-in-out compliance (no component creation)
+- ✅ Updated `SpawnPlacerEngine` references to `SpatialPlacer` in comments
+- ✅ Verified `SpawnPlacerEngine.cs` already deleted
+- ✅ Verified old test files already deleted
+
+### **MEDIUM PRIORITY:**
+- ✅ Cleaned commented code from `MazeIntegration.cs` (~50 lines removed)
+- ✅ Cleaned commented code from `SeedManager.cs` (~60 lines removed)
+- ✅ Verified `LightEngine.cs` complete (927 lines)
+- ✅ Verified `ParticleGenerator.cs` complete (896 lines)
+
+### **TOOLS CREATED:**
+- ✅ `remove-emoji-from-cs.ps1` - Removes emoji from all C# files (ready to run)
 
 ---
 
 **Generated:** 2026-03-06
 **Unity Version:** 6000.3.7f1
-**Status:** ✅ **READY FOR TESTING**
+**Status:** ✅ **READY FOR TESTING** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **0 COMPILATION ERRORS**
 
 ---
 

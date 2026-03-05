@@ -1,4 +1,20 @@
-﻿// QuickSetupPrefabs.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// QuickSetupPrefabs.cs
 // Quick editor tool to create minimum required prefabs for testing
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -29,7 +45,7 @@ namespace Code.Lavos.Editor
             if (!Directory.Exists(prefabsFolder))
             {
                 Directory.CreateDirectory(prefabsFolder);
-                Debug.Log($"✅ Created: {prefabsFolder}");
+                Debug.Log($" Created: {prefabsFolder}");
             }
 
             // Create Wall Prefab
@@ -46,7 +62,7 @@ namespace Code.Lavos.Editor
             if (!Directory.Exists(materialsFolder))
             {
                 Directory.CreateDirectory(materialsFolder);
-                Debug.Log($"✅ Created: {materialsFolder}");
+                Debug.Log($" Created: {materialsFolder}");
             }
 
             // Create Wall Material
@@ -59,14 +75,14 @@ namespace Code.Lavos.Editor
             AutoAssignPrefabsToBuilder();
 
             Debug.Log("═══════════════════════════════════════════");
-            Debug.Log("  ✅ QUICK SETUP COMPLETE!");
+            Debug.Log("   QUICK SETUP COMPLETE!");
             Debug.Log("═══════════════════════════════════════════");
             Debug.Log("");
-            Debug.Log("📁 Prefabs created in: Assets/Resources/Prefabs/");
-            Debug.Log("📁 Materials created in: Assets/Resources/Materials/");
-            Debug.Log("🔌 Prefabs auto-assigned to CompleteMazeBuilder");
+            Debug.Log(" Prefabs created in: Assets/Resources/Prefabs/");
+            Debug.Log(" Materials created in: Assets/Resources/Materials/");
+            Debug.Log(" Prefabs auto-assigned to CompleteMazeBuilder");
             Debug.Log("");
-            Debug.Log("▶️  Now test: Press Ctrl+Alt+G to generate maze");
+            Debug.Log("️  Now test: Press Ctrl+Alt+G to generate maze");
             Debug.Log("═══════════════════════════════════════════");
         }
 
@@ -79,7 +95,7 @@ namespace Code.Lavos.Editor
             
             if (builder == null)
             {
-                Debug.Log("⚠️  No CompleteMazeBuilder in scene - prefabs not auto-assigned");
+                Debug.Log("️  No CompleteMazeBuilder in scene - prefabs not auto-assigned");
                 return;
             }
 
@@ -99,7 +115,7 @@ namespace Code.Lavos.Editor
                 if (wallPrefabProp != null)
                 {
                     wallPrefabProp.objectReferenceValue = wallPrefab;
-                    Debug.Log("✅ Auto-assigned: WallPrefab");
+                    Debug.Log(" Auto-assigned: WallPrefab");
                 }
             }
 
@@ -110,7 +126,7 @@ namespace Code.Lavos.Editor
                 if (torchPrefabProp != null)
                 {
                     torchPrefabProp.objectReferenceValue = torchPrefab;
-                    Debug.Log("✅ Auto-assigned: TorchPrefab");
+                    Debug.Log(" Auto-assigned: TorchPrefab");
                 }
             }
 
@@ -121,7 +137,7 @@ namespace Code.Lavos.Editor
                 if (doorPrefabProp != null)
                 {
                     doorPrefabProp.objectReferenceValue = doorPrefab;
-                    Debug.Log("✅ Auto-assigned: DoorPrefab");
+                    Debug.Log(" Auto-assigned: DoorPrefab");
                 }
             }
 
@@ -132,12 +148,12 @@ namespace Code.Lavos.Editor
                 if (wallMaterialProp != null)
                 {
                     wallMaterialProp.objectReferenceValue = wallMaterial;
-                    Debug.Log("✅ Auto-assigned: WallMaterial");
+                    Debug.Log(" Auto-assigned: WallMaterial");
                 }
             }
 
             serializedObject.ApplyModifiedProperties();
-            Debug.Log("✅ All prefabs auto-assigned to CompleteMazeBuilder");
+            Debug.Log(" All prefabs auto-assigned to CompleteMazeBuilder");
         }
 
         private static void CreateWallPrefab(string folder)
@@ -147,7 +163,7 @@ namespace Code.Lavos.Editor
             // Check if already exists
             if (File.Exists(prefabPath))
             {
-                Debug.Log($"✅ WallPrefab already exists");
+                Debug.Log($" WallPrefab already exists");
                 return;
             }
 
@@ -168,7 +184,7 @@ namespace Code.Lavos.Editor
             PrefabUtility.SaveAsPrefabAsset(wall, prefabPath);
             Object.DestroyImmediate(wall);
 
-            Debug.Log($"✅ Created: WallPrefab.prefab (6x4x0.5m)");
+            Debug.Log($" Created: WallPrefab.prefab (6x4x0.5m)");
         }
 
         private static void CreateTorchPrefab(string folder)
@@ -178,7 +194,7 @@ namespace Code.Lavos.Editor
             // Check if already exists
             if (File.Exists(prefabPath))
             {
-                Debug.Log($"✅ TorchHandlePrefab already exists");
+                Debug.Log($" TorchHandlePrefab already exists");
                 return;
             }
 
@@ -203,7 +219,7 @@ namespace Code.Lavos.Editor
             PrefabUtility.SaveAsPrefabAsset(torch, prefabPath);
             Object.DestroyImmediate(torch);
 
-            Debug.Log($"✅ Created: TorchHandlePrefab.prefab (with light)");
+            Debug.Log($" Created: TorchHandlePrefab.prefab (with light)");
         }
 
         private static void CreateDoorPrefab(string folder)
@@ -213,7 +229,7 @@ namespace Code.Lavos.Editor
             // Check if already exists
             if (File.Exists(prefabPath))
             {
-                Debug.Log($"✅ DoorPrefab already exists");
+                Debug.Log($" DoorPrefab already exists");
                 return;
             }
 
@@ -231,7 +247,7 @@ namespace Code.Lavos.Editor
             PrefabUtility.SaveAsPrefabAsset(door, prefabPath);
             Object.DestroyImmediate(door);
 
-            Debug.Log($"✅ Created: DoorPrefab.prefab (0.5x4x5.4m)");
+            Debug.Log($" Created: DoorPrefab.prefab (0.5x4x5.4m)");
         }
 
         private static void CreateWallMaterial(string folder)
@@ -241,7 +257,7 @@ namespace Code.Lavos.Editor
             // Check if already exists
             if (File.Exists(materialPath))
             {
-                Debug.Log($"✅ WallMaterial already exists");
+                Debug.Log($" WallMaterial already exists");
                 return;
             }
 
@@ -257,7 +273,7 @@ namespace Code.Lavos.Editor
 
             AssetDatabase.CreateAsset(mat, materialPath);
 
-            Debug.Log($"✅ Created: WallMaterial.mat (URP Lit, stone gray)");
+            Debug.Log($" Created: WallMaterial.mat (URP Lit, stone gray)");
         }
 
         private static void ApplyWallMaterial(GameObject obj)

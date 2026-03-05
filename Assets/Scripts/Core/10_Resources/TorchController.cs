@@ -1,3 +1,19 @@
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
 // TorchController.cs
 // Controller for torch objects with ON/OFF states
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -145,7 +161,7 @@ namespace Code.Lavos.Core
                 _light.color = lightColor;
                 _light.range = lightRange;
                 _light.intensity = 0f; // Start off, will be set by TurnOn
-                _light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+                _light.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
                 _light.enabled = false;
             }
 
@@ -164,7 +180,7 @@ namespace Code.Lavos.Core
                 _light.color = lightColor;
                 _light.range = lightRange;
                 _light.intensity = 0f; // Start off
-                _light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+                _light.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
                 _light.enabled = false;
             }
         }

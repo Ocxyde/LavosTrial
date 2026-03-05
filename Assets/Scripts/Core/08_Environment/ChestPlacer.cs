@@ -1,4 +1,20 @@
-﻿// ChestPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// ChestPlacer.cs
 // Specialized chest placement system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,7 +40,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (From JSON)
 
-        [Header("📦 Chest Settings (From JSON Config)")]
+        [Header(" Chest Settings (From JSON Config)")]
         [Tooltip("Enable chest spawning (loaded from JSON)")]
         [SerializeField] private bool enableChestSpawning;
         
@@ -34,21 +50,21 @@ namespace Code.Lavos.Core
         [Tooltip("Max chests to spawn (loaded from JSON)")]
         [SerializeField] private int maxChests;
 
-        [Header("📦 Prefab Reference")]
+        [Header(" Prefab Reference")]
         [Tooltip("Chest prefab (assign in Inspector or place in Resources/)")]
         [SerializeField] private GameObject chestPrefab;
         
         [Tooltip("Auto-load from Resources/ChestPrefab if not assigned")]
         [SerializeField] private bool autoLoadFromResources = true;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
         
         [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
         #endregion
@@ -114,7 +130,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[ChestPlacer] 📖 Config loaded from JSON:");
+                Debug.Log($"[ChestPlacer]  Config loaded from JSON:");
                 Debug.Log($"  • Enable: {enableChestSpawning}");
                 Debug.Log($"  • Spawn Chance: {chestSpawnChance * 100f:F0}%");
                 Debug.Log($"  • Max Chests: {maxChests}");
@@ -141,7 +157,7 @@ namespace Code.Lavos.Core
 
             if (gridMazeGenerator == null)
             {
-                Debug.LogError("[ChestPlacer] ❌ GridMazeGenerator not initialized!");
+                Debug.LogError("[ChestPlacer]  GridMazeGenerator not initialized!");
                 return;
             }
 
@@ -166,7 +182,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[ChestPlacer] 📦 Spawned {_chestsSpawned} chests");
+                Debug.Log($"[ChestPlacer]  Spawned {_chestsSpawned} chests");
             }
         }
 
@@ -202,12 +218,12 @@ namespace Code.Lavos.Core
                 }
                 
                 if (showDebugLogs)
-                    Debug.Log($"[ChestPlacer] 📦 Placed chest prefab at {position}");
+                    Debug.Log($"[ChestPlacer]  Placed chest prefab at {position}");
             }
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[ChestPlacer] ⚠️ No chest prefab assigned - skipping");
+                    Debug.LogWarning($"[ChestPlacer] ️ No chest prefab assigned - skipping");
             }
         }
 
@@ -260,7 +276,7 @@ namespace Code.Lavos.Core
             if (chestPrefab != null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[ChestPlacer] ✅ Chest prefab already assigned");
+                    Debug.Log("[ChestPlacer]  Chest prefab already assigned");
                 return;
             }
             
@@ -282,12 +298,12 @@ namespace Code.Lavos.Core
                 }
                 
                 if (showDebugLogs)
-                    Debug.Log("[ChestPlacer] ✅ Loaded ChestPrefab from Resources with material");
+                    Debug.Log("[ChestPlacer]  Loaded ChestPrefab from Resources with material");
             }
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning("[ChestPlacer] ⚠️ No ChestPrefab in Resources - will skip chest spawning");
+                    Debug.LogWarning("[ChestPlacer] ️ No ChestPrefab in Resources - will skip chest spawning");
             }
         }
 
@@ -313,7 +329,7 @@ namespace Code.Lavos.Core
             }
 
             if (showDebugLogs)
-                Debug.Log($"[ChestPlacer] 📦 Loaded {_chestsSpawned} chests from binary");
+                Debug.Log($"[ChestPlacer]  Loaded {_chestsSpawned} chests from binary");
         }
 
         #endregion

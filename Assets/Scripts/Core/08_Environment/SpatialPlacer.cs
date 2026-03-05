@@ -1,4 +1,20 @@
-﻿// SpatialPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// SpatialPlacer.cs
 // Universal object placement orchestrator with binary storage
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -27,7 +43,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
         
@@ -49,14 +65,14 @@ namespace Code.Lavos.Core
         [Tooltip("Specialized torch placer")]
         [SerializeField] private TorchPlacer torchPlacer;
 
-        [Header("💾 Binary Storage Settings")]
+        [Header(" Binary Storage Settings")]
         [Tooltip("Enable binary storage (RAM/cache)")]
         [SerializeField] private bool enableBinaryStorage = true;
         
         [Tooltip("Storage folder path")]
         [SerializeField] private string storageFolder = "Assets/StreamingAssets/MazeStorage/";
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
         #endregion
@@ -133,7 +149,7 @@ namespace Code.Lavos.Core
             
             if (showDebugLogs)
             {
-                Debug.Log($"[SpatialPlacer] 💾 Binary storage initialized: {storageFolder}");
+                Debug.Log($"[SpatialPlacer]  Binary storage initialized: {storageFolder}");
             }
         }
 
@@ -174,7 +190,7 @@ namespace Code.Lavos.Core
         {
             _objectStorage.ClearMaze(_currentMazeId);
             if (showDebugLogs)
-                Debug.Log("[SpatialPlacer] 🧹 Binary storage cleared");
+                Debug.Log("[SpatialPlacer]  Binary storage cleared");
         }
 
         #endregion
@@ -197,8 +213,8 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpatialPlacer] 🎲 Maze ID: {_currentMazeId}");
-                Debug.Log($"[SpatialPlacer] 🎲 Seed: {_currentSeed}");
+                Debug.Log($"[SpatialPlacer]  Maze ID: {_currentMazeId}");
+                Debug.Log($"[SpatialPlacer]  Seed: {_currentSeed}");
             }
 
             // Try to load from binary storage first
@@ -206,7 +222,7 @@ namespace Code.Lavos.Core
             {
                 if (showDebugLogs)
                 {
-                    Debug.Log("[SpatialPlacer] ✅ Loaded all objects from binary storage (RAM)");
+                    Debug.Log("[SpatialPlacer]  Loaded all objects from binary storage (RAM)");
                     Debug.Log("═══════════════════════════════════════════");
                 }
                 return;
@@ -215,7 +231,7 @@ namespace Code.Lavos.Core
             // Binary not found - place objects and save
             if (showDebugLogs)
             {
-                Debug.Log("[SpatialPlacer] 💾 Binary not found - calculating positions...");
+                Debug.Log("[SpatialPlacer]  Binary not found - calculating positions...");
             }
 
             PlaceChests();
@@ -232,7 +248,7 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log("═══════════════════════════════════════════");
-                Debug.Log($"  ✅ TOTAL OBJECTS PLACED: {TotalObjectsPlaced}");
+                Debug.Log($"   TOTAL OBJECTS PLACED: {TotalObjectsPlaced}");
                 Debug.Log("═══════════════════════════════════════════");
             }
         }
@@ -285,7 +301,7 @@ namespace Code.Lavos.Core
         {
             if (showDebugLogs)
             {
-                Debug.Log("[SpatialPlacer] 💾 Saving objects to binary storage...");
+                Debug.Log("[SpatialPlacer]  Saving objects to binary storage...");
             }
             
             // Torches saved via LightPlacementEngine

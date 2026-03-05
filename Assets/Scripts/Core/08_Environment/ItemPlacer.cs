@@ -1,4 +1,20 @@
-﻿// ItemPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// ItemPlacer.cs
 // Specialized item placement system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,7 +40,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (From JSON)
 
-        [Header("🎒 Item Settings (From JSON Config)")]
+        [Header(" Item Settings (From JSON Config)")]
         [Tooltip("Enable item spawning (loaded from JSON)")]
         [SerializeField] private bool enableItemSpawning;
         
@@ -34,18 +50,18 @@ namespace Code.Lavos.Core
         [Tooltip("Max items to spawn (loaded from JSON)")]
         [SerializeField] private int maxItems;
 
-        [Header("🎒 Prefab Reference")]
+        [Header(" Prefab Reference")]
         [Tooltip("Item prefab (assign in Inspector or Resources/)")]
         [SerializeField] private GameObject itemPrefab;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
         
         [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
         #endregion
@@ -96,7 +112,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[ItemPlacer] 📖 Config loaded from JSON:");
+                Debug.Log($"[ItemPlacer]  Config loaded from JSON:");
                 Debug.Log($"  • Enable: {enableItemSpawning}");
                 Debug.Log($"  • Spawn Chance: {itemSpawnChance * 100f:F0}%");
                 Debug.Log($"  • Max Items: {maxItems}");
@@ -119,7 +135,7 @@ namespace Code.Lavos.Core
 
             if (gridMazeGenerator == null)
             {
-                Debug.LogError("[ItemPlacer] ❌ GridMazeGenerator not initialized!");
+                Debug.LogError("[ItemPlacer]  GridMazeGenerator not initialized!");
                 return;
             }
 
@@ -143,7 +159,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[ItemPlacer] 🎒 Spawned {_itemsSpawned} items");
+                Debug.Log($"[ItemPlacer]  Spawned {_itemsSpawned} items");
             }
         }
 
@@ -175,12 +191,12 @@ namespace Code.Lavos.Core
                 }
                 
                 if (showDebugLogs)
-                    Debug.Log($"[ItemPlacer] 🎒 Placed item prefab at {position}");
+                    Debug.Log($"[ItemPlacer]  Placed item prefab at {position}");
             }
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[ItemPlacer] ⚠️ No item prefab assigned - skipping");
+                    Debug.LogWarning($"[ItemPlacer] ️ No item prefab assigned - skipping");
             }
         }
 
@@ -236,7 +252,7 @@ namespace Code.Lavos.Core
             }
 
             if (showDebugLogs)
-                Debug.Log($"[ItemPlacer] 🎒 Loaded {_itemsSpawned} items from binary");
+                Debug.Log($"[ItemPlacer]  Loaded {_itemsSpawned} items from binary");
         }
 
         #endregion

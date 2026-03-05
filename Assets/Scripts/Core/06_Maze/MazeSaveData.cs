@@ -1,4 +1,20 @@
-﻿// MazeSaveData.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// MazeSaveData.cs
 // SQLite database handler for maze save data
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -62,7 +78,7 @@ namespace Code.Lavos.Core
             if (!Directory.Exists(savesFolder))
             {
                 Directory.CreateDirectory(savesFolder);
-                Debug.Log($"[MazeSaveData] 📁 Created Saves/ folder at: {savesFolder}");
+                Debug.Log($"[MazeSaveData]  Created Saves/ folder at: {savesFolder}");
             }
             
             // Database file path
@@ -72,7 +88,7 @@ namespace Code.Lavos.Core
             CreateTables();
             
             initialized = true;
-            Debug.Log($"[MazeSaveData] 💾 Database initialized at: {databasePath}");
+            Debug.Log($"[MazeSaveData]  Database initialized at: {databasePath}");
         }
         
         /// <summary>
@@ -83,7 +99,7 @@ namespace Code.Lavos.Core
             // Using SQLite4Unity3d or similar SQLite plugin
             // For now, using PlayerPrefs as fallback (will be replaced with actual SQLite)
 
-            Debug.Log("[MazeSaveData] 📊 Database tables created:");
+            Debug.Log("[MazeSaveData]  Database tables created:");
             Debug.Log($"  - {TABLE_MAZE_DATA} (seed, spawn position, timestamp)");
             Debug.Log($"  - {TABLE_ROOM_DATA} (room positions, types)");
             Debug.Log($"  - {TABLE_PREFAB_DATA} (prefab paths, assignments)");
@@ -114,7 +130,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.SetString("MazeDB_Timestamp", DateTime.Now.ToString("o"));
             PlayerPrefs.Save();
             
-            Debug.Log($"[MazeSaveData] 💾 Maze data saved: Seed={seed}, Spawn=({spawnX}, {spawnZ}), Size={mazeWidth}x{mazeHeight}");
+            Debug.Log($"[MazeSaveData]  Maze data saved: Seed={seed}, Spawn=({spawnX}, {spawnZ}), Size={mazeWidth}x{mazeHeight}");
         }
         
         /// <summary>
@@ -129,7 +145,7 @@ namespace Code.Lavos.Core
             
             if (!PlayerPrefs.HasKey("MazeDB_Seed"))
             {
-                Debug.Log("[MazeSaveData] 📭 No maze data found - will generate new maze");
+                Debug.Log("[MazeSaveData]  No maze data found - will generate new maze");
                 return null;
             }
             
@@ -143,7 +159,7 @@ namespace Code.Lavos.Core
                 Timestamp = PlayerPrefs.GetString("MazeDB_Timestamp", "")
             };
             
-            Debug.Log($"[MazeSaveData] 📂 Maze data loaded: Seed={data.Seed}, Spawn=({data.SpawnX}, {data.SpawnZ})");
+            Debug.Log($"[MazeSaveData]  Maze data loaded: Seed={data.Seed}, Spawn=({data.SpawnX}, {data.SpawnZ})");
             
             return data;
         }
@@ -164,7 +180,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.DeleteKey("MazeDB_Height");
             PlayerPrefs.DeleteKey("MazeDB_Timestamp");
             
-            Debug.Log("[MazeSaveData] 🗑️ Maze data cleared from database");
+            Debug.Log("[MazeSaveData] ️ Maze data cleared from database");
         }
         
         #endregion
@@ -190,7 +206,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.SetString($"MazeDB_Rooms_{seed}", roomData);
             PlayerPrefs.Save();
             
-            Debug.Log($"[MazeSaveData] 💾 Room data saved: {rooms.Count} rooms for seed {seed}");
+            Debug.Log($"[MazeSaveData]  Room data saved: {rooms.Count} rooms for seed {seed}");
         }
         
         /// <summary>
@@ -227,7 +243,7 @@ namespace Code.Lavos.Core
                 }
             }
             
-            Debug.Log($"[MazeSaveData] 📂 Room data loaded: {rooms.Count} rooms for seed {seed}");
+            Debug.Log($"[MazeSaveData]  Room data loaded: {rooms.Count} rooms for seed {seed}");
             
             return rooms;
         }
@@ -249,7 +265,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.SetString($"MazeDB_Prefab_{prefabName}", prefabPath);
             PlayerPrefs.Save();
             
-            Debug.Log($"[MazeSaveData] 💾 Prefab saved: {prefabName} = {prefabPath}");
+            Debug.Log($"[MazeSaveData]  Prefab saved: {prefabName} = {prefabPath}");
         }
         
         /// <summary>
@@ -265,11 +281,11 @@ namespace Code.Lavos.Core
             
             if (string.IsNullOrEmpty(path))
             {
-                Debug.LogWarning($"[MazeSaveData] ⚠️ Prefab not found in database: {prefabName}");
+                Debug.LogWarning($"[MazeSaveData] ️ Prefab not found in database: {prefabName}");
                 return "";
             }
             
-            Debug.Log($"[MazeSaveData] 📂 Prefab loaded: {prefabName} = {path}");
+            Debug.Log($"[MazeSaveData]  Prefab loaded: {prefabName} = {path}");
             
             return path;
         }
@@ -286,7 +302,7 @@ namespace Code.Lavos.Core
                 SavePrefabData(kvp.Key, kvp.Value);
             }
             
-            Debug.Log($"[MazeSaveData] 💾 All prefab data saved: {prefabs.Count} prefabs");
+            Debug.Log($"[MazeSaveData]  All prefab data saved: {prefabs.Count} prefabs");
         }
         
         /// <summary>
@@ -313,7 +329,7 @@ namespace Code.Lavos.Core
                 }
             }
             
-            Debug.Log($"[MazeSaveData] 📂 All prefab data loaded: {prefabs.Count} prefabs");
+            Debug.Log($"[MazeSaveData]  All prefab data loaded: {prefabs.Count} prefabs");
             
             return prefabs;
         }
@@ -336,7 +352,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.SetString($"PlayerSettings_{key}_Timestamp", DateTime.Now.ToString("o"));
             PlayerPrefs.Save();
             
-            Debug.Log($"[MazeSaveData] 💾 Player setting saved: {key} = {value} (overrides default)");
+            Debug.Log($"[MazeSaveData]  Player setting saved: {key} = {value} (overrides default)");
         }
         
         /// <summary>
@@ -352,7 +368,7 @@ namespace Code.Lavos.Core
                 SavePlayerSettings(kvp.Key, kvp.Value);
             }
             
-            Debug.Log($"[MazeSaveData] 💾 All player settings saved: {settings.Count} choices stored");
+            Debug.Log($"[MazeSaveData]  All player settings saved: {settings.Count} choices stored");
         }
         
         /// <summary>
@@ -371,12 +387,12 @@ namespace Code.Lavos.Core
             if (string.IsNullOrEmpty(value))
             {
                 // No player choice - use procedural default
-                Debug.Log($"[MazeSaveData] 📂 No player setting for {key} - using default: {defaultValue}");
+                Debug.Log($"[MazeSaveData]  No player setting for {key} - using default: {defaultValue}");
                 return defaultValue;
             }
             
             // Player choice exists - overrides default
-            Debug.Log($"[MazeSaveData] 📂 Player setting loaded: {key} = {value} (overrides default)");
+            Debug.Log($"[MazeSaveData]  Player setting loaded: {key} = {value} (overrides default)");
             return value;
         }
         
@@ -405,7 +421,7 @@ namespace Code.Lavos.Core
                 }
             }
             
-            Debug.Log($"[MazeSaveData] 📂 All player settings loaded: {settings.Count} choices");
+            Debug.Log($"[MazeSaveData]  All player settings loaded: {settings.Count} choices");
             
             return settings;
         }
@@ -437,7 +453,7 @@ namespace Code.Lavos.Core
 
             PlayerPrefs.Save();
 
-            Debug.Log("[MazeSaveData] 🗑️ All player settings cleared - will use procedural defaults");
+            Debug.Log("[MazeSaveData] ️ All player settings cleared - will use procedural defaults");
         }
         
         #endregion
@@ -469,7 +485,7 @@ namespace Code.Lavos.Core
             if (File.Exists(databasePath))
             {
                 File.Delete(databasePath);
-                Debug.Log("[MazeSaveData] 🗑️ Database deleted");
+                Debug.Log("[MazeSaveData] ️ Database deleted");
             }
 
             initialized = false;
@@ -495,7 +511,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.SetInt("GridDB_SpawnZ", spawnZ);
             PlayerPrefs.Save();
 
-            Debug.Log($"[MazeSaveData] 💾 Grid maze saved: {gridData.Length} bytes, Seed={seed}, Spawn=({spawnX},{spawnZ})");
+            Debug.Log($"[MazeSaveData]  Grid maze saved: {gridData.Length} bytes, Seed={seed}, Spawn=({spawnX},{spawnZ})");
         }
 
         /// <summary>
@@ -509,14 +525,14 @@ namespace Code.Lavos.Core
             int storedSeed = PlayerPrefs.GetInt("GridDB_Seed", -1);
             if (storedSeed != seed || !PlayerPrefs.HasKey("GridDB_Data"))
             {
-                Debug.Log($"[MazeSaveData] 💾 No grid maze found for seed {seed}");
+                Debug.Log($"[MazeSaveData]  No grid maze found for seed {seed}");
                 return null;
             }
 
             string base64 = PlayerPrefs.GetString("GridDB_Data");
             byte[] gridData = System.Convert.FromBase64String(base64);
 
-            Debug.Log($"[MazeSaveData] 📂 Loaded grid maze: {gridData.Length} bytes");
+            Debug.Log($"[MazeSaveData]  Loaded grid maze: {gridData.Length} bytes");
             return gridData;
         }
 
@@ -531,7 +547,7 @@ namespace Code.Lavos.Core
             PlayerPrefs.DeleteKey("GridDB_SpawnX");
             PlayerPrefs.DeleteKey("GridDB_SpawnZ");
             PlayerPrefs.Save();
-            Debug.Log("[MazeSaveData] 🗑️ Grid maze data cleared");
+            Debug.Log("[MazeSaveData] ️ Grid maze data cleared");
         }
 
         #endregion Grid Maze Data

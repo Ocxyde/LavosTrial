@@ -1,4 +1,20 @@
-﻿// ProceduralCompute.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// ProceduralCompute.cs
 // Centralized procedural generation system for ALL generative processes
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -9,7 +25,7 @@
 // - Event-driven (requests via EventHandler)
 // - Caches results for performance
 //
-// ⚠️ IMPORTANT: Add ProceduralCompute to your scene manually.
+// ️ IMPORTANT: Add ProceduralCompute to your scene manually.
 // Do NOT rely on auto-creation (plug-in-out violation).
 //
 // USAGE:
@@ -29,7 +45,7 @@ namespace Code.Lavos.Core
     /// ProceduralCompute - Central procedural generation system.
     /// Handles all generative processes: textures, materials, meshes, patterns.
     /// 
-    /// ⚠️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// ️ Must be added to scene manually. Auto-creation is a fallback only.
     /// </summary>
     public class ProceduralCompute : MonoBehaviour
     {
@@ -45,9 +61,9 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<ProceduralCompute>();
                     if (_instance == null)
                     {
-                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        // ️ FALLBACK ONLY: Should be added to scene manually
                         // This auto-creation is a plug-in-out violation
-                        Debug.LogWarning("[ProceduralCompute] ⚠️ Not found in scene - auto-creating (add manually!)");
+                        Debug.LogWarning("[ProceduralCompute] ️ Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("ProceduralCompute");
                         _instance = go.AddComponent<ProceduralCompute>();
                         DontDestroyOnLoad(go);
@@ -457,7 +473,7 @@ namespace Code.Lavos.Core
             {
                 EventHandler.Instance.OnMaterialRequested += OnMaterialRequested;
                 EventHandler.Instance.OnTextureRequested += OnTextureRequested;
-                Debug.Log("[ProceduralCompute] ✅ Subscribed to material/texture events");
+                Debug.Log("[ProceduralCompute]  Subscribed to material/texture events");
             }
         }
         

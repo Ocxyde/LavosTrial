@@ -1,4 +1,20 @@
-﻿// CompleteMazeBuilder.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// CompleteMazeBuilder.cs
 // MAIN GAME ORCHESTRATOR - Optimized for performance
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -87,11 +103,11 @@ namespace Code.Lavos.Core
             mazeSize = Mathf.Clamp(mazeSize, 12, 51);
 
             if (EventHandler.Instance != null)
-                Log("[CompleteMazeBuilder] 🔌 Connected to EventHandler");
+                Log("[CompleteMazeBuilder]  Connected to EventHandler");
 
             seed = ComputeSeed(currentSeed);
 
-            Log($"[CompleteMazeBuilder] 🎲 Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder]  Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
         }
 
         private void Start()
@@ -113,7 +129,7 @@ namespace Code.Lavos.Core
         {
             currentLevel++;
             mazeSize = Mathf.Clamp(12 + currentLevel, 12, 51);
-            Log($"[CompleteMazeBuilder] 🎮 Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder]  Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
         }
 
         public void SetSeed(string s)
@@ -159,41 +175,47 @@ namespace Code.Lavos.Core
         public void GenerateMaze()
         {
             Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Log($"[CompleteMazeBuilder] 🎮 LEVEL {currentLevel} - Maze {mazeSize}x{mazeSize}");
-            Log("[CompleteMazeBuilder] 🏗️ Starting maze generation...");
+            Log($"[CompleteMazeBuilder]  LEVEL {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log("[CompleteMazeBuilder] ️ Starting maze generation...");
             Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+
+            // Ensure wallPositions is initialized (editor may call before Awake)
+            if (wallPositions == null)
+            {
+                wallPositions = new System.Collections.Generic.List<Vector3>();
+            }
 
             wallPositions.Clear();
             FindComponents();
             CleanupOldMaze();
-            Log("[CompleteMazeBuilder] 🧹 STEP 1: Cleanup complete");
+            Log("[CompleteMazeBuilder]  STEP 1: Cleanup complete");
 
             SpawnGround();
-            Log("[CompleteMazeBuilder] 🌍 STEP 2: Ground spawned");
+            Log("[CompleteMazeBuilder]  STEP 2: Ground spawned");
 
             GenerateGrid();
-            Log($"[CompleteMazeBuilder] 🏛️ STEP 3: Spawn room placed at {spawnCell}");
+            Log($"[CompleteMazeBuilder] ️ STEP 3: Spawn room placed at {spawnCell}");
 
             PlaceWalls();
-            Log("[CompleteMazeBuilder] 🧱 STEP 4: Walls placed (oriented)");
+            Log("[CompleteMazeBuilder]  STEP 4: Walls placed (oriented)");
 
             PlaceDoors();
-            Log("[CompleteMazeBuilder] 🚪 STEP 5: Doors placed");
+            Log("[CompleteMazeBuilder]  STEP 5: Doors placed");
 
             PlaceTorches();
-            Log("[CompleteMazeBuilder] 🔥 STEP 6: Torches mounted");
+            Log("[CompleteMazeBuilder]  STEP 6: Torches mounted");
 
             SaveMaze();
-            Log("[CompleteMazeBuilder] 💾 STEP 7: Maze saved");
+            Log("[CompleteMazeBuilder]  STEP 7: Maze saved");
 
             if (Application.isPlaying)
             {
                 SpawnPlayer();
-                Log($"[CompleteMazeBuilder] 👤 STEP 8: Player spawned at {spawnPos}");
+                Log($"[CompleteMazeBuilder]  STEP 8: Player spawned at {spawnPos}");
             }
 
             Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Log($"[CompleteMazeBuilder] ✅ Level {currentLevel} complete! Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder]  Level {currentLevel} complete! Maze {mazeSize}x{mazeSize}");
             Log("[CompleteMazeBuilder] ════════════════════════════════════════");
         }
 
@@ -209,7 +231,7 @@ namespace Code.Lavos.Core
             if (lightPlacementEngine == null) lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
             if (torchPool == null) torchPool = FindFirstObjectByType<TorchPool>();
             if (playerController == null) playerController = FindFirstObjectByType<PlayerController>();
-            Log("[CompleteMazeBuilder] ✅ Components found");
+            Log("[CompleteMazeBuilder]  Components found");
         }
 
         #endregion
@@ -242,7 +264,7 @@ namespace Code.Lavos.Core
 
         private void SpawnGround()
         {
-            Log("[CompleteMazeBuilder] 🌍 Spawning ground floor...");
+            Log("[CompleteMazeBuilder]  Spawning ground floor...");
 
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
             ground.name = "GroundFloor";
@@ -264,7 +286,7 @@ namespace Code.Lavos.Core
                     r.sharedMaterial.mainTexture = groundTexture;
             }
 
-            Log($"[CompleteMazeBuilder] ✅ Ground spawned ({size}m x {size}m)");
+            Log($"[CompleteMazeBuilder]  Ground spawned ({size}m x {size}m)");
         }
 
         #endregion
@@ -273,7 +295,7 @@ namespace Code.Lavos.Core
 
         private void GenerateGrid()
         {
-            Log("[CompleteMazeBuilder] 🏛️ Generating grid maze with spawn room first...");
+            Log("[CompleteMazeBuilder] ️ Generating grid maze with spawn room first...");
 
             grid = new GridMazeGenerator();
             grid.gridSize = mazeSize;
@@ -288,9 +310,9 @@ namespace Code.Lavos.Core
                 spawnCell.y * cellSize + cellSize / 2f
             );
 
-            Log($"[CompleteMazeBuilder] 🎯 SpawnPoint: cell {spawnCell}");
-            Log($"[CompleteMazeBuilder] 👤 Spawn position: {spawnPos}");
-            Log($"[CompleteMazeBuilder] ✅ Grid maze generated ({mazeSize}x{mazeSize})");
+            Log($"[CompleteMazeBuilder]  SpawnPoint: cell {spawnCell}");
+            Log($"[CompleteMazeBuilder]  Spawn position: {spawnPos}");
+            Log($"[CompleteMazeBuilder]  Grid maze generated ({mazeSize}x{mazeSize})");
         }
 
         #endregion
@@ -299,7 +321,7 @@ namespace Code.Lavos.Core
 
         private void PlaceWalls()
         {
-            Log($"[CompleteMazeBuilder] 🧱 Placing walls with proper orientation...");
+            Log($"[CompleteMazeBuilder]  Placing walls with proper orientation...");
 
             int spawned = 0;
             GameObject parent = new GameObject("MazeWalls");
@@ -329,15 +351,15 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Log($"[CompleteMazeBuilder] 🧱 {spawned} walls placed (oriented & textured)");
+            Log($"[CompleteMazeBuilder]  {spawned} walls placed (oriented & textured)");
         }
 
         private void SpawnWall(Vector3 pos, Quaternion rot, string name, Transform parent)
         {
             if (wallPrefab == null)
             {
-                LogError($"[CompleteMazeBuilder] ❌ Wall prefab not loaded! Cannot spawn wall at {pos}");
-                LogError("[CompleteMazeBuilder] 💡 Fix: Run Tools → Quick Setup Prefabs");
+                LogError($"[CompleteMazeBuilder]  Wall prefab not loaded! Cannot spawn wall at {pos}");
+                LogError("[CompleteMazeBuilder]  Fix: Run Tools → Quick Setup Prefabs");
                 return;
             }
 
@@ -358,7 +380,7 @@ namespace Code.Lavos.Core
 
         private void PlaceDoors()
         {
-            Log("[CompleteMazeBuilder] 🚪 Placing simple entrance/exit doors...");
+            Log("[CompleteMazeBuilder]  Placing simple entrance/exit doors...");
 
             GameObject parent = new GameObject("Doors");
             Vector2Int doorPos = FindDoorPosition();
@@ -376,15 +398,15 @@ namespace Code.Lavos.Core
                     GameObject door = Instantiate(doorPrefab, pos, Quaternion.identity);
                     door.name = $"Door_Entrance";
                     door.transform.SetParent(parent.transform);
-                    Log($"[CompleteMazeBuilder] 🚪 Entrance door placed at ({doorPos.x}, {doorPos.y})");
+                    Log($"[CompleteMazeBuilder]  Entrance door placed at ({doorPos.x}, {doorPos.y})");
                 }
             }
             else
             {
-                Log("[CompleteMazeBuilder] ⚠️ No suitable door position found");
+                Log("[CompleteMazeBuilder] ️ No suitable door position found");
             }
 
-            Log($"[CompleteMazeBuilder] ✅ Doors placed (entrance/exit only)");
+            Log($"[CompleteMazeBuilder]  Doors placed (entrance/exit only)");
         }
 
         private Vector2Int FindDoorPosition()
@@ -425,11 +447,11 @@ namespace Code.Lavos.Core
 
         private void PlaceTorches()
         {
-            Log("[CompleteMazeBuilder] 🔥 Mounting torches on walls (using prefab)...");
+            Log("[CompleteMazeBuilder]  Mounting torches on walls (using prefab)...");
 
             if (torchPrefab == null)
             {
-                LogWarning("[CompleteMazeBuilder] ⚠️ Torch prefab not loaded - skipping torch placement");
+                LogWarning("[CompleteMazeBuilder] ️ Torch prefab not loaded - skipping torch placement");
                 return;
             }
 
@@ -452,7 +474,7 @@ namespace Code.Lavos.Core
                 placed++;
             }
 
-            Log($"[CompleteMazeBuilder] 🔥 {placed} torches mounted on walls");
+            Log($"[CompleteMazeBuilder]  {placed} torches mounted on walls");
         }
 
         #endregion
@@ -461,17 +483,17 @@ namespace Code.Lavos.Core
 
         private void SaveMaze()
         {
-            Log("[CompleteMazeBuilder] 💾 Saving maze to database...");
+            Log("[CompleteMazeBuilder]  Saving maze to database...");
 
             if (grid == null)
             {
-                LogError("[CompleteMazeBuilder] ❌ GridMazeGenerator not found!");
+                LogError("[CompleteMazeBuilder]  GridMazeGenerator not found!");
                 return;
             }
 
             MazeSaveData.SaveGridMaze((int)seed, grid.SerializeToBytes(), spawnCell.x, spawnCell.y);
 
-            Log("[CompleteMazeBuilder] ✅ Maze saved");
+            Log("[CompleteMazeBuilder]  Maze saved");
         }
 
         #endregion
@@ -480,15 +502,15 @@ namespace Code.Lavos.Core
 
         private void SpawnPlayer()
         {
-            Log($"[CompleteMazeBuilder] 👤 Spawning player at {spawnPos}...");
+            Log($"[CompleteMazeBuilder]  Spawning player at {spawnPos}...");
 
             if (playerController == null)
                 playerController = FindFirstObjectByType<PlayerController>();
 
             if (playerController == null)
             {
-                LogWarning("[CompleteMazeBuilder] ⚠️ PlayerController not in scene (add independently)");
-                LogWarning("[CompleteMazeBuilder] 💡 Add PlayerController component to a GameObject in scene");
+                LogWarning("[CompleteMazeBuilder] ️ PlayerController not in scene (add independently)");
+                LogWarning("[CompleteMazeBuilder]  Add PlayerController component to a GameObject in scene");
                 return;
             }
 
@@ -506,13 +528,13 @@ namespace Code.Lavos.Core
             {
                 cam.transform.localPosition = new Vector3(0f, GameConfig.Instance.defaultPlayerEyeHeight, 0f);
                 cam.transform.localRotation = Quaternion.identity;
-                Log($"[CompleteMazeBuilder] 👤 FPS camera set to eye level ({GameConfig.Instance.defaultPlayerEyeHeight}m)");
+                Log($"[CompleteMazeBuilder]  FPS camera set to eye level ({GameConfig.Instance.defaultPlayerEyeHeight}m)");
             }
 
             playerController.transform.rotation = Quaternion.identity;
 
-            Log($"[CompleteMazeBuilder] ✅ Player spawned INSIDE maze at {playerController.transform.position}");
-            Log($"[CompleteMazeBuilder] 👤 Camera at FPS eye level - ready to explore!");
+            Log($"[CompleteMazeBuilder]  Player spawned INSIDE maze at {playerController.transform.position}");
+            Log($"[CompleteMazeBuilder]  Camera at FPS eye level - ready to explore!");
         }
 
         #endregion

@@ -1,4 +1,20 @@
-﻿// CreateMazePrefabs.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// CreateMazePrefabs.cs
 // Editor script to create all maze prefabs (walls, doors, rooms)
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -20,7 +36,7 @@ namespace Code.Lavos.Editor
         public static void CreateAllPrefabs()
         {
             Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
-            Debug.Log("[CreateMazePrefabs] 🏗️ Creating maze prefabs...");
+            Debug.Log("[CreateMazePrefabs] ️ Creating maze prefabs...");
             Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
 
             // Ensure folders exist
@@ -41,8 +57,8 @@ namespace Code.Lavos.Editor
             CreateWallMaterial();
 
             Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
-            Debug.Log("[CreateMazePrefabs] ✅ All prefabs created!");
-            Debug.Log("[CreateMazePrefabs] 📁 Location: Assets/Prefabs/");
+            Debug.Log("[CreateMazePrefabs]  All prefabs created!");
+            Debug.Log("[CreateMazePrefabs]  Location: Assets/Prefabs/");
             Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
         }
 
@@ -51,7 +67,7 @@ namespace Code.Lavos.Editor
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
-                Debug.Log($"[CreateMazePrefabs] 📁 Created: {path}");
+                Debug.Log($"[CreateMazePrefabs]  Created: {path}");
             }
         }
 
@@ -69,7 +85,7 @@ namespace Code.Lavos.Editor
             ApplyMaterial(wall, "Assets/Materials/WallMaterial.mat", new Color(0.6f, 0.55f, 0.5f));
 
             SavePrefab(wall, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ WallPrefab (6x4x0.5m)");
+            Debug.Log("[CreateMazePrefabs]  WallPrefab (6x4x0.5m)");
         }
 
         private static void CreateDoorPrefab()
@@ -84,7 +100,7 @@ namespace Code.Lavos.Editor
             door.AddComponent<Code.Lavos.Core.DoorsEngine>();
 
             SavePrefab(door, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ DoorPrefab (Normal, wood brown)");
+            Debug.Log("[CreateMazePrefabs]  DoorPrefab (Normal, wood brown)");
         }
 
         private static void CreateLockedDoorPrefab()
@@ -99,7 +115,7 @@ namespace Code.Lavos.Editor
             door.AddComponent<Code.Lavos.Core.DoorsEngine>();
 
             SavePrefab(door, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ LockedDoorPrefab (Red tint)");
+            Debug.Log("[CreateMazePrefabs]  LockedDoorPrefab (Red tint)");
         }
 
         private static void CreateSecretDoorPrefab()
@@ -114,7 +130,7 @@ namespace Code.Lavos.Editor
             door.AddComponent<Code.Lavos.Core.DoorsEngine>();
 
             SavePrefab(door, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ SecretDoorPrefab (Wall-colored, camouflaged)");
+            Debug.Log("[CreateMazePrefabs]  SecretDoorPrefab (Wall-colored, camouflaged)");
         }
 
         private static void CreateEntranceRoomPrefab()
@@ -135,7 +151,7 @@ namespace Code.Lavos.Editor
             ApplyMaterial(marker, null, new Color(0.2f, 0.5f, 0.3f)); // Soft forest green
 
             SavePrefab(room, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ EntranceRoomPrefab (Soft green marker)");
+            Debug.Log("[CreateMazePrefabs]  EntranceRoomPrefab (Soft green marker)");
         }
 
         private static void CreateExitRoomPrefab()
@@ -156,7 +172,7 @@ namespace Code.Lavos.Editor
             ApplyMaterial(marker, null, new Color(0.2f, 0.3f, 0.5f)); // Soft slate blue
 
             SavePrefab(room, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ ExitRoomPrefab (Soft blue marker)");
+            Debug.Log("[CreateMazePrefabs]  ExitRoomPrefab (Soft blue marker)");
         }
 
         private static void CreateNormalRoomPrefab()
@@ -169,7 +185,7 @@ namespace Code.Lavos.Editor
             floor.transform.parent = room.transform;
 
             SavePrefab(room, prefabPath);
-            Debug.Log("[CreateMazePrefabs] ✅ NormalRoomPrefab (Floor only)");
+            Debug.Log("[CreateMazePrefabs]  NormalRoomPrefab (Floor only)");
         }
 
         private static GameObject CreateRoomFloor()
@@ -198,7 +214,7 @@ namespace Code.Lavos.Editor
             mat.SetFloat("_Metallic", 0f);
 
             AssetDatabase.CreateAsset(mat, matPath);
-            Debug.Log("[CreateMazePrefabs] ✅ WallMaterial (URP Lit, stone gray)");
+            Debug.Log("[CreateMazePrefabs]  WallMaterial (URP Lit, stone gray)");
         }
 
         private static void ApplyMaterial(GameObject obj, string matPath, Color color)

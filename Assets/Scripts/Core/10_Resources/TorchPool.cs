@@ -1,3 +1,19 @@
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
 // TorchPool.cs
 // REAL OBJECT POOLING for torches - Reuse instead of destroy
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -68,7 +84,7 @@ namespace Code.Lavos.Core
             if (prewarmOnStart && initialPoolSize > 0)
             {
                 PrewarmPool(initialPoolSize);
-                Debug.Log($"[TorchPool] ✅ Pre-warmed {initialPoolSize} torches (zero GC at runtime)");
+                Debug.Log($"[TorchPool]  Pre-warmed {initialPoolSize} torches (zero GC at runtime)");
             }
         }
 
@@ -102,7 +118,7 @@ namespace Code.Lavos.Core
                 _pool.Enqueue(torch);
             }
 
-            Debug.Log($"[TorchPool] ✅ Pool pre-warmed: {count} torches ready");
+            Debug.Log($"[TorchPool]  Pool pre-warmed: {count} torches ready");
         }
 
         // ───────────────────────────────────────────────────────────────────────
@@ -121,11 +137,11 @@ namespace Code.Lavos.Core
 
             GameObject go;
 
-            // ✅ REAL POOLING: Try to get from pool first
+            //  REAL POOLING: Try to get from pool first
             if (_pool.Count > 0)
             {
                 go = _pool.Dequeue();
-                Debug.Log($"[TorchPool] ♻️ REUSED from pool (remaining: {_pool.Count})");
+                Debug.Log($"[TorchPool] ️ REUSED from pool (remaining: {_pool.Count})");
             }
             else
             {
@@ -133,11 +149,11 @@ namespace Code.Lavos.Core
                 if (canExpand)
                 {
                     go = CreateNewTorch();
-                    Debug.Log($"[TorchPool] 🆕 Created new (pool was empty)");
+                    Debug.Log($"[TorchPool]  Created new (pool was empty)");
                 }
                 else
                 {
-                    Debug.LogWarning("[TorchPool] ⚠️ Pool exhausted and canExpand=false!");
+                    Debug.LogWarning("[TorchPool] ️ Pool exhausted and canExpand=false!");
                     return null;
                 }
             }
@@ -170,16 +186,16 @@ namespace Code.Lavos.Core
                     if (effectSocket != null)
                     {
                         effectSocket.Play();
-                        Debug.Log($"[TorchPool] ✅ Torch at {position} - Light ON + Particles playing");
+                        Debug.Log($"[TorchPool]  Torch at {position} - Light ON + Particles playing");
                     }
                     else
                     {
-                        Debug.Log($"[TorchPool] ✅ Torch at {position} - Light ON (no particles)");
+                        Debug.Log($"[TorchPool]  Torch at {position} - Light ON (no particles)");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[TorchPool] ❌ Light missing at {position}!");
+                    Debug.LogWarning($"[TorchPool]  Light missing at {position}!");
                     SetupSpriteMode(go, flameFrames, ctrl);
                 }
             }
@@ -218,12 +234,12 @@ namespace Code.Lavos.Core
             // Remove from active list
             _activeTorches.Remove(go);
 
-            // ✅ REAL POOLING: Return to pool instead of destroying
+            //  REAL POOLING: Return to pool instead of destroying
             go.SetActive(false);
             go.transform.SetParent(transform); // Reparent to pool container
             _pool.Enqueue(go);
 
-            Debug.Log($"[TorchPool] ♻️ Returned to pool (size: {_pool.Count})");
+            Debug.Log($"[TorchPool] ️ Returned to pool (size: {_pool.Count})");
         }
 
         // ───────────────────────────────────────────────────────────────────────
@@ -251,7 +267,7 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[TorchPool] ✅ All torches returned to pool (pool size: {_pool.Count})");
+            Debug.Log($"[TorchPool]  All torches returned to pool (pool size: {_pool.Count})");
         }
 
         // ───────────────────────────────────────────────────────────────────────
@@ -277,7 +293,7 @@ namespace Code.Lavos.Core
             }
             _activeTorches.Clear();
 
-            Debug.Log("[TorchPool] ✅ All torches destroyed");
+            Debug.Log("[TorchPool]  All torches destroyed");
         }
 
         // ───────────────────────────────────────────────────────────────────────
@@ -385,7 +401,7 @@ namespace Code.Lavos.Core
                 pointLight.range = 15f;
                 pointLight.intensity = 5f;
                 pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+                pointLight.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 
@@ -419,7 +435,7 @@ namespace Code.Lavos.Core
                 pointLight.range = 15f;
                 pointLight.intensity = 5f;
                 pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+                pointLight.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 

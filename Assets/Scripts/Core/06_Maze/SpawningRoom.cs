@@ -1,4 +1,20 @@
-﻿// SpawningRoom.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// SpawningRoom.cs
 // Generic spawning room system for all maze testing tools
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -29,7 +45,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (Serialized from JSON)
 
-        [Header("🏛️ Room Dimensions (From JSON Config)")]
+        [Header("️ Room Dimensions (From JSON Config)")]
         [Tooltip("Room size in grid cells (loaded from JSON)")]
         [SerializeField] private int roomSize;
         
@@ -45,7 +61,7 @@ namespace Code.Lavos.Core
         [Tooltip("Exit direction (loaded from JSON)")]
         [SerializeField] private Vector2Int exitDirection;
 
-        [Header("🎒 Item Spawning (From JSON Config)")]
+        [Header(" Item Spawning (From JSON Config)")]
         [Tooltip("Enable item spawning in room (loaded from JSON)")]
         [SerializeField] private bool enableItemSpawning;
         
@@ -55,7 +71,7 @@ namespace Code.Lavos.Core
         [Tooltip("Max items to spawn (loaded from JSON)")]
         [SerializeField] private int maxItems;
 
-        [Header("📦 Prefab References (Optional)")]
+        [Header(" Prefab References (Optional)")]
         [Tooltip("Item prefab (if exists, otherwise uses procedural)")]
         [SerializeField] private GameObject itemPrefab;
         
@@ -65,14 +81,14 @@ namespace Code.Lavos.Core
         [Tooltip("Chest prefab (if exists, otherwise uses procedural)")]
         [SerializeField] private GameObject chestPrefab;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
         
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
 
-        [Header("🐛 Debug (Hardcoded - Comment to Disable Warnings)")]
+        [Header(" Debug (Hardcoded - Comment to Disable Warnings)")]
         // [SerializeField] private float hardcodedCellSize = 6f;  // Comment out to disable warning
         [SerializeField] private bool showDebugLogs = true;
 
@@ -159,7 +175,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpawningRoom] 📖 Config loaded from JSON:");
+                Debug.Log($"[SpawningRoom]  Config loaded from JSON:");
                 Debug.Log($"  • Room Size: {roomSize}x{roomSize} cells ({roomWidth}m x {roomWidth}m)");
                 Debug.Log($"  • Room Height: {roomHeight}m");
                 Debug.Log($"  • Entrance: {entranceDirection}");
@@ -192,7 +208,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpawningRoom] 🏛️ Initialized at {gridPosition} → {spawnPosition}");
+                Debug.Log($"[SpawningRoom] ️ Initialized at {gridPosition} → {spawnPosition}");
             }
         }
 
@@ -205,7 +221,7 @@ namespace Code.Lavos.Core
             
             if (player == null)
             {
-                Debug.LogWarning("[SpawningRoom] ⚠️ PlayerController not found in scene");
+                Debug.LogWarning("[SpawningRoom] ️ PlayerController not found in scene");
                 return;
             }
             
@@ -219,7 +235,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpawningRoom] 👤 Player spawned at {spawnPosition}");
+                Debug.Log($"[SpawningRoom]  Player spawned at {spawnPosition}");
             }
         }
 
@@ -252,7 +268,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpawningRoom] 🎒 Spawned {itemsSpawned} items");
+                Debug.Log($"[SpawningRoom]  Spawned {itemsSpawned} items");
             }
         }
 
@@ -291,7 +307,7 @@ namespace Code.Lavos.Core
             if (torchPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ⚠️ No torch prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] ️ No torch prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
@@ -302,7 +318,7 @@ namespace Code.Lavos.Core
             GameObject.Instantiate(torchPrefab, position, rotation, transform);
             
             if (showDebugLogs)
-                Debug.Log($"[SpawningRoom] 🔥 Spawned torch prefab at {position}");
+                Debug.Log($"[SpawningRoom]  Spawned torch prefab at {position}");
         }
 
         /// <summary>
@@ -314,7 +330,7 @@ namespace Code.Lavos.Core
             if (chestPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ⚠️ No chest prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] ️ No chest prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
@@ -325,7 +341,7 @@ namespace Code.Lavos.Core
             GameObject.Instantiate(chestPrefab, position, rotation, transform);
             
             if (showDebugLogs)
-                Debug.Log($"[SpawningRoom] 📦 Spawned chest prefab at {position}");
+                Debug.Log($"[SpawningRoom]  Spawned chest prefab at {position}");
         }
 
         /// <summary>
@@ -337,7 +353,7 @@ namespace Code.Lavos.Core
             if (itemPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ⚠️ No item prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] ️ No item prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
@@ -348,7 +364,7 @@ namespace Code.Lavos.Core
             GameObject.Instantiate(itemPrefab, position, rotation, transform);
             
             if (showDebugLogs)
-                Debug.Log($"[SpawningRoom] 🎒 Spawned item prefab at {position}");
+                Debug.Log($"[SpawningRoom]  Spawned item prefab at {position}");
         }
 
         #endregion

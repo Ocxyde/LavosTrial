@@ -1,4 +1,20 @@
-﻿// GridMazeGenerator.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// GridMazeGenerator.cs
 // Custom grid-based maze generation system - IMPROVED ALGORITHM
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -79,7 +95,7 @@ namespace Code.Lavos.Core
             roomSize = config.defaultRoomSize;
             corridorWidth = config.defaultCorridorWidth;
 
-            Debug.Log($"[GridMazeGenerator] 📋 Config loaded: {gridSize}x{gridSize} grid, {roomSize}x{roomSize} rooms, {corridorWidth}-cell corridors");
+            Debug.Log($"[GridMazeGenerator]  Config loaded: {gridSize}x{gridSize} grid, {roomSize}x{roomSize} rooms, {corridorWidth}-cell corridors");
         }
 
         #endregion
@@ -94,7 +110,7 @@ namespace Code.Lavos.Core
             // Initialize from config if not already set
             if (gridSize == 0) InitializeFromConfig();
 
-            Debug.Log($"[GridMazeGenerator] 🔲 Creating {gridSize}x{gridSize} grid...");
+            Debug.Log($"[GridMazeGenerator]  Creating {gridSize}x{gridSize} grid...");
 
             // Step 1: Create empty grid (all Floor)
             CreateEmptyGrid();
@@ -111,10 +127,10 @@ namespace Code.Lavos.Core
             // Step 5: Add outer walls
             AddOuterWalls();
 
-            Debug.Log($"[GridMazeGenerator] ✅ Maze generated: {roomCenters.Count} rooms, {corridorWidth}-cell corridors");
-            Debug.Log($"[GridMazeGenerator] 🎯 Spawn room at: {spawnRoomCenter}");
-            Debug.Log($"[GridMazeGenerator] 🚪 Entrance direction: {spawnEntranceDirection}");
-            Debug.Log($"[GridMazeGenerator] 🚪 Exit direction: {spawnExitDirection}");
+            Debug.Log($"[GridMazeGenerator]  Maze generated: {roomCenters.Count} rooms, {corridorWidth}-cell corridors");
+            Debug.Log($"[GridMazeGenerator]  Spawn room at: {spawnRoomCenter}");
+            Debug.Log($"[GridMazeGenerator]  Entrance direction: {spawnEntranceDirection}");
+            Debug.Log($"[GridMazeGenerator]  Exit direction: {spawnExitDirection}");
         }
 
         #endregion
@@ -136,7 +152,7 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] 📄 Empty grid created (all Floor)");
+            Debug.Log($"[GridMazeGenerator]  Empty grid created (all Floor)");
         }
 
         #endregion
@@ -149,7 +165,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void PlaceSpawnRoom()
         {
-            Debug.Log($"[GridMazeGenerator] 🏛️ STEP 2: Placing SPAWN ROOM (priority #1)...");
+            Debug.Log($"[GridMazeGenerator] ️ STEP 2: Placing SPAWN ROOM (priority #1)...");
 
             // Place spawn room near center-left of grid (good starting position)
             int spawnRoomX = Mathf.Max(2, gridSize / 4);
@@ -170,7 +186,7 @@ namespace Code.Lavos.Core
                         {
                             grid[gridX, gridY] = GridMazeCell.SpawnPoint;
                             spawnRoomCenter = new Vector2Int(gridX, gridY);
-                            Debug.Log($"[GridMazeGenerator] 🎯 SpawnPoint marked at ({gridX}, {gridY})");
+                            Debug.Log($"[GridMazeGenerator]  SpawnPoint marked at ({gridX}, {gridY})");
                         }
                         else
                         {
@@ -187,8 +203,8 @@ namespace Code.Lavos.Core
 
             roomCenters.Add(new Vector2Int(spawnRoomX + roomSize/2, spawnRoomY + roomSize/2));
 
-            Debug.Log($"[GridMazeGenerator] ✅ Spawn room placed at ({spawnRoomX}, {spawnRoomY})");
-            Debug.Log($"[GridMazeGenerator] 🚪 Entrance: {spawnEntranceDirection}, Exit: {spawnExitDirection}");
+            Debug.Log($"[GridMazeGenerator]  Spawn room placed at ({spawnRoomX}, {spawnRoomY})");
+            Debug.Log($"[GridMazeGenerator]  Entrance: {spawnEntranceDirection}, Exit: {spawnExitDirection}");
         }
 
         #endregion
@@ -200,7 +216,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void PlaceOtherRooms()
         {
-            Debug.Log($"[GridMazeGenerator] 🏛️ STEP 3: Placing other rooms...");
+            Debug.Log($"[GridMazeGenerator] ️ STEP 3: Placing other rooms...");
 
             // Place 1-3 additional rooms (random positions, avoid spawn corridors)
             int additionalRooms = Random.Range(1, 4);
@@ -214,11 +230,11 @@ namespace Code.Lavos.Core
                 }
                 else
                 {
-                    Debug.LogWarning($"[GridMazeGenerator] ⚠️ Could not place room {i+1} (no valid position)");
+                    Debug.LogWarning($"[GridMazeGenerator] ️ Could not place room {i+1} (no valid position)");
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] 🏛️ Total rooms: {roomCenters.Count}");
+            Debug.Log($"[GridMazeGenerator] ️ Total rooms: {roomCenters.Count}");
         }
 
         /// <summary>
@@ -306,7 +322,7 @@ namespace Code.Lavos.Core
             }
 
             roomCenters.Add(new Vector2Int(x + roomSize/2, y + roomSize/2));
-            Debug.Log($"[GridMazeGenerator] 🏛️ {roomType} placed at ({x}, {y})");
+            Debug.Log($"[GridMazeGenerator] ️ {roomType} placed at ({x}, {y})");
         }
 
         #endregion
@@ -318,7 +334,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void CarveCorridorsToSpawn()
         {
-            Debug.Log($"[GridMazeGenerator] 🔨 STEP 4: Carving corridors TO spawn room...");
+            Debug.Log($"[GridMazeGenerator]  STEP 4: Carving corridors TO spawn room...");
 
             // Carve entrance corridor TO spawn room (from left)
             CarveCorridorToSpawn(spawnEntranceDirection);
@@ -329,7 +345,7 @@ namespace Code.Lavos.Core
             // Connect other rooms with L-shaped corridors
             ConnectOtherRooms();
 
-            Debug.Log($"[GridMazeGenerator] 🔨 Corridors carved ({corridorWidth} cells wide)");
+            Debug.Log($"[GridMazeGenerator]  Corridors carved ({corridorWidth} cells wide)");
         }
 
         /// <summary>
@@ -459,7 +475,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void AddOuterWalls()
         {
-            Debug.Log($"[GridMazeGenerator] 🧱 STEP 5: Adding outer walls...");
+            Debug.Log($"[GridMazeGenerator]  STEP 5: Adding outer walls...");
 
             // Mark outer edges as Wall (but NOT SpawnPoint or Room!)
             for (int x = 0; x < gridSize; x++)
@@ -478,7 +494,7 @@ namespace Code.Lavos.Core
                     grid[gridSize - 1, y] = GridMazeCell.Wall;
             }
 
-            Debug.Log($"[GridMazeGenerator] 🧱 Outer walls added");
+            Debug.Log($"[GridMazeGenerator]  Outer walls added");
         }
 
         #endregion
@@ -508,14 +524,14 @@ namespace Code.Lavos.Core
                 {
                     if (grid[x, y] == GridMazeCell.SpawnPoint)
                     {
-                        Debug.Log($"[GridMazeGenerator] 🎯 SpawnPoint found at ({x}, {y})");
+                        Debug.Log($"[GridMazeGenerator]  SpawnPoint found at ({x}, {y})");
                         return new Vector2Int(x, y);
                     }
                 }
             }
 
             // Fallback to spawn room center
-            Debug.LogWarning("[GridMazeGenerator] ⚠️ No SpawnPoint found - using spawn room center");
+            Debug.LogWarning("[GridMazeGenerator] ️ No SpawnPoint found - using spawn room center");
             return spawnRoomCenter;
         }
 
@@ -543,7 +559,7 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] 💾 Serialized grid: {totalBytes} bytes");
+            Debug.Log($"[GridMazeGenerator]  Serialized grid: {totalBytes} bytes");
             return data;
         }
 
@@ -554,7 +570,7 @@ namespace Code.Lavos.Core
         {
             if (data == null || data.Length < 2)
             {
-                Debug.LogError("[GridMazeGenerator] ❌ Invalid data for deserialization");
+                Debug.LogError("[GridMazeGenerator]  Invalid data for deserialization");
                 return;
             }
 
@@ -563,7 +579,7 @@ namespace Code.Lavos.Core
 
             if (data.Length != expectedSize)
             {
-                Debug.LogError($"[GridMazeGenerator] ❌ Data size mismatch: expected {expectedSize}, got {data.Length}");
+                Debug.LogError($"[GridMazeGenerator]  Data size mismatch: expected {expectedSize}, got {data.Length}");
                 return;
             }
 
@@ -578,7 +594,7 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] 📂 Deserialized grid: {data.Length} bytes");
+            Debug.Log($"[GridMazeGenerator]  Deserialized grid: {data.Length} bytes");
         }
 
         #endregion

@@ -1,4 +1,20 @@
-﻿// LightEngine.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// LightEngine.cs
 // Central lighting engine for ALL light emission, fog of war, and lightning effects
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -40,8 +56,8 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<LightEngine>();
                     if (_instance == null)
                     {
-                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[LightEngine] ⚠️ Not found in scene - auto-creating (add manually!)");
+                        // ️ FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[LightEngine] ️ Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("LightEngine");
                         _instance = go.AddComponent<LightEngine>();
                         // Note: Not using DontDestroyOnLoad - LightEngine is scene-specific
@@ -253,11 +269,11 @@ namespace Code.Lavos.Core
             // Ensure cleanup on application quit
             if (!Application.isPlaying) return;
 
-            Debug.Log("[LightEngine] 🧹 Cleaning up on application quit...");
+            Debug.Log("[LightEngine]  Cleaning up on application quit...");
             CleanupLights();
             if (_instance == this)
                 _instance = null;
-            Debug.Log("[LightEngine] ✅ LightEngine cleaned up - clean exit");
+            Debug.Log("[LightEngine]  LightEngine cleaned up - clean exit");
         }
 
         #endregion
@@ -286,7 +302,7 @@ namespace Code.Lavos.Core
                 light.color = defaultLightColor;
                 light.range = defaultLightRange;
                 light.intensity = 0f; // Start disabled
-                light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+                light.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
                 light.enabled = false;
                 light.bounceIntensity = 1f;
 
@@ -330,7 +346,7 @@ namespace Code.Lavos.Core
             lightData.light.color = color ?? lightData.baseColor;
             lightData.light.range = ((range ?? lightData.baseRange) * 1.5f) * 2f;
             lightData.light.intensity = (((intensity ?? lightData.baseIntensity) * 2f) * globalEmissionMultiplier) * 3f;
-            lightData.light.shadows = LightShadows.None;  // ✅ OPTIMIZED: No shadows (performance)
+            lightData.light.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
             lightData.light.enabled = true;
 
             // Position light
@@ -644,7 +660,7 @@ namespace Code.Lavos.Core
             _lightningEndTime = _lightningTimer + lightningDuration;
             _currentLightningIntensity = lightningIntensityMult;
 
-            Log($"[LightEngine] ⚡ LIGHTNING FLASH!");
+            Log($"[LightEngine]  LIGHTNING FLASH!");
 
             // Flash all lights instantly
             foreach (var lightData in _lightPool)

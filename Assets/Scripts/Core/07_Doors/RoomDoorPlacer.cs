@@ -1,4 +1,20 @@
-﻿// RoomDoorPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// RoomDoorPlacer.cs
 // Places doors in reserved wall holes with random variants and traps
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,14 +40,14 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (Serialized from JSON)
 
-        [Header("🚪 Door Placement (From JSON Config)")]
+        [Header(" Door Placement (From JSON Config)")]
         [Tooltip("Place doors in pre-carved holes (loaded from JSON)")]
         [SerializeField] private bool placeDoorsInHoles;
         
         [Tooltip("Randomize wall textures around doors (loaded from JSON)")]
         [SerializeField] private bool randomizeWallTextures;
 
-        [Header("🚪 Door Variants (From JSON Config)")]
+        [Header(" Door Variants (From JSON Config)")]
         [Tooltip("Enable trapped doors (loaded from JSON)")]
         [SerializeField] private bool enableTrappedDoors;
         
@@ -44,7 +60,7 @@ namespace Code.Lavos.Core
         [Tooltip("Enable secret doors (loaded from JSON)")]
         [SerializeField] private bool enableSecretDoors;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds DoorHolePlacer in scene")]
         [SerializeField] private DoorHolePlacer holePlacer;
         
@@ -119,7 +135,7 @@ namespace Code.Lavos.Core
             enableLockedDoors = config.enableLockedDoors;
             enableSecretDoors = config.enableSecretDoors;
 
-            Debug.Log($"[RoomDoorPlacer] 📖 Config loaded from JSON:");
+            Debug.Log($"[RoomDoorPlacer]  Config loaded from JSON:");
             Debug.Log($"  • Trapped Doors: {enableTrappedDoors} ({trapChance * 100f:F0}% chance)");
             Debug.Log($"  • Locked Doors: {enableLockedDoors}");
             Debug.Log($"  • Secret Doors: {enableSecretDoors}");
@@ -144,7 +160,7 @@ namespace Code.Lavos.Core
 
             if (holePlacer == null || holePlacer.PlacedHoles == null)
             {
-                Debug.LogError("[RoomDoorPlacer] ❌ DoorHolePlacer not initialized!");
+                Debug.LogError("[RoomDoorPlacer]  DoorHolePlacer not initialized!");
                 return;
             }
 
@@ -160,7 +176,7 @@ namespace Code.Lavos.Core
                 doorsPlaced++;
             }
 
-            Debug.Log($"[RoomDoorPlacer] ✅ Placed {doorsPlaced} doors in holes");
+            Debug.Log($"[RoomDoorPlacer]  Placed {doorsPlaced} doors in holes");
         }
 
         /// <summary>
@@ -178,7 +194,7 @@ namespace Code.Lavos.Core
             _placedDoors.Clear();
             _placedDoorData.Clear();
             
-            Debug.Log("[RoomDoorPlacer] 🧹 Cleared all placed doors");
+            Debug.Log("[RoomDoorPlacer]  Cleared all placed doors");
         }
 
         #endregion
@@ -218,7 +234,7 @@ namespace Code.Lavos.Core
 
             if (showDebugGizmos)
             {
-                Debug.Log($"[RoomDoorPlacer] 🚪 Placed {variant} door{(trap != DoorTrapType.None ? $" with {trap} trap" : "")} at {hole.Position}");
+                Debug.Log($"[RoomDoorPlacer]  Placed {variant} door{(trap != DoorTrapType.None ? $" with {trap} trap" : "")} at {hole.Position}");
             }
         }
 
@@ -290,7 +306,7 @@ namespace Code.Lavos.Core
 
         #region Debug
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugGizmos;
 
         #endregion

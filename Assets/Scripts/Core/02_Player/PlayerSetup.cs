@@ -1,4 +1,20 @@
-﻿// PlayerSetup.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// PlayerSetup.cs
 // Player component orchestrator - handles player initialization
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -106,14 +122,14 @@ namespace Code.Lavos.Core
         {
             if (!_isInitialized)
             {
-                Debug.LogWarning("[PlayerSetup] ⚠️ Not initialized in Awake - initializing now");
+                Debug.LogWarning("[PlayerSetup] ️ Not initialized in Awake - initializing now");
                 Awake();
             }
 
             PositionPlayer();
             SetupCamera();
 
-            Debug.Log("[PlayerSetup] ✅ Player initialized");
+            Debug.Log("[PlayerSetup]  Player initialized");
         }
 
         /// <summary>
@@ -140,7 +156,7 @@ namespace Code.Lavos.Core
             _eyeHeight = config.defaultPlayerEyeHeight;
             _followSpeed = config.mouseSensitivity * 5f;
 
-            Debug.Log($"[PlayerSetup] 📖 Config loaded: EyeHeight={_eyeHeight}m, FollowSpeed={_followSpeed}");
+            Debug.Log($"[PlayerSetup]  Config loaded: EyeHeight={_eyeHeight}m, FollowSpeed={_followSpeed}");
         }
 
         #endregion
@@ -180,24 +196,24 @@ namespace Code.Lavos.Core
         {
             if (_playerController == null)
             {
-                Debug.LogError("[PlayerSetup] ❌ PlayerController not found!");
-                Debug.LogError("[PlayerSetup] 💡 Add PlayerController component");
+                Debug.LogError("[PlayerSetup]  PlayerController not found!");
+                Debug.LogError("[PlayerSetup]  Add PlayerController component");
             }
 
             if (_playerStats == null)
             {
-                Debug.LogError("[PlayerSetup] ❌ PlayerStats not found!");
-                Debug.LogError("[PlayerSetup] 💡 Add PlayerStats component");
+                Debug.LogError("[PlayerSetup]  PlayerStats not found!");
+                Debug.LogError("[PlayerSetup]  Add PlayerStats component");
             }
 
             if (_playerCamera == null)
             {
-                Debug.LogWarning("[PlayerSetup] ⚠️ No Camera found!");
+                Debug.LogWarning("[PlayerSetup] ️ No Camera found!");
             }
 
             if (_cameraFollow == null && _playerCamera != null)
             {
-                Debug.LogWarning("[PlayerSetup] ⚠️ CameraFollow not found!");
+                Debug.LogWarning("[PlayerSetup] ️ CameraFollow not found!");
             }
         }
 
@@ -212,11 +228,11 @@ namespace Code.Lavos.Core
         private void InitializeComponents()
         {
             // PlayerStats auto-initializes in Awake() - no manual call needed
-            Debug.Log("[PlayerSetup] ✅ PlayerStats initialized (auto in Awake)");
+            Debug.Log("[PlayerSetup]  PlayerStats initialized (auto in Awake)");
 
             // CameraFollow auto-finds target automatically (set in Inspector)
             // Can't set autoFindTarget from here (it's private)
-            Debug.Log("[PlayerSetup] ✅ CameraFollow will auto-find target");
+            Debug.Log("[PlayerSetup]  CameraFollow will auto-find target");
         }
 
         /// <summary>
@@ -231,12 +247,12 @@ namespace Code.Lavos.Core
                 if (mazeBuilder != null)
                 {
                     transform.position = _startPosition;
-                    Debug.Log("[PlayerSetup] 🎯 Using maze spawn point");
+                    Debug.Log("[PlayerSetup]  Using maze spawn point");
                 }
                 else
                 {
                     transform.position = _startPosition;
-                    Debug.Log("[PlayerSetup] ⚠️ No CompleteMazeBuilder - using start position");
+                    Debug.Log("[PlayerSetup] ️ No CompleteMazeBuilder - using start position");
                 }
             }
             else
@@ -244,7 +260,7 @@ namespace Code.Lavos.Core
                 transform.position = _startPosition;
             }
 
-            Debug.Log($"[PlayerSetup] 📍 Player positioned at {transform.position}");
+            Debug.Log($"[PlayerSetup]  Player positioned at {transform.position}");
         }
 
         /// <summary>
@@ -258,7 +274,7 @@ namespace Code.Lavos.Core
             _playerCamera.transform.localPosition = new Vector3(0f, _eyeHeight, 0f);
             _playerCamera.transform.localRotation = Quaternion.identity;
 
-            Debug.Log($"[PlayerSetup] 📷 Camera at eye height ({_eyeHeight}m)");
+            Debug.Log($"[PlayerSetup]  Camera at eye height ({_eyeHeight}m)");
         }
 
         #endregion
@@ -274,7 +290,7 @@ namespace Code.Lavos.Core
 
             // Subscribe to player respawn event
             _eventHandler.OnPlayerRespawned += OnPlayerRespawned;
-            Debug.Log("[PlayerSetup] ✅ Subscribed to player events");
+            Debug.Log("[PlayerSetup]  Subscribed to player events");
         }
 
         /// <summary>
@@ -293,7 +309,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void OnPlayerRespawned()
         {
-            Debug.Log("[PlayerSetup] 🎯 Player respawned via event");
+            Debug.Log("[PlayerSetup]  Player respawned via event");
             ResetPlayer();
         }
 
@@ -308,7 +324,7 @@ namespace Code.Lavos.Core
         public void TeleportTo(Vector3 position)
         {
             transform.position = position;
-            Debug.Log($"[PlayerSetup] 🎯 Teleported to {position}");
+            Debug.Log($"[PlayerSetup]  Teleported to {position}");
         }
 
         /// <summary>
@@ -322,13 +338,13 @@ namespace Code.Lavos.Core
             // PlayerStats resets via its own methods
             if (_playerStats != null)
             {
-                Debug.Log("[PlayerSetup] 🔄 PlayerStats will reset to base values");
+                Debug.Log("[PlayerSetup]  PlayerStats will reset to base values");
             }
 
             // Notify event system
             _eventHandler?.InvokePlayerRespawned();
 
-            Debug.Log("[PlayerSetup] 🔄 Player reset");
+            Debug.Log("[PlayerSetup]  Player reset");
         }
 
         /// <summary>
@@ -360,13 +376,13 @@ namespace Code.Lavos.Core
         [ContextMenu("Setup Player")]
         private void EditorSetup()
         {
-            Debug.Log("[PlayerSetup] 🔧 Running setup...");
+            Debug.Log("[PlayerSetup]  Running setup...");
             LoadConfig();
             FindComponents();
             InitializeComponents();
             PositionPlayer();
             SetupCamera();
-            Debug.Log("[PlayerSetup] ✅ Setup complete");
+            Debug.Log("[PlayerSetup]  Setup complete");
         }
 
         /// <summary>

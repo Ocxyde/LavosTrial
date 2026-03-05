@@ -1,9 +1,30 @@
-# PeuImporte - Procedural Maze Game
+# CodeDotLavos - Procedural Maze Game
 
 **Unity Version:** 6000.3.7f1  
 **Architecture:** Plug-in-Out  
 **Config:** JSON-driven (no hardcoded values)  
+**License:** GPL-3.0  
 **Status:** ✅ Ready for Testing
+
+---
+
+## 📜 **LICENSE**
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+
+**License File:**
+- [COPYING](COPYING) - Full GPL-3.0 license text
+
+**Source Code Headers:**
+
+All C# source files include the GPL-3.0 header.
+
+To add headers to all files, run:
+```powershell
+.\Add-GPLLicenseHeader.ps1
+```
+
+**Copyright © 2026 CodeDotLavos. All rights reserved.**
 
 ---
 

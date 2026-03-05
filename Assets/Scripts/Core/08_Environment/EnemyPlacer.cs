@@ -1,4 +1,20 @@
-﻿// EnemyPlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// EnemyPlacer.cs
 // Specialized enemy placement system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,7 +40,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (From JSON)
 
-        [Header("👹 Enemy Settings (From JSON Config)")]
+        [Header(" Enemy Settings (From JSON Config)")]
         [Tooltip("Enable enemy spawning (loaded from JSON)")]
         [SerializeField] private bool enableEnemySpawning;
         
@@ -34,18 +50,18 @@ namespace Code.Lavos.Core
         [Tooltip("Max enemies to spawn (loaded from JSON)")]
         [SerializeField] private int maxEnemies;
 
-        [Header("👹 Prefab Reference")]
+        [Header(" Prefab Reference")]
         [Tooltip("Enemy prefab (assign in Inspector or Resources/)")]
         [SerializeField] private GameObject enemyPrefab;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
         
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
 
-        [Header("🐛 Debug")]
+        [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
 
         #endregion
@@ -107,7 +123,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[EnemyPlacer] 📖 Config loaded from JSON:");
+                Debug.Log($"[EnemyPlacer]  Config loaded from JSON:");
                 Debug.Log($"  • Enable: {enableEnemySpawning}");
                 Debug.Log($"  • Spawn Chance: {enemySpawnChance * 100f:F0}%");
                 Debug.Log($"  • Max Enemies: {maxEnemies}");
@@ -134,7 +150,7 @@ namespace Code.Lavos.Core
 
             if (gridMazeGenerator == null)
             {
-                Debug.LogError("[EnemyPlacer] ❌ GridMazeGenerator not initialized!");
+                Debug.LogError("[EnemyPlacer]  GridMazeGenerator not initialized!");
                 return;
             }
 
@@ -158,7 +174,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[EnemyPlacer] 👹 Spawned {_enemiesSpawned} enemies");
+                Debug.Log($"[EnemyPlacer]  Spawned {_enemiesSpawned} enemies");
             }
         }
 
@@ -193,12 +209,12 @@ namespace Code.Lavos.Core
                 }
                 
                 if (showDebugLogs)
-                    Debug.Log($"[EnemyPlacer] 👹 Placed enemy prefab at {position}");
+                    Debug.Log($"[EnemyPlacer]  Placed enemy prefab at {position}");
             }
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[EnemyPlacer] ⚠️ No enemy prefab assigned - skipping");
+                    Debug.LogWarning($"[EnemyPlacer] ️ No enemy prefab assigned - skipping");
             }
         }
 
@@ -258,7 +274,7 @@ namespace Code.Lavos.Core
             }
 
             if (showDebugLogs)
-                Debug.Log($"[EnemyPlacer] 👹 Loaded {_enemiesSpawned} enemies from binary");
+                Debug.Log($"[EnemyPlacer]  Loaded {_enemiesSpawned} enemies from binary");
         }
 
         #endregion

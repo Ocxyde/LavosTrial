@@ -1,4 +1,20 @@
-﻿// SFXVFXEngine.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// SFXVFXEngine.cs
 // Centralized Sound AND Visual Effects Engine
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -11,7 +27,7 @@
 // - AudioManager: Audio only (music, SFX sounds)
 // - SFXVFXEngine: Visual effects + coordination
 //
-// ⚠️ IMPORTANT: Add SFXVFXEngine to your scene manually.
+// ️ IMPORTANT: Add SFXVFXEngine to your scene manually.
 // Do NOT rely on auto-creation (plug-in-out violation).
 
 using System;
@@ -27,7 +43,7 @@ namespace Code.Lavos.Core
     /// SFXVFXEngine - Special FX & Visual FX management.
     /// Handles particle effects, visual effects, screen effects.
     /// 
-    /// ⚠️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// ️ Must be added to scene manually. Auto-creation is a fallback only.
     /// 
     /// NOT REDUNDANT with AudioManager:
     /// - AudioManager: Audio only (music, sound effects)
@@ -47,8 +63,8 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<SFXVFXEngine>();
                     if (_instance == null)
                     {
-                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[SFXVFXEngine] ⚠️ Not found in scene - auto-creating (add manually!)");
+                        // ️ FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[SFXVFXEngine] ️ Not found in scene - auto-creating (add manually!)");
                         GameObject go = new GameObject("SFXVFXEngine");
                         _instance = go.AddComponent<SFXVFXEngine>();
                         DontDestroyOnLoad(go);

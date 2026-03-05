@@ -1,4 +1,20 @@
-﻿// LightPlacementEngine.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// LightPlacementEngine.cs
 // Batch instantiation engine for light-emitting objects
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -95,7 +111,7 @@ namespace Code.Lavos.Core
                     torchPrefab = torchPool.TorchHandlePrefab;  // Use public property
                     if (torchPrefab != null)
                     {
-                        Debug.Log("[LightPlacementEngine] ✅ TorchPrefab assigned from TorchPool");
+                        Debug.Log("[LightPlacementEngine]  TorchPrefab assigned from TorchPool");
                     }
                 }
             }
@@ -103,26 +119,26 @@ namespace Code.Lavos.Core
             // If still null, try to load from Resources folder
             if (torchPrefab == null)
             {
-                Debug.Log("[LightPlacementEngine] 🔧 TorchPrefab not assigned - trying Resources.Load...");
+                Debug.Log("[LightPlacementEngine]  TorchPrefab not assigned - trying Resources.Load...");
                 torchPrefab = Resources.Load<GameObject>("TorchHandlePrefab");
 
                 if (torchPrefab != null)
                 {
-                    Debug.Log("[LightPlacementEngine] ✅ TorchPrefab loaded from Resources folder");
+                    Debug.Log("[LightPlacementEngine]  TorchPrefab loaded from Resources folder");
                 }
             }
 
             // If still null, try to find in scene (look for torch prefabs)
             if (torchPrefab == null)
             {
-                Debug.Log("[LightPlacementEngine] 🔧 TorchPrefab not in Resources - searching scene...");
+                Debug.Log("[LightPlacementEngine]  TorchPrefab not in Resources - searching scene...");
                 var allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
                 foreach (var obj in allObjects)
                 {
                     if (obj != null && obj.name.Contains("TorchHandle"))
                     {
                         torchPrefab = obj;
-                        Debug.Log($"[LightPlacementEngine] ✅ TorchPrefab found in scene: {obj.name}");
+                        Debug.Log($"[LightPlacementEngine]  TorchPrefab found in scene: {obj.name}");
                         break;
                     }
                 }
@@ -131,12 +147,12 @@ namespace Code.Lavos.Core
             // Final check
             if (torchPrefab == null)
             {
-                Debug.LogError("[LightPlacementEngine] ❌ No torchPrefab assigned!");
-                Debug.LogError("[LightPlacementEngine] ❌ Please ensure:");
+                Debug.LogError("[LightPlacementEngine]  No torchPrefab assigned!");
+                Debug.LogError("[LightPlacementEngine]  Please ensure:");
                 Debug.LogError("[LightPlacementEngine]    1. TorchPool has torchHandlePrefab assigned in Inspector, OR");
                 Debug.LogError("[LightPlacementEngine]    2. Create Resources folder and add TorchHandlePrefab there, OR");
                 Debug.LogError("[LightPlacementEngine]    3. Have a TorchHandlePrefab in the scene");
-                Debug.LogWarning("[LightPlacementEngine] ⚠️ Torches will NOT spawn until prefab is assigned!");
+                Debug.LogWarning("[LightPlacementEngine] ️ Torches will NOT spawn until prefab is assigned!");
                 // Don't disable - allow graceful degradation (torches just won't appear)
                 return;
             }
@@ -155,7 +171,7 @@ namespace Code.Lavos.Core
         public void SetTorchPrefab(GameObject prefab)
         {
             torchPrefab = prefab;
-            Debug.Log($"[LightPlacementEngine] ✅ TorchPrefab set via editor tool: {prefab.name}");
+            Debug.Log($"[LightPlacementEngine]  TorchPrefab set via editor tool: {prefab.name}");
         }
 
         private void OnDestroy()
@@ -240,8 +256,8 @@ namespace Code.Lavos.Core
         {
             if (torchPrefab == null)
             {
-                Debug.LogError("[LightPlacementEngine] ❌ Torch prefab is NULL!");
-                Debug.LogError("[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector!");
+                Debug.LogError("[LightPlacementEngine]  Torch prefab is NULL!");
+                Debug.LogError("[LightPlacementEngine]  Please assign torchPrefab in Inspector!");
                 return;
             }
 
@@ -269,7 +285,7 @@ namespace Code.Lavos.Core
                 TorchController controller = torchObj.GetComponent<TorchController>();
                 if (controller == null)
                 {
-                    Debug.LogError($"[LightPlacementEngine] ❌ TorchController missing on torch at {torchRecord.position}!");
+                    Debug.LogError($"[LightPlacementEngine]  TorchController missing on torch at {torchRecord.position}!");
                     continue;
                 }
 
@@ -280,7 +296,7 @@ namespace Code.Lavos.Core
 
                 // ALL torches ON by default
                 controller.TurnOn();
-                Debug.Log($"[LightPlacementEngine] ✅ Torch {guid} turned ON at {torchRecord.position}");
+                Debug.Log($"[LightPlacementEngine]  Torch {guid} turned ON at {torchRecord.position}");
             }
 
             float elapsed = Time.realtimeSinceStartup - startTime;

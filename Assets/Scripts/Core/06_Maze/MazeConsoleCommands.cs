@@ -1,4 +1,20 @@
-﻿// MazeConsoleCommands.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// MazeConsoleCommands.cs
 // Console commands for maze system control
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -25,8 +41,8 @@ namespace Code.Lavos.Core
         // Register commands (call from GameManager or similar)
         public static void RegisterCommands()
         {
-            Debug.Log("[MazeConsole] 📟 Console commands registered");
-            Debug.Log("[MazeConsole] 📟 Type 'maze.help' for available commands");
+            Debug.Log("[MazeConsole]  Console commands registered");
+            Debug.Log("[MazeConsole]  Type 'maze.help' for available commands");
         }
 
         // Command: maze.verbosity [full|short|mute]
@@ -42,12 +58,12 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
             if (builder != null)
             {
-                Debug.Log("[MazeConsole] 🏗️ Generating maze...");
+                Debug.Log("[MazeConsole] ️ Generating maze...");
                 builder.GenerateMaze();
             }
             else
             {
-                Debug.LogError("[MazeConsole] ❌ CompleteMazeBuilder not found in scene");
+                Debug.LogError("[MazeConsole]  CompleteMazeBuilder not found in scene");
             }
         }
 
@@ -67,7 +83,7 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogError("[MazeConsole] ❌ CompleteMazeBuilder not found");
+                Debug.LogError("[MazeConsole]  CompleteMazeBuilder not found");
             }
         }
 

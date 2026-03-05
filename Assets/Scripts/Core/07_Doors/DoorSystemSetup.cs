@@ -1,9 +1,25 @@
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
 // DoorSystemSetup.cs
-// ⚠️ DEPRECATED - LEGACY DOOR SETUP HELPER ⚠️
+// ️ DEPRECATED - LEGACY DOOR SETUP HELPER ️
 // Editor helper script to verify and setup LEGACY door system components
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// ⚠️ WARNING: This helper uses DEPRECATED components!
+// ️ WARNING: This helper uses DEPRECATED components!
 // For NEW development, use CompleteMazeBuilder + DoorsEngine + RealisticDoorFactory.
 //
 // Usage: Add to Maze GameObject, run VerifySetup() in Context Menu
@@ -18,7 +34,7 @@ using UnityEditor;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// ⚠️ DEPRECATED - DoorSystemSetup - Legacy door setup helper.
+    /// ️ DEPRECATED - DoorSystemSetup - Legacy door setup helper.
     /// For new development, use CompleteMazeBuilder + DoorsEngine + RealisticDoorFactory.
     /// </summary>
     public class DoorSystemSetup : MonoBehaviour
@@ -27,7 +43,7 @@ namespace Code.Lavos.Core
         public void VerifySetup()
         {
             Debug.Log("=== Verifying LEGACY Door System ===");
-            Debug.Log("⚠️  This checks DEPRECATED components!");
+            Debug.Log("️  This checks DEPRECATED components!");
             Debug.Log("");
 
             bool allGood = true;
@@ -35,63 +51,63 @@ namespace Code.Lavos.Core
             // Check MazeGenerator
             if (GetComponent<MazeGenerator>() == null)
             {
-                Debug.LogError("❌ MazeGenerator component missing!");
+                Debug.LogError(" MazeGenerator component missing!");
                 allGood = false;
             }
             else
             {
-                Debug.Log("✅ MazeGenerator found");
+                Debug.Log(" MazeGenerator found");
             }
 
             // Check RoomGenerator
             if (GetComponent<RoomGenerator>() == null)
             {
-                Debug.LogError("❌ RoomGenerator component missing!");
+                Debug.LogError(" RoomGenerator component missing!");
                 allGood = false;
             }
             else
             {
-                Debug.Log("✅ RoomGenerator found");
+                Debug.Log(" RoomGenerator found");
             }
 
             // Check DoorHolePlacer (legacy component)
             var holePlacer = GetComponent<DoorHolePlacer>();
             if (holePlacer == null)
             {
-                Debug.LogError("❌ DoorHolePlacer component missing!");
+                Debug.LogError(" DoorHolePlacer component missing!");
                 allGood = false;
             }
             else
             {
-                Debug.Log("✅ DoorHolePlacer found (legacy)");
+                Debug.Log(" DoorHolePlacer found (legacy)");
             }
 
             // Check RoomDoorPlacer (legacy component)
             var doorPlacer = GetComponent<RoomDoorPlacer>();
             if (doorPlacer == null)
             {
-                Debug.LogError("❌ RoomDoorPlacer component missing!");
+                Debug.LogError(" RoomDoorPlacer component missing!");
                 allGood = false;
             }
             else
             {
-                Debug.Log("✅ RoomDoorPlacer found (legacy)");
+                Debug.Log(" RoomDoorPlacer found (legacy)");
             }
 
             // MazeRenderer is deprecated - skip check
-            Debug.Log("⚠️  MazeRenderer check skipped (deprecated)");
+            Debug.Log("️  MazeRenderer check skipped (deprecated)");
 
             Debug.Log("=== Verification Complete ===");
 
             if (allGood)
             {
-                Debug.Log("✅ All LEGACY door components present");
-                Debug.Log("▶️ Run 'Generate Maze' to create maze with doors");
+                Debug.Log(" All LEGACY door components present");
+                Debug.Log("️ Run 'Generate Maze' to create maze with doors");
             }
             else
             {
-                Debug.LogError("❌ Some components missing!");
-                Debug.Log("💡 Run 'Tools → Create Maze Prefabs' to add components");
+                Debug.LogError(" Some components missing!");
+                Debug.Log(" Run 'Tools → Create Maze Prefabs' to add components");
             }
         }
 
@@ -105,45 +121,45 @@ namespace Code.Lavos.Core
             if (GetComponent<MazeGenerator>() == null)
             {
                 gameObject.AddComponent<MazeGenerator>();
-                Debug.Log("✅ Added MazeGenerator");
+                Debug.Log(" Added MazeGenerator");
                 added++;
             }
 
             if (GetComponent<RoomGenerator>() == null)
             {
                 gameObject.AddComponent<RoomGenerator>();
-                Debug.Log("✅ Added RoomGenerator");
+                Debug.Log(" Added RoomGenerator");
                 added++;
             }
 
             if (GetComponent<DoorHolePlacer>() == null)
             {
                 gameObject.AddComponent<DoorHolePlacer>();
-                Debug.Log("✅ Added DoorHolePlacer");
+                Debug.Log(" Added DoorHolePlacer");
                 added++;
             }
 
             if (GetComponent<RoomDoorPlacer>() == null)
             {
                 gameObject.AddComponent<RoomDoorPlacer>();
-                Debug.Log("✅ Added RoomDoorPlacer");
+                Debug.Log(" Added RoomDoorPlacer");
                 added++;
             }
 
             // MazeRenderer is deprecated - skip
-            Debug.Log("⚠️  MazeRenderer skipped (deprecated)");
+            Debug.Log("️  MazeRenderer skipped (deprecated)");
 
             if (GetComponent<MazeIntegration>() == null)
             {
                 gameObject.AddComponent<MazeIntegration>();
-                Debug.Log("✅ Added MazeIntegration");
+                Debug.Log(" Added MazeIntegration");
                 added++;
             }
 
             Debug.Log("=== Components Added ===");
-            Debug.Log($"✅ Added {added} components");
-            Debug.Log("⚠️  These are LEGACY components");
-            Debug.Log("💡 For new projects, use CompleteMazeBuilder");
+            Debug.Log($" Added {added} components");
+            Debug.Log("️  These are LEGACY components");
+            Debug.Log(" For new projects, use CompleteMazeBuilder");
         }
 
         [ContextMenu("Reset to Default Settings (LEGACY)")]
@@ -156,7 +172,7 @@ namespace Code.Lavos.Core
             if (holePlacer != null)
             {
                 // Legacy properties - component is deprecated
-                Debug.Log("✅ DoorHolePlacer reset to defaults (legacy)");
+                Debug.Log(" DoorHolePlacer reset to defaults (legacy)");
             }
 
             // Reset RoomDoorPlacer (legacy component)
@@ -164,11 +180,11 @@ namespace Code.Lavos.Core
             if (doorPlacer != null)
             {
                 // Legacy properties - component is deprecated
-                Debug.Log("✅ RoomDoorPlacer reset to defaults (legacy)");
+                Debug.Log(" RoomDoorPlacer reset to defaults (legacy)");
             }
 
             Debug.Log("=== LEGACY Settings Reset ===");
-            Debug.Log("⚠️  Consider migrating to CompleteMazeBuilder for new projects");
+            Debug.Log("️  Consider migrating to CompleteMazeBuilder for new projects");
         }
     }
 }

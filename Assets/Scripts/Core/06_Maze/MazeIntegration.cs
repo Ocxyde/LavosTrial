@@ -1,8 +1,24 @@
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
 // MazeIntegration.cs
-// ⚠️ DEPRECATED - LEGACY MAZE SYSTEM ⚠️
+// ️ DEPRECATED - LEGACY MAZE SYSTEM ️
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// 🚫 DO NOT USE FOR NEW DEVELOPMENT 🚫
+//  DO NOT USE FOR NEW DEVELOPMENT 
 // This class is part of the LEGACY maze generation system.
 //
 // USE CompleteMazeBuilder.cs FOR ALL NEW MAZE GENERATION:
@@ -21,7 +37,7 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// ⚠️ DEPRECATED - Use CompleteMazeBuilder instead.
+    /// ️ DEPRECATED - Use CompleteMazeBuilder instead.
     /// 
     /// Legacy maze orchestrator. Coordinates deprecated components:
     /// - MazeGenerator (legacy DFS algorithm)
@@ -39,8 +55,8 @@ namespace Code.Lavos.Core
         [SerializeField] private string manualSeed = "MyCustomSeed123";
 
         [Header("Maze Dimensions")]
-        [SerializeField] private int mazeWidth = 21;  // ✅ Reduced from 31 for better performance
-        [SerializeField] private int mazeHeight = 21;  // ✅ Reduced from 31 for better performance
+        [SerializeField] private int mazeWidth = 21;  //  Reduced from 31 for better performance
+        [SerializeField] private int mazeHeight = 21;  //  Reduced from 31 for better performance
 
         [Header("Room Settings")]
         [SerializeField] private bool generateRooms = true;
@@ -52,7 +68,7 @@ namespace Code.Lavos.Core
         [SerializeField] private float doorChance = 0.6f;
 
         [Header("Torch Settings")]
-        [SerializeField] private bool placeTorches = true;  // ✅ Torches ARE placed by default
+        [SerializeField] private bool placeTorches = true;  //  Torches ARE placed by default
         
         [Header("Level Settings")]
         [Tooltip("Current maze level (affects maze size)")]
@@ -160,7 +176,7 @@ namespace Code.Lavos.Core
             }
             else if (mazeGenerator != null)
             {
-                Debug.Log($"[MazeIntegration] 📏 Level {currentLevel}: {mazeWidth}x{mazeHeight} (fixed size)");
+                Debug.Log($"[MazeIntegration]  Level {currentLevel}: {mazeWidth}x{mazeHeight} (fixed size)");
             }
             
             // PLUG-IN-AND-OUT: Invoke level changed event via EventHandler
@@ -168,7 +184,7 @@ namespace Code.Lavos.Core
             if (EventHandler.Instance != null)
             {
                 EventHandler.Instance.InvokeMazeLevelChanged(currentLevel);
-                Debug.Log($"[MazeIntegration] 🔌 Invoked MazeLevelChanged event (Level {currentLevel})");
+                Debug.Log($"[MazeIntegration]  Invoked MazeLevelChanged event (Level {currentLevel})");
             }
 
             // Configure maze dimensions
@@ -233,7 +249,7 @@ namespace Code.Lavos.Core
             if (spatialPlacer != null)
             {
                 Debug.Log("[MazeIntegration] Step 6: Placing ALL objects via SpatialPlacer...");
-                spatialPlacer.PlaceAllObjects();  // ✅ Places torches, chests, enemies, items
+                spatialPlacer.PlaceAllObjects();  //  Places torches, chests, enemies, items
             }
             else
             {
@@ -298,54 +314,6 @@ namespace Code.Lavos.Core
 
             return hash;
         }
-
-        #region Debug
-
-        // Debug GUI disabled for production
-        // Uncomment to enable debug UI in editor
-        /*
-        private void OnGUI()
-        {
-            if (!showDebugUI) return;
-
-            GUILayout.BeginVertical("box");
-
-            GUILayout.Label($"Seed: {manualSeed}");
-            GUILayout.Label($"Maze: {mazeWidth}x{mazeHeight}");
-            GUILayout.Label($"Generated: {_isGenerated}");
-
-            if (roomGenerator != null)
-                GUILayout.Label($"Rooms: {roomGenerator.RoomCount}");
-
-            if (doorHolePlacer != null)
-                GUILayout.Label($"Holes: {doorHolePlacer.HoleCount}");
-
-            if (roomDoorPlacer != null)
-                GUILayout.Label($"Doors: {roomDoorPlacer.DoorCount}");
-
-            GUILayout.Space(10);
-
-            if (GUILayout.Button("Generate"))
-            {
-                GenerateMaze();
-            }
-
-            if (GUILayout.Button("Regenerate"))
-            {
-                Regenerate();
-            }
-
-            if (GUILayout.Button("New Seed"))
-            {
-                RegenerateWithNewSeed();
-            }
-
-            GUILayout.EndVertical();
-            GUILayout.EndArea();
-        }
-
-        [SerializeField] private bool showDebugUI = true;
-        */
 
         #endregion
     }

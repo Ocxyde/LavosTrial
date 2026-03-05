@@ -1,4 +1,20 @@
-﻿// DoorHolePlacer.cs
+﻿// Copyright (C) 2026 Ocxyde
+//
+// This file is part of PeuImporte.
+//
+// PeuImporte is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// PeuImporte is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// DoorHolePlacer.cs
 // Reserves and creates holes in room walls for door placement
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -24,7 +40,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (Serialized from JSON)
 
-        [Header("🚪 Door Dimensions (From JSON Config)")]
+        [Header(" Door Dimensions (From JSON Config)")]
         [Tooltip("Door width + frame (loaded from JSON)")]
         [SerializeField] private float doorWidth;
         
@@ -37,7 +53,7 @@ namespace Code.Lavos.Core
         [Tooltip("Hole depth in wall (loaded from JSON)")]
         [SerializeField] private float holeDepth;
 
-        [Header("🚪 Door Spawn Settings (From JSON Config)")]
+        [Header(" Door Spawn Settings (From JSON Config)")]
         [Tooltip("Chance per wall to have a door (loaded from JSON)")]
         [SerializeField] private float doorSpawnChance;
         
@@ -47,14 +63,14 @@ namespace Code.Lavos.Core
         [Tooltip("Show debug gizmos in editor (loaded from JSON)")]
         [SerializeField] private bool showDebugGizmos;
 
-        [Header("🔌 Component References (Plug-in-Out)")]
+        [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
         
         [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
         [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
 
-        [Header("🐛 Debug (Hardcoded - Comment to Disable Warnings)")]
+        [Header(" Debug (Hardcoded - Comment to Disable Warnings)")]
         // [SerializeField] private float hardcodedCellSize = 6f;  // Comment out to disable warning
         // showDebugGizmos is defined above in Inspector Fields section
 
@@ -130,7 +146,7 @@ namespace Code.Lavos.Core
             carveHolesInWalls = true;  // Always carve holes if this component exists
             showDebugGizmos = config.showDebugGizmos;
 
-            Debug.Log($"[DoorHolePlacer] 📖 Config loaded from JSON:");
+            Debug.Log($"[DoorHolePlacer]  Config loaded from JSON:");
             Debug.Log($"  • Door Size: {doorWidth}m x {doorHeight}m x {doorDepth}m");
             Debug.Log($"  • Hole Depth: {holeDepth}m");
             Debug.Log($"  • Door Spawn Chance: {doorSpawnChance * 100f:F0}%");
@@ -155,7 +171,7 @@ namespace Code.Lavos.Core
 
             if (gridMazeGenerator == null)
             {
-                Debug.LogError("[DoorHolePlacer] ❌ GridMazeGenerator not initialized!");
+                Debug.LogError("[DoorHolePlacer]  GridMazeGenerator not initialized!");
                 return;
             }
 
@@ -184,7 +200,7 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[DoorHolePlacer] ✅ Placed {holesPlaced} door holes");
+            Debug.Log($"[DoorHolePlacer]  Placed {holesPlaced} door holes");
         }
 
         /// <summary>
@@ -195,7 +211,7 @@ namespace Code.Lavos.Core
         {
             _placedHoles.Clear();
             _holesByCell.Clear();
-            Debug.Log("[DoorHolePlacer] 🧹 Cleared all door holes");
+            Debug.Log("[DoorHolePlacer]  Cleared all door holes");
         }
 
         #endregion
@@ -292,7 +308,7 @@ namespace Code.Lavos.Core
 
             if (showDebugGizmos)
             {
-                Debug.Log($"[DoorHolePlacer] 🚪 Placed hole at ({x}, {y}) facing {direction}");
+                Debug.Log($"[DoorHolePlacer]  Placed hole at ({x}, {y}) facing {direction}");
             }
         }
 
