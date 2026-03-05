@@ -60,10 +60,31 @@ namespace Code.Lavos.Core
         public float defaultWallThickness = 0.5f;
         public float defaultCeilingHeight = 5f;
         
+        [Header("🏛️ Room & Corridor Settings")]
+        public int defaultRoomSize = 5;        // 5x5 rooms
+        public int defaultCorridorWidth = 2;   // 2 cells wide
+        public int defaultGridSize = 21;       // Base grid size
+
         [Header("🚪 Door Settings")]
         public float defaultDoorSpawnChance = 0.6f;
         public float defaultLockedDoorChance = 0.3f;
         public float defaultSecretDoorChance = 0.1f;
+        
+        [Header("🚪 Door Dimensions")]
+        public float defaultDoorWidth = 2.5f;        // Door width + frame
+        public float defaultDoorHeight = 3f;        // Door height + frame
+        public float defaultDoorDepth = 0.5f;       // Wall thickness
+        public float defaultDoorHoleDepth = 0.5f;   // Hole depth in wall
+        
+        [Header("🚪 Door Variants")]
+        public bool enableTrappedDoors = true;
+        public float defaultTrapChance = 0.2f;
+        public bool enableLockedDoors = true;
+        public bool enableSecretDoors = true;
+        
+        [Header("🚪 Door Visual")]
+        public bool randomizeWallTextures = true;
+        public bool showDebugGizmos = false;
         
         [Header("🏛️ Room Settings")]
         public bool generateRooms = true;

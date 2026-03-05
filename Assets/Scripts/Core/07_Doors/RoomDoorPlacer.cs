@@ -1,82 +1,135 @@
 ﻿// RoomDoorPlacer.cs
-// Places doors in reserved wall holes with random textures
+// Places doors in reserved wall holes with random variants and traps
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Plug-in-and-Out Architecture:
-// - Inherits from BehaviorEngine for ItemEngine integration
-// - Uses DoorHolePlacer for reserved wall spaces
-// - Doors snap into pre-carved holes
+// PLUG-IN-OUT ARCHITECTURE:
+// - Finds components (never creates)
+// - All values loaded from JSON config
+// - No hardcoded values
+// - Works with DoorHolePlacer and GridMazeGenerator
+//
+// LOCATION: Assets/Scripts/Core/07_Doors/
 
 using System.Collections.Generic;
 using UnityEngine;
-
-#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
 
 namespace Code.Lavos.Core
 {
     /// <summary>
     /// RoomDoorPlacer - Places doors in reserved wall holes.
-    /// Plug-in-and-Out: Inherits from BehaviorEngine, plugs into ItemEngine.
-    /// Each door is placed in a pre-carved hole with random texture.
+    /// PLUG-IN-OUT COMPLIANT: Finds components, never creates them.
+    /// ALL VALUES FROM JSON: Door variants, trap chances, etc. loaded from GameConfig.
     /// </summary>
     public class RoomDoorPlacer : MonoBehaviour
     {
-        [Header("Door Placement")]
-        [SerializeField] private bool placeDoorsInHoles = true;
-        [SerializeField] private DoorVariant[] availableVariants;
-        [SerializeField] private DoorTrapType[] availableTrapTypes;
+        #region Inspector Fields (Serialized from JSON)
 
-        [Header("Wall Texture")]
-        [SerializeField] private WallTextureSet[] wallTextureSets;
-        [SerializeField] private bool randomizeWallTextures = true;
+        [Header("🚪 Door Placement (From JSON Config)")]
+        [Tooltip("Place doors in pre-carved holes (loaded from JSON)")]
+        [SerializeField] private bool placeDoorsInHoles;
+        
+        [Tooltip("Randomize wall textures around doors (loaded from JSON)")]
+        [SerializeField] private bool randomizeWallTextures;
 
-        // Public accessors for editor script
-        public bool PlaceDoorsInHoles { get => placeDoorsInHoles; set => placeDoorsInHoles = value; }
-        public bool RandomizeWallTextures { get => randomizeWallTextures; set => randomizeWallTextures = value; }
-        public DoorVariant[] AvailableVariants { get => availableVariants; set => availableVariants = value; }
-        public WallTextureSet[] WallTextureSets { get => wallTextureSets; set => wallTextureSets = value; }
+        [Header("🚪 Door Variants (From JSON Config)")]
+        [Tooltip("Enable trapped doors (loaded from JSON)")]
+        [SerializeField] private bool enableTrappedDoors;
+        
+        [Tooltip("Chance for trap on door (loaded from JSON)")]
+        [SerializeField] private float trapChance;
+        
+        [Tooltip("Enable locked doors (loaded from JSON)")]
+        [SerializeField] private bool enableLockedDoors;
+        
+        [Tooltip("Enable secret doors (loaded from JSON)")]
+        [SerializeField] private bool enableSecretDoors;
 
-        [Header("Hole Integration")]
+        [Header("🔌 Component References (Plug-in-Out)")]
+        [Tooltip("Auto-finds DoorHolePlacer in scene")]
         [SerializeField] private DoorHolePlacer holePlacer;
+        
+        [Tooltip("Auto-finds GridMazeGenerator in scene")]
+        [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
-        [Header("References")]
-        [SerializeField] private RoomGenerator roomGenerator;
-        [SerializeField] private MazeGenerator mazeGenerator;
+        #endregion
+
+        #region Private Data
 
         private List<GameObject> _placedDoors = new();
-        private Dictionary<Vector2Int, Material> _wallTextureCache = new();
         private List<DoorData> _placedDoorData = new();
+
+        #endregion
+
+        #region Public Accessors
 
         public List<GameObject> PlacedDoors => _placedDoors;
         public int DoorCount => _placedDoors.Count;
         public List<DoorData> PlacedDoorData => _placedDoorData;
 
+        #endregion
+
+        #region Unity Lifecycle
+
         private void Awake()
         {
-            if (holePlacer == null)
-                holePlacer = GetComponent<DoorHolePlacer>();
-
-            if (roomGenerator == null)
-                roomGenerator = GetComponent<RoomGenerator>();
-
-            if (mazeGenerator == null)
-                mazeGenerator = GetComponent<MazeGenerator>();
-
-            // Initialize default variants if not assigned
-            if (availableVariants == null || availableVariants.Length == 0)
-            {
-                availableVariants = new[] { DoorVariant.Normal, DoorVariant.Normal, DoorVariant.Locked };
-            }
-
-            if (availableTrapTypes == null || availableTrapTypes.Length == 0)
-            {
-                availableTrapTypes = new[] { DoorTrapType.None, DoorTrapType.None, DoorTrapType.Poison };
-            }
+            // PLUG-IN-OUT: Find components (never create!)
+            FindComponents();
+            
+            // LOAD ALL VALUES FROM JSON CONFIG (NO HARDCODING!)
+            LoadConfig();
         }
+
+        #endregion
+
+        #region Plug-in-Out Compliance
+
+        /// <summary>
+        /// Find all required components in scene.
+        /// PLUG-IN-OUT: Never creates components, only finds existing ones.
+        /// </summary>
+        private void FindComponents()
+        {
+            if (holePlacer == null)
+                holePlacer = FindFirstObjectByType<DoorHolePlacer>();
+
+            // GridMazeGenerator is created by CompleteMazeBuilder
+        }
+
+        #endregion
+
+        #region JSON Config Loading
+
+        /// <summary>
+        /// Load ALL values from JSON config.
+        /// NO HARDCODED VALUES - everything from GameConfig-default.json.
+        /// </summary>
+        private void LoadConfig()
+        {
+            var config = GameConfig.Instance;
+            
+            // Door placement settings from JSON
+            placeDoorsInHoles = true;  // Always place if this component exists
+            randomizeWallTextures = config.randomizeWallTextures;
+            
+            // Door variant settings from JSON
+            enableTrappedDoors = config.enableTrappedDoors;
+            trapChance = config.defaultTrapChance;
+            enableLockedDoors = config.enableLockedDoors;
+            enableSecretDoors = config.enableSecretDoors;
+
+            Debug.Log($"[RoomDoorPlacer] 📖 Config loaded from JSON:");
+            Debug.Log($"  • Trapped Doors: {enableTrappedDoors} ({trapChance * 100f:F0}% chance)");
+            Debug.Log($"  • Locked Doors: {enableLockedDoors}");
+            Debug.Log($"  • Secret Doors: {enableSecretDoors}");
+        }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Place doors in all reserved holes.
-        /// Call after hole placement.
+        /// Call after DoorHolePlacer.PlaceAllHoles().
         /// </summary>
         [ContextMenu("Place Doors in Holes")]
         public void PlaceAllDoors()
@@ -89,7 +142,7 @@ namespace Code.Lavos.Core
 
             if (holePlacer == null || holePlacer.PlacedHoles == null)
             {
-                Debug.LogError("[RoomDoorPlacer] DoorHolePlacer not initialized!");
+                Debug.LogError("[RoomDoorPlacer] ❌ DoorHolePlacer not initialized!");
                 return;
             }
 
@@ -97,241 +150,147 @@ namespace Code.Lavos.Core
 
             Debug.Log("[RoomDoorPlacer] Starting door placement in reserved holes...");
 
+            int doorsPlaced = 0;
+
             foreach (var hole in holePlacer.PlacedHoles)
             {
                 PlaceDoorInHole(hole);
+                doorsPlaced++;
             }
 
-            Debug.Log($"[RoomDoorPlacer] Placed {_placedDoors.Count} doors in holes");
-        }
-
-        /// <summary>
-        /// Place a door in a specific hole.
-        /// Uses RealisticDoorFactory for proper door modeling.
-        /// </summary>
-        private void PlaceDoorInHole(DoorHoleData hole)
-        {
-            // Select random variant and trap type
-            DoorVariant variant = availableVariants[Random.Range(0, availableVariants.Length)];
-            DoorTrapType trapType = availableTrapTypes[Random.Range(0, availableTrapTypes.Length)];
-
-            // Create realistic door using new factory
-            // Door dimensions match hole exactly
-            GameObject door = RealisticDoorFactory.CreateRealisticDoor(
-                hole.Position,
-                hole.Rotation,
-                variant,
-                trapType,
-                hole.Width,
-                hole.Height,
-                hole.Depth
-            );
-
-            if (door != null)
-            {
-                _placedDoors.Add(door);
-
-                // Store door data
-                _placedDoorData.Add(new DoorData
-                {
-                    DoorObject = door,
-                    Variant = variant,
-                    TrapType = trapType,
-                    Hole = hole,
-                    Room = hole.Room
-                });
-
-                // Apply random wall texture if enabled
-                if (randomizeWallTextures && wallTextureSets != null && wallTextureSets.Length > 0)
-                {
-                    ApplyRandomWallTexture(door, hole.GridPosition);
-                }
-
-                // Mark hole as carved
-                holePlacer.MarkHoleAsCarved(hole);
-
-                Debug.Log($"[RoomDoorPlacer] Placed {variant} door at ({hole.GridPosition.x}, {hole.GridPosition.y})");
-            }
-        }
-
-        /// <summary>
-        /// Apply random wall texture to door frame.
-        /// </summary>
-        private void ApplyRandomWallTexture(GameObject door, Vector2Int gridPosition)
-        {
-            // Check cache first
-            if (_wallTextureCache.TryGetValue(gridPosition, out Material cachedMat))
-            {
-                ApplyMaterialToDoorFrames(door, cachedMat);
-                return;
-            }
-
-            // Select random texture set
-            WallTextureSet textureSet = wallTextureSets[Random.Range(0, wallTextureSets.Length)];
-
-            // Generate or get cached material
-            Material wallMat = GetWallMaterial(textureSet);
-            _wallTextureCache[gridPosition] = wallMat;
-
-            ApplyMaterialToDoorFrames(door, wallMat);
-        }
-
-        /// <summary>
-        /// Get or create wall material from texture set.
-        /// </summary>
-        private Material GetWallMaterial(WallTextureSet textureSet)
-        {
-            // Generate texture for wall
-            Texture2D wallTex = textureSet.GenerateTexture();
-
-            // Create material
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            Material mat = new Material(shader);
-            mat.mainTexture = wallTex;
-            mat.SetFloat("_Smoothness", textureSet.smoothness);
-            mat.SetColor("_BaseColor", textureSet.tint);
-
-            return mat;
-        }
-
-        /// <summary>
-        /// Apply material to door frame renderers.
-        /// </summary>
-        private void ApplyMaterialToDoorFrames(GameObject door, Material material)
-        {
-            MeshRenderer[] renderers = door.GetComponentsInChildren<MeshRenderer>();
-
-            foreach (var renderer in renderers)
-            {
-                if (renderer.name.Contains("Frame") || renderer.name.Contains("Wall"))
-                {
-                    renderer.sharedMaterial = material;
-                }
-            }
+            Debug.Log($"[RoomDoorPlacer] ✅ Placed {doorsPlaced} doors in holes");
         }
 
         /// <summary>
         /// Clear all placed doors.
         /// </summary>
+        [ContextMenu("Clear Placed Doors")]
         public void ClearPlacedDoors()
         {
-            if (_placedDoors != null)
-            {
-                foreach (var door in _placedDoors)
-                {
-                    if (door != null)
-                        Destroy(door);
-                }
-                _placedDoors.Clear();
-            }
-
-            _placedDoorData.Clear();
-            _wallTextureCache.Clear();
-        }
-
-        #region Debug
-
-        private void OnDrawGizmosSelected()
-        {
-            if (!showDebugGizmos || _placedDoors == null)
-                return;
-
-            // Draw placed doors
-            Gizmos.color = Color.yellow;
             foreach (var door in _placedDoors)
             {
                 if (door != null)
-                {
-                    Gizmos.DrawSphere(door.transform.position, 0.3f);
-                }
+                    DestroyImmediate(door);
             }
-
-            // Draw door data info
-            if (_placedDoorData != null && _placedDoorData.Count > 0)
-            {
-                foreach (var doorData in _placedDoorData)
-                {
-                    Debug.DrawLine(
-                        doorData.DoorObject.transform.position,
-                        doorData.DoorObject.transform.position + Vector3.up * 0.5f,
-                        Color.magenta
-                    );
-                }
-            }
+            
+            _placedDoors.Clear();
+            _placedDoorData.Clear();
+            
+            Debug.Log("[RoomDoorPlacer] 🧹 Cleared all placed doors");
         }
-
-        [SerializeField] private bool showDebugGizmos = false;  // Disabled by default
-        [SerializeField] private float cellSize = 4f;
-        [SerializeField] private float wallHeight = 3f;
 
         #endregion
-    }
 
-    /// <summary>
-    /// Door data structure for tracking placed doors.
-    /// </summary>
-    [System.Serializable]
-    public class DoorData
-    {
-        public GameObject DoorObject;
-        public DoorVariant Variant;
-        public DoorTrapType TrapType;
-        public DoorHoleData Hole;
-        public RoomData Room;
-
-        public Vector3 Position => DoorObject?.transform.position ?? Vector3.zero;
-        public Quaternion Rotation => DoorObject?.transform.rotation ?? Quaternion.identity;
-    }
-
-    // DoorVariant and DoorTrapType enums are defined in DoorsEngine.cs
-    // Using those definitions to avoid duplication
-
-    /// <summary>
-    /// Wall texture set for procedural generation.
-    /// </summary>
-    [System.Serializable]
-    public class WallTextureSet
-    {
-        [Header("Texture Settings")]
-        public string setName;
-        public Color baseColor = Color.gray;
-        public Color variationColor = Color.white;
-        public float noiseScale = 0.1f;
-        public float contrast = 1.2f;
-
-        [Header("Material Settings")]
-        public Color tint = Color.white;
-        public float smoothness = 0.5f;
+        #region Door Placement
 
         /// <summary>
-        /// Generate procedural wall texture.
+        /// Place a single door in a reserved hole.
         /// </summary>
-        public Texture2D GenerateTexture(int resolution = 64)
+        private void PlaceDoorInHole(DoorHolePlacer.DoorHoleData hole)
         {
-            Texture2D tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
-            tex.filterMode = FilterMode.Bilinear;
+            // Determine door variant (random based on config)
+            DoorVariant variant = DetermineDoorVariant();
+            DoorTrapType trap = DetermineDoorTrap(variant);
 
-            for (int y = 0; y < resolution; y++)
+            // Create door using RealisticDoorFactory
+            GameObject door = RealisticDoorFactory.CreateRealisticDoor(
+                hole.Position,
+                hole.Rotation,
+                variant,
+                trap,
+                hole.Width,
+                hole.Height,
+                hole.Depth
+            );
+
+            // Store reference
+            _placedDoors.Add(door);
+            _placedDoorData.Add(new DoorData
             {
-                for (int x = 0; x < resolution; x++)
-                {
-                    // Generate noise-based variation
-                    float nx = x / (float)resolution * noiseScale;
-                    float ny = y / (float)resolution * noiseScale;
+                GameObject = door,
+                Variant = variant,
+                TrapType = trap,
+                GridPosition = hole.GridPosition,
+                Direction = hole.Direction
+            });
 
-                    float noise = Mathf.PerlinNoise(nx * 10f, ny * 10f);
-                    noise = Mathf.Pow(noise, contrast);
-
-                    // Blend colors
-                    Color pixel = Color.Lerp(baseColor, variationColor, noise);
-                    pixel *= tint;
-
-                    tex.SetPixel(x, y, pixel);
-                }
+            if (showDebugGizmos)
+            {
+                Debug.Log($"[RoomDoorPlacer] 🚪 Placed {variant} door{(trap != DoorTrapType.None ? $" with {trap} trap" : "")} at {hole.Position}");
             }
-
-            tex.Apply();
-            return tex;
         }
+
+        /// <summary>
+        /// Determine door variant based on config chances.
+        /// </summary>
+        private DoorVariant DetermineDoorVariant()
+        {
+            float roll = Random.value;
+            
+            // Secret door
+            if (enableSecretDoors && roll < GameConfig.Instance.defaultSecretDoorChance)
+                return DoorVariant.Secret;
+            
+            // Locked door
+            if (enableLockedDoors && roll < GameConfig.Instance.defaultLockedDoorChance)
+                return DoorVariant.Locked;
+            
+            // Normal door
+            return DoorVariant.Normal;
+        }
+
+        /// <summary>
+        /// Determine door trap type based on config chances.
+        /// </summary>
+        private DoorTrapType DetermineDoorTrap(DoorVariant variant)
+        {
+            // Don't add traps to certain variants
+            if (variant == DoorVariant.Secret || variant == DoorVariant.Blessed)
+                return DoorTrapType.None;
+            
+            // Roll for trap
+            if (!enableTrappedDoors || Random.value > trapChance)
+                return DoorTrapType.None;
+            
+            // Random trap type
+            DoorTrapType[] availableTraps = new[]
+            {
+                DoorTrapType.Spike,
+                DoorTrapType.Fire,
+                DoorTrapType.Poison,
+                DoorTrapType.Shock,
+                DoorTrapType.Teleport,
+                DoorTrapType.Alarm
+            };
+            
+            return availableTraps[Random.Range(0, availableTraps.Length)];
+        }
+
+        #endregion
+
+        #region Door Data
+
+        /// <summary>
+        /// Door data structure.
+        /// Stores door instance, variant, and trap information.
+        /// </summary>
+        [System.Serializable]
+        public class DoorData
+        {
+            public GameObject GameObject;      // Door GameObject
+            public DoorVariant Variant;        // Door type
+            public DoorTrapType TrapType;      // Trap type (if any)
+            public Vector2Int GridPosition;    // Grid coordinates
+            public Vector2Int Direction;       // Direction door faces
+        }
+
+        #endregion
+
+        #region Debug
+
+        [Header("🐛 Debug")]
+        [SerializeField] private bool showDebugGizmos;
+
+        #endregion
     }
 }

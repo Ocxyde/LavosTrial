@@ -184,6 +184,9 @@ namespace Code.Lavos.Editor
 
         private static void CreateWallMaterial()
         {
+            // Ensure Materials folder exists
+            EnsureFolder("Assets/Materials");
+
             string matPath = "Assets/Materials/WallMaterial.mat";
 
             Shader shader = Shader.Find("Universal Render Pipeline/Lit");

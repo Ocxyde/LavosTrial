@@ -147,11 +147,22 @@ namespace Code.Lavos.Core
             Debug.Log("[LightPlacementEngine] Initialized");
         }
 
+        /// <summary>
+        /// Set torch prefab from editor tool (for testing).
+        /// Loads prefab from Resources path specified in GameConfig.
+        /// </summary>
+        /// <param name="prefab">Torch prefab instance</param>
+        public void SetTorchPrefab(GameObject prefab)
+        {
+            torchPrefab = prefab;
+            Debug.Log($"[LightPlacementEngine] ✅ TorchPrefab set via editor tool: {prefab.name}");
+        }
+
         private void OnDestroy()
         {
             ClearAllLights();
         }
-        
+
         #endregion
         
         #region Public API - Batch Loading

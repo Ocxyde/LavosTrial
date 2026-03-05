@@ -2,11 +2,14 @@
 // Editor helper script to verify and setup door system components
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Usage: Add to Maze GameObject, run VerifySetup() in Context Menu
+// ⚠️ HELPS SETUP LEGACY DOOR SYSTEM - For new projects use DoorsEngine directly
 
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+
+// Suppress obsolete warnings - this file intentionally helps with legacy system setup
+#pragma warning disable CS0618
 
 namespace Code.Lavos.Core
 {

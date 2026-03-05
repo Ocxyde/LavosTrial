@@ -42,7 +42,7 @@ namespace Code.Lavos.Core
             if (builder != null)
             {
                 Debug.Log("[MazeConsole] 🏗️ Generating maze...");
-                builder.GenerateCompleteMaze();
+                builder.GenerateMaze();
             }
             else
             {

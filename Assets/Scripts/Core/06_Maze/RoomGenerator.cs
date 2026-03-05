@@ -3,11 +3,15 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // Generates rectangular rooms with entrances/exits that integrate with maze walls
+//
+// NOTE: This class exposes many [SerializeField] fields for Inspector configuration.
+// Some fields are reserved for future features and may not be used in current implementation.
 
 using System.Collections.Generic;
 using UnityEngine;
 
-#pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
+#pragma warning disable CS0414 // Disable warnings for unused private fields (reserved for future features)
+#pragma warning disable CS0649 // Disable warnings for fields never assigned to (serialized in Inspector)
 
 namespace Code.Lavos.Core
 {

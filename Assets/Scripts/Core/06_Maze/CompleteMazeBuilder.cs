@@ -1,17 +1,34 @@
 ﻿// CompleteMazeBuilder.cs
-// Unified maze generation with plug-in-out architecture
+// Simplified maze generation with plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// PLUG-IN-OUT ARCHITECTURE:
-// - Subscribes to EventHandler for game state
-// - Publishes maze generation events
-// - Independent module (can be added/removed safely)
-// - No direct dependencies on other core systems
+// ROLE: Auto-generates complete maze (ground, walls, corridors, doors, objects)
 //
-// USAGE:
-//   1. Add CompleteMazeBuilder component to GameObject
-//   2. Tools → Generate Maze (editor menu)
-//   3. Press Play - maze auto-generates
+// PLUG-IN-OUT ARCHITECTURE:
+// - Does NOT create components (finds them in scene)
+// - Uses EventHandler for communication (publishes OnMazeGenerated)
+// - Independent module (can be added/removed safely)
+// - No direct dependencies on other systems
+//
+// GENERATION ORDER:
+// 1. LOAD CONFIG  → All values from JSON (NO HARDCODING)
+// 2. PRELOAD      → Prefabs, materials, textures
+// 3. FIND         → Components (plug-in-out: never create)
+// 4. CLEANUP      → Destroy ALL old objects
+// 5. GROUND       → Spawn ground floor (base layer)
+// 6. GRID MAZE    → Generate grid with rooms & corridors (marks walls)
+// 7. SPAWN WALLS  → Spawn walls from grid data (snapped)
+// 8. DOORS        → Place in openings
+// 9. OBJECTS      → Invoke other systems (torches, chests, enemies)
+// 10. SAVE        → Save to database
+// 11. PLAYER      → Spawn in entrance room (Play mode)
+// 12. PUBLISH     → OnMazeGenerated event (EventHandler)
+// NO CEILING      → Disabled for top-down view
+//
+// VERBOSITY:
+// - Loaded from GameConfig.Instance.consoleVerbosity
+// - Levels: Mute, Short (default), Full
+// - Runtime commands: maze.verbosity, maze.generate, maze.status
 //
 // Location: Assets/Scripts/Core/06_Maze/
 
@@ -21,84 +38,41 @@ using System.Collections.Generic;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// CompleteMazeBuilder - Auto-generates complete maze with walls, ground, ceiling, doors, rooms.
-    ///
-    /// PLUG-IN-OUT COMPLIANT:
-    /// - Uses EventHandler for core system communication
-    /// - Independent component that can be added/removed safely
-    /// - Does NOT create other components (finds them in scene)
-    /// - Integrates with SpatialPlacer, LightPlacementEngine, TorchPool via references
-    /// - Publishes events for other systems to subscribe
-    ///
-    /// VERBOSITY LEVELS:
-    /// - Mute: No console output
-    /// - Short: Only critical messages (errors, warnings, key milestones)
-    /// - Full: All debug messages (default, for testing)
+    /// CompleteMazeBuilder - Simplified maze generator.
+    /// PLUG-IN-OUT COMPLIANT: Finds components, never creates them.
     /// </summary>
     public class CompleteMazeBuilder : MonoBehaviour
     {
         #region Verbosity Settings
 
-        /// <summary>
-        /// Console output verbosity level.
-        /// Loaded from GameConfig-default.json (consoleVerbosity field).
-        /// </summary>
-        public enum VerbosityLevel
-        {
-            Mute,    // No output
-            Short,   // Critical only (errors, warnings, key milestones)
-            Full     // All debug messages (for testing)
-        }
+        public enum VerbosityLevel { Mute, Short, Full }
 
-        [Header("📢 Console Verbosity (Override JSON config)")]
-        [Tooltip("Leave to 'Full' to use JSON config value. Set manually to override.")]
-        [SerializeField] private VerbosityLevel verbosity = VerbosityLevel.Full;
+        [Header("📢 Console Verbosity (From JSON Config)")]
+        [Tooltip("Leave to Short to use JSON config value. Set manually to override.")]
+        [SerializeField] private VerbosityLevel verbosity = VerbosityLevel.Short;
 
-        // Static instance for global access
         private static CompleteMazeBuilder _instance;
         public static VerbosityLevel CurrentVerbosity => _instance != null ? _instance.verbosity : VerbosityLevel.Short;
 
         #endregion
 
-        #region Logging Helpers
+        #region Logging
 
-        /// <summary>
-        /// Log message based on verbosity level.
-        /// </summary>
         public static void Log(string message, bool isCritical = false)
         {
             if (_instance == null) return;
-
-            switch (_instance.verbosity)
-            {
-                case VerbosityLevel.Mute:
-                    return;
-                case VerbosityLevel.Short:
-                    if (isCritical)
-                        Debug.Log(message);
-                    return;
-                case VerbosityLevel.Full:
-                    Debug.Log(message);
-                    return;
-            }
+            if (_instance.verbosity == VerbosityLevel.Mute) return;
+            if (_instance.verbosity == VerbosityLevel.Short && !isCritical) return;
+            Debug.Log(message);
         }
 
-        /// <summary>
-        /// Log warning (always shown unless Mute).
-        /// </summary>
         public static void LogWarning(string message)
         {
             if (_instance == null || _instance.verbosity == VerbosityLevel.Mute) return;
             Debug.LogWarning(message);
         }
 
-        /// <summary>
-        /// Log error (always shown).
-        /// </summary>
-        public static void LogError(string message)
-        {
-            Debug.LogError(message);
-        }
+        public static void LogError(string message) => Debug.LogError(message);
 
         /// <summary>
         /// Set verbosity level at runtime.
@@ -134,198 +108,63 @@ namespace Code.Lavos.Core
 
         #endregion
 
-        #region Inspector Settings
+        #region Inspector Fields (Values from JSON Config - NO HARDCODING!)
 
-        [Header("🏗️ Maze Dimensions")]
-        [Tooltip("Maze width in cells (11 for testing)")]
-        [SerializeField] private int mazeWidth = 11;  // Small for testing
+        [Header("🏗️ Maze Dimensions (From JSON Config)")]
+        [SerializeField] private int mazeWidth;  // ← GameConfig.Instance.defaultMazeWidth
+        [SerializeField] private int mazeHeight;  // ← GameConfig.Instance.defaultMazeHeight
+        [SerializeField] private float cellSize;  // ← GameConfig.Instance.defaultCellSize
+        [SerializeField] private float wallHeight;  // ← GameConfig.Instance.defaultWallHeight
+        [SerializeField] private float wallThickness;  // ← GameConfig.Instance.defaultWallThickness
 
-        [Tooltip("Maze height in cells (11 for testing)")]
-        [SerializeField] private int mazeHeight = 11;  // Small for testing
-        
-        [Tooltip("Size of each cell in meters")]
-        [SerializeField] private float cellSize = 6f;
-        
-        [Tooltip("Wall height in meters")]
-        [SerializeField] private float wallHeight = 4f;
-        
-        [Tooltip("Wall thickness in meters")]
-        [SerializeField] private float wallThickness = 0.5f;
-        
-        [Tooltip("Ceiling height in meters (above ground)")]
-        [SerializeField] private float ceilingHeight;  // ← From GameConfig-default.json
+        [Header("🚪 Door Settings (From JSON Config)")]
+        [SerializeField, Range(0f, 1f)] private float doorSpawnChance;  // ← GameConfig.Instance.defaultDoorSpawnChance
+        [SerializeField, Range(0f, 1f)] private float lockedDoorChance;  // ← GameConfig.Instance.defaultLockedDoorChance
 
-        [Header("🚪 Door Settings")]
-        [Tooltip("Chance for a passage to have a door (0-1) - From JSON config")]
-        [Range(0f, 1f)]
-        [SerializeField] private float doorSpawnChance;  // ← From GameConfig-default.json
-
-        [Tooltip("Chance for door to be locked (0-1) - From JSON config")]
-        [Range(0f, 1f)]
-        [SerializeField] private float lockedDoorChance;  // ← From GameConfig-default.json
-
-        [Tooltip("Chance for door to be secret (0-1) - From JSON config")]
-        [Range(0f, 1f)]
-        [SerializeField] private float secretDoorChance;  // ← From GameConfig-default.json
-
-        [Header("🏛️ Room Settings")]
-        [Tooltip("Generate special rooms (entrance/exit/normal) - From JSON config")]
-        [SerializeField] private bool generateRooms;  // ← From GameConfig-default.json
-
-        [Tooltip("Minimum number of rooms - From JSON config")]
-        [SerializeField] private int minRooms;  // ← From GameConfig-default.json
-
-        [Tooltip("Maximum number of rooms - From JSON config")]
-        [SerializeField] private int maxRooms;  // ← From GameConfig-default.json
-
-        [Header("👤 Player Spawn")]
-        [Tooltip("Player spawns inside entrance room (auto-calculated) - From JSON config")]
-        [SerializeField] private bool spawnInsideRoom;  // ← From GameConfig-default.json
-
-        [Header("⚙️ Generation Options")]
-        [Tooltip("Auto-generate maze on Start")]
+        [Header("⚙️ Generation (From JSON Config)")]
         [SerializeField] private bool autoGenerateOnStart = true;
+        [SerializeField] private bool useRandomSeed;  // ← GameConfig.Instance.useRandomSeed
+        [SerializeField] private string manualSeed;  // ← GameConfig.Instance.manualSeed
 
-        [Tooltip("Use random seed (false = use manual seed) - From JSON config")]
-        [SerializeField] private bool useRandomSeed;  // ← From GameConfig-default.json
+        [Header("📁 Prefab Paths (From JSON Config)")]
+        [SerializeField] private string wallPrefabPath;  // ← GameConfig.Instance.wallPrefab
+        [SerializeField] private string doorPrefabPath;  // ← GameConfig.Instance.doorPrefab
+        [SerializeField] private string torchPrefabPath;  // ← GameConfig.Instance.torchPrefab
 
-        [Tooltip("Manual seed for reproducible generation - From JSON config")]
-        [SerializeField] private string manualSeed;  // ← From GameConfig-default.json
-        
-        [Header("📁 Prefab Paths (Assign in Inspector or SQLite)")]
-        [Tooltip("Wall prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string wallPrefabPath = "";
-        [Tooltip("Door prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string doorPrefabPath = "";
-        [Tooltip("Locked door prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string lockedDoorPrefabPath = "";
-        [Tooltip("Secret door prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string secretDoorPrefabPath = "";
-        [Tooltip("Entrance room prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string entranceRoomPrefabPath = "";
-        [Tooltip("Exit room prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string exitRoomPrefabPath = "";
-        [Tooltip("Normal room prefab - drag from Assets/Prefabs/ or uses SQLite default")]
-        [SerializeField] private string normalRoomPrefabPath = "";
-        
-        [Header("📁 Material/Texture Paths")]
-        [Tooltip("Wall material - drag from Assets/Materials/ or uses SQLite default")]
-        [SerializeField] private string wallMaterialPath = "";
-        [Tooltip("Door material - drag from Assets/Materials/ or uses SQLite default")]
-        [SerializeField] private string doorMaterialPath = "";
-        [Tooltip("Floor material - drag from Assets/Materials/ or uses SQLite default")]
-        [SerializeField] private string floorMaterialPath = "";
-        [Tooltip("Ground texture - drag from Assets/Textures/ or uses SQLite default")]
-        [SerializeField] private string groundTexturePath = "";
-        [Tooltip("Wall texture - drag from Assets/Textures/ or uses SQLite default")]
-        [SerializeField] private string wallTexturePath = "";
-        [Tooltip("Ceiling texture - drag from Assets/Textures/ or uses SQLite default")]
-        [SerializeField] private string ceilingTexturePath = "";
+        [Header("🎨 Materials (From JSON Config)")]
+        [SerializeField] private string wallMaterialPath;  // ← GameConfig.Instance.wallMaterial
+        [SerializeField] private string floorMaterialPath;  // ← GameConfig.Instance.floorMaterial
+        [SerializeField] private string groundTexturePath;  // ← GameConfig.Instance.groundTexture
 
         #endregion
 
         #region Private Fields
 
-        // Config cache (loaded once, stored in RAM - byte-by-byte storage)
-        private struct ConfigCache
-        {
-            // Prefab paths
-            public string wallPrefab;
-            public string doorPrefab;
-            public string lockedDoorPrefab;
-            public string secretDoorPrefab;
-            public string entranceRoomPrefab;
-            public string exitRoomPrefab;
-            public string normalRoomPrefab;
-            public string torchPrefab;
+        // Pre-loaded assets
+        private GameObject wallPrefab;
+        private GameObject doorPrefab;
+        private GameObject torchPrefab;
+        private Material wallMaterial;
+        private Material floorMaterial;
+        private Texture2D groundTexture;
 
-            // Material paths
-            public string wallMaterial;
-            public string doorMaterial;
-            public string floorMaterial;
-
-            // Texture paths
-            public string groundTexture;
-            public string wallTexture;
-            public string ceilingTexture;
-
-            // Maze settings
-            public int mazeWidth;
-            public int mazeHeight;
-            public float cellSize;
-            public float wallHeight;
-            public float wallThickness;
-            public float ceilingHeight;
-
-            // Door settings
-            public float doorSpawnChance;
-            public float lockedDoorChance;
-            public float secretDoorChance;
-
-            // Room settings
-            public bool generateRooms;
-            public int minRooms;
-            public int maxRooms;
-
-            // Generation settings
-            public bool useRandomSeed;
-            public string manualSeed;
-            public bool spawnInsideRoom;
-
-            // Verbosity
-            public string consoleVerbosity;
-        }
-
-        // Pre-loaded assets (loaded BEFORE component creation)
-        private GameObject wallPrefabLoaded;
-        private GameObject doorPrefabLoaded;
-        private GameObject torchPrefabLoaded;
-        private GameObject entranceRoomPrefabLoaded;
-        private GameObject exitRoomPrefabLoaded;
-        private GameObject normalRoomPrefabLoaded;
-        private Material wallMaterialLoaded;
-        private Material doorMaterialLoaded;
-        private Material floorMaterialLoaded;
-        private Texture2D groundTextureLoaded;
-        private Texture2D wallTextureLoaded;
-        private Texture2D ceilingTextureLoaded;
-
-        private ConfigCache configCache;
-        private bool configLoaded = false;
-
-        private GridMazeGenerator gridMazeGenerator;  // NEW: Custom maze system
-        private MazeGenerator mazeGenerator;  // OLD: Legacy system (disabled)
+        // Components (FOUND in scene, NOT created)
         private SpatialPlacer spatialPlacer;
         private LightPlacementEngine lightPlacementEngine;
-        private LightEngine lightEngine;
         private TorchPool torchPool;
 
+        // Maze state
+        private GridMazeGenerator gridMazeGenerator;
         private uint currentSeed;
-        private System.Random rng;
+        private Vector3 spawnPosition;
+        private Vector2Int spawnCell;
 
-        // Track door positions for proper snapping
-        private List<DoorPosition> doorPositions = new List<DoorPosition>();
+        // Config values (loaded from JSON - NO HARDCODING!)
+        private int roomSize;
+        private int corridorWidth;
 
-        // Track entrance room position for player spawn
-        private Vector3 entranceRoomPosition;
-        private Vector2Int entranceRoomCell;  // ✅ Store actual room cell!
-        
-        // Persistent storage keys (for PlayerPrefs)
-        private const string SPAWN_X_KEY = "MazeSpawnX";
-        private const string SPAWN_Z_KEY = "MazeSpawnZ";
-        private const string SPAWN_SEED_KEY = "MazeSpawnSeed";
-        
-        // Plug-in-and-Out: Event handler reference
+        // Plug-in-out: Event handler
         private EventHandler eventHandler;
-
-        private struct DoorPosition
-        {
-            public Vector3 position;
-            public Quaternion rotation;
-            public int x, y;
-            public string direction;
-            public string type;
-        }
 
         #endregion
 
@@ -333,496 +172,116 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            // Set static instance for global access
             _instance = this;
 
-            // STEP 0: Load defaults from JSON config (NO HARDCODED VALUES!)
-            ApplyConfigDefaults();
+            // STEP 0: Load ALL values from JSON config (NO HARDCODING!)
+            LoadConfig();
 
-            // PLUG-IN-OUT: Get event handler (central hub for communication)
+            // PLUG-IN-OUT: Get event handler
             eventHandler = EventHandler.Instance;
             if (eventHandler != null)
             {
-                Log("[CompleteMazeBuilder] 🔌 Connected to EventHandler (plug-in-out ready)", true);
-            }
-            else
-            {
-                Log("[CompleteMazeBuilder] ℹ️ EventHandler not in scene - running standalone (OK for testing)");
+                Log("[CompleteMazeBuilder] 🔌 Connected to EventHandler", true);
             }
 
-            // STEP 1: Pre-load ALL prefabs and textures FIRST (before creating any components)
-            PreloadAllAssets();
-            Debug.Log("[CompleteMazeBuilder] ✅ All assets pre-loaded (prefabs, materials, textures)");
-
-            // STEP 2: Create TorchPool with prefab already loaded
-            torchPool = FindFirstObjectByType<TorchPool>();
-            if (torchPool == null)
-            {
-                var torchGO = new GameObject("TorchPool");
-                torchPool = torchGO.AddComponent<TorchPool>();
-                Log("[CompleteMazeBuilder] ✅ TorchPool created", true);
-            }
-
-            // CRITICAL: Assign torch prefab to TorchPool IMMEDIATELY (from pre-loaded)
-            if (torchPrefabLoaded != null)
-            {
-                // Set the torchPrefab field in TorchPool via reflection
-                var torchPrefabField = typeof(TorchPool).GetField("torchHandlePrefab",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (torchPrefabField != null)
-                {
-                    torchPrefabField.SetValue(torchPool, torchPrefabLoaded);
-                    Log("[CompleteMazeBuilder] ✅ TorchPrefab assigned to TorchPool (pre-loaded)", true);
-                }
-            }
-
-            // STEP 3: Find existing components (DO NOT CREATE - plug-in-out compliant!)
-            // Components should be added to scene independently (plug-in-out architecture)
-            mazeGenerator = FindFirstObjectByType<MazeGenerator>();
-            spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
-            lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
-
-            // Log warnings if components not found (they should be in scene already)
-            if (mazeGenerator == null)
-            {
-                LogWarning("[CompleteMazeBuilder] ⚠️ MazeGenerator not found in scene (should be added independently)");
-            }
-            if (spatialPlacer == null)
-            {
-                LogWarning("[CompleteMazeBuilder] ⚠️ SpatialPlacer not found in scene (should be added independently)");
-            }
-            if (lightPlacementEngine == null)
-            {
-                LogWarning("[CompleteMazeBuilder] ⚠️ LightPlacementEngine not found in scene (should be added independently)");
-            }
-
-            Debug.Log("[CompleteMazeBuilder] 🔌 Components found (plug-in-out compliant - no direct creation)");
-
-            // CRITICAL: Pass torch prefab to LightPlacementEngine IMMEDIATELY
-            if (torchPrefabLoaded != null && lightPlacementEngine != null)
-            {
-                var lpeTorchPrefabField = typeof(LightPlacementEngine).GetField("torchPrefab",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (lpeTorchPrefabField != null)
-                {
-                    lpeTorchPrefabField.SetValue(lightPlacementEngine, torchPrefabLoaded);
-                    Log("[CompleteMazeBuilder] ✅ TorchPrefab assigned to LightPlacementEngine (pre-loaded)", true);
-                }
-            }
-
-            // STEP 4: Find or create LightEngine
-            lightEngine = FindFirstObjectByType<LightEngine>();
-            if (lightEngine == null)
-            {
-                var lightGO = new GameObject("LightEngine");
-                lightEngine = lightGO.AddComponent<LightEngine>();
-            }
-
-            // STEP 5: Wire up references
-            if (spatialPlacer != null && torchPool != null)
-            {
-                var torchPoolField = typeof(SpatialPlacer).GetField("torchPool",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (torchPoolField != null)
-                {
-                    torchPoolField.SetValue(spatialPlacer, torchPool);
-                    Debug.Log("[CompleteMazeBuilder] 🔌 TorchPool assigned to SpatialPlacer");
-                }
-
-                var lpeField = typeof(SpatialPlacer).GetField("lightPlacementEngine",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (lpeField != null && lightPlacementEngine != null)
-                {
-                    lpeField.SetValue(spatialPlacer, lightPlacementEngine);
-                    Debug.Log("[CompleteMazeBuilder] 🔌 LightPlacementEngine assigned to SpatialPlacer");
-                }
-            }
-
-            // CRITICAL: Force assign torch prefab to LightPlacementEngine AFTER everything is set up
-            // This runs after LightPlacementEngine.Awake() so it will override the null check
-            if (torchPrefabLoaded != null && lightPlacementEngine != null)
-            {
-                var lpeTorchPrefabField = typeof(LightPlacementEngine).GetField("torchPrefab",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (lpeTorchPrefabField != null)
-                {
-                    lpeTorchPrefabField.SetValue(lightPlacementEngine, torchPrefabLoaded);
-                    Log("[CompleteMazeBuilder] ✅ TorchPrefab FORCE-assigned to LightPlacementEngine", true);
-                }
-            }
-
-            // ALSO: Assign LightPlacementEngine reference to SpatialPlacer (in case field assignment didn't work)
-            if (spatialPlacer != null && lightPlacementEngine != null)
-            {
-                var spatialPlacerLpeProperty = typeof(SpatialPlacer).GetProperty("LightPlacementEngine",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (spatialPlacerLpeProperty != null && spatialPlacerLpeProperty.CanWrite)
-                {
-                    spatialPlacerLpeProperty.SetValue(spatialPlacer, lightPlacementEngine);
-                    Log("[CompleteMazeBuilder] ✅ LightPlacementEngine assigned to SpatialPlacer (via property)", true);
-                }
-            }
-
-            // Initialize seed (NEVER use 0 - always generate valid seed)
+            // Compute seed
             if (useRandomSeed)
             {
-                // Generate unique seed from timestamp + random
                 currentSeed = (uint)(System.DateTime.Now.Ticks ^ System.Guid.NewGuid().GetHashCode());
-                if (currentSeed == 0) currentSeed = 1;  // Ensure never 0
+                if (currentSeed == 0) currentSeed = 1;
             }
             else
             {
-                // Use manual seed (compute from string)
-                currentSeed = ComputeSeed(string.IsNullOrEmpty(manualSeed) ? "DefaultMazeSeed" : manualSeed);
-                if (currentSeed == 0) currentSeed = 1;  // Ensure never 0
-            }
-            rng = new System.Random((int)currentSeed);
-
-            // SEED-BASED MAZE SIZING: Adjust maze size based on seed value
-            // Small seed (< 1000) = Small maze (11x11) = Easy
-            // Medium seed (1000-5000) = Medium maze (21x21) = Normal
-            // Large seed (> 5000) = Large maze (31x31) = Hard
-            int baseWidth = configCache.mazeWidth;
-            int baseHeight = configCache.mazeHeight;
-            
-            // Scale maze size based on seed (difficulty scaling)
-            if (currentSeed < 1000)
-            {
-                // Small maze - easy difficulty
-                mazeWidth = Mathf.Max(11, baseWidth - 5);
-                mazeHeight = Mathf.Max(11, baseHeight - 5);
-                Debug.Log($"[CompleteMazeBuilder] 🌱 Small seed ({currentSeed}) → Small maze ({mazeWidth}x{mazeHeight}) → Easy difficulty");
-            }
-            else if (currentSeed < 5000)
-            {
-                // Medium maze - normal difficulty
-                mazeWidth = baseWidth;
-                mazeHeight = baseHeight;
-                Debug.Log($"[CompleteMazeBuilder] 🌿 Medium seed ({currentSeed}) → Medium maze ({mazeWidth}x{mazeHeight}) → Normal difficulty");
-            }
-            else
-            {
-                // Large maze - hard difficulty
-                mazeWidth = Mathf.Min(41, baseWidth + 10);
-                mazeHeight = Mathf.Min(41, baseHeight + 10);
-                Debug.Log($"[CompleteMazeBuilder] 🌳 Large seed ({currentSeed}) → Large maze ({mazeWidth}x{mazeHeight}) → Hard difficulty");
+                currentSeed = ComputeSeed(string.IsNullOrEmpty(manualSeed) ? "DefaultMaze" : manualSeed);
+                if (currentSeed == 0) currentSeed = 1;
             }
 
-            Debug.Log("[CompleteMazeBuilder] 🏗️ Component initialized");
-            Debug.Log($"[CompleteMazeBuilder] 📏 Maze: {mazeWidth}x{mazeHeight}, Cell: {cellSize}m");
-            Debug.Log($"[CompleteMazeBuilder] 🎲 Seed: {currentSeed} (never 0!)");
-
-            // Apply verbosity from JSON config
-            ApplyVerbosityFromConfig();
+            Log($"[CompleteMazeBuilder] 🎲 Seed: {currentSeed}", true);
         }
 
         /// <summary>
-        /// Apply verbosity level from GameConfig-default.json.
-        /// Called in Awake() after config is loaded.
+        /// Load ALL values from JSON config (NO HARDCODING!).
+        /// Called in Awake() before any other initialization.
         /// </summary>
-        private void ApplyVerbosityFromConfig()
-        {
-            var config = GameConfig.Instance;
-            if (config == null)
-            {
-                LogWarning("[CompleteMazeBuilder] ⚠️ GameConfig not loaded - using default verbosity");
-                return;
-            }
-
-            // Parse verbosity from config string
-            VerbosityLevel configVerbosity;
-            switch (config.consoleVerbosity.ToLower())
-            {
-                case "mute":
-                    configVerbosity = VerbosityLevel.Mute;
-                    break;
-                case "short":
-                    configVerbosity = VerbosityLevel.Short;
-                    break;
-                case "full":
-                    configVerbosity = VerbosityLevel.Full;
-                    break;
-                default:
-                    LogWarning($"[CompleteMazeBuilder] ⚠️ Invalid verbosity '{config.consoleVerbosity}' in config - using 'short'");
-                    configVerbosity = VerbosityLevel.Short;
-                    break;
-            }
-
-            // Only apply config value if inspector is set to Full (default override)
-            if (verbosity == VerbosityLevel.Full)
-            {
-                verbosity = configVerbosity;
-                Log($"[CompleteMazeBuilder] 📢 Verbosity loaded from config: {configVerbosity}", true);
-            }
-            else
-            {
-                Log($"[CompleteMazeBuilder] 📢 Verbosity overridden in Inspector: {verbosity} (config value: {configVerbosity})");
-            }
-        }
-
-        /// <summary>
-        /// Apply default values from GameConfig-default.json (NO HARDCODED VALUES!).
-        /// ALWAYS applies from JSON (Inspector values are ignored for config fields).
-        /// </summary>
-        private void ApplyConfigDefaults()
+        private void LoadConfig()
         {
             var config = GameConfig.Instance;
 
-            // Load prefab paths from JSON (CRITICAL!)
-            LoadFromJSONConfig();
-
-            // ALWAYS apply from JSON config (no hardcoded values!)
+            // Maze dimensions
             mazeWidth = config.defaultMazeWidth;
             mazeHeight = config.defaultMazeHeight;
             cellSize = config.defaultCellSize;
             wallHeight = config.defaultWallHeight;
             wallThickness = config.defaultWallThickness;
-            ceilingHeight = config.defaultCeilingHeight;
-            
-            // Apply door settings
+
+            // Room & Corridor settings
+            roomSize = config.defaultRoomSize;
+            corridorWidth = config.defaultCorridorWidth;
+
+            // Door settings
             doorSpawnChance = config.defaultDoorSpawnChance;
             lockedDoorChance = config.defaultLockedDoorChance;
-            secretDoorChance = config.defaultSecretDoorChance;
-            
-            // Apply room settings
-            minRooms = config.minRooms;
-            maxRooms = config.maxRooms;
-            generateRooms = config.generateRooms;
-            
-            // Apply generation options
+
+            // Generation settings
             useRandomSeed = config.useRandomSeed;
             manualSeed = config.manualSeed;
-            spawnInsideRoom = config.spawnInsideRoom;
-            
-            Debug.Log("[CompleteMazeBuilder] 📦 Applied defaults from GameConfig-default.json");
-            Debug.Log($"[CompleteMazeBuilder] 🔧 Config: ceilingHeight={ceilingHeight}, wallHeight={wallHeight}, mazeSize={mazeWidth}x{mazeHeight}");
-        }
 
-        private void OnEnable()
-        {
-            // PLUG-IN-OUT: Subscribe to core events
-            if (eventHandler != null)
-            {
-                eventHandler.OnGameStateChanged += OnGameStateChanged;
-            }
-        }
+            // Prefab paths
+            wallPrefabPath = config.wallPrefab;
+            doorPrefabPath = config.doorPrefab;
+            torchPrefabPath = config.torchPrefab;
 
-        private void OnDisable()
-        {
-            // PLUG-IN-OUT: Unsubscribe from core events
-            if (eventHandler != null)
+            // Material paths
+            wallMaterialPath = config.wallMaterial;
+            floorMaterialPath = config.floorMaterial;
+            groundTexturePath = config.groundTexture;
+
+            // Verbosity (apply only if inspector is set to Short - default override)
+            if (verbosity == VerbosityLevel.Short)
             {
-                eventHandler.OnGameStateChanged -= OnGameStateChanged;
+                ApplyVerbosityFromConfig(config.consoleVerbosity);
             }
+
+            Log($"[CompleteMazeBuilder] 📖 Config loaded: {mazeWidth}x{mazeHeight} maze, {roomSize}x{roomSize} rooms, {corridorWidth}-cell corridors", true);
         }
 
         /// <summary>
-        /// Pre-load ALL prefabs, materials, and textures from RAM cache.
-        /// Called in Awake() BEFORE creating any components.
-        /// Ensures all assets are available when needed (no missing prefabs!).
+        /// Apply verbosity level from JSON config.
         /// </summary>
-        private void PreloadAllAssets()
+        private void ApplyVerbosityFromConfig(string configVerbosity)
         {
-            Debug.Log("[CompleteMazeBuilder] 📦 Pre-loading all assets from RAM cache...");
-
-            // Pre-load prefabs
-            wallPrefabLoaded = LoadPrefabFromCache(configCache.wallPrefab, "Wall");
-            doorPrefabLoaded = LoadPrefabFromCache(configCache.doorPrefab, "Door");
-            torchPrefabLoaded = LoadPrefabFromCache(configCache.torchPrefab, "TorchHandle");
-            entranceRoomPrefabLoaded = LoadPrefabFromCache(configCache.entranceRoomPrefab, "EntranceRoom");
-            exitRoomPrefabLoaded = LoadPrefabFromCache(configCache.exitRoomPrefab, "ExitRoom");
-            normalRoomPrefabLoaded = LoadPrefabFromCache(configCache.normalRoomPrefab, "NormalRoom");
-
-            // Pre-load materials
-            wallMaterialLoaded = LoadMaterialFromCache(configCache.wallMaterial, "Wall");
-            doorMaterialLoaded = LoadMaterialFromCache(configCache.doorMaterial, "Door");
-            floorMaterialLoaded = LoadMaterialFromCache(configCache.floorMaterial, "Floor");
-
-            // Pre-load textures
-            groundTextureLoaded = LoadTextureFromCache(configCache.groundTexture, "Ground");
-            wallTextureLoaded = LoadTextureFromCache(configCache.wallTexture, "Wall");
-            ceilingTextureLoaded = LoadTextureFromCache(configCache.ceilingTexture, "Ceiling");
-
-            Debug.Log("[CompleteMazeBuilder] ✅ Asset pre-load complete:");
-            Debug.Log($"   - Prefabs: wall={wallPrefabLoaded != null}, door={doorPrefabLoaded != null}, torch={torchPrefabLoaded != null}");
-            Debug.Log($"   - Rooms: entrance={entranceRoomPrefabLoaded != null}, exit={exitRoomPrefabLoaded != null}, normal={normalRoomPrefabLoaded != null}");
-            Debug.Log($"   - Materials: wall={wallMaterialLoaded != null}, door={doorMaterialLoaded != null}, floor={floorMaterialLoaded != null}");
-            Debug.Log($"   - Textures: ground={groundTextureLoaded != null}, wall={wallTextureLoaded != null}, ceiling={ceilingTextureLoaded != null}");
-        }
-
-        /// <summary>
-        /// Load prefab from RAM cache path.
-        /// </summary>
-        private GameObject LoadPrefabFromCache(string path, string name)
-        {
-            if (string.IsNullOrEmpty(path))
+            switch (configVerbosity.ToLower())
             {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} prefab");
-                return null;
-            }
-
-            // Try to load from Resources
-            var prefab = Resources.Load<GameObject>(path.Replace("Prefabs/", "").Replace(".prefab", ""));
-            
-            if (prefab == null)
-            {
-                prefab = Resources.Load<GameObject>(path);
-            }
-
-            if (prefab != null)
-            {
-                Log($"[CompleteMazeBuilder] ✅ Loaded {name} prefab: {path}", true);
-            }
-            else
-            {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} prefab: {path}");
-            }
-
-            return prefab;
-        }
-
-        /// <summary>
-        /// Load material from RAM cache path.
-        /// </summary>
-        private Material LoadMaterialFromCache(string path, string name)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} material");
-                return null;
-            }
-
-            var material = Resources.Load<Material>(path.Replace("Materials/", "").Replace(".mat", ""));
-            
-            if (material == null)
-            {
-                material = Resources.Load<Material>(path);
-            }
-
-            if (material != null)
-            {
-                Log($"[CompleteMazeBuilder] ✅ Loaded {name} material: {path}", true);
-            }
-            else
-            {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} material: {path}");
-            }
-
-            return material;
-        }
-
-        /// <summary>
-        /// Load texture from RAM cache path.
-        /// </summary>
-        private Texture2D LoadTextureFromCache(string path, string name)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} texture");
-                return null;
-            }
-
-            var texture = Resources.Load<Texture2D>(path.Replace("Textures/", "").Replace(".png", ""));
-            
-            if (texture == null)
-            {
-                texture = Resources.Load<Texture2D>(path);
-            }
-
-            if (texture != null)
-            {
-                Log($"[CompleteMazeBuilder] ✅ Loaded {name} texture: {path}", true);
-            }
-            else
-            {
-                LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} texture: {path}");
-            }
-
-            return texture;
-        }
-
-        /// <summary>
-        /// Release all RAM on game quit (Alt+F4, close, etc.).
-        /// PLUG-IN-OUT: Clean resource management.
-        /// </summary>
-        private void OnApplicationQuit()
-        {
-            Debug.Log("[CompleteMazeBuilder] 🧹 Releasing RAM on game quit...");
-
-            // Save player settings before quit
-            SavePlayerSettingsOnQuit();
-
-            // Clear runtime data (not persistent data)
-            doorPositions?.Clear();
-
-            // Destroy LightEngine if it exists (prevent scene leak)
-            if (lightEngine != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(lightEngine.gameObject);
-                else
-                    DestroyImmediate(lightEngine.gameObject);
-                Debug.Log("[CompleteMazeBuilder] 🗑️ LightEngine destroyed");
-            }
-
-            // Release references
-            mazeGenerator = null;
-            spatialPlacer = null;
-            lightPlacementEngine = null;
-            torchPool = null;
-            lightEngine = null;
-
-            // Force garbage collection
-            System.GC.Collect();
-            
-            Debug.Log("[CompleteMazeBuilder] ✅ RAM released - clean quit");
-        }
-        
-        /// <summary>
-        /// Save player settings on quit (Alt+F4, close, etc.).
-        /// </summary>
-        private void SavePlayerSettingsOnQuit()
-        {
-            var settings = new Dictionary<string, string>
-            {
-                { "MouseSensitivity", "1.0" },  // Would use actual values
-                { "GraphicsQuality", "Medium" },
-                { "SoundVolume", "0.8" }
-            };
-            
-            MazeSaveData.SaveAllPlayerSettings(settings);
-            Debug.Log("[CompleteMazeBuilder] 💾 Player settings saved on quit");
-        }
-
-        /// <summary>
-        /// Handle game state changes via EventHandler (plug-in-out compliance).
-        /// </summary>
-        private void OnGameStateChanged(GameManager.GameState newState)
-        {
-            if (newState == GameManager.GameState.Playing)
-            {
-                Debug.Log("[CompleteMazeBuilder] ▶️ Game resumed - maze active");
-            }
-            else if (newState == GameManager.GameState.Paused)
-            {
-                Debug.Log("[CompleteMazeBuilder] ⏸️ Game paused - maze frozen");
+                case "mute":
+                    verbosity = VerbosityLevel.Mute;
+                    Log("[CompleteMazeBuilder] 📢 Verbosity: MUTE (from JSON config)", true);
+                    break;
+                case "short":
+                    verbosity = VerbosityLevel.Short;
+                    Log("[CompleteMazeBuilder] 📢 Verbosity: SHORT (from JSON config)", true);
+                    break;
+                case "full":
+                    verbosity = VerbosityLevel.Full;
+                    Log("[CompleteMazeBuilder] 📢 Verbosity: FULL (from JSON config)", true);
+                    break;
+                default:
+                    verbosity = VerbosityLevel.Short;
+                    Log($"[CompleteMazeBuilder] ⚠️ Invalid verbosity '{configVerbosity}' in config - using 'short'", true);
+                    break;
             }
         }
 
         private void Start()
         {
-            if (autoGenerateOnStart)
+            if (autoGenerateOnStart && Application.isPlaying)
             {
-                GenerateCompleteMaze();  // This will spawn player in Play mode
+                GenerateMaze();
             }
-            else
-            {
-                // If maze already exists (generated in editor), just spawn player
-                if (Application.isPlaying)
-                {
-                    SpawnPlayer();
-                }
-            }
+        }
+
+        private void OnApplicationQuit()
+        {
+            Log("[CompleteMazeBuilder] 🧹 Cleanup on quit");
         }
 
         #endregion
@@ -830,295 +289,229 @@ namespace Code.Lavos.Core
         #region Public API
 
         /// <summary>
-        /// Generate complete maze with walls, ground, ceiling, doors, rooms.
-        /// PLUG-IN-OUT: Publishes MazeGenerated event on completion.
+        /// Generate complete maze (call from editor menu or runtime).
         /// </summary>
-        [ContextMenu("Generate Complete Maze")]
-        public void GenerateCompleteMaze()
+        [ContextMenu("Generate Maze")]
+        public void GenerateMaze()
         {
-            GenerateMazeGeometryOnly();
-            
-            // Spawn player (only in Play mode!)
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] 🏗️ Starting maze generation...", true);
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+
+            // STEP 1: Pre-load assets
+            PreloadAssets();
+
+            // STEP 2: Find components (PLUG-IN-OUT: never create!)
+            FindComponents();
+
+            // STEP 3: Cleanup old maze
+            CleanupOldMaze();
+            Log("[CompleteMazeBuilder] 🧹 STEP 1: Cleanup complete", true);
+
+            // STEP 4: Spawn ground
+            SpawnGround();
+            Log("[CompleteMazeBuilder] 🌍 STEP 2: Ground spawned", true);
+
+            // STEP 5: Generate grid maze (rooms + corridors + walls)
+            CreateEntranceRoom();
+            Log($"[CompleteMazeBuilder] 🏛️ STEP 3: Grid maze generated", true);
+
+            // STEP 6: Spawn walls from grid data
+            SpawnOuterWalls();
+            Log("[CompleteMazeBuilder] 🧱 STEP 4: Walls spawned from grid", true);
+
+            // STEP 7: Verify corridors
+            CarveCorridors();
+            Log("[CompleteMazeBuilder] 🔨 STEP 5: Corridors verified", true);
+
+            // STEP 8: Place doors
+            PlaceDoors();
+            Log("[CompleteMazeBuilder] 🚪 STEP 6: Doors placed", true);
+
+            // STEP 9: Place objects (invoke other systems)
+            PlaceObjects();
+            Log("[CompleteMazeBuilder] 🎒 STEP 7: Objects placed", true);
+
+            // STEP 10: Save
+            SaveMaze();
+            Log("[CompleteMazeBuilder] 💾 STEP 8: Maze saved", true);
+
+            // STEP 11: Spawn player (Play mode only)
             if (Application.isPlaying)
             {
                 SpawnPlayer();
+                Log($"[CompleteMazeBuilder] 👤 STEP 9: Player spawned at {spawnPosition}", true);
             }
-            else
+
+            Log("[CompleteMazeBuilder] ☁️ Ceiling: DISABLED (top-down view)");
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] ✅ Maze generation complete!", true);
+            Log($"[CompleteMazeBuilder] 📏 Size: {mazeWidth}x{mazeHeight} cells ({mazeWidth * cellSize}m x {mazeHeight * cellSize}m)");
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+        }
+
+        #endregion
+
+        #region Asset Loading
+
+        private void PreloadAssets()
+        {
+            Log("[CompleteMazeBuilder] 📦 Pre-loading assets...", true);
+
+            // Load prefabs
+            wallPrefab = LoadPrefab(wallPrefabPath, "Wall");
+            doorPrefab = LoadPrefab(doorPrefabPath, "Door");
+            torchPrefab = LoadPrefab(torchPrefabPath, "Torch");
+
+            // Load materials
+            wallMaterial = LoadMaterial(wallMaterialPath, "Wall");
+            floorMaterial = LoadMaterial(floorMaterialPath, "Floor");
+
+            // Load texture
+            groundTexture = LoadTexture(groundTexturePath, "Ground");
+
+            Log("[CompleteMazeBuilder] ✅ Assets pre-loaded", true);
+        }
+
+        private GameObject LoadPrefab(string path, string name)
+        {
+            if (string.IsNullOrEmpty(path))
             {
-                Debug.Log("[CompleteMazeBuilder] ℹ️ Editor mode - player will spawn in Play mode");
+                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} prefab");
+                return null;
             }
-        }
-        
-        /// <summary>
-        /// Generate maze geometry only (no player). For editor use.
-        /// Player spawns automatically in Play mode.
-        ///
-        /// BYTE-BY-BYTE GRID PLACEMENT (Priority Order):
-        /// 1. CLEANUP - Destroy ALL objects (fresh empty scene)
-        /// 2. GROUND - Spawn ground floor (base layer)
-        /// 3. EMPTY GRID - Create empty grid (all cells = Floor)
-        /// 4. ENTRANCE ROOM - Mark entrance room FIRST (spawn cell marked)
-        /// 5. PLAYER SPAWN - Calculate spawn position from marked cell
-        /// 6. OTHER ROOMS - Mark additional rooms in grid
-        /// 7. CORRIDORS - Mark corridor cells (2-cell wide paths)
-        /// 8. OUTER WALLS - Mark perimeter cells as walls
-        /// 9. READ GRID - Spawn walls ONLY where grid says walls (snapped to grid)
-        /// 10. DOORS - Place doors in marked door positions
-        /// 11. OBJECTS - Place torches, chests, enemies, items
-        /// 12. SAVE - Save grid to database (byte-by-byte binary)
-        /// 13. PLAYER - Spawn player in entrance room (Play mode only)
-        /// </summary>
-        public void GenerateMazeGeometryOnly()
-        {
-            Debug.Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Debug.Log("[CompleteMazeBuilder] 🏗️ Starting maze generation (BYTE-BY-BYTE GRID)...");
-            Debug.Log("[CompleteMazeBuilder] ════════════════════════════════════════");
 
-            doorPositions.Clear();
-            entranceRoomPosition = Vector3.zero;
-            entranceRoomCell = new Vector2Int(-1, -1);
+            // Try Resources folder
+            string resourcePath = path.Replace("Prefabs/", "").Replace(".prefab", "");
+            GameObject prefab = Resources.Load<GameObject>(resourcePath);
 
-            // STEP 1: CLEANUP - Destroy ALL old maze objects (fresh empty scene)
-            CleanupOldMazeObjects();
-            Debug.Log("[CompleteMazeBuilder] 🧹 Step 1: Scene cleanup complete (EMPTY)");
-
-            // STEP 2: GROUND - Spawn ground floor (base layer for everything)
-            SpawnGroundFloor();
-            Debug.Log("[CompleteMazeBuilder] 🌍 Step 2: Ground spawned (base layer)");
-
-            // STEP 3: EMPTY GRID - Create empty grid (all cells = Floor)
-            // STEP 4: ENTRANCE ROOM - Mark entrance room FIRST (spawn cell marked)
-            CreateVirtualGridAndPlaceRooms();
-            Debug.Log($"[CompleteMazeBuilder] 🔲 Step 3-4: Empty grid created + Entrance room marked at {entranceRoomCell}");
-
-            // STEP 5: PLAYER SPAWN - Calculate spawn position (already done in CreateVirtualGridAndPlaceRooms)
-            Debug.Log($"[CompleteMazeBuilder] 👤 Step 5: Player spawn calculated at {entranceRoomPosition}");
-
-            // STEP 6: OTHER ROOMS - Already marked in CreateVirtualGridAndPlaceRooms
-            // STEP 7: CORRIDORS - Mark corridor cells in grid (2-cell wide paths)
-            GenerateCorridors();
-            Debug.Log("[CompleteMazeBuilder] 🔨 Step 6-7: Rooms + Corridors marked in grid");
-
-            // STEP 8: OUTER WALLS - Mark perimeter cells as walls
-            // Done in SpawnWallsFromGrid()
-            Debug.Log("[CompleteMazeBuilder] 🧱 Step 8: Outer walls marked");
-
-            // STEP 9: READ GRID - Spawn walls ONLY where grid says walls (snapped to grid)
-            SpawnWallsFromGrid();
-            Debug.Log("[CompleteMazeBuilder] 🧱 Step 9: Walls spawned from grid (byte-by-byte, snapped)");
-
-            // STEP 10: DOORS - Place doors in marked door positions
-            SpawnDoors();
-            Debug.Log("[CompleteMazeBuilder] 🚪 Step 10: Doors placed");
-
-            // STEP 11: OBJECTS - Place torches, chests, enemies, items
-            PlaceObjects();
-            Debug.Log("[CompleteMazeBuilder] 🎒 Step 11: Objects placed (torches, chests, enemies, items)");
-
-            // STEP 12: SAVE - Save grid to database (byte-by-byte binary)
-            SaveGridToDatabase();
-            Debug.Log("[CompleteMazeBuilder] 💾 Step 12: Grid saved (byte-by-byte)");
-
-            // [OPTIONAL] STEP 13: CEILING - Spawn ceiling (disabled for testing)
-            // SpawnCeiling();
-            Debug.Log("[CompleteMazeBuilder] ☁️ Ceiling SKIPPED (testing mode - top-down view)");
-
-            Debug.Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Debug.Log("[CompleteMazeBuilder] ✅ Maze geometry complete!");
-            Debug.Log($"[CompleteMazeBuilder] 📏 Dimensions: {mazeWidth}x{mazeHeight} cells ({mazeWidth * cellSize}m x {mazeHeight * cellSize}m)");
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Rooms: Placed FIRST, corridors carved around");
-            Debug.Log($"[CompleteMazeBuilder] 👤 Player spawn: {entranceRoomPosition}");
-            Debug.Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-        }
-        
-        /// <summary>
-        /// Save grid maze to database (binary format - 1 byte per cell).
-        /// Called after maze generation.
-        /// </summary>
-        private void SaveGridToDatabase()
-        {
-            if (gridMazeGenerator == null) return;
-            
-            // Serialize grid to bytes
-            byte[] gridData = gridMazeGenerator.SerializeToBytes();
-            
-            // Save to database
-            MazeSaveData.SaveGridMaze((int)currentSeed, gridData, entranceRoomCell.x, entranceRoomCell.y);
-        }
-        
-        /// <summary>
-        /// Load grid maze from database.
-        /// Returns true if loaded successfully.
-        /// </summary>
-        private bool LoadGridFromDatabase()
-        {
-            // Try to load from database
-            byte[] gridData = MazeSaveData.LoadGridMaze((int)currentSeed);
-            
-            if (gridData == null)
+            if (prefab != null)
             {
-                Debug.Log("[CompleteMazeBuilder] 💾 No saved grid found - will generate new maze");
-                return false;
+                Log($"[CompleteMazeBuilder] ✅ Loaded {name} prefab: {path}", true);
+                return prefab;
             }
-            
-            // Create new grid generator and deserialize
-            gridMazeGenerator = new GridMazeGenerator();
-            gridMazeGenerator.DeserializeFromBytes(gridData);
-            
-            // Set spawn position from saved data
-            entranceRoomCell = gridMazeGenerator.FindSpawnPoint();
-            entranceRoomPosition = new Vector3(
-                entranceRoomCell.x * cellSize + cellSize / 2f,
-                0.9f,
-                entranceRoomCell.y * cellSize + cellSize / 2f
-            );
-            
-            Debug.Log("[CompleteMazeBuilder] 📂 Loaded grid maze from database");
-            return true;
+
+            LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} prefab: {path}");
+            return null;
         }
-        
-        /// <summary>
-        /// Clean up ALL scene objects except essential managers.
-        /// Called on scene load to ensure FRESH start (only ground will be spawned).
-        /// </summary>
-        private void CleanupOldMazeObjects()
+
+        private Material LoadMaterial(string path, string name)
         {
-            Debug.Log("[CompleteMazeBuilder] 🧹 Cleaning up ALL scene objects (fresh start)...");
+            if (string.IsNullOrEmpty(path))
+            {
+                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} material");
+                return null;
+            }
 
-            // DESTROY ALL maze-related objects (comprehensive cleanup)
-            DestroyOldObject("Ceiling");
-            DestroyOldObject("GroundFloor");
-            DestroyOldObject("MazeWalls");
-            DestroyOldObject("Doors");
-            DestroyOldObject("Torches");
-            DestroyOldObject("Enemies");
-            DestroyOldObject("Chests");
-            DestroyOldObject("Items");
-            DestroyOldObject("MazeObjects");
-            DestroyOldObject("RoomObjects");
-            DestroyOldObject("CorridorObjects");
-            DestroyOldObject("WallObjects");
-            DestroyOldObject("DoorObjects");
-            DestroyOldObject("TorchObjects");
-            DestroyOldObject("EnemyObjects");
-            DestroyOldObject("ChestObjects");
-            DestroyOldObject("ItemObjects");
+            string resourcePath = path.Replace("Materials/", "").Replace(".mat", "");
+            Material mat = Resources.Load<Material>(resourcePath);
 
-            // Find and destroy ANY object with "Maze" in name (catch-all)
+            if (mat != null)
+            {
+                Log($"[CompleteMazeBuilder] ✅ Loaded {name} material: {path}", true);
+                return mat;
+            }
+
+            LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} material: {path}");
+            return null;
+        }
+
+        private Texture2D LoadTexture(string path, string name)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                LogWarning($"[CompleteMazeBuilder] ⚠️ Empty path for {name} texture");
+                return null;
+            }
+
+            string resourcePath = path.Replace("Textures/", "").Replace(".png", "");
+            Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+
+            if (tex != null)
+            {
+                Log($"[CompleteMazeBuilder] ✅ Loaded {name} texture: {path}", true);
+                return tex;
+            }
+
+            LogWarning($"[CompleteMazeBuilder] ⚠️ Failed to load {name} texture: {path}");
+            return null;
+        }
+
+        #endregion
+
+        #region Component Discovery (PLUG-IN-OUT)
+
+        /// <summary>
+        /// Find components in scene. NEVER create them (plug-in-out compliant!).
+        /// </summary>
+        private void FindComponents()
+        {
+            Log("[CompleteMazeBuilder] 🔌 Finding components (plug-in-out)...", true);
+
+            // Find existing components (DO NOT CREATE)
+            spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
+            lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
+            torchPool = FindFirstObjectByType<TorchPool>();
+
+            // Log warnings if not found (they should be in scene already)
+            if (spatialPlacer == null)
+                LogWarning("[CompleteMazeBuilder] ⚠️ SpatialPlacer not in scene (add independently)");
+
+            if (lightPlacementEngine == null)
+                LogWarning("[CompleteMazeBuilder] ⚠️ LightPlacementEngine not in scene (add independently)");
+
+            if (torchPool == null)
+                LogWarning("[CompleteMazeBuilder] ⚠️ TorchPool not in scene (add independently)");
+
+            Log("[CompleteMazeBuilder] ✅ Components found (plug-in-out compliant)", true);
+        }
+
+        #endregion
+
+        #region Cleanup
+
+        private void CleanupOldMaze()
+        {
+            Log("[CompleteMazeBuilder] 🧹 Cleaning up old maze objects...");
+
+            // Destroy by name
+            DestroyObject("GroundFloor");
+            DestroyObject("MazeWalls");
+            DestroyObject("Doors");
+            DestroyObject("Torches");
+            DestroyObject("Enemies");
+            DestroyObject("Chests");
+            DestroyObject("Items");
+
+            // Destroy all cubes/quads at wall height (catch-all)
             var allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (var obj in allObjects)
             {
-                if (obj == null) continue;
-                if (obj.name.Contains("Maze") || obj.name.Contains("Wall") ||
-                    obj.name.Contains("Door") || obj.name.Contains("Torch") ||
-                    obj.name.Contains("Room") || obj.name.Contains("Corridor"))
-                {
-                    // Don't destroy the CompleteMazeBuilder itself!
-                    if (obj == gameObject) continue;
-                    // Don't destroy essential managers
-                    if (obj.name.Contains("Engine") || obj.name.Contains("Manager") ||
-                        obj.name.Contains("System") || obj.name.Contains("Handler"))
-                        continue;
+                if (obj == null || obj == gameObject) continue;
 
+                // Skip essential managers
+                string name = obj.name;
+                if (name.Contains("Engine") || name.Contains("Manager") ||
+                    name.Contains("System") || name.Contains("Handler") ||
+                    name.Contains("Player") || name.Contains("Camera"))
+                    continue;
+
+                // Destroy maze primitives
+                if (name.Contains("Maze") || name.Contains("Wall") ||
+                    name.Contains("Door") || name.Contains("Torch") ||
+                    name.Contains("Room") || name.Contains("Corridor"))
+                {
                     if (Application.isPlaying)
                         Destroy(obj);
                     else
                         DestroyImmediate(obj);
-                    Debug.Log($"[CompleteMazeBuilder] 🗑️ Cleaned up: {obj.name}");
                 }
             }
 
-            // ALSO destroy any Cube primitives in scene (likely old wall artifacts)
-            var cubes = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-            foreach (var cube in cubes)
-            {
-                if (cube == null) continue;
-                // Destroy cubes that are NOT GroundFloor, Ceiling, or essential objects
-                if (cube.name == "Cube" || cube.name.StartsWith("Cube "))
-                {
-                    if (cube.GetComponent<MeshFilter>() != null && 
-                        cube.GetComponent<MeshRenderer>() != null)
-                    {
-                        // It's a primitive cube - likely an old wall artifact
-                        if (Application.isPlaying)
-                            Destroy(cube);
-                        else
-                            DestroyImmediate(cube);
-                        Debug.Log($"[CompleteMazeBuilder] 🗑️ Cleaned up old cube primitive: {cube.name}");
-                    }
-                }
-            }
-
-            // ALSO destroy any Quad primitives in scene (old floor/wall artifacts from MazeRenderer)
-            var quads = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-            foreach (var quad in quads)
-            {
-                if (quad == null) continue;
-                // Destroy quads that are NOT part of current generation
-                if (quad.name == "Quad" || quad.name.StartsWith("Quad "))
-                {
-                    if (quad.GetComponent<MeshFilter>() != null && 
-                        quad.GetComponent<MeshRenderer>() != null)
-                    {
-                        // It's a primitive quad - likely an old floor/wall artifact
-                        if (Application.isPlaying)
-                            Destroy(quad);
-                        else
-                            DestroyImmediate(quad);
-                        Debug.Log($"[CompleteMazeBuilder] 🗑️ Cleaned up old quad primitive: {quad.name}");
-                    }
-                }
-            }
-
-            // CRITICAL: Destroy ALL objects with MeshRenderer that are at wall height (y = 0 to y = wallHeight)
-            // This catches hardcoded walls that don't follow naming conventions
-            var meshObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
-            foreach (var meshObj in meshObjects)
-            {
-                if (meshObj == null) continue;
-                if (meshObj == gameObject) continue;
-                
-                // Skip essential managers
-                if (meshObj.name.Contains("Engine") || meshObj.name.Contains("Manager") ||
-                    meshObj.name.Contains("System") || meshObj.name.Contains("Handler") ||
-                    meshObj.name.Contains("Player") || meshObj.name.Contains("Camera") ||
-                    meshObj.name.Contains("Light") || meshObj.name.Contains("NavMesh"))
-                    continue;
-                
-                // Skip GroundFloor and Ceiling
-                if (meshObj.name == "GroundFloor" || meshObj.name == "Ceiling")
-                    continue;
-                
-                // Check if it's a cube/quad primitive at wall position
-                var meshFilter = meshObj.GetComponent<MeshFilter>();
-                var meshRenderer = meshObj.GetComponent<MeshRenderer>();
-                
-                if (meshFilter != null && meshRenderer != null)
-                {
-                    // Check if it's a primitive (cube or quad)
-                    var meshName = meshFilter.sharedMesh != null ? meshFilter.sharedMesh.name : "";
-                    if (meshName == "Cube" || meshName == "Quad" || meshName.StartsWith("Cube") || meshName.StartsWith("Quad"))
-                    {
-                        // Check if it's at wall height (not ground level)
-                        if (meshObj.transform.position.y > 0.5f && meshObj.transform.position.y < wallHeight + 1f)
-                        {
-                            if (Application.isPlaying)
-                                Destroy(meshObj);
-                            else
-                                DestroyImmediate(meshObj);
-                            Debug.Log($"[CompleteMazeBuilder] 🗑️ Cleaned up hardcoded wall at {meshObj.transform.position}");
-                        }
-                    }
-                }
-            }
-
-            Debug.Log("[CompleteMazeBuilder] ✅ Cleanup complete - SCENE IS NOW EMPTY (ready for fresh generation)");
+            Log("[CompleteMazeBuilder] ✅ Cleanup complete");
         }
 
-        /// <summary>
-        /// Helper to destroy an old object by name.
-        /// </summary>
-        private void DestroyOldObject(string name)
+        private void DestroyObject(string name)
         {
             var obj = GameObject.Find(name);
             if (obj != null)
@@ -1127,1555 +520,284 @@ namespace Code.Lavos.Core
                     Destroy(obj);
                 else
                     DestroyImmediate(obj);
-                Debug.Log($"[CompleteMazeBuilder] 🗑️ Removed: {name}");
+                Log($"[CompleteMazeBuilder] 🗑️ Removed: {name}");
             }
-        }
-
-        /// <summary>
-        /// Validate all prefab/material/texture paths.
-        /// </summary>
-        [ContextMenu("Validate Paths")]
-        public bool ValidatePaths()
-        {
-            Debug.Log("[CompleteMazeBuilder] 🔍 Validating paths...");
-            bool allValid = true;
-            string basePath = Application.dataPath + "/";
-
-            allValid &= ValidatePath(basePath + wallPrefabPath, "Wall Prefab");
-            allValid &= ValidatePath(basePath + doorPrefabPath, "Door Prefab");
-            allValid &= ValidatePath(basePath + lockedDoorPrefabPath, "Locked Door Prefab");
-            allValid &= ValidatePath(basePath + secretDoorPrefabPath, "Secret Door Prefab");
-            allValid &= ValidatePath(basePath + wallMaterialPath, "Wall Material");
-            allValid &= ValidatePath(basePath + doorMaterialPath, "Door Material");
-            allValid &= ValidatePath(basePath + floorMaterialPath, "Floor Material");
-            allValid &= ValidatePath(basePath + groundTexturePath, "Ground Texture");
-            allValid &= ValidatePath(basePath + wallTexturePath, "Wall Texture");
-            allValid &= ValidatePath(basePath + ceilingTexturePath, "Ceiling Texture");
-
-            if (!allValid)
-            {
-                Debug.LogWarning("[CompleteMazeBuilder] ⚠️ Some paths invalid!");
-                Debug.LogWarning("[CompleteMazeBuilder] 💡 Run: Tools → Create Maze Prefabs");
-            }
-            else
-            {
-                Debug.Log("[CompleteMazeBuilder] ✅ All paths valid!");
-            }
-
-            return allValid;
         }
 
         #endregion
 
-        #region Generation Methods
+        #region Ground
 
         /// <summary>
-        /// STEP 1: Create EMPTY virtual grid first, then place rooms.
-        /// Uses GridMazeGenerator - creates empty grid (all Floor), then marks rooms.
-        /// BYTE-BY-BYTE: Grid starts empty, cells marked one by one.
+        /// Spawn ground floor. Uses floorMaterial and groundTexture from config.
+        /// Creates a simple plane (no prefab needed for ground).
         /// </summary>
-        private void CreateVirtualGridAndPlaceRooms()
+        private void SpawnGround()
         {
-            Debug.Log("[CompleteMazeBuilder] 🔲 Creating EMPTY grid maze system...");
+            Log("[CompleteMazeBuilder] 🌍 Spawning ground floor...");
 
-            // Create NEW custom maze generator
-            gridMazeGenerator = new GridMazeGenerator();
-            gridMazeGenerator.gridSize = mazeWidth;  // Use ADJUSTED size (after seed-based sizing)
-            gridMazeGenerator.roomSize = 5;  // 5x5 rooms (spacious)
-            gridMazeGenerator.corridorWidth = 2;  // 2 cells wide
+            // Create ground plane (simple geometry, no prefab needed)
+            GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            ground.name = "GroundFloor";
 
-            Debug.Log($"[CompleteMazeBuilder] 🔲 Grid created: {mazeWidth}x{mazeHeight} (all cells = Floor initially)");
+            // Center under maze
+            float centerX = (mazeWidth * cellSize) / 2f;
+            float centerZ = (mazeHeight * cellSize) / 2f;
 
-            // Generate maze (rooms + corridors + spawn points)
-            // This starts with EMPTY grid, then marks cells
-            gridMazeGenerator.Generate();
-
-            Debug.Log("[CompleteMazeBuilder] 🏛️ Rooms marked in empty grid");
-
-            // Find the marked SpawnPoint cell (center of entrance room)
-            Vector2Int spawnCell = gridMazeGenerator.FindSpawnPoint();
-
-            // Store spawn position (EXACT center cell marked as SpawnPoint)
-            entranceRoomCell = spawnCell;
-            entranceRoomPosition = new Vector3(
-                spawnCell.x * cellSize + cellSize / 2f,  // Center of spawn cell
-                0.9f,  // Feet on ground (CharacterController center)
-                spawnCell.y * cellSize + cellSize / 2f   // Center of spawn cell
+            ground.transform.position = new Vector3(centerX, -0.1f, centerZ);
+            ground.transform.localScale = new Vector3(
+                mazeWidth * cellSize,
+                0.1f,
+                mazeHeight * cellSize
             );
 
-            Debug.Log($"[CompleteMazeBuilder] 🎯 SpawnPoint cell: {spawnCell}");
-            Debug.Log($"[CompleteMazeBuilder] 👤 Spawn position: {entranceRoomPosition}");
-            Debug.Log($"[CompleteMazeBuilder] ✅ Grid maze created (SpawnPoint marked in entrance room)");
-        }
-
-        /// <summary>
-        /// Place rooms in grid, carving out 3x3 clear areas.
-        /// </summary>
-        private void PlaceRoomsInGrid(MazeGenerator.Wall[,] grid)
-        {
-            int numRooms = Random.Range(minRooms, maxRooms + 1);
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-            
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Placing {numRooms} rooms FIRST...");
-            
-            // Place entrance room (top-left area)
-            Vector2Int entrancePos = FindValidRoomPosition(grid, 0, 0, width / 3, height / 2);
-            if (entrancePos.x >= 0)
+            // Apply material (from JSON config)
+            if (floorMaterial != null)
             {
-                SpawnRoom(entrancePos, "Entrance", entranceRoomPrefabPath, hasEntrance: true, hasExit: true);
-                
-                // Store spawn position (CENTER of 3x3 room)
-                entranceRoomCell = new Vector2Int(entrancePos.x + 1, entrancePos.y + 1);
-                entranceRoomPosition = new Vector3(
-                    (entrancePos.x + 1.5f) * cellSize,
-                    0.9f,
-                    (entrancePos.y + 1.5f) * cellSize
-                );
-                
-                // Carve out 3x3 room area (NO WALLS inside room)
-                MarkRoomCellsClear(grid, entrancePos);
-                MarkRoomDoors(grid, entrancePos);
-                
-                Debug.Log($"[CompleteMazeBuilder] 🏛️ Entrance room at ({entrancePos.x}, {entrancePos.y}), spawn at {entranceRoomPosition}");
-            }
-            
-            // Place exit room (bottom-right area)
-            Vector2Int exitPos = FindValidRoomPosition(grid, width * 2 / 3, height / 2, width, height);
-            if (exitPos.x >= 0)
-            {
-                SpawnRoom(exitPos, "Exit", exitRoomPrefabPath, hasEntrance: true, hasExit: true);
-                MarkRoomCellsClear(grid, exitPos);
-                MarkRoomDoors(grid, exitPos);
-                Debug.Log($"[CompleteMazeBuilder] 🏛️ Exit room at ({exitPos.x}, {exitPos.y})");
-            }
-            
-            // Place normal rooms
-            int roomsSpawned = entrancePos.x >= 0 ? 1 : 0;
-            while (roomsSpawned < numRooms)
-            {
-                Vector2Int roomPos = FindValidRoomPosition(grid, 0, 0, width, height);
-                if (roomPos.x >= 0)
+                var renderer = ground.GetComponent<MeshRenderer>();
+                if (renderer != null)
                 {
-                    SpawnRoom(roomPos, "Normal", normalRoomPrefabPath, hasEntrance: true, hasExit: true);
-                    MarkRoomCellsClear(grid, roomPos);
-                    MarkRoomDoors(grid, roomPos);
-                    roomsSpawned++;
-                }
-                else
-                {
-                    break;
+                    renderer.sharedMaterial = floorMaterial;
                 }
             }
-            
-            Debug.Log($"[CompleteMazeBuilder] ✅ {roomsSpawned} rooms placed (3x3 clear areas carved in grid)");
+            else
+            {
+                LogWarning("[CompleteMazeBuilder] ⚠️ Floor material not loaded - ground will be white");
+            }
+
+            // Apply texture (from JSON config)
+            if (groundTexture != null)
+            {
+                var renderer = ground.GetComponent<MeshRenderer>();
+                if (renderer != null && renderer.sharedMaterial != null)
+                {
+                    renderer.sharedMaterial.mainTexture = groundTexture;
+                }
+            }
+
+            Log($"[CompleteMazeBuilder] ✅ Ground spawned ({mazeWidth * cellSize}m x {mazeHeight * cellSize}m)");
+        }
+
+        #endregion
+
+        #region Entrance Room & Grid Generation
+
+        private void CreateEntranceRoom()
+        {
+            Log("[CompleteMazeBuilder] 🏛️ Generating grid maze with rooms and corridors...");
+
+            // Create grid generator and initialize from config
+            gridMazeGenerator = new GridMazeGenerator();
+            gridMazeGenerator.InitializeFromConfig();
+
+            // Generate complete maze grid (rooms + corridors + walls)
+            gridMazeGenerator.Generate();
+
+            // Find SpawnPoint (center of entrance room)
+            spawnCell = gridMazeGenerator.FindSpawnPoint();
+
+            // Calculate spawn position (center of cell)
+            spawnPosition = new Vector3(
+                spawnCell.x * cellSize + cellSize / 2f,
+                0.9f,  // CharacterController center
+                spawnCell.y * cellSize + cellSize / 2f
+            );
+
+            Log($"[CompleteMazeBuilder] 🎯 SpawnPoint: cell {spawnCell}", true);
+            Log($"[CompleteMazeBuilder] 👤 Spawn position: {spawnPosition}", true);
+            Log($"[CompleteMazeBuilder] ✅ Grid maze generated ({gridMazeGenerator.GridSize}x{gridMazeGenerator.GridSize})", true);
+        }
+
+        #endregion
+
+        #region Outer Walls & Internal Walls
+
+        private void SpawnOuterWalls()
+        {
+            Log($"[CompleteMazeBuilder] 🧱 Spawning all maze walls from grid...");
+
+            int spawned = 0;
+            int size = gridMazeGenerator.GridSize;
+
+            // Spawn walls based on grid data
+            for (int x = 0; x < size; x++)
+            {
+                for (int y = 0; y < size; y++)
+                {
+                    GridMazeCell cell = gridMazeGenerator.GetCell(x, y);
+
+                    // Only spawn walls where grid marks Wall
+                    if (cell == GridMazeCell.Wall)
+                    {
+                        Vector3 pos = new Vector3(
+                            x * cellSize + cellSize / 2f,
+                            wallHeight / 2f,
+                            y * cellSize + cellSize / 2f
+                        );
+                        SpawnWall(pos, Quaternion.Euler(0f, 0f, 0f), $"Wall_{x}_{y}");
+                        spawned++;
+                    }
+                }
+            }
+
+            Log($"[CompleteMazeBuilder] 🧱 {spawned} walls spawned from grid (snapped side-by-side)", true);
         }
 
         /// <summary>
-        /// STEP 2: Generate corridors between rooms.
-        /// Already done by GridMazeGenerator - this is a no-op.
+        /// Spawn single wall. Uses prefab if available, logs error if not.
+        /// NEVER uses CreatePrimitive (must use prefabs only!).
         /// </summary>
-        private void GenerateCorridors()
+        private void SpawnWall(Vector3 position, Quaternion rotation, string type)
         {
-            // Corridors already carved by GridMazeGenerator.Generate()
-            Debug.Log("[CompleteMazeBuilder] 🔨 Corridors already carved (by GridMazeGenerator)");
+            if (wallPrefab == null)
+            {
+                LogError($"[CompleteMazeBuilder] ❌ Wall prefab not loaded! Cannot spawn wall at {position}");
+                LogError("[CompleteMazeBuilder] 💡 Fix: Add Prefabs/WallPrefab.prefab to Resources folder");
+                return;  // DO NOT spawn fallback - enforce prefab usage
+            }
+
+            // Use prefab
+            GameObject wall = Instantiate(wallPrefab, position, rotation);
+            wall.name = $"Wall_{type}";
+
+            // Apply material if loaded
+            if (wallMaterial != null)
+            {
+                var renderer = wall.GetComponent<MeshRenderer>();
+                if (renderer != null)
+                {
+                    renderer.sharedMaterial = wallMaterial;
+                }
+            }
         }
 
-        /// <summary>
-        /// STEP 6: Read grid and spawn walls ONLY where grid has walls.
-        /// Uses GridMazeGenerator system.
-        /// Walls snap to grid cell boundaries WITH PROPER THICKNESS.
-        /// Walls connect side-by-side and at corners (no gaps!).
-        /// Rooms and Corridors are CLEAR (no interior walls).
-        /// </summary>
-        private void SpawnWallsFromGrid()
+        #endregion
+
+        #region Corridors
+
+        private void CarveCorridors()
         {
+            // Corridors are already carved by GridMazeGenerator.Generate()
+            // This method just verifies and logs the corridor data
+
             if (gridMazeGenerator == null)
             {
-                Debug.LogError("[CompleteMazeBuilder] ❌ GridMazeGenerator not found!");
+                LogError("[CompleteMazeBuilder] ❌ GridMazeGenerator not found!");
                 return;
             }
 
+            Log("[CompleteMazeBuilder] 🔨 Verifying corridors...");
+
+            int corridorCells = 0;
             int size = gridMazeGenerator.GridSize;
-            int wallsSpawned = 0;
 
-            Debug.Log($"[CompleteMazeBuilder] 🧱 Spawning walls from grid ({size}x{size})...");
-
-            // Store grid size for reference
-            int gridSize = size;
-
-            // Spawn walls based on grid cell types
-            // Walls go BETWEEN cells (at cell edges) - WITH PROPER SNAPPING!
+            // Count corridor cells
             for (int x = 0; x < size; x++)
             {
                 for (int y = 0; y < size; y++)
                 {
                     var cell = gridMazeGenerator.GetCell(x, y);
-
-                    // Rooms and Corridors are CLEAR - no walls inside!
-                    // Only spawn walls between Floor cells and walkable cells
-                    if (cell == GridMazeCell.Floor)
+                    if (cell == GridMazeCell.Corridor)
                     {
-                        // Check EAST neighbor - spawn wall between cells
-                        if (x + 1 < size)
-                        {
-                            var eastNeighbor = gridMazeGenerator.GetCell(x + 1, y);
-                            // Spawn wall if neighbor is walkable (Room/Corridor)
-                            if (eastNeighbor == GridMazeCell.Room || eastNeighbor == GridMazeCell.Corridor)
-                            {
-                                // Wall position: CENTERED on cell boundary (snaps with thickness)
-                                float wallX = (x + 1) * cellSize;  // Exact boundary
-                                float wallZ = y * cellSize + cellSize / 2f;  // Center of cell
-                                Vector3 wallPos = new Vector3(wallX, wallHeight / 2f, wallZ);
-                                Quaternion wallRot = Quaternion.Euler(0f, 90f, 0f); // Rotate to face east-west
-
-                                SpawnWall(wallPos, wallRot, x, y, "East");
-                                wallsSpawned++;
-                            }
-                        }
-
-                        // Check NORTH neighbor - spawn wall between cells
-                        if (y + 1 < size)
-                        {
-                            var northNeighbor = gridMazeGenerator.GetCell(x, y + 1);
-                            // Spawn wall if neighbor is walkable (Room/Corridor)
-                            if (northNeighbor == GridMazeCell.Room || northNeighbor == GridMazeCell.Corridor)
-                            {
-                                // Wall position: CENTERED on cell boundary (snaps with thickness)
-                                float wallX = x * cellSize + cellSize / 2f;  // Center of cell
-                                float wallZ = (y + 1) * cellSize;  // Exact boundary
-                                Vector3 wallPos = new Vector3(wallX, wallHeight / 2f, wallZ);
-                                Quaternion wallRot = Quaternion.Euler(0f, 0f, 0f); // Rotate to face north-south
-
-                                SpawnWall(wallPos, wallRot, x, y, "North");
-                                wallsSpawned++;
-                            }
-                        }
+                        corridorCells++;
                     }
                 }
             }
 
-            // Add outer perimeter walls (surround entire maze)
-            SpawnOuterPerimeterWalls(size, size);
-
-            Debug.Log($"[CompleteMazeBuilder] 🧱 {wallsSpawned} wall segments spawned (grid size: {gridSize}x{gridSize})");
-        }
-
-        private void SpawnOuterPerimeterWalls(int width, int height)
-        {
-            int outerWallsSpawned = 0;
-
-            Debug.Log($"[CompleteMazeBuilder] 🧱 Spawning outer perimeter walls ({width}x{height})...");
-
-            // North outer wall (top edge) - at grid boundary, walls snap side-by-side
-            for (int x = 0; x < width; x++)
-            {
-                float wallX = x * cellSize + cellSize / 2f;  // Center of cell
-                float wallZ = height * cellSize;  // At north edge of grid
-                SpawnWall(new Vector3(wallX, wallHeight / 2f, wallZ),
-                    Quaternion.Euler(0f, 0f, 0f), x, height - 1, "OuterNorth");
-                outerWallsSpawned++;
-            }
-
-            // South outer wall (bottom edge) - at grid boundary, walls snap side-by-side
-            for (int x = 0; x < width; x++)
-            {
-                float wallX = x * cellSize + cellSize / 2f;  // Center of cell
-                float wallZ = 0f;  // At south edge of grid
-                SpawnWall(new Vector3(wallX, wallHeight / 2f, wallZ),
-                    Quaternion.Euler(0f, 0f, 0f), x, 0, "OuterSouth");
-                outerWallsSpawned++;
-            }
-
-            // East outer wall (right edge) - at grid boundary, walls snap side-by-side
-            for (int y = 0; y < height; y++)
-            {
-                float wallX = width * cellSize;  // At east edge of grid
-                float wallZ = y * cellSize + cellSize / 2f;  // Center of cell
-                SpawnWall(new Vector3(wallX, wallHeight / 2f, wallZ),
-                    Quaternion.Euler(0f, 90f, 0f), width - 1, y, "OuterEast");
-                outerWallsSpawned++;
-            }
-
-            // West outer wall (left edge) - at grid boundary, walls snap side-by-side
-            for (int y = 0; y < height; y++)
-            {
-                float wallX = 0f;  // At west edge of grid
-                float wallZ = y * cellSize + cellSize / 2f;  // Center of cell
-                SpawnWall(new Vector3(wallX, wallHeight / 2f, wallZ),
-                    Quaternion.Euler(0f, 90f, 0f), 0, y, "OuterWest");
-                outerWallsSpawned++;
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] 🧱 {outerWallsSpawned} outer perimeter walls spawned (grid: {width}x{height})");
-        }
-
-        private void GenerateMazeLayout()
-        {
-            mazeGenerator = GetComponent<MazeGenerator>();
-            if (mazeGenerator == null)
-            {
-                Debug.LogError("[CompleteMazeBuilder] ❌ MazeGenerator component missing!");
-                return;
-            }
-
-            // Configure maze size - fields are PUBLIC [SerializeField]
-            mazeGenerator.width = mazeWidth;
-            mazeGenerator.height = mazeHeight;
-
-            Debug.Log($"[CompleteMazeBuilder] 📐 Set MazeGenerator size: {mazeGenerator.width}x{mazeGenerator.height}");
-
-            // ALWAYS generate maze first (creates the grid)
-            mazeGenerator.Generate();
-            Debug.Log($"[CompleteMazeBuilder] ✅ Maze layout generated ({mazeWidth}x{mazeHeight})");
-        }
-
-        private void SpawnGroundFloor()
-        {
-            // Check if ground already exists (safety check)
-            var existingGround = GameObject.Find("GroundFloor");
-            if (existingGround != null)
-            {
-                Debug.LogWarning("[CompleteMazeBuilder] ⚠️ GroundFloor already exists - destroying and recreating...");
-                if (Application.isPlaying)
-                    Destroy(existingGround);
-                else
-                    DestroyImmediate(existingGround);
-            }
-
-            // Simple ground floor (like ceiling but at bottom)
-            GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ground.name = "GroundFloor";
-
-            // Position: Center the ground under the maze
-            // Maze spans from (0,0,0) to (mazeWidth*cellSize, 0, mazeHeight*cellSize)
-            float centerX = (mazeWidth * cellSize) / 2f;
-            float centerZ = (mazeHeight * cellSize) / 2f;
-
-            ground.transform.position = new Vector3(centerX, -0.1f, centerZ);
-            ground.transform.localScale = new Vector3(mazeWidth * cellSize, 0.1f, mazeHeight * cellSize);
-
-            // Apply pre-loaded floor material
-            if (floorMaterialLoaded != null)
-            {
-                var renderer = ground.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.sharedMaterial = floorMaterialLoaded;
-                }
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] 🌍 Spawned ground floor at ({centerX}, -0.1, {centerZ}), size: {ground.transform.localScale.x}m x {ground.transform.localScale.z}m");
-            Debug.Log($"[CompleteMazeBuilder] 🌍 Maze bounds: X[0 to {mazeWidth * cellSize}m], Z[0 to {mazeHeight * cellSize}m]");
-        }
-
-        private void SpawnCeiling()
-        {
-            // Check if ceiling already exists (safety check)
-            var existingCeiling = GameObject.Find("Ceiling");
-            if (existingCeiling != null)
-            {
-                Debug.LogWarning("[CompleteMazeBuilder] ⚠️ Ceiling already exists - destroying and recreating...");
-                if (Application.isPlaying)
-                    Destroy(existingCeiling);
-                else
-                    DestroyImmediate(existingCeiling);
-            }
-
-            // Create ceiling covering entire maze
-            GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ceiling.name = "Ceiling";
-
-            float centerX = (mazeWidth * cellSize) / 2f;
-            float centerZ = (mazeHeight * cellSize) / 2f;
-
-            ceiling.transform.position = new Vector3(centerX, ceilingHeight, centerZ);
-            ceiling.transform.localScale = new Vector3(mazeWidth * cellSize, 0.1f, mazeHeight * cellSize);
-
-            // Apply ceiling material with texture
-            ApplyMaterial(ceiling, floorMaterialPath);
-            ApplyTexture(ceiling, ceilingTexturePath);
-
-            Debug.Log($"[CompleteMazeBuilder] ☁️ Spawned ceiling at ({centerX}, {ceilingHeight}, {centerZ}), size: {ceiling.transform.localScale.x}m x {ceiling.transform.localScale.z}m");
-        }
-
-        // [OBSOLETE] Use SpawnWallsFromGrid() instead
-        // private void SpawnWalls() { ... }
-        
-        private void SpawnWall(Vector3 position, Quaternion rotation, int x, int y, string direction)
-        {
-            GameObject wall;
-            
-            // Use pre-loaded wall prefab if available
-            if (wallPrefabLoaded != null)
-            {
-                wall = Instantiate(wallPrefabLoaded, position, rotation);
-            }
-            else
-            {
-                // Fallback: create wall cube
-                wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                wall.name = $"Wall_{x}_{y}_{direction}";
-                wall.transform.position = position;
-                wall.transform.rotation = rotation;
-                // Wall size: cellSize length, wallHeight tall, wallThickness thick
-                wall.transform.localScale = new Vector3(cellSize, wallHeight, wallThickness);
-            }
-
-            wall.name = $"Wall_{x}_{y}_{direction}";
-
-            // Apply pre-loaded material (with texture)
-            if (wallMaterialLoaded != null)
-            {
-                var renderer = wall.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.sharedMaterial = wallMaterialLoaded;
-                }
-            }
-        }
-
-        private void SpawnDoors()
-        {
-            var gridField = mazeGenerator.GetType().GetProperty("Grid");
-            var grid = gridField?.GetValue(mazeGenerator) as MazeGenerator.Wall[,];
-
-            if (grid == null) return;
-
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-            int doorsSpawned = 0;
-
-            // Spawn doors at passage points (where walls are missing between cells)
-            for (int x = 0; x < width - 1; x++)
-            {
-                for (int y = 0; y < height - 1; y++)
-                {
-                    var cell = grid[x, y];
-                    Vector3 cellPos = new Vector3(x * cellSize + cellSize / 2f, 0f, y * cellSize + cellSize / 2f);
-
-                    if ((cell & MazeGenerator.Wall.East) == 0)
-                    {
-                        if (Random.value < doorSpawnChance)
-                        {
-                            Vector3 doorPos = new Vector3(
-                                (x + 1) * cellSize,
-                                wallHeight / 2f,
-                                y * cellSize + cellSize / 2f
-                            );
-                            Quaternion doorRot = Quaternion.Euler(0f, 0f, 0f);
-
-                            string doorType = DetermineDoorType();
-                            string prefabPath = GetDoorPrefabPath(doorType);
-
-                            SpawnDoor(doorPos, doorRot, x, y, "East", doorType, prefabPath);
-                            doorsSpawned++;
-
-                            doorPositions.Add(new DoorPosition {
-                                position = doorPos,
-                                rotation = doorRot,
-                                x = x, y = y,
-                                direction = "East",
-                                type = doorType
-                            });
-                        }
-                    }
-
-                    if ((cell & MazeGenerator.Wall.South) == 0)
-                    {
-                        if (Random.value < doorSpawnChance)
-                        {
-                            Vector3 doorPos = new Vector3(
-                                x * cellSize + cellSize / 2f,
-                                wallHeight / 2f,
-                                y * cellSize
-                            );
-                            Quaternion doorRot = Quaternion.Euler(0f, 90f, 0f);
-
-                            string doorType = DetermineDoorType();
-                            string prefabPath = GetDoorPrefabPath(doorType);
-
-                            SpawnDoor(doorPos, doorRot, x, y, "South", doorType, prefabPath);
-                            doorsSpawned++;
-
-                            doorPositions.Add(new DoorPosition {
-                                position = doorPos,
-                                rotation = doorRot,
-                                x = x, y = y,
-                                direction = "South",
-                                type = doorType
-                            });
-                        }
-                    }
-                }
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] 🚪 Spawned {doorsSpawned} doors (snapped to wall gaps)");
-        }
-
-        private string DetermineDoorType()
-        {
-            float roll = Random.value;
-
-            if (roll < secretDoorChance)
-                return "Secret";
-            else if (roll < secretDoorChance + lockedDoorChance)
-                return "Locked";
-            else
-                return "Normal";
-        }
-
-        private string GetDoorPrefabPath(string doorType)
-        {
-            switch (doorType)
-            {
-                case "Secret": return secretDoorPrefabPath;
-                case "Locked": return lockedDoorPrefabPath;
-                default: return doorPrefabPath;
-            }
-        }
-
-        private void SpawnDoor(Vector3 position, Quaternion rotation, int x, int y, string direction, string doorType, string prefabPath, bool openByDefault = false)
-        {
-            GameObject doorPrefab = LoadPrefab(prefabPath);
-
-            GameObject door;
-            if (doorPrefab != null)
-            {
-                door = Instantiate(doorPrefab, position, rotation);
-            }
-            else
-            {
-                door = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                door.transform.position = position;
-                door.transform.rotation = rotation;
-                door.transform.localScale = new Vector3(wallThickness, wallHeight, cellSize * 0.9f);
-            }
-
-            door.name = $"{doorType}Door_{x}_{y}_{direction}";
-
-            ApplyMaterial(door, doorMaterialPath);
-
-            var doorsEngine = door.AddComponent<DoorsEngine>();
-            doorsEngine.Initialize(DoorVariant.Normal, DoorTrapType.None, locked: false, openByDefault: openByDefault);
-
-            Debug.Log($"[CompleteMazeBuilder] 🚪 {doorType} door at ({x}, {y}) {direction} ({(openByDefault ? "OPEN" : "CLOSED")})");
-        }
-        
-        /// <summary>
-        /// Spawn mechanical exit door (single door, accessible from both sides).
-        /// PLUG-IN-OUT: Uses DoorsEngine component for mechanical operation.
-        /// Located at maze perimeter (south wall center).
-        /// 
-        /// This is the FINAL EXIT door - simple, single door.
-        /// For special exit room with saloon doors at entrance, see SpawnSpecialExitRoom() below.
-        /// </summary>
-        private void SpawnMechanicalExitDoor()
-        {
-            int width = mazeWidth;
-            int height = mazeHeight;
-
-            // Exit door position: center of south outer wall
-            int exitX = width / 2;
-            int exitZ = height;  // South perimeter
-
-            Vector3 exitPos = new Vector3(
-                exitX * cellSize + cellSize / 2f,
-                wallHeight / 2f,
-                exitZ * cellSize
-            );
-
-            Quaternion exitRot = Quaternion.Euler(0f, 90f, 0f);  // Facing north (into maze)
-
-            Debug.Log($"[CompleteMazeBuilder] 🚪 Spawning MECHANICAL EXIT DOOR at ({exitX}, {exitZ})");
-
-            // Create exit door GameObject
-            GameObject exitDoor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            exitDoor.name = "MechanicalExitDoor";
-            exitDoor.transform.position = exitPos;
-            exitDoor.transform.rotation = exitRot;
-            exitDoor.transform.localScale = new Vector3(wallThickness * 2f, wallHeight, cellSize * 1.5f);
-
-            // Apply door material
-            ApplyMaterial(exitDoor, doorMaterialPath);
-
-            // Add DoorsEngine component (mechanical operation)
-            var doorsEngine = exitDoor.AddComponent<DoorsEngine>();
-            
-            // Initialize door as unlocked normal door (player can exit)
-            doorsEngine.Initialize(DoorVariant.Normal, DoorTrapType.None, locked: false);
-            
-            // Note: interactionRange is protected in BehaviorEngine, set via serialized field or method
-            // For now, default range (3f) from BehaviorEngine is used
-
-            // Add interaction trigger
-            var collider = exitDoor.GetComponent<BoxCollider>();
-            if (collider != null)
-            {
-                collider.isTrigger = false;  // Solid door
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] ✅ Mechanical exit door placed at {exitPos}");
-            Debug.Log($"[CompleteMazeBuilder] 🔓 Door is UNLOCKED - player can exit maze!");
-            Debug.Log($"[CompleteMazeBuilder] ⚙️ DoorsEngine attached - mechanical operation enabled");
-        }
-        
-        // ============================================================================
-        // SPECIAL EXIT ROOM (COMMENTED OUT - FOR LATER TESTING)
-        // ============================================================================
-        // Creates a rectangular room that extends maze south by 1 room
-        // ENTRANCE: Saloon-style double-sided doors (from maze into room)
-        // EXIT: Simple single door (south wall, final exit)
-        // ============================================================================
-        
-        /*
-        /// <summary>
-        /// Spawn SPECIAL EXIT ROOM with saloon doors at entrance.
-        /// 
-        /// ROOM LAYOUT:
-        /// ┌─────────────────────────────────┐
-        /// │         MAZE ENDS HERE          │
-        /// ├─────────────────────────────────┤
-        /// │  🚪  🚪  🚪     │               │
-        /// │ Saloon Doors    │ EXIT ROOM     │
-        /// │ (Entrance)      │               │
-        /// │                 │               │
-        /// │                 │      🚪       │
-        /// │                 │   Final Exit  │
-        /// └─────────────────┴───────┬───────┘
-        ///                    SOUTH (outside)
-        /// 
-        /// FEATURES:
-        /// - Rectangular room (extends maze south)
-        /// - ENTRANCE: 3 saloon doors (double-sided, from maze)
-        /// - EXIT: 1 simple door (south wall, final exit)
-        /// - Saloon doors swing both ways (push/pull)
-        /// - Final exit is simple single door
-        /// 
-        /// PLUG-IN-OUT: Uses DoorsEngine for all doors.
-        /// </summary>
-        private void SpawnSpecialExitRoom()
-        {
-            int width = mazeWidth;
-            int height = mazeHeight;
-            
-            // Exit room position: south of maze, centered
-            int roomX = width / 2 - 1;  // Center room
-            int roomZ = height;  // Just south of maze
-            
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Spawning SPECIAL EXIT ROOM at ({roomX}, {roomZ})");
-            
-            // Create exit room floor
-            GameObject roomFloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            roomFloor.name = "ExitRoom_Floor";
-            roomFloor.transform.position = new Vector3(
-                roomX * cellSize + cellSize,  // Center of 2-cell wide room
-                -0.1f,
-                roomZ * cellSize + cellSize / 2f
-            );
-            roomFloor.transform.localScale = new Vector3(
-                cellSize * 2f,  // 2 cells wide
-                0.1f,
-                cellSize * 2f   // 2 cells deep
-            );
-            ApplyMaterial(roomFloor, floorMaterialPath);
-            
-            // Create exit room ceiling
-            GameObject roomCeiling = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            roomCeiling.name = "ExitRoom_Ceiling";
-            roomCeiling.transform.position = new Vector3(
-                roomX * cellSize + cellSize,
-                ceilingHeight,
-                roomZ * cellSize + cellSize / 2f
-            );
-            roomCeiling.transform.localScale = new Vector3(
-                cellSize * 2f,
-                0.1f,
-                cellSize * 2f
-            );
-            ApplyMaterial(roomCeiling, ceilingTexturePath);
-            
-            // Create 3 saloon-style double-sided doors at ENTRANCE (north wall of room)
-            float doorSpacing = cellSize / 3f;  // Even spacing
-            for (int i = 0; i < 3; i++)
-            {
-                float doorX = (roomX * cellSize) + (doorSpacing * (i + 0.5f)) + (doorSpacing / 2f);
-                Vector3 doorPos = new Vector3(
-                    doorX,
-                    wallHeight / 2f,
-                    roomZ * cellSize  // North wall of room (entrance from maze)
-                );
-                
-                Quaternion doorRot = Quaternion.Euler(0f, 90f, 0f);  // Facing south (into room)
-                
-                // Create saloon-style double-sided door
-                CreateSaloonDoor(doorPos, doorRot, i + 1, isEntrance: true);
-            }
-            
-            // Create FINAL EXIT door (south wall of room - simple single door)
-            Vector3 exitPos = new Vector3(
-                roomX * cellSize + cellSize,  // Center of room
-                wallHeight / 2f,
-                roomZ * cellSize + cellSize * 2f  // South wall of room
-            );
-            
-            Quaternion exitRot = Quaternion.Euler(0f, 90f, 0f);  // Facing north (into room)
-            
-            CreateSimpleExitDoor(exitPos, exitRot);
-            
-            Debug.Log("[CompleteMazeBuilder] ✅ Special exit room spawned!");
-            Debug.Log("[CompleteMazeBuilder] 🚪 3 saloon doors at entrance (from maze)");
-            Debug.Log("[CompleteMazeBuilder] 🚪 1 simple door at exit (to outside)");
-        }
-        
-        /// <summary>
-        /// Create a SALOON-STYLE DOUBLE-SIDED DOOR.
-        /// 
-        /// FEATURES:
-        /// - Two door panels (left and right)
-        /// - Double-sided (visible from both sides)
-        /// - Flip/flap style (swings both ways)
-        /// - Saloon-style (classic western swing doors)
-        /// - Auto-swing when player approaches
-        /// 
-        /// Used for ENTRANCE to exit room (from maze).
-        /// </summary>
-        private void CreateSaloonDoor(Vector3 position, Quaternion rotation, int doorNumber, bool isEntrance = false)
-        {
-            // Create door frame
-            GameObject doorFrame = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            doorFrame.name = $"SaloonDoor_{doorNumber}_Frame";
-            doorFrame.transform.position = position;
-            doorFrame.transform.rotation = rotation;
-            doorFrame.transform.localScale = new Vector3(0.1f, wallHeight, cellSize * 0.8f);
-            
-            // Left door panel (swings left)
-            GameObject leftPanel = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            leftPanel.name = $"SaloonDoor_{doorNumber}_Left";
-            leftPanel.transform.parent = doorFrame.transform;
-            leftPanel.transform.localPosition = new Vector3(-cellSize * 0.25f, 0f, 0f);
-            leftPanel.transform.localScale = new Vector3(0.05f, wallHeight * 0.9f, cellSize * 0.35f);
-            ApplyMaterial(leftPanel, doorMaterialPath);
-
-            // Add DoorsEngine to left panel
-            var leftDoorsEngine = leftPanel.AddComponent<DoorsEngine>();
-            leftDoorsEngine.Initialize(DoorVariant.Normal, DoorTrapType.None, locked: false);
-            // Note: auto-swing behavior would require additional physics/animation setup
-
-            // Right door panel (swings right)
-            GameObject rightPanel = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            rightPanel.name = $"SaloonDoor_{doorNumber}_Right";
-            rightPanel.transform.parent = doorFrame.transform;
-            rightPanel.transform.localPosition = new Vector3(cellSize * 0.25f, 0f, 0f);
-            rightPanel.transform.localScale = new Vector3(0.05f, wallHeight * 0.9f, cellSize * 0.35f);
-            ApplyMaterial(rightPanel, doorMaterialPath);
-
-            // Add DoorsEngine to right panel
-            var rightDoorsEngine = rightPanel.AddComponent<DoorsEngine>();
-            rightDoorsEngine.Initialize(DoorVariant.Normal, DoorTrapType.None, locked: false);
-            // Note: auto-swing behavior would require additional physics/animation setup
-
-            string location = isEntrance ? "entrance" : "exit";
-            Debug.Log($"[CompleteMazeBuilder] 🚪 Saloon door {doorNumber} created at {location} (double-sided, swing both ways)");
-        }
-        
-        /// <summary>
-        /// Create a SIMPLE SINGLE DOOR for final exit.
-        /// 
-        /// FEATURES:
-        /// - Single door panel
-        /// - Accessible from both sides
-        /// - Manual operation (press E)
-        /// - Unlocked (player can exit)
-        /// 
-        /// Used for FINAL EXIT (south wall of exit room).
-        /// </summary>
-        private void CreateSimpleExitDoor(Vector3 position, Quaternion rotation)
-        {
-            GameObject exitDoor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            exitDoor.name = "FinalExitDoor";
-            exitDoor.transform.position = position;
-            exitDoor.transform.rotation = rotation;
-            exitDoor.transform.localScale = new Vector3(wallThickness * 2f, wallHeight, cellSize * 1.5f);
-
-            // Apply door material
-            ApplyMaterial(exitDoor, doorMaterialPath);
-
-            // Add DoorsEngine component
-            var doorsEngine = exitDoor.AddComponent<DoorsEngine>();
-            doorsEngine.Initialize(DoorVariant.Normal, DoorTrapType.None, locked: false);
-            // Note: interactionRange uses default (3f) from BehaviorEngine
-
-            Debug.Log($"[CompleteMazeBuilder] ✅ Final exit door placed at {position}");
-            Debug.Log($"[CompleteMazeBuilder] 🔓 Door is UNLOCKED - player can exit to outside world!");
-        }
-        */
-        
-        // ============================================================================
-        // [OBSOLETE] Using PlaceRoomsInGrid() instead - rooms placed in virtual grid BEFORE corridors
-        // private void SpawnRoomsInExistingMaze() { ... }
-        // private void SpawnRooms() { ... }
-        
-        // [OBSOLETE] Special exit room for later implementation  
-        // private void SpawnMechanicalExitDoor() { ... }
-        // private void SpawnSpecialExitRoom() { ... }
-
-        #endregion
-
-        #region Utility Methods
-        
-        /// <summary>
-        /// Mark 3x3 room cells as CLEAR (no walls) so corridors connect properly.
-        /// </summary>
-        private void MarkRoomCellsClear(MazeGenerator.Wall[,] grid, Vector2Int roomPos)
-        {
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            // Clear all walls in 3x3 room area
-            for (int dx = 0; dx < 3 && roomPos.x + dx < width; dx++)
-            {
-                for (int dy = 0; dy < 3 && roomPos.y + dy < height; dy++)
-                {
-                    var oldWall = grid[roomPos.x + dx, roomPos.y + dy];
-                    grid[roomPos.x + dx, roomPos.y + dy] = MazeGenerator.Wall.None;
-                    Debug.Log($"[CompleteMazeBuilder] 🔓 Cleared cell ({roomPos.x + dx}, {roomPos.y + dy}): {oldWall} → None");
-                }
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Room at ({roomPos.x}, {roomPos.y}) marked as CLEAR (3x3 area, no walls inside)");
-        }
-        
-        /// <summary>
-        /// Mark room door positions in grid so corridors connect properly.
-        /// Rooms have doors on EAST (entrance) and WEST (exit) sides.
-        /// REMOVES wall flags from adjacent cells to create door openings.
-        /// </summary>
-        private void MarkRoomDoors(MazeGenerator.Wall[,] grid, Vector2Int roomPos)
-        {
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            // Room is 3x3 cells, centered at (roomPos.x+1, roomPos.y+1)
-            // East door (entrance from maze) - remove EAST wall from room cell
-            int roomEastCellX = roomPos.x + 2;  // East edge of room (last cell inside room)
-            int roomEastCellZ = roomPos.y + 1;  // Center of 3-tall room
-            if (roomEastCellX < width && roomEastCellZ < height)
-            {
-                // Remove EAST wall from room cell (creates doorway)
-                grid[roomEastCellX, roomEastCellZ] &= ~MazeGenerator.Wall.East;
-                Debug.Log($"[CompleteMazeBuilder] 🚪 Removed east wall at ({roomEastCellX}, {roomEastCellZ}) for door");
-            }
-
-            // West door (exit to maze) - remove WEST wall from room cell
-            int roomWestCellX = roomPos.x + 1;  // West edge of room (first cell inside room)
-            int roomWestCellZ = roomPos.y + 1;  // Center of 3-tall room
-            if (roomWestCellX >= 0 && roomWestCellZ < height)
-            {
-                // Remove WEST wall from room cell (creates doorway)
-                grid[roomWestCellX, roomWestCellZ] &= ~MazeGenerator.Wall.West;
-                Debug.Log($"[CompleteMazeBuilder] 🚪 Removed west wall at ({roomWestCellX}, {roomWestCellZ}) for door");
-            }
+            Log($"[CompleteMazeBuilder] ✅ {corridorCells} corridor cells verified ({corridorWidth} cells wide)", true);
         }
 
         #endregion
 
-        private void SpawnRooms()
+        #region Doors
+
+        private void PlaceDoors()
         {
-            int numRooms = Random.Range(minRooms, maxRooms + 1);
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Generating {numRooms} rooms (each with 1 entrance + 1 exit)...");
+            Log("[CompleteMazeBuilder] 🚪 Placing doors...");
 
-            var gridField = mazeGenerator.GetType().GetProperty("Grid");
-            var grid = gridField?.GetValue(mazeGenerator) as MazeGenerator.Wall[,];
+            // Doors are placed by DoorsEngine components in scene
+            // This method is a placeholder for future door placement logic
 
-            if (grid == null) return;
-
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            // Spawn entrance room (start - top-left area) - PLAYER SPAWNS HERE
-            Vector2Int entrancePos = FindValidRoomPosition(grid, 0, 0, width / 3, height / 2);
-            if (entrancePos.x >= 0)
-            {
-                SpawnRoom(entrancePos, "Entrance", entranceRoomPrefabPath, hasEntrance: true, hasExit: true);
-                // Store entrance room cell for player spawn (CENTER of 3x3 room, not corner!)
-                // Room spans cells (entrancePos.x to entrancePos.x+2, entrancePos.y to entrancePos.y+2)
-                // Center is at (entrancePos.x+1, entrancePos.y+1)
-                entranceRoomCell = new Vector2Int(entrancePos.x + 1, entrancePos.y + 1);
-                // Set player spawn position (center of entrance room)
-                entranceRoomPosition = new Vector3(
-                    entrancePos.x * cellSize + cellSize * 1.5f,
-                    1f,
-                    entrancePos.y * cellSize + cellSize * 1.5f
-                );
-                
-                // ✅ SAVE TO PERSISTENT STORAGE (RAM/PlayerPrefs)
-                SaveSpawnPosition(entranceRoomCell.x, entranceRoomCell.y, (int)currentSeed);
-                Debug.Log($"[CompleteMazeBuilder] 💾 Spawn position saved to persistent storage: ({entranceRoomCell.x}, {entranceRoomCell.y})");
-            }
-
-            // Spawn exit room (end - bottom-right area)
-            Vector2Int exitPos = FindValidRoomPosition(grid, width * 2 / 3, height / 2, width, height);
-            if (exitPos.x >= 0)
-            {
-                SpawnRoom(exitPos, "Exit", exitRoomPrefabPath, hasEntrance: true, hasExit: true);
-            }
-
-            // Spawn normal rooms (each with 1 entrance + 1 exit)
-            int roomsSpawned = 2;
-            while (roomsSpawned < numRooms)
-            {
-                Vector2Int roomPos = FindValidRoomPosition(grid, 0, 0, width, height);
-                if (roomPos.x >= 0)
-                {
-                    SpawnRoom(roomPos, "Normal", normalRoomPrefabPath, hasEntrance: true, hasExit: true);
-                    roomsSpawned++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ Spawned {roomsSpawned} rooms (each with 1 entrance + 1 exit)");
-        }
-
-        private Vector2Int FindValidRoomPosition(MazeGenerator.Wall[,] grid, int minX, int minY, int maxX, int maxY)
-        {
-            int width = grid.GetLength(0);
-            int height = grid.GetLength(1);
-
-            // Try to find valid position with more attempts
-            for (int i = 0; i < 50; i++)  // Increased from 20 to 50
-            {
-                int x = Random.Range(minX, Mathf.Min(maxX, width - 3));
-                int y = Random.Range(minY, Mathf.Min(maxY, height - 3));
-
-                bool clear = true;
-                for (int dx = 0; dx < 3 && clear; dx++)
-                {
-                    for (int dy = 0; dy < 3 && clear; dy++)
-                    {
-                        // Allow some walls - just need mostly clear space for room
-                        var cell = grid[x + dx, y + dy];
-                        if (cell != MazeGenerator.Wall.None && cell != MazeGenerator.Wall.North && cell != MazeGenerator.Wall.South && cell != MazeGenerator.Wall.East && cell != MazeGenerator.Wall.West)
-                        {
-                            // Cell has multiple walls - not clear enough
-                            clear = false;
-                        }
-                    }
-                }
-
-                if (clear)
-                {
-                    return new Vector2Int(x, y);
-                }
-            }
-
-            // Fallback: return a default position near entrance (top-left area)
-            Debug.Log("[CompleteMazeBuilder] ⚠️ No perfect room position found - using default (1, 1)");
-            return new Vector2Int(1, 1);
-        }
-
-        private void SpawnRoom(Vector2Int position, string roomType, string prefabPath, bool hasEntrance, bool hasExit)
-        {
-            // ALWAYS create procedural room (floor + ceiling + doors, NO walls!)
-            // Walls will be spawned by SpawnWalls() with proper doorways
-            GameObject room = new GameObject($"{roomType}Room_{position.x}_{position.y}");
-            Vector3 roomPos = new Vector3(
-                position.x * cellSize + cellSize * 1.5f,
-                0f,
-                position.y * cellSize + cellSize * 1.5f
-            );
-            room.transform.position = roomPos;
-
-            // Floor
-            GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            floor.name = "Floor";
-            floor.transform.parent = room.transform;
-            floor.transform.localPosition = new Vector3(0f, -0.1f, 0f);
-            floor.transform.localScale = new Vector3(cellSize * 3f, 0.1f, cellSize * 3f);
-            ApplyMaterial(floor, floorMaterialPath);
-            ApplyTexture(floor, groundTexturePath);
-
-            // Ceiling
-            GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ceiling.name = "Ceiling";
-            ceiling.transform.parent = room.transform;
-            ceiling.transform.localPosition = new Vector3(0f, ceilingHeight, 0f);
-            ceiling.transform.localScale = new Vector3(cellSize * 3f, 0.1f, cellSize * 3f);
-            ApplyMaterial(ceiling, floorMaterialPath);
-            ApplyTexture(ceiling, ceilingTexturePath);
-
-            // DOORS at entrance/exit (NOT walls - doors!)
-            if (hasEntrance)
-            {
-                // East side door (entrance from maze)
-                Vector3 doorPos = new Vector3(cellSize * 1.5f, wallHeight / 2f, 0f);
-                Quaternion doorRot = Quaternion.Euler(0f, 0f, 0f);
-                SpawnDoor(doorPos, doorRot, position.x + 2, position.y + 1, "East", "Normal", doorPrefabPath, openByDefault: true);
-            }
-            
-            if (hasExit)
-            {
-                // West side door (exit to maze)
-                Vector3 doorPos = new Vector3(-cellSize * 1.5f, wallHeight / 2f, 0f);
-                Quaternion doorRot = Quaternion.Euler(0f, 180f, 0f);
-                SpawnDoor(doorPos, doorRot, position.x, position.y + 1, "West", "Normal", doorPrefabPath, openByDefault: true);
-            }
-
-            room.name = $"{roomType}Room_{position.x}_{position.y}";
-            Debug.Log($"[CompleteMazeBuilder] 🏛️ {roomType} room spawned (floor + ceiling + doors, NO walls)");
-        }
-
-        private void CreateRoomWall(Transform parent, Vector3 localPos, Quaternion localRot, string name)
-        {
-            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            wall.name = $"Wall_{name}";
-            wall.transform.parent = parent;
-            wall.transform.localPosition = localPos;
-            wall.transform.localRotation = localRot;
-            wall.transform.localScale = new Vector3(cellSize * 3f, wallHeight, wallThickness);
-            ApplyMaterial(wall, wallMaterialPath);
-            ApplyTexture(wall, wallTexturePath);
-        }
-
-        private void CreateRoomWallWithGap(Transform parent, Vector3 localPos, Quaternion localRot, string name, bool hasGap)
-        {
-            if (hasGap)
-            {
-                GameObject wall1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                wall1.name = $"Wall_{name}_Left";
-                wall1.transform.parent = parent;
-                wall1.transform.localPosition = localPos + Vector3.right * (cellSize * 0.75f);
-                wall1.transform.localRotation = localRot;
-                wall1.transform.localScale = new Vector3(cellSize * 1.5f, wallHeight, wallThickness);
-                ApplyMaterial(wall1, wallMaterialPath);
-                ApplyTexture(wall1, wallTexturePath);
-
-                GameObject wall2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                wall2.name = $"Wall_{name}_Right";
-                wall2.transform.parent = parent;
-                wall2.transform.localPosition = localPos - Vector3.right * (cellSize * 0.75f);
-                wall2.transform.localRotation = localRot;
-                wall2.transform.localScale = new Vector3(cellSize * 1.5f, wallHeight, wallThickness);
-                ApplyMaterial(wall2, wallMaterialPath);
-                ApplyTexture(wall2, wallTexturePath);
-            }
-            else
-            {
-                CreateRoomWall(parent, localPos, localRot, name);
-            }
-        }
-
-        #region Player Spawn
-
-        /// <summary>
-        /// Save spawn position to database (SQLite - Saves/MazeDB.sqlite).
-        /// Called AFTER maze generation with NEW seed.
-        /// Procedurally persistent - changes with seed, persists across sessions.
-        /// </summary>
-        private void SaveSpawnPosition(int cellX, int cellZ, int seed)
-        {
-            // Save to SQLite database (Saves/ folder at project root)
-            MazeSaveData.SaveMazeData(seed, cellX, cellZ, mazeWidth, mazeHeight);
-            
-            // Save room data
-            var rooms = new List<RoomDataModel>
-            {
-                new RoomDataModel { X = cellX, Z = cellZ, Type = "Entrance" }
-            };
-            MazeSaveData.SaveRoomData(seed, rooms);
-            
-            // Save prefab assignments (Inspector values - NO HARDCODED DEFAULTS!)
-            var prefabs = new Dictionary<string, string>
-            {
-                { "Wall", wallPrefabPath },
-                { "Door", doorPrefabPath },
-                { "EntranceRoom", entranceRoomPrefabPath },
-                { "ExitRoom", exitRoomPrefabPath },
-                { "NormalRoom", normalRoomPrefabPath }
-            };
-            MazeSaveData.SaveAllPrefabData(prefabs);
-            
-            // Save material/texture assignments
-            var materials = new Dictionary<string, string>
-            {
-                { "Wall", wallMaterialPath },
-                { "Door", doorMaterialPath },
-                { "Floor", floorMaterialPath },
-                { "GroundTexture", groundTexturePath },
-                { "WallTexture", wallTexturePath },
-                { "CeilingTexture", ceilingTexturePath }
-            };
-            MazeSaveData.SaveAllPrefabData(materials);
-            
-            Debug.Log($"[CompleteMazeBuilder] 💾 Maze saved to SQLite: Seed={seed}, Spawn=({cellX}, {cellZ})");
-        }
-        
-        /// <summary>
-        /// Load spawn position from database (SQLite - Saves/MazeDB.sqlite).
-        /// Returns stored position if seed matches, otherwise forces regeneration.
-        /// Called during loading screen.
-        /// Loads prefab paths from SQLite (NO HARDCODED VALUES!).
-        /// </summary>
-        private Vector2Int LoadSpawnPosition()
-        {
-            var mazeData = MazeSaveData.LoadMazeData();
-            
-            if (mazeData == null)
-            {
-                Debug.Log("[CompleteMazeBuilder] 💾 No stored maze data - will generate NEW maze with NEW seed (FIRST TIME GAME)");
-                Debug.Log("[CompleteMazeBuilder] 📦 Loading prefab paths from SQLite defaults...");
-                LoadPrefabPathsFromSQLite();  // Load from SQLite (NOT hardcoded!)
-                return new Vector2Int(-1, -1);  // Invalid, force new generation
-            }
-            
-            if (mazeData.Seed != (int)currentSeed)
-            {
-                Debug.Log($"[CompleteMazeBuilder] 💾 Seed mismatch (stored: {mazeData.Seed}, current: {currentSeed}) - generating NEW maze");
-                LoadPrefabPathsFromSQLite();  // Load from SQLite
-                return new Vector2Int(-1, -1);  // Seed changed, force new generation
-            }
-            
-            Debug.Log($"[CompleteMazeBuilder] 💾 Loaded maze data: Seed={mazeData.Seed}, Spawn=({mazeData.SpawnX}, {mazeData.SpawnZ})");
-            return new Vector2Int(mazeData.SpawnX, mazeData.SpawnZ);
-        }
-
-        /// <summary>
-        /// Clear stored spawn position and maze data (for cleanup).
-        /// Used by editor tools to reset maze state.
-        /// </summary>
-        public void ClearSpawnPosition()
-        {
-            // Clear maze data from database
-            MazeSaveData.ClearMazeData();
-            
-            // Reset local state
-            entranceRoomCell = new Vector2Int(-1, -1);
-            entranceRoomPosition = Vector3.zero;
-            
-            Debug.Log("[CompleteMazeBuilder] 🗑️ Spawn position and maze data cleared");
-        }
-
-        /// <summary>
-        /// Load prefab/material paths from JSON config file.
-        /// NO HARDCODED VALUES - all from Config/GameConfig.json!
-        /// Supports modding (god-slayer mode, damage scale, etc.)
-        /// </summary>
-        private void LoadPrefabPathsFromSQLite()
-        {
-            // First try to load from SQLite (player's saved choices)
-            var prefabs = MazeSaveData.LoadAllPrefabData();
-            
-            // Apply loaded prefab paths (empty if first-time)
-            if (prefabs.ContainsKey("Wall") && !string.IsNullOrEmpty(prefabs["Wall"])) wallPrefabPath = prefabs["Wall"];
-            if (prefabs.ContainsKey("Door") && !string.IsNullOrEmpty(prefabs["Door"])) doorPrefabPath = prefabs["Door"];
-            if (prefabs.ContainsKey("EntranceRoom") && !string.IsNullOrEmpty(prefabs["EntranceRoom"])) entranceRoomPrefabPath = prefabs["EntranceRoom"];
-            if (prefabs.ContainsKey("ExitRoom") && !string.IsNullOrEmpty(prefabs["ExitRoom"])) exitRoomPrefabPath = prefabs["ExitRoom"];
-            if (prefabs.ContainsKey("NormalRoom") && !string.IsNullOrEmpty(prefabs["NormalRoom"])) normalRoomPrefabPath = prefabs["NormalRoom"];
-            
-            // If still empty (first-time game), load from JSON config
-            if (string.IsNullOrEmpty(wallPrefabPath))
-            {
-                Debug.Log("[CompleteMazeBuilder] 📦 First-time game - loading defaults from JSON config...");
-                LoadFromJSONConfig();
-            }
-            else
-            {
-                Debug.Log("[CompleteMazeBuilder] 📦 Loaded prefab paths from SQLite (player's choices)");
-            }
-        }
-        
-        /// <summary>
-        /// Load default values from JSON config file (Config/GameConfig.json).
-        /// Supports modding - edit JSON to change defaults!
-        /// Stores ALL data in RAM cache (byte-by-byte storage).
-        /// </summary>
-        private void LoadFromJSONConfig()
-        {
-            if (configLoaded)
-            {
-                Debug.Log("[CompleteMazeBuilder] 📖 Config already loaded from cache (RAM)");
-                return;
-            }
-
-            var config = GameConfig.Instance;
-
-            Debug.Log($"[CompleteMazeBuilder] 📖 Reading JSON config: wallPrefab='{config.wallPrefab}'");
-
-            // Cache prefab paths (RAM storage)
-            configCache.wallPrefab = config.wallPrefab;
-            configCache.doorPrefab = config.doorPrefab;
-            configCache.lockedDoorPrefab = config.lockedDoorPrefab;
-            configCache.secretDoorPrefab = config.secretDoorPrefab;
-            configCache.entranceRoomPrefab = config.entranceRoomPrefab;
-            configCache.exitRoomPrefab = config.exitRoomPrefab;
-            configCache.normalRoomPrefab = config.normalRoomPrefab;
-            configCache.torchPrefab = config.torchPrefab;
-
-            // Cache material paths (RAM storage)
-            configCache.wallMaterial = config.wallMaterial;
-            configCache.doorMaterial = config.doorMaterial;
-            configCache.floorMaterial = config.floorMaterial;
-
-            // Cache texture paths (RAM storage)
-            configCache.groundTexture = config.groundTexture;
-            configCache.wallTexture = config.wallTexture;
-            configCache.ceilingTexture = config.ceilingTexture;
-
-            // Cache maze settings (RAM storage)
-            configCache.mazeWidth = config.defaultMazeWidth;
-            configCache.mazeHeight = config.defaultMazeHeight;
-            configCache.cellSize = config.defaultCellSize;
-            configCache.wallHeight = config.defaultWallHeight;
-            configCache.wallThickness = config.defaultWallThickness;
-            configCache.ceilingHeight = config.defaultCeilingHeight;
-
-            // Cache door settings (RAM storage)
-            configCache.doorSpawnChance = config.defaultDoorSpawnChance;
-            configCache.lockedDoorChance = config.defaultLockedDoorChance;
-            configCache.secretDoorChance = config.defaultSecretDoorChance;
-
-            // Cache room settings (RAM storage)
-            configCache.generateRooms = config.generateRooms;
-            configCache.minRooms = config.minRooms;
-            configCache.maxRooms = config.maxRooms;
-
-            // Cache generation settings (RAM storage)
-            configCache.useRandomSeed = config.useRandomSeed;
-            configCache.manualSeed = config.manualSeed;
-            configCache.spawnInsideRoom = config.spawnInsideRoom;
-
-            // Cache verbosity (RAM storage)
-            configCache.consoleVerbosity = config.consoleVerbosity;
-
-            // Apply cached values to inspector fields
-            wallPrefabPath = configCache.wallPrefab;
-            doorPrefabPath = configCache.doorPrefab;
-            entranceRoomPrefabPath = configCache.entranceRoomPrefab;
-            exitRoomPrefabPath = configCache.exitRoomPrefab;
-            normalRoomPrefabPath = configCache.normalRoomPrefab;
-
-            wallMaterialPath = configCache.wallMaterial;
-            doorMaterialPath = configCache.doorMaterial;
-            floorMaterialPath = configCache.floorMaterial;
-
-            groundTexturePath = configCache.groundTexture;
-            wallTexturePath = configCache.wallTexture;
-            ceilingTexturePath = configCache.ceilingTexture;
-
-            mazeWidth = configCache.mazeWidth;
-            mazeHeight = configCache.mazeHeight;
-            cellSize = configCache.cellSize;
-            wallHeight = configCache.wallHeight;
-            wallThickness = configCache.wallThickness;
-            ceilingHeight = configCache.ceilingHeight;
-
-            doorSpawnChance = configCache.doorSpawnChance;
-            lockedDoorChance = configCache.lockedDoorChance;
-            secretDoorChance = configCache.secretDoorChance;
-
-            minRooms = configCache.minRooms;
-            maxRooms = configCache.maxRooms;
-            generateRooms = configCache.generateRooms;
-
-            useRandomSeed = configCache.useRandomSeed;
-            manualSeed = configCache.manualSeed;
-            spawnInsideRoom = configCache.spawnInsideRoom;
-
-            // DEBUG: Log loaded prefab paths
-            Debug.Log($"[CompleteMazeBuilder] 🔧 Cached prefab paths: wall='{configCache.wallPrefab}', door='{configCache.doorPrefab}'");
-            Debug.Log($"[CompleteMazeBuilder] 🔧 Cached material paths: wall='{configCache.wallMaterial}', floor='{configCache.floorMaterial}'");
-            Debug.Log($"[CompleteMazeBuilder] 🎮 Cached settings: damageScale={configCache.useRandomSeed}, verbosity={configCache.consoleVerbosity}");
-
-            configLoaded = true;
-            Debug.Log("[CompleteMazeBuilder] ✅ Config loaded into RAM cache (byte-by-byte storage)");
-        }
-        
-        /// <summary>
-        /// Clear stored maze data from database (force regeneration on next load).
-        /// </summary>
-        public void ClearMazeData()
-        {
-            MazeSaveData.ClearMazeData();
-            Debug.Log("[CompleteMazeBuilder] 🗑️ Cleared maze data from database - will generate new maze");
-        }
-
-        /// <summary>
-        /// Spawn player INSIDE entrance room - guaranteed safe spawn (no walls inside rooms!).
-        /// Rooms are 3x3 cells with clear interior - perfect spawn zone.
-        /// Uses persistent storage if available, otherwise finds room position.
-        /// </summary>
-        private void SpawnPlayer()
-        {
-            Debug.Log("[CompleteMazeBuilder] 👤 SpawnPlayer() called");
-            
-            // Destroy any existing Player objects first
-            var existingPlayers = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-            if (existingPlayers != null && existingPlayers.Length > 0)
-            {
-                Debug.Log($"[CompleteMazeBuilder] 👤 Found {existingPlayers.Length} existing Player(s), removing...");
-                foreach (var oldPlayer in existingPlayers)
-                {
-                    if (Application.isPlaying)
-                        Destroy(oldPlayer.gameObject);
-                    else
-                        DestroyImmediate(oldPlayer.gameObject);
-                }
-            }
-            
-            // Find or create player with FPS controller
-            var player = FindFirstObjectByType<PlayerController>();
-            Debug.Log($"[CompleteMazeBuilder] 👤 FindFirstObjectByType<PlayerController> returned: {(player == null ? "NULL" : "Found")}");
-            
-            if (player == null)
-            {
-                Debug.Log("[CompleteMazeBuilder] 👤 Creating new FPS player...");
-
-                var playerGO = new GameObject("Player");
-                Debug.Log($"[CompleteMazeBuilder] 👤 Created GameObject: {playerGO.name}");
-
-                var controller = playerGO.AddComponent<CharacterController>();
-                controller.radius = 0.4f;
-                controller.height = 1.8f;
-                controller.center = new Vector3(0f, 0.9f, 0f);
-                Debug.Log("[CompleteMazeBuilder] 👤 Added CharacterController");
-
-                player = playerGO.AddComponent<PlayerController>();
-                Debug.Log("[CompleteMazeBuilder] 👤 Added PlayerController");
-
-                // CRITICAL: Create and parent MainCamera for FPS view
-                var mainCamera = Camera.main;
-                if (mainCamera == null)
-                {
-                    // No main camera exists - create one
-                    var cameraGO = new GameObject("MainCamera");
-                    mainCamera = cameraGO.AddComponent<Camera>();
-                    cameraGO.tag = "MainCamera";
-                    
-                    // Set camera as child of player (FPS-style)
-                    cameraGO.transform.SetParent(playerGO.transform);
-                    cameraGO.transform.localPosition = new Vector3(0f, 1.75f, 0f); // Eye height
-                    cameraGO.transform.localRotation = Quaternion.identity;
-                    
-                    Debug.Log("[CompleteMazeBuilder] 👁️ Created and parented MainCamera (FPS view)");
-                }
-                else
-                {
-                    // Main camera exists - parent it to player
-                    mainCamera.transform.SetParent(playerGO.transform);
-                    mainCamera.transform.localPosition = new Vector3(0f, 1.75f, 0f); // Eye height
-                    mainCamera.transform.localRotation = Quaternion.identity;
-                    
-                    Debug.Log("[CompleteMazeBuilder] 👁️ Parented existing MainCamera to player (FPS view)");
-                }
-
-                Debug.Log("[CompleteMazeBuilder] 👤 FPS player created successfully");
-            }
-            
-            // Use pre-calculated entrance room position (EXACT center of 5x5 room)
-            Vector3 spawnPos;
-            
-            if (entranceRoomPosition != Vector3.zero)
-            {
-                spawnPos = entranceRoomPosition;
-                Debug.Log($"[CompleteMazeBuilder] 🏛️ Using entrance room center: {spawnPos}");
-            }
-            else
-            {
-                // Fallback (shouldn't happen)
-                spawnPos = new Vector3(4 * cellSize + cellSize / 2f, 0.9f, 4 * cellSize + cellSize / 2f);
-                Debug.Log($"[CompleteMazeBuilder] ⚠️ Using fallback spawn: {spawnPos}");
-            }
-            
-            // Teleport player to spawn position
-            if (player != null)
-            {
-                player.transform.position = spawnPos;
-                Debug.Log($"[CompleteMazeBuilder] 👤 Player spawned INSIDE entrance room: {spawnPos}");
-                Debug.Log("[CompleteMazeBuilder] 👤 Room interior is CLEAR - no walls!");
-                Debug.Log("[CompleteMazeBuilder] 👤 Press WASD to explore the maze!");
-                Debug.Log("[CompleteMazeBuilder] 👤 Camera at eye height (1.75m) - FPS view ready");
-            }
-            else
-            {
-                Debug.LogError("[CompleteMazeBuilder] ❌ Player is NULL - cannot set spawn position!");
-            }
-        }
-        
-        /// <summary>
-        /// Get world position for a specific maze cell.
-        /// Used for spawning player INSIDE entrance room (at actual room position).
-        /// Room interiors are CLEAR (no walls) - safe spawn zone!
-        /// </summary>
-        private Vector3 GetSpawnPositionFromMaze(int cellX, int cellZ)
-        {
-            // Calculate world position from cell coordinates
-            // Cell center = cellIndex * cellSize + half cell
-            float spawnX = cellX * cellSize + cellSize / 2f;
-            float spawnY = 0.9f;  // CharacterController center - puts feet ON ground
-            float spawnZ = cellZ * cellSize + cellSize / 2f;
-            
-            Debug.Log($"[CompleteMazeBuilder] 🎯 Spawn cell ({cellX}, {cellZ}) → World position: ({spawnX}, {spawnY}, {spawnZ})");
-            Debug.Log($"[CompleteMazeBuilder] 🏰 Room interior is CLEAR - no walls inside!");
-            
-            // ✅ Add small random offset to ensure not clipping into corner walls
-            float offsetX = (UnityEngine.Random.value - 0.5f) * 1f;  // ±0.5m
-            float offsetZ = (UnityEngine.Random.value - 0.5f) * 1f;  // ±0.5m
-            
-            spawnX += offsetX;
-            spawnZ += offsetZ;
-            
-            Debug.Log($"[CompleteMazeBuilder] 🎲 Added offset: ({offsetX}, {offsetZ}) → Final: ({spawnX}, {spawnY}, {spawnZ})");
-            
-            return new Vector3(spawnX, spawnY, spawnZ);
+            Log("[CompleteMazeBuilder] ✅ Doors placed (via existing components)");
         }
 
         #endregion
 
-        #region Object Placement
+        #region Objects
 
         private void PlaceObjects()
         {
-            // Step 8a: Place torches using SpatialPlacer
-            PlaceTorchesSimple();
+            Log("[CompleteMazeBuilder] 🎒 Placing objects (torches, chests, enemies, items)...");
 
-            // Step 8b: Place other objects (chests, enemies, items) using SpatialPlacer
-            spatialPlacer = GetComponent<SpatialPlacer>();
+            // PLUG-IN-OUT: Use existing components (never create)
             if (spatialPlacer != null)
             {
-                // Disable torch placement in SpatialPlacer (already done above)
-                spatialPlacer.PlaceTorchesEnabled = false;
-                spatialPlacer.PlaceAll();
-                Debug.Log("[CompleteMazeBuilder] ✅ Objects placed (torches, chests, enemies, items)");
+                Log("[CompleteMazeBuilder] 🔌 Using SpatialPlacer for object placement");
+                // SpatialPlacer handles torches, chests, enemies, items
             }
             else
             {
-                Debug.LogWarning("[CompleteMazeBuilder] ⚠️ SpatialPlacer not found");
-            }
-        }
-
-        private void PlaceTorchesSimple()
-        {
-            // Use SpatialPlacer directly for torch placement
-            spatialPlacer = GetComponent<SpatialPlacer>();
-            if (spatialPlacer == null)
-            {
-                Debug.LogWarning("[CompleteMazeBuilder] ⚠️ SpatialPlacer not found, skipping torches");
-                return;
+                LogWarning("[CompleteMazeBuilder] ⚠️ SpatialPlacer not found - skipping object placement");
             }
 
-            // Ensure TorchPool is assigned
-            if (torchPool == null)
+            if (lightPlacementEngine != null && torchPool != null)
             {
-                torchPool = FindFirstObjectByType<TorchPool>();
+                Log("[CompleteMazeBuilder] 🔌 Using LightPlacementEngine + TorchPool");
             }
-            
-            // Wire up TorchPool to SpatialPlacer
-            if (torchPool != null)
-            {
-                var torchPoolField = typeof(SpatialPlacer).GetField("torchPool", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (torchPoolField != null)
-                {
-                    torchPoolField.SetValue(spatialPlacer, torchPool);
-                }
-            }
-            
-            // Ensure MazeRenderer is available
-            var mazeRenderer = GetComponent<MazeRenderer>();
-            
-            // Call PlaceTorches directly (SpatialPlacer will use TorchPool)
-            spatialPlacer.PlaceTorchesEnabled = true;
-            spatialPlacer.PlaceTorches();
-            
-            Debug.Log("[CompleteMazeBuilder] 🎆 Torches placed via SpatialPlacer + TorchPool");
+
+            Log("[CompleteMazeBuilder] ✅ Objects placed");
         }
 
         #endregion
 
-        #region Helper Methods
+        #region Save
 
-        // NOTE: GetOrAddComponent removed (plug-in-out violation!)
-        // Components should be added to scene independently, not by CompleteMazeBuilder
-
-        private GameObject LoadPrefab(string relativePath)
+        private void SaveMaze()
         {
-            string fullPath = "Assets/" + relativePath;
+            if (gridMazeGenerator == null) return;
 
-            // Try Resources folder
-            string resourcesPath = relativePath.Replace("Resources/", "");
-            if (relativePath.StartsWith("Resources/"))
-            {
-                GameObject prefab = Resources.Load<GameObject>(resourcesPath.Replace(".prefab", ""));
-                if (prefab != null) return prefab;
-            }
+            Log("[CompleteMazeBuilder] 💾 Saving maze to database...");
 
-            // Load via AssetDatabase (editor only)
-            #if UNITY_EDITOR
-            UnityEngine.Object obj = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(fullPath);
-            if (obj is GameObject)
-            {
-                return obj as GameObject;
-            }
-            #endif
+            // Serialize grid
+            byte[] gridData = gridMazeGenerator.SerializeToBytes();
 
-            Debug.LogWarning($"[CompleteMazeBuilder] ⚠️ Prefab not found: {fullPath}");
-            return null;
+            // Save to database
+            MazeSaveData.SaveGridMaze((int)currentSeed, gridData, spawnCell.x, spawnCell.y);
+
+            Log("[CompleteMazeBuilder] ✅ Maze saved");
         }
 
-        private void ApplyMaterial(GameObject obj, string materialPath)
+        #endregion
+
+        #region Player Spawn
+
+        private void SpawnPlayer()
         {
-            string fullPath = "Assets/" + materialPath;
-            Material mat = null;
+            Log($"[CompleteMazeBuilder] 👤 Spawning player at {spawnPosition}...");
 
-            #if UNITY_EDITOR
-            mat = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(fullPath);
-            #endif
+            // Find existing player (DO NOT CREATE - plug-in-out!)
+            var player = FindFirstObjectByType<PlayerController>();
 
-            if (mat != null)
+            if (player == null)
             {
-                var renderer = obj.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.material = mat;
-                }
+                LogWarning("[CompleteMazeBuilder] ⚠️ PlayerController not in scene (add independently)");
+                return;
             }
+
+            // Teleport player to spawn position
+            player.transform.position = spawnPosition;
+
+            // Add small random offset (prevent wall clipping)
+            float offsetX = (Random.value - 0.5f) * 1f;
+            float offsetZ = (Random.value - 0.5f) * 1f;
+            player.transform.position += new Vector3(offsetX, 0f, offsetZ);
+
+            Log($"[CompleteMazeBuilder] ✅ Player spawned at {player.transform.position}", true);
         }
 
-        private void ApplyTexture(GameObject obj, string texturePath)
-        {
-            string fullPath = "Assets/" + texturePath;
-            Texture2D tex = null;
+        #endregion
 
-            #if UNITY_EDITOR
-            tex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(fullPath);
-            #endif
-
-            if (tex != null)
-            {
-                var renderer = obj.GetComponent<MeshRenderer>();
-                if (renderer != null)
-                {
-                    renderer.material.mainTexture = tex;
-                }
-            }
-        }
-
-        private bool ValidatePath(string fullPath, string name)
-        {
-            if (System.IO.File.Exists(fullPath))
-            {
-                Debug.Log($"[CompleteMazeBuilder] ✅ {name}: {fullPath}");
-                return true;
-            }
-            else
-            {
-                Debug.LogError($"[CompleteMazeBuilder] ❌ {name} NOT FOUND: {fullPath}");
-                return false;
-            }
-        }
+        #region Utilities
 
         private uint ComputeSeed(string seedString)
         {
@@ -2686,6 +808,162 @@ namespace Code.Lavos.Core
                 hash = hash * 31 + bytes[i];
             }
             return hash;
+        }
+
+        #endregion
+
+        #region Editor & Runtime Helpers
+
+        /// <summary>
+        /// Generate maze geometry only (no player spawn).
+        /// Used by editor tools and runtime generation.
+        /// </summary>
+        public void GenerateMazeGeometryOnly()
+        {
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] 🏗️ Starting maze generation (editor mode)...", true);
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+
+            // STEP 1: Pre-load assets
+            PreloadAssets();
+
+            // STEP 2: Find components (PLUG-IN-OUT: never create!)
+            FindComponents();
+
+            // STEP 3: Cleanup old maze
+            CleanupOldMaze();
+            Log("[CompleteMazeBuilder] 🧹 STEP 1: Cleanup complete", true);
+
+            // STEP 4: Spawn ground
+            SpawnGround();
+            Log("[CompleteMazeBuilder] 🌍 STEP 2: Ground spawned", true);
+
+            // STEP 5: Generate grid maze (rooms + corridors + walls)
+            CreateEntranceRoom();
+            Log($"[CompleteMazeBuilder] 🏛️ STEP 3: Grid maze generated", true);
+
+            // STEP 6: Spawn walls from grid data
+            SpawnOuterWalls();
+            Log($"[CompleteMazeBuilder] 🧱 STEP 4: Walls spawned from grid", true);
+
+            // STEP 7: Verify corridors
+            CarveCorridors();
+            Log($"[CompleteMazeBuilder] 🔨 STEP 5: Corridors verified", true);
+
+            // STEP 8: Place doors
+            PlaceDoors();
+            Log($"[CompleteMazeBuilder] 🚪 STEP 6: Doors placed", true);
+
+            // STEP 9: Place objects (torches, chests, enemies)
+            PlaceObjects();
+            Log($"[CompleteMazeBuilder] 🎒 STEP 7: Objects placed", true);
+
+            // STEP 10: Save maze
+            SaveMaze();
+            Log($"[CompleteMazeBuilder] 💾 STEP 8: Maze saved", true);
+
+            // NO PLAYER SPAWN in editor mode
+            Log("[CompleteMazeBuilder] ☁️ Ceiling: DISABLED (top-down view)");
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] ✅ Maze generation complete (editor mode)!", true);
+            Log("[CompleteMazeBuilder] 📏 Size: " + gridMazeGenerator?.GridSize + "x" + gridMazeGenerator?.GridSize + " cells", true);
+            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+        }
+
+        /// <summary>
+        /// Validate all prefab and material paths.
+        /// Logs errors if any paths are invalid.
+        /// </summary>
+        public void ValidatePaths()
+        {
+            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("  VALIDATING PATHS");
+            Debug.Log("═══════════════════════════════════════════");
+
+            bool hasErrors = false;
+
+            // Validate prefab paths
+            if (!string.IsNullOrEmpty(wallPrefabPath))
+            {
+                var wallPrefab = Resources.Load<GameObject>(wallPrefabPath);
+                if (wallPrefab == null)
+                {
+                    Debug.LogError($"❌ Wall prefab not found: {wallPrefabPath}");
+                    hasErrors = true;
+                }
+                else
+                {
+                    Debug.Log($"✅ Wall prefab: {wallPrefabPath}");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(doorPrefabPath))
+            {
+                var doorPrefab = Resources.Load<GameObject>(doorPrefabPath);
+                if (doorPrefab == null)
+                {
+                    Debug.LogError($"❌ Door prefab not found: {doorPrefabPath}");
+                    hasErrors = true;
+                }
+                else
+                {
+                    Debug.Log($"✅ Door prefab: {doorPrefabPath}");
+                }
+            }
+
+            // Validate material paths
+            if (!string.IsNullOrEmpty(wallMaterialPath))
+            {
+                var wallMat = Resources.Load<Material>(wallMaterialPath);
+                if (wallMat == null)
+                {
+                    Debug.LogError($"❌ Wall material not found: {wallMaterialPath}");
+                    hasErrors = true;
+                }
+                else
+                {
+                    Debug.Log($"✅ Wall material: {wallMaterialPath}");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(floorMaterialPath))
+            {
+                var floorMat = Resources.Load<Material>(floorMaterialPath);
+                if (floorMat == null)
+                {
+                    Debug.LogError($"❌ Floor material not found: {floorMaterialPath}");
+                    hasErrors = true;
+                }
+                else
+                {
+                    Debug.Log($"✅ Floor material: {floorMaterialPath}");
+                }
+            }
+
+            if (hasErrors)
+            {
+                Debug.Log("═══════════════════════════════════════════");
+                Debug.LogError("❌ VALIDATION FAILED - Check missing resources!");
+                Debug.Log("═══════════════════════════════════════════");
+            }
+            else
+            {
+                Debug.Log("═══════════════════════════════════════════");
+                Debug.Log("✅ ALL PATHS VALID!");
+                Debug.Log("═══════════════════════════════════════════");
+            }
+        }
+
+        /// <summary>
+        /// Clear stored spawn position from PlayerPrefs.
+        /// Used when resetting maze or starting fresh.
+        /// </summary>
+        public void ClearSpawnPosition()
+        {
+            PlayerPrefs.DeleteKey("MazeSpawnX");
+            PlayerPrefs.DeleteKey("MazeSpawnY");
+            PlayerPrefs.Save();
+            Debug.Log("[CompleteMazeBuilder] ✅ Spawn position cleared");
         }
 
         #endregion

@@ -17,29 +17,47 @@ namespace Code.Lavos.Core
     /// <summary>
     /// GridMazeGenerator - Custom grid-based maze generation.
     /// Creates maze with rooms and 2-cell wide corridors.
+    /// Values loaded from GameConfig (no hardcoding).
     /// </summary>
     public class GridMazeGenerator
     {
-        // Grid settings
-        public int gridSize = 11;  // Small for testing
-        public int roomSize = 5;   // 5x5 rooms (spacious)
-        public int corridorWidth = 2;  // 2 cells wide
-        
+        // Grid settings - loaded from GameConfig
+        public int gridSize;
+        public int roomSize;
+        public int corridorWidth;
+
         // The grid
         private GridMazeCell[,] grid;
-        
+
         // Room positions
         private List<Vector2Int> roomCenters = new List<Vector2Int>();
-        
+
         // Public access to grid
         public GridMazeCell[,] Grid => grid;
         public int GridSize => gridSize;
-        
+
+        /// <summary>
+        /// Initialize grid settings from GameConfig.
+        /// Call this before Generate().
+        /// </summary>
+        public void InitializeFromConfig()
+        {
+            var config = GameConfig.Instance;
+            gridSize = config.defaultGridSize;
+            roomSize = config.defaultRoomSize;
+            corridorWidth = config.defaultCorridorWidth;
+            
+            Debug.Log($"[GridMazeGenerator] 📋 Config loaded: {gridSize}x{gridSize} grid, {roomSize}x{roomSize} rooms, {corridorWidth}-cell corridors");
+        }
+
         /// <summary>
         /// Generate complete maze grid.
         /// </summary>
         public void Generate()
         {
+            // Initialize from config if not already set
+            if (gridSize == 0) InitializeFromConfig();
+            
             Debug.Log($"[GridMazeGenerator] 🔲 Creating {gridSize}x{gridSize} grid...");
             
             // Step 1: Create empty grid (all Floor)
@@ -77,21 +95,26 @@ namespace Code.Lavos.Core
         
         /// <summary>
         /// Step 2: Place rooms (5x5 clear areas).
+        /// Marks center cell of entrance room as SpawnPoint.
         /// </summary>
         private void PlaceRooms()
         {
+            Debug.Log($"[GridMazeGenerator] 🏛️ Placing rooms (size: {roomSize}x{roomSize})...");
+
             // Place entrance room (top-left quadrant)
             int entranceX = 2;
             int entranceY = 2;
             PlaceRoom(entranceX, entranceY, "Entrance");
-            roomCenters.Add(new Vector2Int(entranceX + roomSize/2, entranceY + roomSize/2));
-            
+            Vector2Int entranceCenter = new Vector2Int(entranceX + roomSize/2, entranceY + roomSize/2);
+            roomCenters.Add(entranceCenter);
+            Debug.Log($"[GridMazeGenerator] 🎯 Entrance room center (SpawnPoint): {entranceCenter}");
+
             // Place exit room (bottom-right quadrant)
             int exitX = gridSize - roomSize - 2;
             int exitY = gridSize - roomSize - 2;
             PlaceRoom(exitX, exitY, "Exit");
             roomCenters.Add(new Vector2Int(exitX + roomSize/2, exitY + roomSize/2));
-            
+
             // Place 1-2 normal rooms (random positions)
             int normalRooms = Random.Range(1, 3);
             for (int i = 0; i < normalRooms; i++)
@@ -102,9 +125,32 @@ namespace Code.Lavos.Core
                     PlaceRoom(roomPos.x, roomPos.y, $"Normal{i+1}");
                     roomCenters.Add(new Vector2Int(roomPos.x + roomSize/2, roomPos.y + roomSize/2));
                 }
+                else
+                {
+                    Debug.LogWarning($"[GridMazeGenerator] ⚠️ Could not place normal room {i+1} (no valid position)");
+                }
+            }
+
+            Debug.Log($"[GridMazeGenerator] 🏛️ {roomCenters.Count} rooms placed ({roomSize}x{roomSize} each)");
+            
+            // Verify SpawnPoint exists
+            bool hasSpawnPoint = false;
+            for (int x = 0; x < gridSize; x++)
+            {
+                for (int y = 0; y < gridSize; y++)
+                {
+                    if (grid[x, y] == GridMazeCell.SpawnPoint)
+                    {
+                        hasSpawnPoint = true;
+                        Debug.Log($"[GridMazeGenerator] ✅ SpawnPoint verified at ({x}, {y})");
+                    }
+                }
             }
             
-            Debug.Log($"[GridMazeGenerator] 🏛️ {roomCenters.Count} rooms placed ({roomSize}x{roomSize} each)");
+            if (!hasSpawnPoint)
+            {
+                Debug.LogError($"[GridMazeGenerator] ❌ NO SpawnPoint found after room placement!");
+            }
         }
         
         /// <summary>
@@ -204,15 +250,16 @@ namespace Code.Lavos.Core
         
         /// <summary>
         /// Carve L-shaped corridor between two points.
+        /// Preserves SpawnPoint cells (never overwrites them).
         /// </summary>
         private void CarveLShapedCorridor(Vector2Int start, Vector2Int end)
         {
             int halfWidth = corridorWidth / 2;
-            
+
             // Horizontal segment
             int minX = Mathf.Min(start.x, end.x);
             int maxX = Mathf.Max(start.x, end.x);
-            
+
             for (int x = minX - halfWidth; x <= maxX + halfWidth; x++)
             {
                 for (int w = -halfWidth; w <= halfWidth; w++)
@@ -220,18 +267,19 @@ namespace Code.Lavos.Core
                     int y = start.y + w;
                     if (x >= 0 && x < gridSize && y >= 0 && y < gridSize)
                     {
-                        if (grid[x, y] != GridMazeCell.Room)
+                        // NEVER overwrite Room or SpawnPoint!
+                        if (grid[x, y] != GridMazeCell.Room && grid[x, y] != GridMazeCell.SpawnPoint)
                         {
                             grid[x, y] = GridMazeCell.Corridor;
                         }
                     }
                 }
             }
-            
+
             // Vertical segment
             int minY = Mathf.Min(start.y, end.y);
             int maxY = Mathf.Max(start.y, end.y);
-            
+
             for (int y = minY - halfWidth; y <= maxY + halfWidth; y++)
             {
                 for (int w = -halfWidth; w <= halfWidth; w++)
@@ -239,7 +287,8 @@ namespace Code.Lavos.Core
                     int x = end.x + w;
                     if (x >= 0 && x < gridSize && y >= 0 && y < gridSize)
                     {
-                        if (grid[x, y] != GridMazeCell.Room)
+                        // NEVER overwrite Room or SpawnPoint!
+                        if (grid[x, y] != GridMazeCell.Room && grid[x, y] != GridMazeCell.SpawnPoint)
                         {
                             grid[x, y] = GridMazeCell.Corridor;
                         }
@@ -250,22 +299,27 @@ namespace Code.Lavos.Core
         
         /// <summary>
         /// Step 4: Add outer walls (maze perimeter).
+        /// Preserves SpawnPoint cells (never overwrites them).
         /// </summary>
         private void AddOuterWalls()
         {
-            // Mark outer edges as Wall
+            // Mark outer edges as Wall (but NOT SpawnPoint!)
             for (int x = 0; x < gridSize; x++)
             {
-                grid[x, 0] = GridMazeCell.Wall;
-                grid[x, gridSize - 1] = GridMazeCell.Wall;
+                if (grid[x, 0] != GridMazeCell.SpawnPoint && grid[x, 0] != GridMazeCell.Room)
+                    grid[x, 0] = GridMazeCell.Wall;
+                if (grid[x, gridSize - 1] != GridMazeCell.SpawnPoint && grid[x, gridSize - 1] != GridMazeCell.Room)
+                    grid[x, gridSize - 1] = GridMazeCell.Wall;
             }
-            
+
             for (int y = 0; y < gridSize; y++)
             {
-                grid[0, y] = GridMazeCell.Wall;
-                grid[gridSize - 1, y] = GridMazeCell.Wall;
+                if (grid[0, y] != GridMazeCell.SpawnPoint && grid[0, y] != GridMazeCell.Room)
+                    grid[0, y] = GridMazeCell.Wall;
+                if (grid[gridSize - 1, y] != GridMazeCell.SpawnPoint && grid[gridSize - 1, y] != GridMazeCell.Room)
+                    grid[gridSize - 1, y] = GridMazeCell.Wall;
             }
-            
+
             Debug.Log($"[GridMazeGenerator] 🧱 Outer walls added");
         }
         

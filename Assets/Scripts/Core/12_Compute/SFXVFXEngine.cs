@@ -1,6 +1,18 @@
-﻿// SFXVFXEngine.cs - Simplified Version
-// Centralized Sound and Visual Effects Engine
+﻿// SFXVFXEngine.cs
+// Centralized Sound AND Visual Effects Engine
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// PURPOSE:
+// - Special FX (particle effects, visual effects)
+// - Coordinates VFX with audio (via AudioManager)
+// - Handles screen effects, flashes, shakes, etc.
+//
+// NOTE: This is NOT redundant with AudioManager!
+// - AudioManager: Audio only (music, SFX sounds)
+// - SFXVFXEngine: Visual effects + coordination
+//
+// ⚠️ IMPORTANT: Add SFXVFXEngine to your scene manually.
+// Do NOT rely on auto-creation (plug-in-out violation).
 
 using System;
 using System.Collections.Generic;
@@ -12,8 +24,14 @@ using Code.Lavos.Status;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// Centralized engine for all sound and visual effects.
-    /// Singleton pattern - access via SFXVFXEngine.Instance
+    /// SFXVFXEngine - Special FX & Visual FX management.
+    /// Handles particle effects, visual effects, screen effects.
+    /// 
+    /// ⚠️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// 
+    /// NOT REDUNDANT with AudioManager:
+    /// - AudioManager: Audio only (music, sound effects)
+    /// - SFXVFXEngine: Visual effects (particles, flashes, shakes)
     /// </summary>
     public class SFXVFXEngine : MonoBehaviour
     {
@@ -29,6 +47,8 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<SFXVFXEngine>();
                     if (_instance == null)
                     {
+                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[SFXVFXEngine] ⚠️ Not found in scene - auto-creating (add manually!)");
                         GameObject go = new GameObject("SFXVFXEngine");
                         _instance = go.AddComponent<SFXVFXEngine>();
                         DontDestroyOnLoad(go);

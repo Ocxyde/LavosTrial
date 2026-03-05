@@ -1,21 +1,36 @@
 // MazeIntegration.cs
-// Integrates maze generation with rooms and doors
+// ⚠️ DEPRECATED - LEGACY MAZE SYSTEM ⚠️
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Plug-in-and-Out Architecture:
-// - Orchestrates all generation components
-// - Seed-based procedural generation
-// - Single point for maze + rooms + doors
+// 🚫 DO NOT USE FOR NEW DEVELOPMENT 🚫
+// This class is part of the LEGACY maze generation system.
+//
+// USE CompleteMazeBuilder.cs FOR ALL NEW MAZE GENERATION:
+// - CompleteMazeBuilder is the authoritative maze generator
+// - CompleteMazeBuilder is plug-in-out compliant
+// - CompleteMazeBuilder loads from JSON config
+//
+// This file is kept for:
+// - Backward compatibility with existing tests
+// - Legacy scene support
+//
+// Migration: Replace MazeIntegration with CompleteMazeBuilder in all scenes.
 
 using UnityEngine;
 
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// MazeIntegration - Orchestrates procedural maze generation.
-    /// Plug-in-and-Out: Coordinates MazeGenerator, RoomGenerator,
-    /// DoorHolePlacer, RoomDoorPlacer, and MazeRenderer.
+    /// ⚠️ DEPRECATED - Use CompleteMazeBuilder instead.
+    /// 
+    /// Legacy maze orchestrator. Coordinates deprecated components:
+    /// - MazeGenerator (legacy DFS algorithm)
+    /// - RoomGenerator (legacy room placement)
+    /// - DoorHolePlacer (legacy door holes)
+    /// - RoomDoorPlacer (legacy door placement)
+    /// - MazeRenderer (deprecated geometry builder)
     /// </summary>
+    [System.Obsolete("Use CompleteMazeBuilder instead. This class is deprecated.")]
     public class MazeIntegration : MonoBehaviour
     {
         [Header("Generation Settings")]

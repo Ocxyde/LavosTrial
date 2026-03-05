@@ -2,12 +2,15 @@
 // Editor script to add complete door system to existing maze
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Usage: Select Maze GameObject, run "Add Door System Components"
+// ⚠️ HELPS SETUP LEGACY DOOR SYSTEM - For new projects use CompleteMazeBuilder
 
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
+
+// Suppress obsolete warnings - this file intentionally helps with legacy system setup
+#pragma warning disable CS0618
 
 namespace Code.Lavos.Core
 {

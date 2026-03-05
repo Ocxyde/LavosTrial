@@ -1,13 +1,15 @@
 ﻿// MazeBuilderEditor.cs
-// Editor tools for CompleteMazeBuilder
+// Editor tool for maze generation testing
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Generate Maze
-//   2. Tools → Validate Maze Paths
-//   3. Tools → Clear Maze Objects
+//   1. Tools → Generate Maze (or Ctrl+Alt+G)
+//   2. Auto-creates CompleteMazeBuilder + required components
+//   3. Generates maze instantly for testing
+//   4. Press Play to test with player
 //
-// Location: Assets/Scripts/Editor/
+// NOTE: This is an EDITOR TOOL - it creates components for convenience.
+// Runtime code should still follow plug-in-out architecture.
 
 using UnityEngine;
 using UnityEditor;
@@ -16,8 +18,8 @@ using Code.Lavos.Core;
 namespace Code.Lavos.Editor
 {
     /// <summary>
-    /// MazeBuilderEditor - Editor menu items for maze generation tools.
-    /// Plug-in-out compliant: Uses EventHandler for communication.
+    /// MazeBuilderEditor - Editor tool for testing maze generation.
+    /// Auto-creates CompleteMazeBuilder and required components for quick testing.
     /// </summary>
     public class MazeBuilderEditor : EditorWindow
     {
@@ -28,66 +30,71 @@ namespace Code.Lavos.Editor
             Debug.Log("  MAZE GENERATOR - Complete Maze Generation");
             Debug.Log("═══════════════════════════════════════════");
 
-            // Find or create maze builder
+            // Load config values from JSON (source of truth!)
+            var config = GameConfig.Instance;
+            Debug.Log($"[MazeBuilderEditor] 📖 Config loaded from JSON:");
+            Debug.Log($"  • Maze Size: {config.defaultMazeWidth}x{config.defaultMazeHeight}");
+            Debug.Log($"  • Cell Size: {config.defaultCellSize}m");
+            Debug.Log($"  • Room Size: {config.defaultRoomSize}x{config.defaultRoomSize}");
+            Debug.Log($"  • Corridor Width: {config.defaultCorridorWidth} cells");
+            Debug.Log($"  • Wall Height: {config.defaultWallHeight}m");
+
+            // Find existing maze builder
             var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
-            
+
             if (mazeBuilder == null)
             {
-                // Create new GameObject with CompleteMazeBuilder
+                // Create new GameObject with CompleteMazeBuilder (editor tool - acceptable!)
                 GameObject mazeGO = new GameObject("MazeBuilder");
                 mazeBuilder = mazeGO.AddComponent<CompleteMazeBuilder>();
                 Debug.Log("✅ Created MazeBuilder GameObject");
 
-                // Manually add required components (since Awake won't run in editor)
-                var mazeGenerator = mazeGO.AddComponent<Code.Lavos.Core.MazeGenerator>();
-                mazeGO.AddComponent<Code.Lavos.Core.MazeRenderer>();
-                mazeGO.AddComponent<Code.Lavos.Core.SpatialPlacer>();
-                mazeGO.AddComponent<Code.Lavos.Core.LightPlacementEngine>();
+                // Add required components for testing (editor tool only!)
+                // Note: GridMazeGenerator is a plain C# class, not a MonoBehaviour
+                // CompleteMazeBuilder will initialize it from JSON config automatically
+                var spatialPlacer = mazeGO.AddComponent<SpatialPlacer>();
+                var lightPlacementEngine = mazeGO.AddComponent<LightPlacementEngine>();
+                var torchPool = mazeGO.AddComponent<TorchPool>();
                 Debug.Log("✅ Added required components");
 
-                // Manually initialize references (mimic Awake() behavior)
-                var torchPool = mazeGO.AddComponent<Code.Lavos.Core.TorchPool>();
+                // Configure components from JSON config
+                Debug.Log("[MazeBuilderEditor] 🔧 Configuring components from JSON...");
+                
+                // SpatialPlacer - finds TorchPool automatically
+                Debug.Log($"  • SpatialPlacer: will use TorchPool reference");
 
-                // Use reflection to set private fields in CompleteMazeBuilder
-                var builderType = typeof(CompleteMazeBuilder);
-                var mazeGenField = builderType.GetField("mazeGenerator",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var spatialPlacerField = builderType.GetField("spatialPlacer",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var torchPoolField = builderType.GetField("torchPool",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var lightPlacementEngineField = builderType.GetField("lightPlacementEngine",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                // LightPlacementEngine - load torch prefab from Resources (no extension needed)
+                var torchPrefab = Resources.Load<GameObject>(config.torchPrefab.Replace(".prefab", ""));
+                if (torchPrefab != null)
+                {
+                    lightPlacementEngine.SetTorchPrefab(torchPrefab);
+                    Debug.Log($"  • LightPlacementEngine: torch prefab loaded from {config.torchPrefab}");
+                }
+                else
+                {
+                    Debug.LogWarning($"  ⚠️ LightPlacementEngine: torch prefab not found at Resources/{config.torchPrefab}");
+                    Debug.LogWarning($"  💡 Make sure TorchHandlePrefab.prefab is in Assets/Resources/ folder");
+                }
 
-                mazeGenField?.SetValue(mazeBuilder, mazeGenerator);
-                spatialPlacerField?.SetValue(mazeBuilder, mazeGO.GetComponent<Code.Lavos.Core.SpatialPlacer>());
-                torchPoolField?.SetValue(mazeBuilder, torchPool);
-                lightPlacementEngineField?.SetValue(mazeBuilder, mazeGO.GetComponent<Code.Lavos.Core.LightPlacementEngine>());
+                // TorchPool - auto-initializes
+                Debug.Log($"  • TorchPool: ready (prefab: {config.torchPrefab})");
 
-                // ALSO set mazeGenerator reference in SpatialPlacer (it needs it too!)
-                var spatialPlacer = mazeGO.GetComponent<Code.Lavos.Core.SpatialPlacer>();
-                var spatialMazeGenField = typeof(Code.Lavos.Core.SpatialPlacer).GetField("mazeGenerator",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                spatialMazeGenField?.SetValue(spatialPlacer, mazeGenerator);
+                // Also add EventHandler if not present (editor-safe - no DontDestroyOnLoad)
+                var eventHandler = FindFirstObjectByType<EventHandler>();
+                if (eventHandler == null)
+                {
+                    var eventGO = new GameObject("EventHandler");
+                    eventHandler = eventGO.AddComponent<EventHandler>();
+                    Debug.Log("✅ Created EventHandler (scene-only, not persistent in editor)");
+                }
 
-                Debug.Log("🔌 Manually initialized component references");
+                Debug.Log("🔌 All components configured from JSON!");
+                Debug.Log("🔌 All components ready for testing!");
             }
             else
             {
                 Debug.Log("✓ Found existing CompleteMazeBuilder");
-                
-                // Ensure mazeGenerator is assigned (in case it was cleared)
-                var mazeGenField = typeof(CompleteMazeBuilder).GetField("mazeGenerator",
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (mazeGenField?.GetValue(mazeBuilder) == null)
-                {
-                    var mazeGenerator = mazeBuilder.GetComponent<Code.Lavos.Core.MazeGenerator>();
-                    if (mazeGenerator != null)
-                    {
-                        mazeGenField?.SetValue(mazeBuilder, mazeGenerator);
-                        Debug.Log("🔌 Re-assigned mazeGenerator reference");
-                    }
-                }
+                Debug.Log($"[MazeBuilderEditor] 📖 Using existing instance - config already loaded from JSON");
             }
 
             // Generate maze geometry ONLY (NO player in editor!)

@@ -9,6 +9,9 @@
 // - Audio mixing via Unity Audio Mixer
 // - Pre-warmed sound effect pool
 //
+// ⚠️ IMPORTANT: Add AudioManager to your scene manually.
+// Do NOT rely on auto-creation (plug-in-out violation).
+//
 // SETUP:
 // 1. Create Audio folder structure (see TODO.md)
 // 2. Add audio clips to appropriate folders
@@ -24,6 +27,8 @@ namespace Code.Lavos.Core
     /// <summary>
     /// AUDIOMANAGER - Professional audio management with pooling.
     /// Singleton pattern (DontDestroyOnLoad) for persistent audio across scenes.
+    /// 
+    /// ⚠️ Must be added to scene manually. Auto-creation is a fallback only.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -42,9 +47,10 @@ namespace Code.Lavos.Core
 
                     if (_instance == null)
                     {
+                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[AudioManager] ⚠️ Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("AudioManager");
                         _instance = go.AddComponent<AudioManager>();
-                        Debug.Log("[AudioManager] Created new AudioManager instance");
                     }
                 }
                 return _instance;

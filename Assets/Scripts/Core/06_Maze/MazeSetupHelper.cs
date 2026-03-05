@@ -2,11 +2,14 @@
 // Editor helper to setup complete maze generation system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Usage: Create empty GameObject, add this script, run "Setup Complete Maze System"
+// ⚠️ HELPS SETUP LEGACY SYSTEM - For new projects use CompleteMazeBuilder
 
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+
+// Suppress obsolete warnings - this file intentionally helps with legacy system setup
+#pragma warning disable CS0618
 
 namespace Code.Lavos.Core
 {

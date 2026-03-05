@@ -4,13 +4,39 @@
 **Render Pipeline:** URP Standard
 **Input System:** New Input System
 **Coding Standard:** Unity 6
-**Last Updated:** 2026-03-03
+**Last Updated:** 2026-03-06 (Cleanup Phase 1 & 3 Complete!)
+
+---
+
+## 🚨 **IMPORTANT: DEPRECATED SYSTEMS**
+
+### **⚠️ DO NOT USE FOR NEW DEVELOPMENT:**
+
+| System | Deprecated Files | Use Instead |
+|--------|-----------------|-------------|
+| **Maze Generation** | `MazeIntegration.cs`, `MazeRenderer.cs` | `CompleteMazeBuilder.cs` |
+| **Door Placement** | `DoorHolePlacer.cs`, `RoomDoorPlacer.cs` | `DoorsEngine.cs` + `RealisticDoorFactory.cs` |
+| **Audio** | `SFXVFXEngine.cs` | `AudioManager.cs` |
+
+**Why kept?** Legacy tests and scenes still use them. They're marked `[System.Obsolete]` and will show compiler warnings.
 
 ---
 
 ## 🏗️ Plug-in-and-Out Architecture
 
 The project uses a modular plug-in architecture centered around core manager classes. All scripts work independently but pivot around core main files (central hub).
+
+**KEY PRINCIPLES:**
+1. **Find components, never create them** - Use `FindFirstObjectByType<T>()` or `GetComponent<T>()`
+2. **No `new GameObject()` in runtime code** - Add components to scenes manually
+3. **Use `EventHandler` for communication** - Loose coupling between systems
+4. **JSON config for all values** - No hardcoded values (see `Config/GameConfig-default.json`)
+
+**Singleton Auto-Creation Warning:**
+Some singletons auto-create if not found in scene. This is a **fallback only** and logs a warning:
+- `AudioManager` - Should be added manually
+- `LightEngine` - Should be added manually
+- `ProceduralCompute` - Should be added manually
 
 ---
 
@@ -21,69 +47,71 @@ Assets/Scripts/
 ├── Core/                          (Code.Lavos.Core)
 │   ├── 01_CoreSystems/
 │   │   ├── CoreInterfaces.cs      (Interface definitions)
-│   │   ├── EventHandler.cs        (Central event hub)
-│   │   └── GameManager.cs         (Main game state singleton)
+│   │   ├── EventHandler.cs        (Central event hub) ✅ RECOMMENDED
+│   │   └── GameManager.cs         (Main game state singleton) ✅ RECOMMENDED
 │   ├── 02_Player/
-│   │   ├── PlayerController.cs    (Movement, camera, input)
-│   │   ├── PlayerStats.cs         (Player stats component)
-│   │   └── CameraFollow.cs        (Camera follow system)
+│   │   ├── PlayerController.cs    (Movement, camera, input) ✅
+│   │   ├── PlayerStats.cs         (Player stats component) ✅
+│   │   └── CameraFollow.cs        (Camera follow system) ✅
 │   ├── 03_Interaction/
-│   │   └── InteractionSystem.cs   (Centralized interaction manager)
+│   │   └── InteractionSystem.cs   (Centralized interaction manager) ✅
 │   ├── 04_Inventory/
-│   │   ├── Inventory.cs           (Inventory singleton)
-│   │   ├── InventorySlot.cs
-│   │   ├── ItemData.cs            (ScriptableObject item data)
-│   │   ├── ItemEngine.cs          (Item registration engine)
-│   │   └── ItemTypes.cs           (Shared item type enums)
+│   │   ├── Inventory.cs           (Inventory singleton) ✅
+│   │   ├── InventorySlot.cs       ✅
+│   │   ├── ItemData.cs            (ScriptableObject item data) ✅
+│   │   ├── ItemEngine.cs          (Item registration engine) ✅
+│   │   └── ItemTypes.cs           (Shared item type enums) ✅
 │   ├── 05_Combat/
-│   │   ├── CombatSystem.cs        (Combat calculations)
-│   │   └── Ennemi.cs              (Enemy behavior)
+│   │   ├── CombatSystem.cs        (Combat calculations) ✅
+│   │   └── Ennemi.cs              (Enemy behavior) ✅
 │   ├── 06_Maze/
-│   │   ├── MazeGenerator.cs       (Procedural maze generation)
-│   │   ├── MazeRenderer.cs        (Maze visualization)
-│   │   ├── MazeIntegration.cs     (Maze integration helper)
-│   │   ├── RoomGenerator.cs       (Room generation)
-│   │   └── MazeSetupHelper.cs     (Maze setup utility)
+│   │   ├── CompleteMazeBuilder.cs (✅ NEW - Main maze generator)
+│   │   ├── GridMazeGenerator.cs   (✅ NEW - Grid-based algorithm)
+│   │   ├── MazeIntegration.cs     (⚠️ DEPRECATED - Use CompleteMazeBuilder)
+│   │   ├── MazeRenderer.cs        (⚠️ DEPRECATED - Use CompleteMazeBuilder)
+│   │   ├── RoomGenerator.cs       (⚠️ DEPRECATED - Tied to legacy system)
+│   │   ├── DoorHolePlacer.cs      (⚠️ DEPRECATED - Use DoorsEngine)
+│   │   └── RoomDoorPlacer.cs      (⚠️ DEPRECATED - Use DoorsEngine)
 │   ├── 07_Doors/
-│   │   ├── DoorsEngine.cs         (Door system with traps)
-│   │   ├── DoorAnimation.cs
-│   │   ├── DoorAnimator.cs
-│   │   ├── DoorHolePlacer.cs
-│   │   ├── DoorSFXManager.cs
-│   │   ├── DoorSystemSetup.cs
-│   │   └── RoomDoorPlacer.cs
+│   │   ├── DoorsEngine.cs         (✅ Door system with traps)
+│   │   ├── DoorAnimation.cs       (✅ Door animation)
+│   │   ├── RealisticDoorFactory.cs (✅ Door prefab creation)
+│   │   ├── DoorCubeFactory.cs     (⚠️ Legacy - Use RealisticDoorFactory)
+│   │   ├── DoorSFXManager.cs      (✅ Door sound effects)
+│   │   └── DoorSystemSetup.cs     (⚠️ Editor setup helper)
 │   ├── 08_Environment/
-│   │   ├── ChestBehavior.cs
-│   │   ├── TrapBehavior.cs
-│   │   ├── TrapType.cs
-│   │   ├── SpawnPlacerEngine.cs
-│   │   ├── SpatialPlacer.cs
-│   │   ├── SpecialRoom.cs
-│   │   └── SpecialRoomPreset.cs
+│   │   ├── ChestBehavior.cs       (✅ Chest system)
+│   │   ├── TrapBehavior.cs        (✅ Trap system)
+│   │   ├── SpatialPlacer.cs       (✅ Universal object placement)
+│   │   ├── SpawnPlacerEngine.cs   (⚠️ DEPRECATED - Use SpatialPlacer)
+│   │   ├── SpecialRoom.cs         (✅ Special room system)
+│   │   └── LightPlacementEngine.cs (✅ Torch auto-placement)
 │   ├── 09_Art/
-│   │   └── ArtFactory.cs
+│   │   └── ArtFactory.cs          (✅ Art utilities)
 │   ├── 10_Mesh/
-│   │   └── DrawingManager.cs
+│   │   └── DrawingManager.cs      (✅ Mesh utilities)
 │   ├── 10_Resources/
-│   │   ├── LootTable.cs
-│   │   ├── SeedManager.cs         (Seed progression system)
-│   │   ├── TorchController.cs
-│   │   └── TorchPool.cs           (Torch object pooling)
+│   │   ├── LootTable.cs           (✅ Loot system)
+│   │   ├── SeedManager.cs         (✅ Seed progression system)
+│   │   ├── TorchController.cs     (✅ Torch behavior)
+│   │   └── TorchPool.cs           (✅ Torch object pooling)
+│   ├── 11_Audio/
+│   │   └── AudioManager.cs        (✅ RECOMMENDED - Professional audio)
 │   ├── 12_Animation/
-│   │   ├── BraseroFlame.cs
-│   │   ├── FlameAnimator.cs
-│   │   └── DoorAnimator.cs
+│   │   ├── BraseroFlame.cs        (✅ Torch flame animation)
+│   │   └── FlameAnimator.cs       (✅ Flame animation)
 │   ├── 12_Compute/
-│   │   ├── LightEngine.cs         (CENTRAL LIGHTING ENGINE)
-│   │   ├── DrawingPool.cs
-│   │   ├── ParticleGenerator.cs
-│   │   └── SFXVFXEngine.cs
+│   │   ├── LightEngine.cs         (✅ Lighting engine - add manually!)
+│   │   ├── DrawingPool.cs         (✅ Pixel art texture generation)
+│   │   ├── ProceduralCompute.cs   (✅ Procedural utilities - add manually!)
+│   │   ├── ParticleGenerator.cs   (✅ Particle effects)
+│   │   └── SFXVFXEngine.cs        (⚠️ DEPRECATED - Use AudioManager)
 │   ├── 13_Geometry/
-│   │   ├── Tetrahedron.cs
-│   │   ├── TetrahedronMath.cs
-│   │   └── Triangle.cs
+│   │   ├── Tetrahedron.cs         (✅ Geometry utilities)
+│   │   ├── TetrahedronMath.cs     (✅ Geometry math)
+│   │   └── Triangle.cs            (✅ Triangle utilities)
 │   └── Base/
-│       └── BehaviorEngine.cs      (Base class for plug-in items)
+│       └── BehaviorEngine.cs      (✅ Base class for plug-in items)
 │
 ├── Status/                        (Code.Lavos.Status - BASE ASSEMBLY)
 │   ├── DamageType.cs              (Damage type enum + DamageInfo struct)

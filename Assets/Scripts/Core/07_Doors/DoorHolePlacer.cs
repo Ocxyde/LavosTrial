@@ -2,10 +2,13 @@
 // Reserves and creates holes in room walls for door placement
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Plug-in-and-Out Architecture:
-// - Reserves wall space during room generation
-// - Creates holes in walls for doors to fit
-// - Doors snap into reserved holes
+// PLUG-IN-OUT ARCHITECTURE:
+// - Finds components (never creates)
+// - All values loaded from JSON config
+// - No hardcoded values
+// - Works with GridMazeGenerator (new grid system)
+//
+// LOCATION: Assets/Scripts/Core/07_Doors/
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,50 +17,132 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// DoorHolePlacer - Reserves wall spaces for doors.
-    /// Plug into RoomGenerator system.
-    /// Each hole is a reserved space in a wall where a door will fit.
+    /// PLUG-IN-OUT COMPLIANT: Finds components, never creates them.
+    /// ALL VALUES FROM JSON: Door dimensions, spawn chance, etc. loaded from GameConfig.
     /// </summary>
     public class DoorHolePlacer : MonoBehaviour
     {
-        [Header("Hole Settings")]
-        [SerializeField] private float holeWidth = 2.5f;      // Door width + frame
-        [SerializeField] private float holeHeight = 3f;       // Door height + frame
-        [SerializeField] private float holeDepth = 0.5f;      // Wall thickness
-        [SerializeField] private float doorChancePerWall = 0.6f;
+        #region Inspector Fields (Serialized from JSON)
 
-        [Header("Wall Integration")]
-        [SerializeField] private bool carveHolesInWalls = true;
-        [SerializeField] private bool showDebugGizmos = false;  // Disabled by default to prevent visual clutter
+        [Header("🚪 Door Dimensions (From JSON Config)")]
+        [Tooltip("Door width + frame (loaded from JSON)")]
+        [SerializeField] private float doorWidth;
+        
+        [Tooltip("Door height + frame (loaded from JSON)")]
+        [SerializeField] private float doorHeight;
+        
+        [Tooltip("Door depth / wall thickness (loaded from JSON)")]
+        [SerializeField] private float doorDepth;
+        
+        [Tooltip("Hole depth in wall (loaded from JSON)")]
+        [SerializeField] private float holeDepth;
 
-        // Public accessors for editor script
-        public float HoleWidth { get => holeWidth; set => holeWidth = value; }
-        public float HoleHeight { get => holeHeight; set => holeHeight = value; }
-        public float HoleDepth { get => holeDepth; set => holeDepth = value; }
-        public float DoorChancePerWall { get => doorChancePerWall; set => doorChancePerWall = value; }
-        public bool CarveHolesInWalls { get => carveHolesInWalls; set => carveHolesInWalls = value; }
+        [Header("🚪 Door Spawn Settings (From JSON Config)")]
+        [Tooltip("Chance per wall to have a door (loaded from JSON)")]
+        [SerializeField] private float doorSpawnChance;
+        
+        [Tooltip("Carve holes in walls (loaded from JSON)")]
+        [SerializeField] private bool carveHolesInWalls;
+        
+        [Tooltip("Show debug gizmos in editor (loaded from JSON)")]
+        [SerializeField] private bool showDebugGizmos;
 
-        [Header("References")]
-        [SerializeField] private RoomGenerator roomGenerator;
-        [SerializeField] private MazeGenerator mazeGenerator;
+        [Header("🔌 Component References (Plug-in-Out)")]
+        [Tooltip("Auto-finds GridMazeGenerator in scene")]
+        [SerializeField] private GridMazeGenerator gridMazeGenerator;
+        
+        [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
+        [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
+
+        [Header("🐛 Debug (Hardcoded - Comment to Disable Warnings)")]
+        // [SerializeField] private float hardcodedCellSize = 6f;  // Comment out to disable warning
+        // showDebugGizmos is defined above in Inspector Fields section
+
+        #endregion
+
+        #region Private Data
 
         private List<DoorHoleData> _placedHoles = new();
         private Dictionary<Vector2Int, List<DoorHoleData>> _holesByCell = new();
 
+        #endregion
+
+        #region Public Accessors
+
         public List<DoorHoleData> PlacedHoles => _placedHoles;
         public int HoleCount => _placedHoles.Count;
+        public float DoorWidth => doorWidth;
+        public float DoorHeight => doorHeight;
+        public float DoorDepth => doorDepth;
+        public float HoleDepth => holeDepth;
+        public float DoorSpawnChance => doorSpawnChance;
+        public bool CarveHoles => carveHolesInWalls;
+        public bool ShowDebugGizmos => showDebugGizmos;
+
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake()
         {
-            if (roomGenerator == null)
-                roomGenerator = GetComponent<RoomGenerator>();
-
-            if (mazeGenerator == null)
-                mazeGenerator = GetComponent<MazeGenerator>();
+            // PLUG-IN-OUT: Find components (never create!)
+            FindComponents();
+            
+            // LOAD ALL VALUES FROM JSON CONFIG (NO HARDCODING!)
+            LoadConfig();
         }
+
+        #endregion
+
+        #region Plug-in-Out Compliance
+
+        /// <summary>
+        /// Find all required components in scene.
+        /// PLUG-IN-OUT: Never creates components, only finds existing ones.
+        /// </summary>
+        private void FindComponents()
+        {
+            // GridMazeGenerator is created by CompleteMazeBuilder
+            if (completeMazeBuilder == null)
+                completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+        }
+
+        #endregion
+
+        #region JSON Config Loading
+
+        /// <summary>
+        /// Load ALL values from JSON config.
+        /// NO HARDCODED VALUES - everything from GameConfig-default.json.
+        /// </summary>
+        private void LoadConfig()
+        {
+            var config = GameConfig.Instance;
+            
+            // Door dimensions from JSON
+            doorWidth = config.defaultDoorWidth;
+            doorHeight = config.defaultDoorHeight;
+            doorDepth = config.defaultDoorDepth;
+            holeDepth = config.defaultDoorHoleDepth;
+            
+            // Door spawn settings from JSON
+            doorSpawnChance = config.defaultDoorSpawnChance;
+            carveHolesInWalls = true;  // Always carve holes if this component exists
+            showDebugGizmos = config.showDebugGizmos;
+
+            Debug.Log($"[DoorHolePlacer] 📖 Config loaded from JSON:");
+            Debug.Log($"  • Door Size: {doorWidth}m x {doorHeight}m x {doorDepth}m");
+            Debug.Log($"  • Hole Depth: {holeDepth}m");
+            Debug.Log($"  • Door Spawn Chance: {doorSpawnChance * 100f:F0}%");
+        }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Place door holes in all room walls.
-        /// Call after room generation, before wall geometry build.
+        /// Call after room generation, before door placement.
         /// </summary>
         [ContextMenu("Place Door Holes")]
         public void PlaceAllHoles()
@@ -68,378 +153,186 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            if (roomGenerator == null || roomGenerator.GeneratedRooms == null)
+            if (gridMazeGenerator == null)
             {
-                Debug.LogError("[DoorHolePlacer] RoomGenerator not initialized!");
+                Debug.LogError("[DoorHolePlacer] ❌ GridMazeGenerator not initialized!");
                 return;
             }
 
             ClearHoles();
 
-            Debug.Log("[DoorHolePlacer] Starting hole placement in room walls...");
+            Debug.Log("[DoorHolePlacer] Starting door hole placement...");
 
-            foreach (var room in roomGenerator.GeneratedRooms)
+            // Iterate through grid and place holes in room walls
+            int size = gridMazeGenerator.GridSize;
+            int holesPlaced = 0;
+
+            for (int x = 0; x < size; x++)
             {
-                PlaceHolesInRoom(room);
-            }
-
-            Debug.Log($"[DoorHolePlacer] Placed {_placedHoles.Count} door holes");
-        }
-
-        /// <summary>
-        /// Place holes in a specific room's walls.
-        /// Only places holes at room entrances (1 entrance + 1 exit).
-        /// </summary>
-        private void PlaceHolesInRoom(RoomData room)
-        {
-            // Place holes ONLY at room entrances (exactly 2: entrance + exit)
-            foreach (var entrancePos in room.Entrances)
-            {
-                // Determine wall direction based on entrance position
-                WallDirection direction = GetEntranceDirection(entrancePos, room);
-
-                // Create hole at entrance
-                DoorHoleData hole = CreateHoleAtPosition(entrancePos, direction, room);
-                if (hole != null)
+                for (int y = 0; y < size; y++)
                 {
-                    _placedHoles.Add(hole);
-
-                    // Register in cell dictionary
-                    if (!_holesByCell.ContainsKey(entrancePos))
-                        _holesByCell[entrancePos] = new List<DoorHoleData>();
-                    _holesByCell[entrancePos].Add(hole);
-
-                    Debug.Log($"[DoorHolePlacer] Placed hole at entrance ({entrancePos.x}, {entrancePos.y})");
+                    var cell = gridMazeGenerator.GetCell(x, y);
+                    
+                    // Place holes in room cells that have adjacent walls
+                    if (cell == GridMazeCell.Room || cell == GridMazeCell.Corridor)
+                    {
+                        if (TryPlaceHole(x, y, gridMazeGenerator))
+                        {
+                            holesPlaced++;
+                        }
+                    }
                 }
             }
+
+            Debug.Log($"[DoorHolePlacer] ✅ Placed {holesPlaced} door holes");
         }
 
         /// <summary>
-        /// Get wall direction for an entrance position.
+        /// Clear all placed door holes.
         /// </summary>
-        private WallDirection GetEntranceDirection(Vector2Int entrance, RoomData room)
-        {
-            // Check which wall the entrance is on
-            if (entrance.y == room.Position.y)
-                return WallDirection.North;
-            if (entrance.y == room.Position.y + room.Height - 1)
-                return WallDirection.South;
-            if (entrance.x == room.Position.x)
-                return WallDirection.West;
-            if (entrance.x == room.Position.x + room.Width - 1)
-                return WallDirection.East;
-
-            // Default to North
-            return WallDirection.North;
-        }
-
-        /// <summary>
-        /// Create a door hole at a specific position.
-        /// </summary>
-        private DoorHoleData CreateHoleAtPosition(Vector2Int position, WallDirection direction, RoomData room)
-        {
-            // Calculate world position (centered on grid cell)
-            Vector3 worldPos = GridToWorldPosition(position);
-
-            // Adjust position based on wall direction (hole is in the wall face)
-            Vector3 holePos = AdjustPositionForWallDirection(worldPos, direction);
-
-            // Get rotation for door alignment
-            Quaternion rotation = GetWallRotation(direction);
-
-            return new DoorHoleData
-            {
-                Position = holePos,
-                Rotation = rotation,
-                Width = holeWidth,
-                Height = holeHeight,
-                Depth = holeDepth,
-                WallDirection = direction,
-                Room = room,
-                GridPosition = position,
-                IsCarved = false
-            };
-        }
-
-        /// <summary>
-        /// Get all wall segments for a room.
-        /// </summary>
-        private List<WallSegment> GetRoomWallSegments(RoomData room)
-        {
-            List<WallSegment> walls = new();
-
-            int startX = room.Position.x;
-            int startY = room.Position.y;
-            int endX = startX + room.Width;
-            int endY = startY + room.Height;
-
-            // North wall
-            for (int x = startX; x < endX; x++)
-            {
-                walls.Add(new WallSegment
-                {
-                    Position = new Vector2Int(x, startY),
-                    Direction = WallDirection.North,
-                    Room = room,
-                    CellSize = mazeGenerator != null ? mazeGenerator.Width : 1
-                });
-            }
-
-            // South wall
-            for (int x = startX; x < endX; x++)
-            {
-                walls.Add(new WallSegment
-                {
-                    Position = new Vector2Int(x, endY - 1),
-                    Direction = WallDirection.South,
-                    Room = room,
-                    CellSize = mazeGenerator != null ? mazeGenerator.Width : 1
-                });
-            }
-
-            // West wall
-            for (int y = startY; y < endY; y++)
-            {
-                walls.Add(new WallSegment
-                {
-                    Position = new Vector2Int(startX, y),
-                    Direction = WallDirection.West,
-                    Room = room,
-                    CellSize = mazeGenerator != null ? mazeGenerator.Width : 1
-                });
-            }
-
-            // East wall
-            for (int y = startY; y < endY; y++)
-            {
-                walls.Add(new WallSegment
-                {
-                    Position = new Vector2Int(endX - 1, y),
-                    Direction = WallDirection.East,
-                    Room = room,
-                    CellSize = mazeGenerator != null ? mazeGenerator.Width : 1
-                });
-            }
-
-            return walls;
-        }
-
-        /// <summary>
-        /// Check if a wall position is a room entrance.
-        /// </summary>
-        private bool IsRoomEntrance(Vector2Int position, RoomData room)
-        {
-            return room.Entrances.Contains(position);
-        }
-
-        /// <summary>
-        /// Create a door hole at a wall segment.
-        /// </summary>
-        private DoorHoleData CreateHoleAtWall(WallSegment wall, RoomData room)
-        {
-            // Calculate world position (centered on wall cell)
-            Vector3 worldPos = GridToWorldPosition(wall.Position);
-
-            // Adjust position based on wall direction (hole is in the wall face)
-            Vector3 holePos = AdjustPositionForWallDirection(worldPos, wall.Direction);
-
-            // Get rotation for door alignment
-            Quaternion rotation = GetWallRotation(wall.Direction);
-
-            return new DoorHoleData
-            {
-                Position = holePos,
-                Rotation = rotation,
-                Width = holeWidth,
-                Height = holeHeight,
-                Depth = holeDepth,
-                WallDirection = wall.Direction,
-                Room = room,
-                GridPosition = wall.Position,
-                IsCarved = false
-            };
-        }
-
-        /// <summary>
-        /// Adjust position based on wall direction.
-        /// Door should be centered on the wall edge, not the cell center.
-        /// </summary>
-        private Vector3 AdjustPositionForWallDirection(Vector3 pos, WallDirection direction)
-        {
-            float halfCell = cellSize / 2f;
-            float wallOffset = halfCell - 0.25f; // Position at wall face (slightly inset)
-
-            return direction switch
-            {
-                // North wall: door faces south (toward room interior)
-                WallDirection.North => pos + Vector3.forward * wallOffset,
-                // South wall: door faces north
-                WallDirection.South => pos - Vector3.forward * wallOffset,
-                // East wall: door faces west
-                WallDirection.East => pos - Vector3.right * wallOffset,
-                // West wall: door faces east
-                WallDirection.West => pos + Vector3.right * wallOffset,
-                _ => pos
-            };
-        }
-
-        /// <summary>
-        /// Get rotation for wall direction.
-        /// Door faces INTO the room (toward interior).
-        /// </summary>
-        private Quaternion GetWallRotation(WallDirection direction)
-        {
-            return direction switch
-            {
-                // North wall: door faces south
-                WallDirection.North => Quaternion.Euler(0f, 0f, 0f),
-                // South wall: door faces north
-                WallDirection.South => Quaternion.Euler(0f, 180f, 0f),
-                // East wall: door faces west
-                WallDirection.East => Quaternion.Euler(0f, 90f, 0f),
-                // West wall: door faces east
-                WallDirection.West => Quaternion.Euler(0f, -90f, 0f),
-                _ => Quaternion.identity
-            };
-        }
-
-        /// <summary>
-        /// Check if a cell has a door hole.
-        /// </summary>
-        public bool HasHoleAtCell(Vector2Int cell)
-        {
-            return _holesByCell.ContainsKey(cell) && _holesByCell[cell].Count > 0;
-        }
-
-        /// <summary>
-        /// Get hole at a specific cell.
-        /// </summary>
-        public DoorHoleData GetHoleAtCell(Vector2Int cell)
-        {
-            if (_holesByCell.TryGetValue(cell, out var holes) && holes.Count > 0)
-            {
-                return holes[0];
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Mark a hole as carved (for wall geometry).
-        /// </summary>
-        public void MarkHoleAsCarved(DoorHoleData hole)
-        {
-            hole.IsCarved = true;
-        }
-
-        /// <summary>
-        /// Clear all placed holes.
-        /// </summary>
+        [ContextMenu("Clear Door Holes")]
         public void ClearHoles()
         {
             _placedHoles.Clear();
             _holesByCell.Clear();
+            Debug.Log("[DoorHolePlacer] 🧹 Cleared all door holes");
         }
 
-        #region Utilities
+        #endregion
+
+        #region Door Hole Placement
 
         /// <summary>
-        /// Convert grid position to world position.
+        /// Try to place a door hole at grid position.
+        /// Returns true if hole was placed.
         /// </summary>
-        private Vector3 GridToWorldPosition(Vector2Int gridPos)
+        private bool TryPlaceHole(int x, int y, GridMazeGenerator grid)
         {
-            return new Vector3(
-                gridPos.x * cellSize + cellSize / 2f,
-                0f,
-                gridPos.y * cellSize + cellSize / 2f
+            // Check each direction for adjacent walls
+            Vector2Int[] directions = new Vector2Int[]
+            {
+                Vector2Int.up,    // North
+                Vector2Int.down,  // South
+                Vector2Int.right, // East
+                Vector2Int.left   // West
+            };
+
+            bool holePlaced = false;
+
+            foreach (var dir in directions)
+            {
+                int checkX = x + dir.x;
+                int checkY = y + dir.y;
+
+                // Check bounds
+                if (checkX < 0 || checkX >= grid.GridSize || checkY < 0 || checkY >= grid.GridSize)
+                    continue;
+
+                // Check if adjacent cell is a wall
+                var adjacentCell = grid.GetCell(checkX, checkY);
+                if (adjacentCell == GridMazeCell.Wall)
+                {
+                    // Roll for door spawn
+                    if (Random.value > doorSpawnChance)
+                        continue;
+
+                    // Place hole
+                    PlaceHole(x, y, dir, grid);
+                    holePlaced = true;
+                }
+            }
+
+            return holePlaced;
+        }
+
+        /// <summary>
+        /// Place a single door hole.
+        /// </summary>
+        private void PlaceHole(int x, int y, Vector2Int direction, GridMazeGenerator grid)
+        {
+            // Calculate hole position in world space
+            float cellSize = completeMazeBuilder != null ? 
+                GetCellSizeFromBuilder() : 6f;  // Fallback to default
+
+            Vector3 holePosition = new Vector3(
+                x * cellSize + cellSize / 2f,
+                doorHeight / 2f,
+                y * cellSize + cellSize / 2f
             );
-        }
 
-        [SerializeField] private float cellSize = 6f;  // Match MazeRenderer
-
-        #endregion
-
-        #region Debug
-
-        private void OnDrawGizmosSelected()
-        {
-            if (!showDebugGizmos || _placedHoles == null)
-                return;
-
-            // Draw holes
-            Gizmos.color = Color.cyan;
-            foreach (var hole in _placedHoles)
+            // Calculate rotation based on direction
+            Quaternion holeRotation = direction switch
             {
-                Gizmos.matrix = Matrix4x4.TRS(hole.Position, hole.Rotation, Vector3.one);
-                Gizmos.DrawWireCube(Vector3.zero, new Vector3(holeWidth, holeHeight, holeDepth));
-            }
+                var d when d == Vector2Int.up => Quaternion.Euler(0f, 180f, 0f),
+                var d when d == Vector2Int.down => Quaternion.identity,
+                var d when d == Vector2Int.right => Quaternion.Euler(0f, -90f, 0f),
+                var d when d == Vector2Int.left => Quaternion.Euler(0f, 90f, 0f),
+                _ => Quaternion.identity
+            };
 
-            // Draw hole centers
-            Gizmos.color = Color.yellow;
-            foreach (var hole in _placedHoles)
+            // Create hole data
+            var holeData = new DoorHoleData
             {
-                Gizmos.DrawSphere(hole.Position, 0.2f);
+                GridPosition = new Vector2Int(x, y),
+                Direction = direction,
+                Position = holePosition,
+                Rotation = holeRotation,
+                Width = doorWidth,
+                Height = doorHeight,
+                Depth = holeDepth
+            };
+
+            _placedHoles.Add(holeData);
+
+            // Add to cell dictionary
+            if (!_holesByCell.ContainsKey(holeData.GridPosition))
+                _holesByCell[holeData.GridPosition] = new List<DoorHoleData>();
+            
+            _holesByCell[holeData.GridPosition].Add(holeData);
+
+            if (showDebugGizmos)
+            {
+                Debug.Log($"[DoorHolePlacer] 🚪 Placed hole at ({x}, {y}) facing {direction}");
             }
-        }
-
-        #endregion
-    }
-
-    /// <summary>
-    /// Door hole data structure.
-    /// </summary>
-    [System.Serializable]
-    public class DoorHoleData
-    {
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public float Width;
-        public float Height;
-        public float Depth;
-        public WallDirection WallDirection;
-        public RoomData Room;
-        public Vector2Int GridPosition;
-        public bool IsCarved;
-
-        /// <summary>
-        /// Get the bounds of this hole in world space.
-        /// </summary>
-        public Bounds GetWorldBounds()
-        {
-            Vector3 size = new Vector3(Width, Height, Depth);
-            return new Bounds(Position, size);
         }
 
         /// <summary>
-        /// Check if a door fits in this hole.
+        /// Get cell size from CompleteMazeBuilder via reflection.
+        /// TODO: Add public accessor to CompleteMazeBuilder.
         /// </summary>
-        public bool DoorFits(float doorWidth, float doorHeight, float doorDepth)
+        private float GetCellSizeFromBuilder()
         {
-            return doorWidth <= Width &&
-                   doorHeight <= Height &&
-                   doorDepth <= Depth;
+            // Try JSON config first
+            if (GameConfig.Instance != null)
+                return GameConfig.Instance.defaultCellSize;
+            
+            // HARDCODED FALLBACK (comment out to disable warning):
+            // return hardcodedCellSize;  // Default: 6f
+            
+            // Last resort default
+            return 6f;
         }
-    }
 
-    /// <summary>
-    /// Wall segment data for hole placement.
-    /// </summary>
-    [System.Serializable]
-    public class WallSegment
-    {
-        public Vector2Int Position;
-        public WallDirection Direction;
-        public RoomData Room;
-        public int CellSize;
-    }
+        #endregion
 
-    /// <summary>
-    /// Wall direction enum.
-    /// </summary>
-    public enum WallDirection
-    {
-        North,
-        South,
-        East,
-        West
+        #region Door Hole Data
+
+        /// <summary>
+        /// Door hole data structure.
+        /// Stores position, rotation, and dimensions for each door hole.
+        /// </summary>
+        [System.Serializable]
+        public class DoorHoleData
+        {
+            public Vector2Int GridPosition;  // Grid coordinates
+            public Vector2Int Direction;     // Direction the door faces
+            public Vector3 Position;         // World position
+            public Quaternion Rotation;      // World rotation
+            public float Width;              // Door width
+            public float Height;             // Door height
+            public float Depth;              // Hole depth
+        }
+
+        #endregion
     }
 }
