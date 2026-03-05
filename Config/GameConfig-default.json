@@ -6,6 +6,7 @@
     "entranceRoomPrefab": "Prefabs/EntranceRoomPrefab.prefab",
     "exitRoomPrefab": "Prefabs/ExitRoomPrefab.prefab",
     "normalRoomPrefab": "Prefabs/NormalRoomPrefab.prefab",
+    "torchPrefab": "Prefabs/TorchHandlePrefab.prefab",
     "wallMaterial": "Materials/WallMaterial.mat",
     "doorMaterial": "Materials/Door_PixelArt.mat",
     "floorMaterial": "Materials/Floor/Stone_Floor.mat",
@@ -47,5 +48,7 @@
     "musicVolume": 0.6,
     "mouseSensitivity": 1.0,
     "invertY": false,
-    "showHUD": true
+    "showHUD": true,
+
+    "consoleVerbosity": "short"
 }

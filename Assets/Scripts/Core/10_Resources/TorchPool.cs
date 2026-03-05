@@ -37,6 +37,9 @@ namespace Code.Lavos.Core
         [Header("Torch Prefab")]
         [Tooltip("Torch handle with EffectSocket + LightSocket inside")]
         [SerializeField] private GameObject torchHandlePrefab;
+        
+        // Public getter for LightPlacementEngine
+        public GameObject TorchHandlePrefab => torchHandlePrefab;
 
         [Tooltip("Use BraseroFlame particle system")]
         [SerializeField] private bool useBraseroFlame = true;

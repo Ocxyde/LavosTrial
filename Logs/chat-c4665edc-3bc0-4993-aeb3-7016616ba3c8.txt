@@ -1,3 +1,18 @@
+Chat 'ChatTitle(text="here's yesterday lo…" with Qwen Code, isCustom=true)' (c4665edc-3bc0-4993-aeb3-7016616ba3c8)
+Context:
+
+Messages: 112
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+here's yesterday logs, carefully read this please
+Attachments:
+Attachment Name: chat-ac53e561-a2c7-4cc8-9694-e28ae4254601.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+`````plain text
 Chat 'ChatTitle(text="read that log, and…" with Qwen Code, isCustom=true)' (ac53e561-a2c7-4cc8-9694-e28ae4254601)
 Context:
 
@@ -8934,6 +8949,1261 @@ done mv and del cmd ! re-check  last time im ready for testing
 kotlin.Unit
 
 ==== AgentMessage #274 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+
+`````
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+continue reading to the last words
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+badly luck ::
+Assets\Scripts\Core\06_Maze\MazeSaveData.cs(499,1): error CS1038: #endregion directive expected
+
+NullReferenceException: Object reference not set to an instance of an object
+Code.Lavos.Core.CompleteMazeBuilder.SpawnRoomsFirst () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:700)
+Code.Lavos.Core.CompleteMazeBuilder.GenerateMazeGeometryOnly () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:315)
+Code.Lavos.Editor.MazeBuilderEditor.GenerateMaze () (at Assets/Scripts/Editor/MazeBuilderEditor.cs:55)
+UnityEditor.EditorApplication:Internal_CallGlobalEventHandler()
+
+
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+mark obsolets editor files that be unused or deprecated .. and script a shell that I can del them
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+btw /////
+
+
+Assets\Scripts\Core\06_Maze\MazeSaveData.cs(420,39): error CS0117: 'PlayerPrefs' does not contain a definition for 'GetAllKeys'
+
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(799,25): error CS0122: 'BehaviorEngine.interactionRange' is inaccessible due to its protection level
+
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(800,25): error CS1061: 'DoorsEngine' does not contain a definition for 'autoOpen' and no accessible extension method 'autoOpen' accepting a first argument of type 'DoorsEngine' could be found (are you missing a using directive or an assembly reference?)
+
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(801,25): error CS1061: 'DoorsEngine' does not contain a definition for 'locked' and no accessible extension method 'locked' accepting a first argument of type 'DoorsEngine' could be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+plug-in-out compliance ?
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+is it done , ready fot tresting, let me check if they are no errors;
+Assets\Scripts\Editor\MazeBuilderEditor.cs(133,29): error CS1061: 'CompleteMazeBuilder' does not contain a definition for 'ClearSpawnPosition' and no accessible extension method 'ClearSpawnPosition' accepting a first argument of type 'CompleteMazeBuilder' could be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+plug-int-out compiance ? no hardcoded ? really ?
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+[SerializeField] private float doorSpawnChance = 0.6f;  // ← HARDCODED
+[SerializeField] private int minRooms = 3;              // ← HARDCODED
+[SerializeField] private int maxRooms = 8;              // ← HARDCODED
+
+can't be on *.json default one ? same for other values. the fallback comes from defautl SQL default file and json default file marked as read-only
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+same for default SQL db file read-only seed will only be implement at first launch on fresh new game;
+also write Udpate todo list on assets/docs/
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(251,17): error CS0103: The name 'defaultMazeWidth' does not exist in the current context
+
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(252,17): error CS0103: The name 'defaultMazeHeight' does not exist in the current context
+
+
+
+remind me to backup sometimes. and while it necessary a full clear cache .
+thanks great work. let me check if they are no more errors.
+while you can check twice for issues or warnings...
+btw what is CODE METRICS ?
+
+
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+back up done! git commit to push done ! ready for final test ? im disapointed that it's my last try on that game, after a pause.. long one.!
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+onto MazeBuilderEditor.cs 
+```c#
+[MenuItem("Tools/Maze/Clear Maze Objects")]
+public static void ClearMazeObjects()
+{
+    Debug.Log("═══════════════════════════════════════════");
+    Debug.Log("  CLEARING MAZE OBJECTS...");
+    Debug.Log("═══════════════════════════════════════════");
+
+    // Clean up generated objects
+    CleanUpObject("MazeWalls");
+    CleanUpObject("GroundFloor");
+    CleanUpObject("Ceiling");
+    CleanUpObject("Lights");
+    CleanUpObject("Torches");
+    CleanUpObject("Doors");
+    CleanUpObject("Rooms");
+
+    // Clear stored spawn position
+    var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+    if (mazeBuilder != null)
+    {
+        mazeBuilder.ClearSpawnPosition();
+    }
+
+    // Don't delete MazeBuilder or Player
+    Debug.Log("  ✅ Maze objects cleared");
+    Debug.Log("═══════════════════════════════════════════");
+}
+```
+78--105 is that fix btw , i just remmeber I stay with that in mind somewhere
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+few moment later, after clearing cache, untiy opened..... take long to load
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+i thjink it' struggling at loading color space
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+If you see errors → Screenshot and show me! can you see screenshot ?
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #33 ====
+User: 
+Shader error in 'Hidden/Shader Graphs/BuiltIn Lit Basic': 'SampleShadow_ComputeSamples_Tent_5x5': cannot convert output parameter from 'min16float[9]' to 'float[9]' at /travaux_Unity/PeuImporte/Library/PackageCache/com.unity.shadergraph@0afb4c072efd/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shadows.hlsl(223) (on d3d11)
+
+Compiling Subshader: 0, Pass: ShadowCaster, Vertex program with SHADOWS_DEPTH
+Platform defines: SHADER_API_DESKTOP UNITY_ENABLE_DETAIL_NORMALMAP UNITY_ENABLE_REFLECTION_BUFFERS UNITY_LIGHTMAP_FULL_HDR UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_PASS_SHADOWCASTER UNITY_PBS_USE_BRDF1 UNITY_PLATFORM_SUPPORTS_DEPTH_FETCH UNITY_SPECCUBE_BLENDING UNITY_SPECCUBE_BOX_PROJECTION UNITY_UNIFIED_SHADER_PRECISION_MODEL UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS
+Disabled keywords: SHADER_API_GLES30 SHADER_API_GLES31 SHADER_API_GLES32 SHADOWS_CUBE UNITY_ASTC_NORMALMAP_ENCODING UNITY_COLORSPACE_GAMMA UNITY_FRAMEBUFFER_FETCH_AVAILABLE UNITY_HARDWARE_TIER1 UNITY_HARDWARE_TIER2 UNITY_HARDWARE_TIER3 UNITY_LIGHTMAP_DLDR_ENCODING UNITY_LIGHTMAP_RGBM_ENCODING UNITY_METAL_SHADOWS_USE_POINT_FILTERING UNITY_NO_DXT5nm UNITY_NO_SCREENSPACE_SHADOWS UNITY_PBS_USE_BRDF2 UNITY_PBS_USE_BRDF3 UNITY_PRETRANSFORM_TO_DISPLAY_ORIENTATION UNITY_VIRTUAL_TEXTURING _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+Shader error in 'Hidden/Shader Graphs/BuiltIn Unlit Basic': 'SampleShadow_ComputeSamples_Tent_5x5': cannot convert output parameter from 'min16float[9]' to 'float[9]' at /travaux_Unity/PeuImporte/Library/PackageCache/com.unity.shadergraph@0afb4c072efd/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shadows.hlsl(223) (on d3d11)
+
+Compiling Subshader: 0, Pass: ShadowCaster, Vertex program with SHADOWS_DEPTH
+Platform defines: SHADER_API_DESKTOP UNITY_ENABLE_DETAIL_NORMALMAP UNITY_ENABLE_REFLECTION_BUFFERS UNITY_LIGHTMAP_FULL_HDR UNITY_LIGHT_PROBE_PROXY_VOLUME UNITY_PASS_SHADOWCASTER UNITY_PBS_USE_BRDF1 UNITY_PLATFORM_SUPPORTS_DEPTH_FETCH UNITY_SPECCUBE_BLENDING UNITY_SPECCUBE_BOX_PROJECTION UNITY_UNIFIED_SHADER_PRECISION_MODEL UNITY_USE_DITHER_MASK_FOR_ALPHABLENDED_SHADOWS
+Disabled keywords: SHADER_API_GLES30 SHADER_API_GLES31 SHADER_API_GLES32 SHADOWS_CUBE UNITY_ASTC_NORMALMAP_ENCODING UNITY_COLORSPACE_GAMMA UNITY_FRAMEBUFFER_FETCH_AVAILABLE UNITY_HARDWARE_TIER1 UNITY_HARDWARE_TIER2 UNITY_HARDWARE_TIER3 UNITY_LIGHTMAP_DLDR_ENCODING UNITY_LIGHTMAP_RGBM_ENCODING UNITY_METAL_SHADOWS_USE_POINT_FILTERING UNITY_NO_DXT5nm UNITY_NO_SCREENSPACE_SHADOWS UNITY_PBS_USE_BRDF2 UNITY_PBS_USE_BRDF3 UNITY_PRETRANSFORM_TO_DISPLAY_ORIENTATION UNITY_VIRTUAL_TEXTURING _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'uint' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Fibonacci.hlsl(16) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'uint' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Fibonacci.hlsl(27) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'uint' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Fibonacci.hlsl(270) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'uint' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Fibonacci.hlsl(277) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'float' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Hammersley.hlsl(25) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'float3' to smaller type 'min16float3', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Sampling.hlsl(144) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'float' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Sampling.hlsl(316) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'float' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Sampling.hlsl(317) (on d3d11)
+
+Shader warning in 'TraceVirtualOffset': conversion from larger type 'float' to smaller type 'min16float', possible loss of data [-Wconversion] at D:/travaux_Unity/PeuImporte/Library/PackageCache/com.unity.render-pipelines.core@d6dfd1e235d5/ShaderLibrary/Sampling/Sampling.hlsl(318) (on d3d11)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #34 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #35 ====
+User: 
+Ceiling pos(63,0,63) GroundFloor(63,-1,63) is that wrong ? am i miss something on the way ?
+
+kotlin.Unit
+
+==== AgentMessage #36 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #37 ====
+User: 
+watch wich call apply which values from default files, do check it on every cs files call default values from files
+
+[SpatialPlacer] MazeGenerator reference not found!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000016f0860f32e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000016f0860f133 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000016f0860edeb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000016f0860dd7e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000016f087bf4fa (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000016f087bc853 (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorches () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:543)
+0x0000016f087bc083 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceTorchesSimple () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1732)
+0x0000016f087bb7db (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceObjects () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1683)
+0x0000016f0877d933 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:453)
+0x0000016f0860be33 (Mono JIT Code) Code.Lavos.Editor.MazeBuilderEditor:GenerateMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Editor/MazeBuilderEditor.cs:89)
+0x0000016f0860d295 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+0x00007ff806fd6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff806f18984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff806f18a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5cd070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007ffff6638d10 (Unity) ScriptCommands::InvokeMenuItemWithContext
+0x00007ffff663657f (Unity) ScriptCommands::Execute
+0x00007ffff6371ed6 (Unity) MenuController::ExecuteMenuItem
+0x00007ffff62e6597 (Unity) ProcessMainWindowMessages
+0x00007ffff631f4ba (Unity) ContainerPlatform::ContainerWndProc
+0x00007ff8b9cfc396 (USER32) CallWindowProcW
+0x00007ff8b9cfa7ed (USER32) IsWindowUnicode
+0x00007ffff62e4cd8 (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[SpatialPlacer] MazeGenerator reference not found!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000016f0860f32e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000016f0860f133 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000016f0860edeb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000016f0860dd7e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000016f087bf4fa (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000016f087bc853 (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorches () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:543)
+0x0000016f087bc083 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceTorchesSimple () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1732)
+0x0000016f087bb7db (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceObjects () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1683)
+0x0000016f0877d933 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:453)
+0x0000016f0860be33 (Mono JIT Code) Code.Lavos.Editor.MazeBuilderEditor:GenerateMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Editor/MazeBuilderEditor.cs:89)
+0x0000016f0860d295 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+0x00007ff806fd6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff806f18984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff806f18a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5cd070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007ffff6638d10 (Unity) ScriptCommands::InvokeMenuItemWithContext
+0x00007ffff663657f (Unity) ScriptCommands::Execute
+0x00007ffff6371ed6 (Unity) MenuController::ExecuteMenuItem
+0x00007ffff62e6597 (Unity) ProcessMainWindowMessages
+0x00007ffff631f4ba (Unity) ContainerPlatform::ContainerWndProc
+0x00007ff8b9cfc396 (USER32) CallWindowProcW
+0x00007ff8b9cfa7ed (USER32) IsWindowUnicode
+0x00007ffff62e4cd8 (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+
+
+
+
+kotlin.Unit
+
+==== AgentMessage #38 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #39 ====
+User: 
+I think about MainCamera stuck on the edge of the maze at pos(0), that a weird a bit, but camera must fit the eye of player , it is not a 3rd personn view game its an FPS roguelike one 
+
+kotlin.Unit
+
+==== AgentMessage #40 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #41 ====
+User: 
+I spawn inside a 4 close wall room, no entrance/exit 
+
+kotlin.Unit
+
+==== AgentMessage #42 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #43 ====
+User: 
+same isssue resume me the logic behind your mind
+
+kotlin.Unit
+
+==== AgentMessage #44 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #45 ====
+User: 
+spawn room with doors ; spawn player onto it; gen. the corridor all around that spwnroom; that easy task or not ? 
+
+
+to answer you the option that open space w/ ceil is a pretty good idea
+
+kotlin.Unit
+
+==== AgentMessage #46 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #47 ====
+User: 
+made door open by default on what you guess and animation flame must be on ba default onto what you guess
+
+kotlin.Unit
+
+==== AgentMessage #48 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #49 ====
+User: 
+and check compliances
+
+kotlin.Unit
+
+==== AgentMessage #50 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #51 ====
+User: 
+PS D:\travaux_Unity\PeuImporte> cd "D:\travaux_Unity\PeuImporte" && findstr /S /N /C:"= 0" Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs | findstr /V "//" | findstr /V "==" | head -20                                                        
+head: The term 'head' is not recognized as a name of a cmdlet, function, script file, or executable program.            
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+PS D:\travaux_Unity\PeuImporte> cd "D:\travaux_Unity\PeuImporte" && findstr /S /N /C:"= 0" Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs | findstr /V "//" | findstr /V "==" | head -20                                                        
+head: The term 'head' is not recognized as a name of a cmdlet, function, script file, or executable program.            
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+
+
+kotlin.Unit
+
+==== AgentMessage #52 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #53 ====
+User: 
+have you forgot hole wall ? for door opening ..
+
+kotlin.Unit
+
+==== AgentMessage #54 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #55 ====
+User: 
+is the issue is because i pop outside room not inside ? redo compute them
+
+kotlin.Unit
+
+==== AgentMessage #56 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #57 ====
+User: 
+[LightPlacementEngine] ❌ Torch prefab is NULL!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000016efe0d53de (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000016efe0d51e3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000016efe0d4e9b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000016efe0d431e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000016f081c7c2a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000016f081c68eb (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:InstantiateTorchesBatch (System.Collections.Generic.List`1<Code.Lavos.Core.WallPositionArchitect/TorchRecord>) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:189)
+0x0000016f081bf3a3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:LoadAndInstantiateTorches (string,int) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:154)
+0x0000016f081bdfa3 (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorchesWithBinaryStorage (Code.Lavos.Core.MazeRenderer) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:577)
+0x0000016f081bb7fb (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorches () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:563)
+0x0000016f081bae23 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceTorchesSimple () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1757)
+0x0000016f081ba57b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceObjects () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1708)
+0x0000016efe196523 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:453)
+0x0000016efe195a0b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateCompleteMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:379)
+0x0000016efe1957c3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:356)
+0x0000016da913a748 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff806fd6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff806f18984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff806f18a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5be19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ffff5be1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ffff5bdc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ffff5786b98 (Unity) DelayedCallManager::Update
+0x00007ffff5b9558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ffff5b7480f (Unity) ExecutePlayerLoop
+0x00007ffff5b74985 (Unity) ExecutePlayerLoop
+0x00007ffff5b7982f (Unity) PlayerLoop
+0x00007ffff64ef3ca (Unity) EditorPlayerLoop::Execute
+0x00007ffff65064af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ffff6505320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ffff650717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ffff650264c (Unity) Application::TickTimer
+0x00007ffff62e4e4c (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000016efe0d53de (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000016efe0d51e3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000016efe0d4e9b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000016efe0d431e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000016f081c7c2a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000016f081c6933 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:InstantiateTorchesBatch (System.Collections.Generic.List`1<Code.Lavos.Core.WallPositionArchitect/TorchRecord>) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:190)
+0x0000016f081bf3a3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:LoadAndInstantiateTorches (string,int) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:154)
+0x0000016f081bdfa3 (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorchesWithBinaryStorage (Code.Lavos.Core.MazeRenderer) (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:577)
+0x0000016f081bb7fb (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorches () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:563)
+0x0000016f081bae23 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceTorchesSimple () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1757)
+0x0000016f081ba57b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceObjects () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1708)
+0x0000016efe196523 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:453)
+0x0000016efe195a0b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateCompleteMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:379)
+0x0000016efe1957c3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:356)
+0x0000016da913a748 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff806fd6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff806f18984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff806f18a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5be19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ffff5be1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ffff5bdc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ffff5786b98 (Unity) DelayedCallManager::Update
+0x00007ffff5b9558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ffff5b7480f (Unity) ExecutePlayerLoop
+0x00007ffff5b74985 (Unity) ExecutePlayerLoop
+0x00007ffff5b7982f (Unity) PlayerLoop
+0x00007ffff64ef3ca (Unity) EditorPlayerLoop::Execute
+0x00007ffff65064af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ffff6505320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ffff650717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ffff650264c (Unity) Application::TickTimer
+0x00007ffff62e4e4c (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+Some objects were not cleaned up when closing the scene. (Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+LightEngine
+
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff5b66c59 (Unity) ValidateNoSceneObjectsAreLoaded
+0x00007ffff68dd819 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007ffff65054cd (Unity) PlayerLoopController::ExitPlayMode
+0x00007ffff6507199 (Unity) PlayerLoopController::SetIsPlaying
+0x00007ffff650264c (Unity) Application::TickTimer
+0x00007ffff62e4e4c (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+I let to later , see you coder firend
+
+kotlin.Unit
+
+==== AgentMessage #58 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #59 ====
+User: 
+Update todo
+
+kotlin.Unit
+
+==== AgentMessage #60 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #61 ====
+User: 
+not taht one the ont on Assests/Docs/ TODO
+
+kotlin.Unit
+
+==== AgentMessage #62 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #63 ====
+User: 
+assigne "[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector!" to default json and sql db values on load them
+
+kotlin.Unit
+
+==== AgentMessage #64 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #65 ====
+User: 
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(121,45): error CS0122: 'TorchPool.torchHandlePrefab' is inaccessible due to its protection level
+
+
+
+kotlin.Unit
+
+==== AgentMessage #66 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #67 ====
+User: 
+are the spwnroom have some wall inside room?
+
+kotlin.Unit
+
+==== AgentMessage #68 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #69 ====
+User: 
+3x3 room i saw 2 corner of wall inside
+
+kotlin.Unit
+
+==== AgentMessage #70 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #71 ====
+User: 
+the algorythme is simple, made a virtual grid, place spawnRoom first , then the others, read the grid put it wall, surrount the whole to fit the maze, ground/ceiling all inclusive
+
+kotlin.Unit
+
+==== AgentMessage #72 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #73 ====
+User: 
+Assets\Scripts\Core\06_Maze\CompleteMazeBuilder.cs(1417,9): error CS1028: Unexpected preprocessor directive
+
+
+
+kotlin.Unit
+
+==== AgentMessage #74 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #75 ====
+User: 
+i issue blank wall inside 3x3 room, the walls pop insit , i pop in 1x3 corridor
+
+kotlin.Unit
+
+==== AgentMessage #76 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #77 ====
+User: 
+state 3 and 5 isnt duplicate walls?
+
+kotlin.Unit
+
+==== AgentMessage #78 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #79 ====
+User: 
+next to later, see you , and update Assets/Docs/ TODO
+
+kotlin.Unit
+
+==== AgentMessage #80 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #81 ====
+User: 
+[CompleteMazeBuilder] ❌ Failed to create grid!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000021695e2d97e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000021695e2d783 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000021695e2d43b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000021695e2c8be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002183e50a8ea (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002183e50a24b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:CreateVirtualGridAndPlaceRooms () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:512)
+0x000002183e50902b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:415)
+0x000002183e50595b (Mono JIT Code) Code.Lavos.Editor.MazeBuilderEditor:GenerateMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Editor/MazeBuilderEditor.cs:95)
+0x0000021695e2c265 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+0x00007ff84f516bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff84f458984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff84f458a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5cd070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007ffff6638d10 (Unity) ScriptCommands::InvokeMenuItemWithContext
+0x00007ffff663657f (Unity) ScriptCommands::Execute
+0x00007ffff6371ed6 (Unity) MenuController::ExecuteMenuItem
+0x00007ffff62e6597 (Unity) ProcessMainWindowMessages
+0x00007ffff631f4ba (Unity) ContainerPlatform::ContainerWndProc
+0x00007ff8b9cfc396 (USER32) CallWindowProcW
+0x00007ff8b9cfa7ed (USER32) IsWindowUnicode
+0x00007ffff62e4cd8 (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[SpatialPlacer] LightPlacementEngine not found! Cannot use binary storage!
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff52fd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000021695e2d97e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000021695e2d783 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000021695e2d43b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000021695e2c8be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002183e50a8ea (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000021a1b67cfa3 (Mono JIT Code) Code.Lavos.Core.SpatialPlacer:PlaceTorches () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:558)
+0x0000021a1b67c603 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceTorchesSimple () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1810)
+0x0000021a1b67bd5b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceObjects () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:1761)
+0x000002183e509483 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMazeGeometryOnly () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:440)
+0x000002183e50595b (Mono JIT Code) Code.Lavos.Editor.MazeBuilderEditor:GenerateMaze () (at D:/travaux_Unity/PeuImporte/Assets/Scripts/Editor/MazeBuilderEditor.cs:95)
+0x0000021695e2c265 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void (object,intptr,intptr,intptr)
+0x00007ff84f516bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff84f458984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff84f458a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ffff5cc9764 (Unity) scripting_method_invoke
+0x00007ffff5cd0623 (Unity) ScriptingInvocation::Invoke
+0x00007ffff5cd070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007ffff6638d10 (Unity) ScriptCommands::InvokeMenuItemWithContext
+0x00007ffff663657f (Unity) ScriptCommands::Execute
+0x00007ffff6371ed6 (Unity) MenuController::ExecuteMenuItem
+0x00007ffff62e6597 (Unity) ProcessMainWindowMessages
+0x00007ffff631f4ba (Unity) ContainerPlatform::ContainerWndProc
+0x00007ff8b9cfc396 (USER32) CallWindowProcW
+0x00007ff8b9cfa7ed (USER32) IsWindowUnicode
+0x00007ffff62e4cd8 (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #82 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #83 ====
+User: 
+as you see im back, welcome back too you  chief !
+
+kotlin.Unit
+
+==== AgentMessage #84 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #85 ====
+User: 
+for this test , do not cover by ceiling anymore , just in case i have a better view of final grid
+
+kotlin.Unit
+
+==== AgentMessage #86 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #87 ====
+User: 
+Some objects were not cleaned up when closing the scene. (Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+LightEngine
+
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff5b66c59 (Unity) ValidateNoSceneObjectsAreLoaded
+0x00007ffff68dd819 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007ffff65054cd (Unity) PlayerLoopController::ExitPlayMode
+0x00007ffff6507199 (Unity) PlayerLoopController::SetIsPlaying
+0x00007ffff650264c (Unity) Application::TickTimer
+0x00007ffff62e4e4c (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+IndexOutOfRangeException: Index was outside the bounds of the array.
+Code.Lavos.Core.CompleteMazeBuilder.CarveCorridors (Code.Lavos.Core.MazeGenerator+Wall[,] grid) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:644)
+Code.Lavos.Core.CompleteMazeBuilder.GenerateCorridors () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:622)
+Code.Lavos.Core.CompleteMazeBuilder.GenerateMazeGeometryOnly () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:418)
+Code.Lavos.Editor.MazeBuilderEditor.GenerateMaze () (at Assets/Scripts/Editor/MazeBuilderEditor.cs:95)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #88 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #89 ====
+User: 
+ReloadScene failed: Asset path not found for 
+0x00007ffff549221e (Unity) StackWalker::ShowCallstack
+0x00007ffff6cc5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ffff6cc5afe (Unity) Stacktrace::GetStacktrace
+0x00007ffff5442c7f (Unity) DebugStringToFile
+0x00007ffff68dc802 (Unity) EditorSceneManager::ReloadScene
+0x00007ffff68d7586 (Unity) EditorSceneManager::HandleOpenScenesChangeOnDisk
+0x00007ffff68d9ba7 (Unity) EditorSceneManager::OnApplicationTick
+0x00007ffff65013c0 (Unity) Application::TickTimer
+0x00007ffff62e4e4c (Unity) MainMessageLoop
+0x00007ffff62ec8e2 (Unity) UnityMain
+0x00007ff697a42f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #90 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #91 ====
+User: 
+is ceiling check twice if exists twice a session
+
+kotlin.Unit
+
+==== AgentMessage #92 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #93 ====
+User: 
+on pause wile ingame i see ceiling
+
+kotlin.Unit
+
+==== AgentMessage #94 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #95 ====
+User: 
+let me test the fact that the maze generation is, redo for test, in appropiate folder a maze geneartiv system, that include all element, w/o infer each other.. let me think before doing something else, while you deep scan project I'll do backup and full backup
+
+kotlin.Unit
+
+==== AgentMessage #96 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #97 ====
+User: 
+i see textures walls and blank all around at random location, ceiling still persiste, let me thing of an alogrythm dont touch any files
+
+kotlin.Unit
+
+==== AgentMessage #98 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #99 ====
+User: 
+we must proceed w/o mazegenerator for the moment, implement new maze system based on grid placement.
+what did you suggest to proceed?
+
+kotlin.Unit
+
+==== AgentMessage #100 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #101 ====
+User: 
+lesser grid size for tests , spwnRoom at larger ; 2 width cells wide for corridor, implement to test please do
+
+kotlin.Unit
+
+==== AgentMessage #102 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #103 ====
+User: 
+check for spwnpoint w/ this nu systm grid, Player1 still stuck onto a wall a random pos premade. so pop him into room not walls, or corner walls, or inbetween wall/doors; just on a corridor or a room. in the middle of last one
+
+kotlin.Unit
+
+==== AgentMessage #104 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #105 ====
+User: 
+mark a cell into room that is a correct path for spwn and respawn point
+
+kotlin.Unit
+
+==== AgentMessage #106 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #107 ====
+User: 
+in fact mark all cell as it be, wall or empy cell just ground, ceel for door etc. mark all cell as per use. Store into DB. write it byte to byte, less data better performance ;
+
+kotlin.Unit
+
+==== AgentMessage #108 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #109 ====
+User: 
+at starting scen on load scene always Fitrst put the ground, w/ wall, clear all wall from onLoad scence;
+
+kotlin.Unit
+
+==== AgentMessage #110 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #111 ====
+User: 
+w/o all i mean
+
+kotlin.Unit
+
+==== AgentMessage #112 ====
 Assistant: 
 
 

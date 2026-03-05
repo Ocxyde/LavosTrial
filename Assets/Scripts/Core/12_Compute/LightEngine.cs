@@ -241,10 +241,22 @@ namespace Code.Lavos.Core
         {
             // Only cleanup if not in edit mode
             if (!Application.isPlaying) return;
-            
+
             CleanupLights();
             if (_instance == this)
                 _instance = null;
+        }
+
+        void OnApplicationQuit()
+        {
+            // Ensure cleanup on application quit
+            if (!Application.isPlaying) return;
+
+            Debug.Log("[LightEngine] 🧹 Cleaning up on application quit...");
+            CleanupLights();
+            if (_instance == this)
+                _instance = null;
+            Debug.Log("[LightEngine] ✅ LightEngine cleaned up - clean exit");
         }
 
         #endregion

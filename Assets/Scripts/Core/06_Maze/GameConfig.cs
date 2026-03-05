@@ -34,6 +34,7 @@ namespace Code.Lavos.Core
         public string entranceRoomPrefab = "Prefabs/EntranceRoomPrefab.prefab";
         public string exitRoomPrefab = "Prefabs/ExitRoomPrefab.prefab";
         public string normalRoomPrefab = "Prefabs/NormalRoomPrefab.prefab";
+        public string torchPrefab = "Prefabs/TorchHandlePrefab.prefab";
 
         #endregion
 
@@ -117,6 +118,10 @@ namespace Code.Lavos.Core
         public float mouseSensitivity = 1.0f;
         public bool invertY = false;
         public bool showHUD = true;
+
+        [Header("📢 Console Verbosity")]
+        [Tooltip("Console output level: full, short, mute (default: short)")]
+        public string consoleVerbosity = "short";
 
         #endregion
         

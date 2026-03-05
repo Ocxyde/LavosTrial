@@ -47,10 +47,10 @@ namespace Code.Lavos.Editor
 
                 // Manually initialize references (mimic Awake() behavior)
                 var torchPool = mazeGO.AddComponent<Code.Lavos.Core.TorchPool>();
-                
+
                 // Use reflection to set private fields in CompleteMazeBuilder
                 var builderType = typeof(CompleteMazeBuilder);
-                var mazeGenField = builderType.GetField("mazeGenerator", 
+                var mazeGenField = builderType.GetField("mazeGenerator",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 var spatialPlacerField = builderType.GetField("spatialPlacer",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -63,7 +63,13 @@ namespace Code.Lavos.Editor
                 spatialPlacerField?.SetValue(mazeBuilder, mazeGO.GetComponent<Code.Lavos.Core.SpatialPlacer>());
                 torchPoolField?.SetValue(mazeBuilder, torchPool);
                 lightPlacementEngineField?.SetValue(mazeBuilder, mazeGO.GetComponent<Code.Lavos.Core.LightPlacementEngine>());
-                
+
+                // ALSO set mazeGenerator reference in SpatialPlacer (it needs it too!)
+                var spatialPlacer = mazeGO.GetComponent<Code.Lavos.Core.SpatialPlacer>();
+                var spatialMazeGenField = typeof(Code.Lavos.Core.SpatialPlacer).GetField("mazeGenerator",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                spatialMazeGenField?.SetValue(spatialPlacer, mazeGenerator);
+
                 Debug.Log("🔌 Manually initialized component references");
             }
             else

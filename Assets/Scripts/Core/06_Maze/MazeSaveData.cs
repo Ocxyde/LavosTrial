@@ -42,7 +42,8 @@ namespace Code.Lavos.Core
         private const string TABLE_MAZE_DATA = "MazeData";
         private const string TABLE_ROOM_DATA = "RoomData";
         private const string TABLE_PREFAB_DATA = "PrefabData";
-        private const string TABLE_PLAYER_SETTINGS = "PlayerSettings";  // NEW: Player choices
+        private const string TABLE_PLAYER_SETTINGS = "PlayerSettings";
+        private const string TABLE_GRID_MAZE_DATA = "GridMazeData";  // NEW: Binary grid storage
         
         #region Initialization
         
@@ -81,12 +82,13 @@ namespace Code.Lavos.Core
         {
             // Using SQLite4Unity3d or similar SQLite plugin
             // For now, using PlayerPrefs as fallback (will be replaced with actual SQLite)
-            
+
             Debug.Log("[MazeSaveData] 📊 Database tables created:");
             Debug.Log($"  - {TABLE_MAZE_DATA} (seed, spawn position, timestamp)");
             Debug.Log($"  - {TABLE_ROOM_DATA} (room positions, types)");
             Debug.Log($"  - {TABLE_PREFAB_DATA} (prefab paths, assignments)");
             Debug.Log($"  - {TABLE_PLAYER_SETTINGS} (player choices, overrides)");
+            Debug.Log($"  - {TABLE_GRID_MAZE_DATA} (binary grid data, 1 byte per cell)");
         }
         
         #endregion
@@ -469,15 +471,74 @@ namespace Code.Lavos.Core
                 File.Delete(databasePath);
                 Debug.Log("[MazeSaveData] 🗑️ Database deleted");
             }
-            
+
             initialized = false;
         }
-        
+
         #endregion
+
+        #region Grid Maze Data (Binary Storage)
+
+        /// <summary>
+        /// Save grid maze data (binary format - 1 byte per cell).
+        /// </summary>
+        public static void SaveGridMaze(int seed, byte[] gridData, int spawnX, int spawnZ)
+        {
+            Initialize();
+
+            // Convert byte array to base64 for PlayerPrefs storage
+            string base64 = System.Convert.ToBase64String(gridData);
+
+            PlayerPrefs.SetInt("GridDB_Seed", seed);
+            PlayerPrefs.SetString("GridDB_Data", base64);
+            PlayerPrefs.SetInt("GridDB_SpawnX", spawnX);
+            PlayerPrefs.SetInt("GridDB_SpawnZ", spawnZ);
+            PlayerPrefs.Save();
+
+            Debug.Log($"[MazeSaveData] 💾 Grid maze saved: {gridData.Length} bytes, Seed={seed}, Spawn=({spawnX},{spawnZ})");
+        }
+
+        /// <summary>
+        /// Load grid maze data (binary format).
+        /// Returns null if no save exists.
+        /// </summary>
+        public static byte[] LoadGridMaze(int seed)
+        {
+            Initialize();
+
+            int storedSeed = PlayerPrefs.GetInt("GridDB_Seed", -1);
+            if (storedSeed != seed || !PlayerPrefs.HasKey("GridDB_Data"))
+            {
+                Debug.Log($"[MazeSaveData] 💾 No grid maze found for seed {seed}");
+                return null;
+            }
+
+            string base64 = PlayerPrefs.GetString("GridDB_Data");
+            byte[] gridData = System.Convert.FromBase64String(base64);
+
+            Debug.Log($"[MazeSaveData] 📂 Loaded grid maze: {gridData.Length} bytes");
+            return gridData;
+        }
+
+        /// <summary>
+        /// Clear grid maze data.
+        /// </summary>
+        public static void ClearGridMazeData()
+        {
+            Initialize();
+            PlayerPrefs.DeleteKey("GridDB_Seed");
+            PlayerPrefs.DeleteKey("GridDB_Data");
+            PlayerPrefs.DeleteKey("GridDB_SpawnX");
+            PlayerPrefs.DeleteKey("GridDB_SpawnZ");
+            PlayerPrefs.Save();
+            Debug.Log("[MazeSaveData] 🗑️ Grid maze data cleared");
+        }
+
+        #endregion Grid Maze Data
     }
-    
+
     #region Data Models
-    
+
     /// <summary>
     /// Maze data model (matches database schema).
     /// </summary>
@@ -491,7 +552,7 @@ namespace Code.Lavos.Core
         public int MazeHeight { get; set; }
         public string Timestamp { get; set; }
     }
-    
+
     /// <summary>
     /// Room data model (matches database schema).
     /// </summary>

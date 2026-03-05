@@ -25,6 +25,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -75,27 +79,66 @@ namespace Code.Lavos.Core
         #endregion
         
         #region Unity Lifecycle
-        
+
         private void Awake()
         {
             // Don't initialize in editor pause mode
             if (!Application.isPlaying) return;
 
-            // Auto-find torch prefab from TorchPool if not assigned
+            // Auto-find torch prefab from TorchPool FIRST (most reliable at runtime)
             if (torchPrefab == null)
             {
-                var torchPool = GetComponent<TorchPool>();
+                // Try to find TorchPool component anywhere in scene (not just same GameObject)
+                var torchPool = FindFirstObjectByType<TorchPool>();
                 if (torchPool != null)
                 {
-                    Debug.Log("[LightPlacementEngine] ⚠️ TorchPool found - TorchPool will handle torch creation, LightPlacementEngine skipped");
-                    enabled = false;  // Disable this component, TorchPool handles it
-                    return;
+                    torchPrefab = torchPool.TorchHandlePrefab;  // Use public property
+                    if (torchPrefab != null)
+                    {
+                        Debug.Log("[LightPlacementEngine] ✅ TorchPrefab assigned from TorchPool");
+                    }
                 }
-                else
+            }
+
+            // If still null, try to load from Resources folder
+            if (torchPrefab == null)
+            {
+                Debug.Log("[LightPlacementEngine] 🔧 TorchPrefab not assigned - trying Resources.Load...");
+                torchPrefab = Resources.Load<GameObject>("TorchHandlePrefab");
+
+                if (torchPrefab != null)
                 {
-                    Debug.LogWarning("[LightPlacementEngine] ❌ No torchPrefab assigned and no TorchPool found!");
-                    Debug.LogWarning("[LightPlacementEngine] ❌ Please assign torchPrefab in Inspector OR add TorchPool component");
+                    Debug.Log("[LightPlacementEngine] ✅ TorchPrefab loaded from Resources folder");
                 }
+            }
+
+            // If still null, try to find in scene (look for torch prefabs)
+            if (torchPrefab == null)
+            {
+                Debug.Log("[LightPlacementEngine] 🔧 TorchPrefab not in Resources - searching scene...");
+                var allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
+                foreach (var obj in allObjects)
+                {
+                    if (obj != null && obj.name.Contains("TorchHandle"))
+                    {
+                        torchPrefab = obj;
+                        Debug.Log($"[LightPlacementEngine] ✅ TorchPrefab found in scene: {obj.name}");
+                        break;
+                    }
+                }
+            }
+
+            // Final check
+            if (torchPrefab == null)
+            {
+                Debug.LogError("[LightPlacementEngine] ❌ No torchPrefab assigned!");
+                Debug.LogError("[LightPlacementEngine] ❌ Please ensure:");
+                Debug.LogError("[LightPlacementEngine]    1. TorchPool has torchHandlePrefab assigned in Inspector, OR");
+                Debug.LogError("[LightPlacementEngine]    2. Create Resources folder and add TorchHandlePrefab there, OR");
+                Debug.LogError("[LightPlacementEngine]    3. Have a TorchHandlePrefab in the scene");
+                Debug.LogWarning("[LightPlacementEngine] ⚠️ Torches will NOT spawn until prefab is assigned!");
+                // Don't disable - allow graceful degradation (torches just won't appear)
+                return;
             }
 
             // Create parent object for organization
@@ -103,7 +146,7 @@ namespace Code.Lavos.Core
 
             Debug.Log("[LightPlacementEngine] Initialized");
         }
-        
+
         private void OnDestroy()
         {
             ClearAllLights();

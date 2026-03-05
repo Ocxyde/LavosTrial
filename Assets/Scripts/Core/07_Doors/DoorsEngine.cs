@@ -182,11 +182,12 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Initialize door with specific settings.
         /// </summary>
-        public void Initialize(DoorVariant variant, DoorTrapType trap, bool locked = false)
+        public void Initialize(DoorVariant variant, DoorTrapType trap, bool locked = false, bool openByDefault = false)
         {
             doorVariant = variant;
             doorTrap = trap;
             _isLocked = locked || (variant == DoorVariant.Locked);
+            _isOpen = openByDefault;  // Set initial state
 
             SetupDoor();
         }
@@ -205,11 +206,31 @@ namespace Code.Lavos.Core
         {
             // Set visual appearance based on variant
             UpdateDoorVisual();
-            
+
             // Set locked state
             if (doorVariant == DoorVariant.Locked || doorVariant == DoorVariant.Boss)
             {
                 _isLocked = true;
+            }
+
+            // If door should start open, open it now
+            if (_isOpen)
+            {
+                // Use animation if available
+                if (_doorAnimation != null)
+                {
+                    _doorAnimation.Open();
+                    DisableCollider();
+                }
+                else
+                {
+                    DisableCollider();
+                }
+            }
+            else
+            {
+                // Door starts closed - enable collider
+                SetupCollider();
             }
         }
 
