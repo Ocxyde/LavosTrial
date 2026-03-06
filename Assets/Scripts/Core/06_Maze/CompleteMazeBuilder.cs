@@ -44,46 +44,46 @@ namespace Code.Lavos.Core
         #region Fields (From JSON)
 
         [Header("Prefabs")]
-        [SerializeField] private GameObject wallPrefab;
-        [SerializeField] private GameObject doorPrefab;
+        [SerializeField] private GameObject _wallPrefab;
+        [SerializeField] private GameObject _doorPrefab;
 
         [Header("Materials")]
-        [SerializeField] private Material wallMaterial;
-        [SerializeField] private Material floorMaterial;
-        [SerializeField] private Texture2D groundTexture;
+        [SerializeField] private Material _wallMaterial;
+        [SerializeField] private Material _floorMaterial;
+        [SerializeField] private Texture2D _groundTexture;
 
         [Header("Components")]
-        [SerializeField] private SpatialPlacer spatialPlacer;
-        [SerializeField] private PlayerController playerController;
-        [SerializeField] private MazeRenderer mazeRenderer;
+        [SerializeField] private SpatialPlacer _spatialPlacer;
+        [SerializeField] private PlayerController _playerController;
+        [SerializeField] private MazeRenderer _mazeRenderer;
 
         [Header("Game State")]
-        [SerializeField] private int currentLevel = 0;
+        [SerializeField] private int _currentLevel = 0;
 
         #endregion
 
         #region Private Data
 
         private static CompleteMazeBuilder _instance;
-        private GridMazeGenerator grid;
-        private float cellSize, wallHeight, wallThickness;
-        private uint seed;
-        private Vector3 spawnPos;
-        private Vector2Int spawnCell;
-        private int mazeSize;
+        private GridMazeGenerator _grid;
+        private float _cellSize, _wallHeight, _wallThickness;
+        private uint _seed;
+        private Vector3 _spawnPos;
+        private Vector2Int _spawnCell;
+        private int _mazeSize;
 
         #endregion
 
         #region Public Accessors
 
         public static CompleteMazeBuilder Instance => _instance;
-        public int CurrentLevel => currentLevel;
-        public int MazeSize => mazeSize;
+        public int CurrentLevel => _currentLevel;
+        public int MazeSize => _mazeSize;
 
         /// <summary>
         /// Get grid for external placers (plug-in-out API).
         /// </summary>
-        public GridMazeGenerator GetGrid() => grid;
+        public GridMazeGenerator GetGrid() => _grid;
 
         #endregion
 
@@ -103,29 +103,29 @@ namespace Code.Lavos.Core
             // Get compute seed from SeedManager (fresh seed for this scene)
             if (SeedManager.Instance != null)
             {
-                seed = SeedManager.Instance.ComputeSeed;
-                Log($"[CompleteMazeBuilder] Using compute seed from SeedManager: {seed}");
+                _seed = SeedManager.Instance.ComputeSeed;
+                Log($"[CompleteMazeBuilder] Using compute seed from SeedManager: {_seed}");
             }
             else
             {
                 // Fallback: generate locally (shouldn't happen)
-                seed = GenerateFallbackSeed();
-                Log($"[CompleteMazeBuilder] Fallback seed (SeedManager not found): {seed}");
+                _seed = GenerateFallbackSeed();
+                Log($"[CompleteMazeBuilder] Fallback seed (SeedManager not found): {_seed}");
             }
 
             // Use seed magnitude to influence maze difficulty (from GameConfig)
             var cfg = GameConfig.Instance;
-            float seedFactor = seed / (float)int.MaxValue; // 0.0 to 1.0
+            float seedFactor = _seed / (float)int.MaxValue; // 0.0 to 1.0
             int bonusSize = Mathf.FloorToInt(seedFactor * cfg.maxDifficultySizeBonus);
-            int bonusRooms = Mathf.FloorToInt(seedFactor * cfg.maxDifficultyRoomBonus);
 
-            mazeSize = cfg.baseMazeSize + currentLevel + bonusSize;
-            mazeSize = Mathf.Clamp(mazeSize, cfg.minMazeSize, cfg.maxMazeSize);
+            // Maze size scales by 3 cells per level for more exploration space
+            _mazeSize = cfg.baseMazeSize + (_currentLevel * 3) + bonusSize;
+            _mazeSize = Mathf.Clamp(_mazeSize, cfg.minMazeSize, cfg.maxMazeSize);
 
             if (EventHandler.Instance != null)
                 Log("[CompleteMazeBuilder] Connected to EventHandler");
 
-            Log($"[CompleteMazeBuilder] Level {currentLevel} - Maze {mazeSize}x{mazeSize} - Seed: {seed} (factor: {seedFactor:F2})");
+            Log($"[CompleteMazeBuilder] Level {_currentLevel} - Maze {_mazeSize}x{_mazeSize} - Seed: {_seed} (factor: {seedFactor:F2})");
             Log("[CompleteMazeBuilder] Seed is procedural - new seed each scene!");
         }
 
@@ -146,10 +146,10 @@ namespace Code.Lavos.Core
 
         public void NextLevel()
         {
-            currentLevel++;
+            _currentLevel++;
             var cfg = GameConfig.Instance;
-            mazeSize = Mathf.Clamp(cfg.baseMazeSize + currentLevel, cfg.minMazeSize, cfg.maxMazeSize);
-            Log($"[CompleteMazeBuilder]  Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            _mazeSize = Mathf.Clamp(cfg.baseMazeSize + _currentLevel, cfg.minMazeSize, cfg.maxMazeSize);
+            Log($"[CompleteMazeBuilder]  Level {_currentLevel} - Maze {_mazeSize}x{_mazeSize}");
         }
 
         #endregion
@@ -159,40 +159,40 @@ namespace Code.Lavos.Core
         private void LoadConfig()
         {
             var cfg = GameConfig.Instance;
-            cellSize = cfg.defaultCellSize;
-            wallHeight = cfg.defaultWallHeight;
-            wallThickness = cfg.defaultWallThickness;
+            _cellSize = cfg.defaultCellSize;
+            _wallHeight = cfg.defaultWallHeight;
+            _wallThickness = cfg.defaultWallThickness;
 
             // Load prefabs from config paths with fallback to folder search
-            wallPrefab = LoadPrefabWithFallback(cfg.wallPrefab, "Wall");
-            doorPrefab = LoadPrefabWithFallback(cfg.doorPrefab, "Door");
+            _wallPrefab = LoadPrefabWithFallback(cfg.wallPrefab, "Wall");
+            _doorPrefab = LoadPrefabWithFallback(cfg.doorPrefab, "Door");
 
-            Log($"[CompleteMazeBuilder] Loaded wall prefab: {(wallPrefab != null ? wallPrefab.name : "NULL")}");
-            Log($"[CompleteMazeBuilder] Loaded door prefab: {(doorPrefab != null ? doorPrefab.name : "NULL")}");
+            Log($"[CompleteMazeBuilder] Loaded wall prefab: {(_wallPrefab != null ? _wallPrefab.name : "NULL")}");
+            Log($"[CompleteMazeBuilder] Loaded door prefab: {(_doorPrefab != null ? _doorPrefab.name : "NULL")}");
 
             // Load materials from config paths with fallback to folder search
-            wallMaterial = LoadMaterialWithFallback(cfg.wallMaterial, "Wall");
-            floorMaterial = LoadMaterialWithFallback(cfg.floorMaterial, "Floor");
-            groundTexture = LoadTextureWithFallback(cfg.groundTexture, "Floor");
+            _wallMaterial = LoadMaterialWithFallback(cfg.wallMaterial, "Wall");
+            _floorMaterial = LoadMaterialWithFallback(cfg.floorMaterial, "Floor");
+            _groundTexture = LoadTextureWithFallback(cfg.groundTexture, "Floor");
 
-            Log($"[CompleteMazeBuilder] Loaded wall material: {(wallMaterial != null ? wallMaterial.name : "NULL")}");
-            Log($"[CompleteMazeBuilder] Loaded floor material: {(floorMaterial != null ? floorMaterial.name : "NULL")}");
+            Log($"[CompleteMazeBuilder] Loaded wall material: {(_wallMaterial != null ? _wallMaterial.name : "NULL")}");
+            Log($"[CompleteMazeBuilder] Loaded floor material: {(_floorMaterial != null ? _floorMaterial.name : "NULL")}");
 
             // VALIDATION: Critical prefabs must be loaded
-            if (wallPrefab == null)
+            if (_wallPrefab == null)
             {
                 LogError("[CompleteMazeBuilder] CRITICAL: Wall prefab NOT loaded! Maze generation will fail.");
                 LogError("[CompleteMazeBuilder] FIX: Run Tools -> Quick Setup Prefabs (For Testing)");
                 LogError("[CompleteMazeBuilder] FIX: Or add WallPrefab.prefab to Assets/Resources/Prefabs/");
             }
 
-            if (doorPrefab == null)
+            if (_doorPrefab == null)
             {
                 LogWarning("[CompleteMazeBuilder] Door prefab not loaded - Exit door will not be placed");
                 LogWarning("[CompleteMazeBuilder] FIX: Add DoorPrefab.prefab to Assets/Resources/Prefabs/");
             }
 
-            if (floorMaterial == null)
+            if (_floorMaterial == null)
             {
                 LogWarning("[CompleteMazeBuilder] Floor material not loaded - Ground will use default white");
             }
@@ -344,7 +344,7 @@ namespace Code.Lavos.Core
         public void GenerateMaze()
         {
             Log("[CompleteMazeBuilder] ========================================");
-            Log($"[CompleteMazeBuilder] LEVEL {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder] LEVEL {_currentLevel} - Maze {_mazeSize}x{_mazeSize}");
             Log("[CompleteMazeBuilder] Starting maze generation...");
             Log("[CompleteMazeBuilder] ========================================");
 
@@ -356,7 +356,7 @@ namespace Code.Lavos.Core
             Log("[CompleteMazeBuilder] STEP 2: Ground spawned");
 
             GenerateGrid();
-            Log($"[CompleteMazeBuilder] STEP 3: Spawn room placed at {spawnCell}");
+            Log($"[CompleteMazeBuilder] STEP 3: Spawn point placed at {_spawnCell}");
 
             RenderWalls();
             Log("[CompleteMazeBuilder] STEP 4: Walls placed");
@@ -370,11 +370,11 @@ namespace Code.Lavos.Core
             if (Application.isPlaying)
             {
                 SpawnPlayer();
-                Log($"[CompleteMazeBuilder] STEP 8: Player spawned at {spawnPos}");
+                Log($"[CompleteMazeBuilder] STEP 7: Player spawned at {_spawnPos}");
             }
 
             Log("[CompleteMazeBuilder] ========================================");
-            Log($"[CompleteMazeBuilder] Level {currentLevel} complete! Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder] Level {_currentLevel} complete! Maze {_mazeSize}x{_mazeSize}");
             Log("[CompleteMazeBuilder] ========================================");
         }
 
@@ -386,8 +386,8 @@ namespace Code.Lavos.Core
 
         private void FindComponents()
         {
-            if (spatialPlacer == null) spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
-            if (playerController == null) playerController = FindFirstObjectByType<PlayerController>();
+            if (_spatialPlacer == null) _spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
+            if (_playerController == null) _playerController = FindFirstObjectByType<PlayerController>();
             Log("[CompleteMazeBuilder] Components found");
         }
 
@@ -444,7 +444,7 @@ namespace Code.Lavos.Core
             GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
             ground.name = "GroundFloor";
 
-            float size = mazeSize * cellSize;
+            float size = _mazeSize * _cellSize;
             ground.transform.position = new Vector3(size / 2f, -0.1f, size / 2f);
             ground.transform.localScale = new Vector3(size, 0.1f, size);
 
@@ -456,32 +456,59 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            if (floorMaterial != null)
+            if (_floorMaterial != null)
             {
-                renderer.sharedMaterial = floorMaterial;
-                Log($"[CompleteMazeBuilder]  Ground material applied: {floorMaterial.name}");
-                
-                if (groundTexture != null)
+                renderer.sharedMaterial = _floorMaterial;
+                Log($"[CompleteMazeBuilder]  Ground material applied: {_floorMaterial.name}");
+
+                if (_groundTexture != null)
                 {
-                    renderer.sharedMaterial.mainTexture = groundTexture;
-                    Log($"[CompleteMazeBuilder]  Ground texture applied: {groundTexture.name}");
-                }
-                else
-                {
-                    LogWarning("[CompleteMazeBuilder]  Ground texture not loaded - using material default");
+                    renderer.sharedMaterial.mainTexture = _groundTexture;
+                    Log($"[CompleteMazeBuilder]  Ground texture applied: {_groundTexture.name}");
                 }
             }
             else
             {
-                LogWarning("[CompleteMazeBuilder]  Ground material not loaded - using default white");
-                
-                // Create default material if none loaded
+                // Create default gray material with procedural texture (NO PINK!)
+                Log("[CompleteMazeBuilder]  Ground material not loaded - creating default gray material");
                 Material defaultMat = new Material(Shader.Find("Standard"));
-                defaultMat.color = Color.gray;
+                defaultMat.color = new Color(0.4f, 0.4f, 0.4f); // Medium gray (not pink!)
+
+                // Create simple checkered texture procedurally
+                Texture2D checkeredTex = CreateCheckeredTexture(64, 64, Color.gray, Color.darkGray);
+                defaultMat.mainTexture = checkeredTex;
+                defaultMat.mainTextureScale = new Vector2(size / 4f, size / 4f);
+
                 renderer.sharedMaterial = defaultMat;
+                Log("[CompleteMazeBuilder]  Default gray material with checkered texture applied");
             }
 
             Log($"[CompleteMazeBuilder]  Ground spawned ({size}m x {size}m)");
+        }
+
+        /// <summary>
+        /// Create procedural checkered texture (fallback for missing textures).
+        /// </summary>
+        private Texture2D CreateCheckeredTexture(int width, int height, Color color1, Color color2)
+        {
+            Texture2D texture = new Texture2D(width, height);
+            texture.wrapMode = TextureWrapMode.Repeat;
+            texture.filterMode = FilterMode.Bilinear;
+
+            int checkSize = 8;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int xCheck = x / checkSize;
+                    int yCheck = y / checkSize;
+                    bool isEven = (xCheck + yCheck) % 2 == 0;
+                    texture.SetPixel(x, y, isEven ? color1 : color2);
+                }
+            }
+
+            texture.Apply();
+            return texture;
         }
 
         #endregion
@@ -490,33 +517,32 @@ namespace Code.Lavos.Core
 
         private void GenerateGrid()
         {
-            Log("[CompleteMazeBuilder] Generating grid maze with spawn room first...");
+            Log("[CompleteMazeBuilder] Generating pure maze (no rooms, just spawnpoint cell)...");
 
-            grid = new GridMazeGenerator();
-            grid.GridSize = mazeSize;
-            grid.RoomSize = GameConfig.Instance.defaultRoomSize;
-            grid.CorridorWidth = 1; // Always 1 cell wide for proper maze
+            _grid = new GridMazeGenerator();
+            _grid.GridSize = _mazeSize;
+            _grid.CorridorWidth = 1; // Always 1 cell wide for proper maze
 
-            // Calculate difficulty factor from seed (same calculation as Awake)
-            float difficultyFactor = seed / (float)int.MaxValue;
-            grid.Generate(seed, difficultyFactor, currentLevel); // Pass level for 4-way vs 8-way
+            // Calculate difficulty factor from seed
+            float difficultyFactor = _seed / (float)int.MaxValue;
+            _grid.Generate(_seed, difficultyFactor, _currentLevel);
 
-            spawnCell = grid.FindSpawnPoint();
-            spawnPos = new Vector3(
-                spawnCell.x * cellSize + cellSize / 2f,
+            _spawnCell = _grid.FindSpawnPoint();
+            _spawnPos = new Vector3(
+                _spawnCell.x * _cellSize + _cellSize / 2f,
                 GameConfig.Instance.defaultPlayerEyeHeight,
-                spawnCell.y * cellSize + cellSize / 2f
+                _spawnCell.y * _cellSize + _cellSize / 2f
             );
 
-            Log($"[CompleteMazeBuilder] SpawnPoint: cell {spawnCell}");
-            Log($"[CompleteMazeBuilder]  Spawn position: {spawnPos}");
-            Log($"[CompleteMazeBuilder]  Grid maze generated ({mazeSize}x{mazeSize})");
+            Log($"[CompleteMazeBuilder] SpawnPoint: cell {_spawnCell} (single cell, not a room)");
+            Log($"[CompleteMazeBuilder]  Spawn position: {_spawnPos}");
+            Log($"[CompleteMazeBuilder]  Grid maze generated ({_mazeSize}x{_mazeSize})");
 
             // Validate maze connectivity
             if (!ValidateMaze())
             {
                 LogError("[CompleteMazeBuilder] Maze validation FAILED - Regenerating...");
-                grid.Generate(seed, difficultyFactor); // Retry once with same seed
+                _grid.Generate(_seed, difficultyFactor, _currentLevel);
                 if (!ValidateMaze())
                 {
                     LogError("[CompleteMazeBuilder] Maze validation FAILED after retry - Proceeding with warnings");
@@ -533,24 +559,24 @@ namespace Code.Lavos.Core
         /// </summary>
         private void RenderWalls()
         {
-            if (mazeRenderer == null)
+            if (_mazeRenderer == null)
             {
-                mazeRenderer = FindFirstObjectByType<MazeRenderer>();
+                _mazeRenderer = FindFirstObjectByType<MazeRenderer>();
             }
 
-            if (mazeRenderer == null)
+            if (_mazeRenderer == null)
             {
                 LogError("[CompleteMazeBuilder] MazeRenderer not found! Creating one...");
                 GameObject rendererObj = new GameObject("MazeRenderer");
-                mazeRenderer = rendererObj.AddComponent<MazeRenderer>();
+                _mazeRenderer = rendererObj.AddComponent<MazeRenderer>();
             }
 
             // Initialize renderer with grid data AND prefabs/materials
-            mazeRenderer.Initialize(grid, mazeSize, seed, currentLevel, 
-                wallPrefab, wallMaterial, cellSize, wallHeight, wallThickness);
+            _mazeRenderer.Initialize(_grid, _mazeSize, _seed, _currentLevel,
+                _wallPrefab, _wallMaterial, _cellSize, _wallHeight, _wallThickness);
 
             // Render walls
-            mazeRenderer.RenderWalls();
+            _mazeRenderer.RenderWalls();
         }
 
         #endregion
@@ -559,21 +585,21 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Validate maze connectivity using flood-fill algorithm.
-        /// Ensures all rooms and corridors are reachable from spawn point.
+        /// Ensures all corridors and spawnpoint are reachable.
         /// Execution time: ~0.05ms for 21x21 maze
         /// </summary>
         private bool ValidateMaze()
         {
-            if (grid == null) return false;
+            if (_grid == null) return false;
 
-            var gridData = grid.Grid;
-            int size = grid.GridSize;
+            var gridData = _grid.Grid;
+            int size = _grid.GridSize;
 
             // Flood-fill from spawn point
             HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
             Queue<Vector2Int> queue = new Queue<Vector2Int>();
-            queue.Enqueue(spawnCell);
-            visited.Add(spawnCell);
+            queue.Enqueue(_spawnCell);
+            visited.Add(_spawnCell);
 
             while (queue.Count > 0)
             {
@@ -629,7 +655,7 @@ namespace Code.Lavos.Core
             {
                 int unreachable = totalWalkable - visited.Count;
                 LogError($"[CompleteMazeBuilder] Maze validation FAILED - {unreachable} walkable cells unreachable!");
-                LogError($"[CompleteMazeBuilder] Possible causes: isolated rooms, blocked corridors");
+                LogError($"[CompleteMazeBuilder] Possible causes: blocked corridors");
             }
 
             return isValid;
@@ -641,7 +667,6 @@ namespace Code.Lavos.Core
         private bool IsWalkable(GridMazeCell cellType)
         {
             return cellType == GridMazeCell.Floor ||
-                   cellType == GridMazeCell.Room ||
                    cellType == GridMazeCell.Corridor ||
                    cellType == GridMazeCell.SpawnPoint ||
                    cellType == GridMazeCell.Door;
@@ -657,16 +682,16 @@ namespace Code.Lavos.Core
         /// </summary>
         public void PlaceExitDoor()
         {
-            if (doorPrefab == null)
+            if (_doorPrefab == null)
             {
                 LogWarning("[CompleteMazeBuilder]  Door prefab not loaded - skipping exit door");
                 return;
             }
 
             // Calculate center of south wall
-            int doorX = mazeSize / 2;  // Center of south wall
+            int doorX = _mazeSize / 2;  // Center of south wall
             Vector3 doorPos = new Vector3(
-                doorX * cellSize + cellSize / 2f,  // Center of cell in X
+                doorX * _cellSize + _cellSize / 2f,  // Center of cell in X
                 GameConfig.Instance.defaultDoorHeight / 2f,
                 0f  // South perimeter (Z = 0)
             );
@@ -674,7 +699,7 @@ namespace Code.Lavos.Core
             // Door faces north (into the maze)
             Quaternion doorRot = Quaternion.identity;
 
-            GameObject door = Instantiate(doorPrefab, doorPos, doorRot);
+            GameObject door = Instantiate(_doorPrefab, doorPos, doorRot);
             door.name = "ExitDoor";
             door.transform.SetParent(GameObject.Find("MazeWalls")?.transform);
 
@@ -689,17 +714,14 @@ namespace Code.Lavos.Core
         {
             Log("[CompleteMazeBuilder]  Saving maze to database...");
 
-            if (grid == null)
+            if (_grid == null)
             {
                 LogError("[CompleteMazeBuilder]  GridMazeGenerator not found!");
                 return;
             }
 
             // Save grid data only (no seed storage - procedural generation)
-            MazeSaveData.SaveGridMaze(grid.SerializeToBytes(), spawnCell.x, spawnCell.y);
-
-            // ComputeGridEngine already received the data via MazeRenderer in RenderWalls()
-            // It saved to binary automatically when it received the event
+            MazeSaveData.SaveGridMaze(_grid.SerializeToBytes(), _spawnCell.x, _spawnCell.y);
 
             Log("[CompleteMazeBuilder]  Maze saved");
         }
@@ -710,12 +732,12 @@ namespace Code.Lavos.Core
 
         private void SpawnPlayer()
         {
-            Log($"[CompleteMazeBuilder] Spawning player at {spawnPos}...");
+            Log($"[CompleteMazeBuilder] Spawning player at {_spawnPos}...");
 
-            if (playerController == null)
-                playerController = FindFirstObjectByType<PlayerController>();
+            if (_playerController == null)
+                _playerController = FindFirstObjectByType<PlayerController>();
 
-            if (playerController == null)
+            if (_playerController == null)
             {
                 LogWarning("[CompleteMazeBuilder] PlayerController not in scene (add independently)");
                 LogWarning("[CompleteMazeBuilder] Add PlayerController component to a GameObject in scene");
@@ -723,18 +745,18 @@ namespace Code.Lavos.Core
             }
 
             // Set player position to spawn point
-            playerController.transform.position = spawnPos;
+            _playerController.transform.position = _spawnPos;
 
             // Add small random offset to prevent wall clipping
             float offset = GameConfig.Instance.defaultPlayerSpawnOffset;
-            playerController.transform.position += new Vector3(
+            _playerController.transform.position += new Vector3(
                 (UnityEngine.Random.value - 0.5f) * offset,
                 0f,
                 (UnityEngine.Random.value - 0.5f) * offset
             );
 
             // Set camera to eye level
-            var cam = playerController.GetComponentInChildren<Camera>();
+            var cam = _playerController.GetComponentInChildren<Camera>();
             if (cam != null)
             {
                 cam.transform.localPosition = new Vector3(0f, GameConfig.Instance.defaultPlayerEyeHeight, 0f);
@@ -742,9 +764,9 @@ namespace Code.Lavos.Core
                 Log($"[CompleteMazeBuilder] FPS camera set to eye level ({GameConfig.Instance.defaultPlayerEyeHeight}m)");
             }
 
-            playerController.transform.rotation = Quaternion.identity;
+            _playerController.transform.rotation = Quaternion.identity;
 
-            Log($"[CompleteMazeBuilder] Player spawned INSIDE maze at {playerController.transform.position}");
+            Log($"[CompleteMazeBuilder] Player spawned INSIDE maze at {_playerController.transform.position}");
             Log("[CompleteMazeBuilder] Ready to explore!");
         }
 
