@@ -196,7 +196,7 @@ namespace Code.Lavos.Core
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[ItemPlacer] ️ No item prefab assigned - skipping");
+                    Debug.LogWarning($"[ItemPlacer] No item prefab assigned - skipping");
             }
         }
 

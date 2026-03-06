@@ -294,15 +294,14 @@ Press `~` (tilde) to open console:
 
 ## 🫡 **CREDITS**
 
-**Author:** Ocxyde  
-**Co-Author:** BetsyBoop (for optimization & compliance)
+**Author:** Ocxyde
 
-**Generated:** 2026-03-06  
-**Unity Version:** 6000.3.7f1  
+**Generated:** 2026-03-06
+**Unity Version:** 6000.3.7f1
 **Status:** ✅ **READY FOR TESTING**
 
 ---
 
 *Document generated - Unity 6 compatible - UTF-8 encoding - Unix LF*
 
-**Happy coding, coder friend!** 🫡🎮⚔️
+**Happy coding, coder friend!**

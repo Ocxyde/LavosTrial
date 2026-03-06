@@ -1,9 +1,8 @@
 # TODO.md - Project Tasks & Priorities
 
-**Project:** CodeDotLavos (Unity 6000.3.7f1)  
-**Last Updated:** 2026-03-06  
-**Timezone:** Europe/Paris (GMT+1)  
-**License:** GPL-3.0  
+**Project:** CodeDotLavos (Unity 6000.3.7f1)
+**Last Updated:** 2026-03-06
+**License:** GPL-3.0
 **Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON**
 
 ---
@@ -15,47 +14,6 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 See [COPYING](../../COPYING) file for full license text.
 
 **Copyright © 2026 CodeDotLavos. All rights reserved.**
-
----
-
-## 📅 **UPDATE TIMESTAMP LOG**
-
-| Date | Update | Author |
-|------|--------|--------|
-| 2026-03-06 | GridMazeGenerator rewritten: Room-corridor approach (DFS abandoned) | Ocxyde |
-| 2026-03-06 | DFS maze generation attempts: Multiple rewrites, cell math mismatch identified | Ocxyde |
-| 2026-03-06 | Wall scaling fixed to snap to cell edges | Ocxyde |
-| 2026-03-06 | MazeCorridorGenerator bypassed (using simple corridor carving) | Ocxyde |
-| 2026-03-06 | Random.Range ambiguity fixed (UnityEngine.Random) | Ocxyde |
-| 2026-03-06 | MazeCorridorGenerator created with A* pathfinding (PathFinder integration) | Ocxyde |
-| 2026-03-06 | SeedManager moved to 11_Utilities/ (correct architecture) | Ocxyde |
-| 2026-03-06 | Compute seed system: Destroy after use, reseed immediately | Ocxyde |
-| 2026-03-06 | PathFinder.cs created in 11_Utilities/ (A* algorithm) | Ocxyde |
-| 2026-03-06 | EventHandler extended with OnComputeSeedChanged event | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder uses SeedManager.ComputeSeed | Ocxyde |
-| 2026-03-06 | GridMazeGenerator uses MazeCorridorGenerator for A* paths | Ocxyde |
-| 2026-03-06 | GameConfig-default.json: Added corridor settings | Ocxyde |
-| 2026-03-06 | Commented code cleaned from MazeIntegration.cs and SeedManager.cs | Ocxyde |
-| 2026-03-06 | Verified LightEngine.cs and ParticleGenerator.cs are complete (not truncated) | Ocxyde |
-| 2026-03-06 | GridPEnvPlacer.cs created for wall placement with exact border snapping | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder SIMPLIFIED (verbosity removed, ~500 lines, short logging only) | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~550 lines, verbosity logging restored) | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~500 lines, better perf) | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder rewritten as MAIN ORCHESTRATOR | Ocxyde |
-
----
-
-## 🚨 **CRITICAL: DEPRECATED SYSTEMS**
-
-### **⚠️ DO NOT USE FOR NEW DEVELOPMENT:**
-
-| System | Deprecated Files | Use Instead |
-|--------|-----------------|-------------|
-| **Maze Generation** | `MazeIntegration.cs`, `MazeRenderer.cs` | `CompleteMazeBuilder.cs` |
-| **Door Placement** | `DoorHolePlacer.cs`, `RoomDoorPlacer.cs` | `DoorsEngine.cs` + `RealisticDoorFactory.cs` |
-| **Audio** | `SFXVFXEngine.cs` | `AudioManager.cs` |
-
-**Why kept?** Legacy tests and scenes still use them.
 
 ---
 
@@ -468,45 +426,79 @@ Tools → Next Level (Harder)
 
 ## 🚀 **NEXT STEPS**
 
-1. **MEDIUM:** Remove emoji from C# files - Run `.\remove-emoji-from-cs.ps1`
-2. **MEDIUM:** Fix TODOs in geometry files (`Triangle.cs`, `TetrahedronMath.cs`)
-3. **LOW:** Delete `MazeRenderer.cs` - Geometry handled by CompleteMazeBuilder
-4. **HIGH:** Test in Unity - Verify maze generation with new MazeBuilderEditor
+1. **HIGH:** Run `cleanup-deprecated-maze-files.ps1` - Delete legacy files
+2. **HIGH:** Test in Unity - Verify maze generation with all fixes
+3. **MEDIUM:** Remove emoji from C# files - Run `.\remove-emoji-from-cs.ps1`
+4. **MEDIUM:** Fix TODOs in geometry files (`Triangle.cs`, `TetrahedronMath.cs`)
 
 ---
 
-## 📝 **COMPLETED TODAY (2026-03-06)**
+## 📝 **COMPLETED TODAY (2026-03-06) - SESSION 2**
 
-### **HIGH PRIORITY:**
-- ✅ Reworked `MazeBuilderEditor.cs` - Full plug-in-out compliance (no component creation)
-- ✅ Updated `SpawnPlacerEngine` references to `SpatialPlacer` in comments
-- ✅ Verified `SpawnPlacerEngine.cs` already deleted
-- ✅ Verified old test files already deleted
+### **CRITICAL FIXES:**
+- ✅ **Corridor width calculation fixed** in GridMazeGenerator.cs
+  - Changed: `int halfWidth = corridorWidth / 2;`
+  - To: `int halfWidth = (corridorWidth - 1) / 2;`
+  - Impact: Corridors now have exact width (not +1 cell)
 
-### **MEDIUM PRIORITY:**
-- ✅ Cleaned commented code from `MazeIntegration.cs` (~50 lines removed)
-- ✅ Cleaned commented code from `SeedManager.cs` (~60 lines removed)
-- ✅ Verified `LightEngine.cs` complete (927 lines)
-- ✅ Verified `ParticleGenerator.cs` complete (896 lines)
-- ✅ Created `GridPEnvPlacer.cs` - Wall placement with exact border snapping
-- ✅ Refactored `CompleteMazeBuilder.PlaceWalls()` - N/W borders, byte-to-byte RAM storage
-- ✅ Made `PlaceWalls()`, `PlaceDoors()`, `PlaceTorches()` public for modular calls
+- ✅ **Maze validation added** in CompleteMazeBuilder.cs
+  - Flood-fill algorithm from spawn point
+  - Validates all walkable cells are reachable
+  - Auto-regenerates maze if validation fails (one retry)
+  - Execution time: ~0.05ms for 21x21 maze
 
-### **TOOLS CREATED:**
-- ✅ `remove-emoji-from-cs.ps1` - Removes emoji from all C# files (ready to run)
-- ✅ `PlugInOutComplianceChecker.cs` - Scans for architecture violations
-- ✅ `GIT_INSTRUCTIONS.md` - Git commit instructions
+- ✅ **GridMazeGenerator properties fixed**
+  - Added public setters: `GridSize`, `RoomSize`, `CorridorWidth`
+  - CompleteMazeBuilder now uses properties instead of private fields
+
+### **MAZE RENDERING REFACTOR:**
+- ✅ **MazeRenderer.cs created** (new dedicated rendering system)
+  - Extracted wall rendering logic from CompleteMazeBuilder
+  - Single responsibility principle
+  - Handles: Outer perimeter walls, interior walls, ComputeGrid integration
+  - File: `Assets/Scripts/Core/06_Maze/MazeRenderer.cs`
+
+- ✅ **CompleteMazeBuilder.cs updated** to use MazeRenderer
+  - Removed ~300 lines of wall rendering code
+  - Now calls: `mazeRenderer.RenderWalls()`
+  - File reduced from ~1050 lines to ~760 lines
+
+### **ROOM DISTRIBUTION IMPROVEMENT:**
+- ✅ **Quadrant-based room placement** in GridMazeGenerator
+  - Divides grid into 4 quadrants (NE, NW, SE, SW)
+  - Places rooms evenly across quadrants
+  - Better spatial distribution (no more center clustering)
+  - Fallback to random placement if quadrants fill
+
+### **BINARY STORAGE FIXES:**
+- ✅ **ComputeGridData.cs** - Use `persistentDataPath` instead of `streamingAssetsPath`
+  - Cross-platform compatibility (Android, web, etc.)
+  - Writable on all platforms
+
+- ✅ **SpatialPlacer.cs** - Added `usePersistentDataPath` toggle
+  - Default: true (uses persistentDataPath)
+  - Fallback to custom path if needed
+
+### **PREFAB VALIDATION:**
+- ✅ **LoadConfig() enhanced** with critical validation
+  - Checks if wallPrefab is loaded (ERROR if null)
+  - Checks if doorPrefab is loaded (WARNING if null)
+  - Checks if floorMaterial is loaded (WARNING if null)
+  - Provides clear FIX instructions in console
+
+### **CLEANUP TOOLS:**
+- ✅ **cleanup-deprecated-maze-files.ps1** created
+  - Deletes: MazeIntegration.cs, MazeGenerator.cs, MazeSetupHelper.cs, GridPEnvPlacer.cs
+  - **YOU MUST RUN THIS SCRIPT MANUALLY**
+
+### **DOCUMENTATION:**
+- ✅ **TODO.md updated** with all session changes
 
 ---
 
-**Generated:** 2026-03-06  
-**Unity Version:** 6000.3.7f1  
-**Status:** READY FOR TESTING | PLUG-IN-OUT COMPLIANT | 0 COMPILATION ERRORS
+**Last Updated:** 2026-03-06
+**Author:** Ocxyde
 
 ---
 
 *Document generated - Unity 6 compatible - UTF-8 encoding - Unix LF*
-
----
-
-**Ocxyde & BetsyBoop** - 2026

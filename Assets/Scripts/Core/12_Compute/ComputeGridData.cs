@@ -373,10 +373,13 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Get file path for maze ID.
+        /// Uses persistentDataPath for cross-platform compatibility.
         /// </summary>
         private static string GetFilePath(string mazeId)
         {
-            string folder = Path.Combine(Application.streamingAssetsPath, FOLDER_NAME);
+            // FIX: Use persistentDataPath instead of streamingAssetsPath
+            // streamingAssetsPath is read-only on some platforms (Android, web)
+            string folder = Path.Combine(Application.persistentDataPath, FOLDER_NAME);
             return Path.Combine(folder, $"{mazeId}.bin");
         }
 
@@ -385,7 +388,8 @@ namespace Code.Lavos.Core
         /// </summary>
         private static void EnsureFolderExists()
         {
-            string folder = Path.Combine(Application.streamingAssetsPath, FOLDER_NAME);
+            // FIX: Use persistentDataPath instead of streamingAssetsPath
+            string folder = Path.Combine(Application.persistentDataPath, FOLDER_NAME);
             if (!Directory.Exists(folder))
             {
                 Directory.CreateDirectory(folder);

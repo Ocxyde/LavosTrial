@@ -27,7 +27,7 @@
 // - AudioManager: Audio only (music, SFX sounds)
 // - SFXVFXEngine: Visual effects + coordination
 //
-// ️ IMPORTANT: Add SFXVFXEngine to your scene manually.
+// IMPORTANT: Add SFXVFXEngine to your scene manually.
 // Do NOT rely on auto-creation (plug-in-out violation).
 
 using System;
@@ -43,7 +43,7 @@ namespace Code.Lavos.Core
     /// SFXVFXEngine - Special FX & Visual FX management.
     /// Handles particle effects, visual effects, screen effects.
     /// 
-    /// ️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// Must be added to scene manually. Auto-creation is a fallback only.
     /// 
     /// NOT REDUNDANT with AudioManager:
     /// - AudioManager: Audio only (music, sound effects)
@@ -63,8 +63,8 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<SFXVFXEngine>();
                     if (_instance == null)
                     {
-                        // ️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[SFXVFXEngine] ️ Not found in scene - auto-creating (add manually!)");
+                        // FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[SFXVFXEngine] Not found in scene - auto-creating (add manually!)");
                         GameObject go = new GameObject("SFXVFXEngine");
                         _instance = go.AddComponent<SFXVFXEngine>();
                         DontDestroyOnLoad(go);

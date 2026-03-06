@@ -68,7 +68,7 @@ namespace Code.Lavos.Core
 
         #region Maze Generation
 
-        [Header("️ Maze Generation")]
+        [Header("Maze Generation")]
         public int defaultMazeWidth = 21;
         public int defaultMazeHeight = 21;
         public float defaultCellSize = 6f;
@@ -76,7 +76,7 @@ namespace Code.Lavos.Core
         public float defaultWallThickness = 0.5f;
         public float defaultCeilingHeight = 5f;
         
-        [Header("️ Room & Corridor Settings")]
+        [Header("Room & Corridor Settings")]
         public int defaultRoomSize = 5;        // 5x5 rooms
         public int defaultCorridorWidth = 2;   // 2 cells wide
         public int defaultGridSize = 21;       // Base grid size
@@ -109,12 +109,12 @@ namespace Code.Lavos.Core
         public float defaultPlayerSpawnOffset = 0.5f;  // Random offset to prevent wall clipping
         public float defaultPlayerHeight = 2.0f;       // Player collider height
 
-        [Header("️ Room Settings")]
+        [Header("Room Settings")]
         public bool generateRooms = true;
         public int minRooms = 3;
         public int maxRooms = 8;
 
-        [Header("️ Difficulty Scaling")]
+        [Header("Difficulty Scaling")]
         [Tooltip("Base maze size (before difficulty bonus)")]
         public int baseMazeSize = 12;
         [Tooltip("Minimum maze size")]
@@ -138,7 +138,7 @@ namespace Code.Lavos.Core
         [Tooltip("Which wall is open (0=left, 1=right, 2=top, 3=bottom)")]
         public int spawnRoomOpenWall = 0;
 
-        [Header("️ Generation Options")]
+        [Header("Generation Options")]
         public bool useRandomSeed = true;
         public string manualSeed = "MazeSeed2026";
         public bool spawnInsideRoom = true;
@@ -147,7 +147,7 @@ namespace Code.Lavos.Core
 
         #region Game Balance (Moddable!)
 
-        [Header("️ Game Balance (Moddable!)")]
+        [Header("Game Balance (Moddable!)")]
         [Tooltip("Damage multiplier (1.0 = normal, 10.0 = god-slayer!)")]
         public float damageScale = 1.0f;
 
@@ -284,7 +284,7 @@ namespace Code.Lavos.Core
         {
             if (_instance == null)
             {
-                Debug.LogWarning("[GameConfig] ️ No config instance to save!");
+                Debug.LogWarning("[GameConfig] No config instance to save!");
                 return;
             }
             

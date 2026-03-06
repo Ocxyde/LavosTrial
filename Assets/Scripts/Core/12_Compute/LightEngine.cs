@@ -56,8 +56,8 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<LightEngine>();
                     if (_instance == null)
                     {
-                        // ️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[LightEngine] ️ Not found in scene - auto-creating (add manually!)");
+                        // FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[LightEngine] Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("LightEngine");
                         _instance = go.AddComponent<LightEngine>();
                         // Note: Not using DontDestroyOnLoad - LightEngine is scene-specific

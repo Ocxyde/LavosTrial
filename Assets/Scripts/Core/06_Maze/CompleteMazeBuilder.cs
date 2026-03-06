@@ -55,6 +55,7 @@ namespace Code.Lavos.Core
         [Header("Components")]
         [SerializeField] private SpatialPlacer spatialPlacer;
         [SerializeField] private PlayerController playerController;
+        [SerializeField] private MazeRenderer mazeRenderer;
 
         [Header("Game State")]
         [SerializeField] private int currentLevel = 0;
@@ -176,6 +177,25 @@ namespace Code.Lavos.Core
 
             Log($"[CompleteMazeBuilder] Loaded wall material: {(wallMaterial != null ? wallMaterial.name : "NULL")}");
             Log($"[CompleteMazeBuilder] Loaded floor material: {(floorMaterial != null ? floorMaterial.name : "NULL")}");
+
+            // VALIDATION: Critical prefabs must be loaded
+            if (wallPrefab == null)
+            {
+                LogError("[CompleteMazeBuilder] CRITICAL: Wall prefab NOT loaded! Maze generation will fail.");
+                LogError("[CompleteMazeBuilder] FIX: Run Tools -> Quick Setup Prefabs (For Testing)");
+                LogError("[CompleteMazeBuilder] FIX: Or add WallPrefab.prefab to Assets/Resources/Prefabs/");
+            }
+
+            if (doorPrefab == null)
+            {
+                LogWarning("[CompleteMazeBuilder] Door prefab not loaded - Exit door will not be placed");
+                LogWarning("[CompleteMazeBuilder] FIX: Add DoorPrefab.prefab to Assets/Resources/Prefabs/");
+            }
+
+            if (floorMaterial == null)
+            {
+                LogWarning("[CompleteMazeBuilder] Floor material not loaded - Ground will use default white");
+            }
         }
 
         /// <summary>
@@ -338,7 +358,7 @@ namespace Code.Lavos.Core
             GenerateGrid();
             Log($"[CompleteMazeBuilder] STEP 3: Spawn room placed at {spawnCell}");
 
-            PlaceWalls();
+            RenderWalls();
             Log("[CompleteMazeBuilder] STEP 4: Walls placed");
 
             PlaceExitDoor();
@@ -473,13 +493,13 @@ namespace Code.Lavos.Core
             Log("[CompleteMazeBuilder] Generating grid maze with spawn room first...");
 
             grid = new GridMazeGenerator();
-            grid.GridSize = mazeSize; // FIX: Use public property instead of private field
+            grid.GridSize = mazeSize;
             grid.RoomSize = GameConfig.Instance.defaultRoomSize;
-            grid.CorridorWidth = GameConfig.Instance.defaultCorridorWidth;
+            grid.CorridorWidth = 1; // Always 1 cell wide for proper maze
 
             // Calculate difficulty factor from seed (same calculation as Awake)
             float difficultyFactor = seed / (float)int.MaxValue;
-            grid.Generate(seed, difficultyFactor);
+            grid.Generate(seed, difficultyFactor, currentLevel); // Pass level for 4-way vs 8-way
 
             spawnCell = grid.FindSpawnPoint();
             spawnPos = new Vector3(
@@ -502,6 +522,35 @@ namespace Code.Lavos.Core
                     LogError("[CompleteMazeBuilder] Maze validation FAILED after retry - Proceeding with warnings");
                 }
             }
+        }
+
+        #endregion
+
+        #region Wall Rendering
+
+        /// <summary>
+        /// Render walls using MazeRenderer component.
+        /// </summary>
+        private void RenderWalls()
+        {
+            if (mazeRenderer == null)
+            {
+                mazeRenderer = FindFirstObjectByType<MazeRenderer>();
+            }
+
+            if (mazeRenderer == null)
+            {
+                LogError("[CompleteMazeBuilder] MazeRenderer not found! Creating one...");
+                GameObject rendererObj = new GameObject("MazeRenderer");
+                mazeRenderer = rendererObj.AddComponent<MazeRenderer>();
+            }
+
+            // Initialize renderer with grid data AND prefabs/materials
+            mazeRenderer.Initialize(grid, mazeSize, seed, currentLevel, 
+                wallPrefab, wallMaterial, cellSize, wallHeight, wallThickness);
+
+            // Render walls
+            mazeRenderer.RenderWalls();
         }
 
         #endregion
@@ -600,312 +649,6 @@ namespace Code.Lavos.Core
 
         #endregion
 
-        #region Walls
-
-        /// <summary>
-        /// Place walls on outer perimeter and interior cell boundaries.
-        /// Also publishes events to ComputeGridEngine via EventHandler.
-        /// </summary>
-        public void PlaceWalls()
-        {
-            if (grid == null)
-            {
-                LogError("[CompleteMazeBuilder] Grid not generated! Call GenerateGrid() first");
-                return;
-            }
-
-            Log("[CompleteMazeBuilder] ========================================");
-            Log("[CompleteMazeBuilder] Computing walls from grid...");
-            Log($"[CompleteMazeBuilder] Grid size: {mazeSize}x{mazeSize}, Cell size: {cellSize}m");
-
-            int spawned = 0;
-
-            // Destroy existing walls first
-            var existingWalls = GameObject.Find("MazeWalls");
-            if (existingWalls != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(existingWalls);
-                else
-                    DestroyImmediate(existingWalls);
-            }
-
-            GameObject parent = new GameObject("MazeWalls");
-
-            // Build grid data for compute grid (byte-to-byte)
-            byte[] gridBytes = BuildGridBytesForComputeGrid();
-
-            // Publish to ComputeGridEngine via EventHandler (plug-in-out!)
-            if (Application.isPlaying && EventHandler.Instance != null)
-            {
-                string mazeId = $"Maze_{currentLevel:D3}";
-                EventHandler.Instance.InvokeComputeGridSaveRequested(mazeId, gridBytes, (int)seed);
-                Log($"[CompleteMazeBuilder] Published compute grid save event: {mazeId}");
-            }
-
-            Log("[CompleteMazeBuilder] Placing outer perimeter walls...");
-            PlaceOuterPerimeterWalls(parent.transform, ref spawned);
-            Log($"[CompleteMazeBuilder] Outer walls placed: {spawned} walls");
-
-            int interiorStart = spawned;
-            Log("[CompleteMazeBuilder] Placing interior walls...");
-            PlaceInteriorWalls(parent.transform, ref spawned);
-            Log($"[CompleteMazeBuilder] Interior walls placed: {spawned - interiorStart} walls");
-
-            Log($"[CompleteMazeBuilder] ========================================");
-            Log($"[CompleteMazeBuilder] {spawned} wall segments placed TOTAL");
-            Log($"[CompleteMazeBuilder] Wall dimensions: {cellSize}m x {wallHeight}m x {wallThickness}m");
-            Log($"[CompleteMazeBuilder] ========================================");
-        }
-
-        /// <summary>
-        /// Build grid byte array from current grid state.
-        /// This is the data that will be sent to ComputeGridEngine.
-        /// </summary>
-        private byte[] BuildGridBytesForComputeGrid()
-        {
-            byte[] gridBytes = new byte[mazeSize * mazeSize];
-            int index = 0;
-
-            for (int z = 0; z < mazeSize; z++)
-            {
-                for (int x = 0; x < mazeSize; x++)
-                {
-                    GridMazeCell cell = grid.GetCell(x, z);
-
-                    // Map GridMazeCell to ComputeGridEngine.GridCell
-                    byte computeCell = cell switch
-                    {
-                        GridMazeCell.Floor => (byte)ComputeGridEngine.GridCell.Floor,
-                        GridMazeCell.Room => (byte)ComputeGridEngine.GridCell.Room,
-                        GridMazeCell.Corridor => (byte)ComputeGridEngine.GridCell.Corridor,
-                        GridMazeCell.Wall => (byte)ComputeGridEngine.GridCell.Wall,
-                        GridMazeCell.SpawnPoint => (byte)ComputeGridEngine.GridCell.SpawnPoint,
-                        _ => (byte)ComputeGridEngine.GridCell.Floor
-                    };
-
-                    gridBytes[index++] = computeCell;
-                }
-            }
-
-            Log($"[CompleteMazeBuilder] Grid bytes built: {gridBytes.Length} bytes");
-            return gridBytes;
-        }
-
-        /// <summary>
-        /// Place walls on outer perimeter (north, south, east, west).
-        /// Walls are snapped to cell edges (boundaries), not centers.
-        /// </summary>
-        private void PlaceOuterPerimeterWalls(Transform parent, ref int spawned)
-        {
-            // NORTH WALL (Z = mazeSize * cellSize) - on outer edge
-            for (int x = 0; x < mazeSize; x++)
-            {
-                Vector3 pos = new Vector3(
-                    x * cellSize + cellSize / 2f,
-                    wallHeight / 2f,
-                    mazeSize * cellSize
-                );
-                SpawnWall(pos, Quaternion.identity, $"North_{x}", parent);
-                spawned++;
-            }
-
-            // SOUTH WALL (Z = 0) - on outer edge
-            for (int x = 0; x < mazeSize; x++)
-            {
-                Vector3 pos = new Vector3(
-                    x * cellSize + cellSize / 2f,
-                    wallHeight / 2f,
-                    0f
-                );
-                SpawnWall(pos, Quaternion.identity, $"South_{x}", parent);
-                spawned++;
-            }
-
-            // EAST WALL (X = mazeSize * cellSize) - on outer edge
-            for (int z = 0; z < mazeSize; z++)
-            {
-                Vector3 pos = new Vector3(
-                    mazeSize * cellSize,
-                    wallHeight / 2f,
-                    z * cellSize + cellSize / 2f
-                );
-                SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"East_{z}", parent);
-                spawned++;
-            }
-
-            // WEST WALL (X = 0) - on outer edge
-            for (int z = 0; z < mazeSize; z++)
-            {
-                Vector3 pos = new Vector3(
-                    0f,
-                    wallHeight / 2f,
-                    z * cellSize + cellSize / 2f
-                );
-                SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"West_{z}", parent);
-                spawned++;
-            }
-        }
-
-        /// <summary>
-        /// Place interior walls between adjacent cells (Room/Corridor vs Floor).
-        /// Walls are snapped to cell edges (grid lines), not cell centers.
-        /// Checks all 4 directions: North, South, East, West.
-        /// </summary>
-        private void PlaceInteriorWalls(Transform parent, ref int spawned)
-        {
-            int wallPlacedCount = 0;
-            int skippedCount = 0;
-
-            Log("[CompleteMazeBuilder]  Checking interior wall positions (all 4 directions)...");
-
-            for (int x = 0; x < mazeSize; x++)
-            {
-                for (int y = 0; y < mazeSize; y++)
-                {
-                    GridMazeCell current = grid.GetCell(x, y);
-
-                    // Only check boundaries from Room/Corridor cells
-                    if (current != GridMazeCell.Room && current != GridMazeCell.Corridor)
-                    {
-                        skippedCount++;
-                        continue;
-                    }
-
-                    // Check NORTH boundary - wall on horizontal grid line at y
-                    if (y > 0)
-                    {
-                        GridMazeCell north = grid.GetCell(x, y - 1);
-                        if (NeedsWallBetween(current, north))
-                        {
-                            Vector3 pos = new Vector3(
-                                x * cellSize + cellSize / 2f,
-                                wallHeight / 2f,
-                                y * cellSize
-                            );
-                            SpawnWall(pos, Quaternion.identity, $"Wall_N_{x}_{y}", parent);
-                            spawned++;
-                            wallPlacedCount++;
-                        }
-                    }
-
-                    // Check SOUTH boundary - wall on horizontal grid line at y+1
-                    if (y + 1 < mazeSize)
-                    {
-                        GridMazeCell south = grid.GetCell(x, y + 1);
-                        if (NeedsWallBetween(current, south))
-                        {
-                            Vector3 pos = new Vector3(
-                                x * cellSize + cellSize / 2f,
-                                wallHeight / 2f,
-                                (y + 1) * cellSize
-                            );
-                            SpawnWall(pos, Quaternion.identity, $"Wall_S_{x}_{y}", parent);
-                            spawned++;
-                            wallPlacedCount++;
-                        }
-                    }
-
-                    // Check WEST boundary - wall on vertical grid line at x
-                    if (x > 0)
-                    {
-                        GridMazeCell west = grid.GetCell(x - 1, y);
-                        if (NeedsWallBetween(current, west))
-                        {
-                            Vector3 pos = new Vector3(
-                                x * cellSize,
-                                wallHeight / 2f,
-                                y * cellSize + cellSize / 2f
-                            );
-                            SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"Wall_W_{x}_{y}", parent);
-                            spawned++;
-                            wallPlacedCount++;
-                        }
-                    }
-
-                    // Check EAST boundary - wall on vertical grid line at x+1
-                    if (x + 1 < mazeSize)
-                    {
-                        GridMazeCell east = grid.GetCell(x + 1, y);
-                        if (NeedsWallBetween(current, east))
-                        {
-                            Vector3 pos = new Vector3(
-                                (x + 1) * cellSize,
-                                wallHeight / 2f,
-                                y * cellSize + cellSize / 2f
-                            );
-                            SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"Wall_E_{x}_{y}", parent);
-                            spawned++;
-                            wallPlacedCount++;
-                        }
-                    }
-                }
-            }
-
-            Log($"[CompleteMazeBuilder]  Interior walls: {wallPlacedCount} placed, {skippedCount} skipped (not room/corridor)");
-        }
-
-        /// <summary>
-        /// Determine if wall needed between two adjacent cells.
-        /// </summary>
-        private bool NeedsWallBetween(GridMazeCell a, GridMazeCell b)
-        {
-            bool aWalkable = (a == GridMazeCell.Room || a == GridMazeCell.Corridor);
-            bool bWalkable = (b == GridMazeCell.Room || b == GridMazeCell.Corridor);
-            return aWalkable != bWalkable;
-        }
-
-        #endregion
-
-        #region Exit Door
-
-        /// <summary>
-        /// Spawn single wall segment at specified position.
-        /// Wall prefab should be sized to match cellSize (width=cellSize, height=wallHeight, depth=wallThickness).
-        /// Wall is positioned on cell edge (snapped to grid line).
-        /// </summary>
-        private void SpawnWall(Vector3 pos, Quaternion rot, string name, Transform parent)
-        {
-            if (wallPrefab == null)
-            {
-                LogError($"[CompleteMazeBuilder] Wall prefab not loaded! Cannot spawn wall at {pos}");
-                LogError("[CompleteMazeBuilder] Fix: Run Tools -> Quick Setup Prefabs");
-                LogError("[CompleteMazeBuilder] Wall prefab should be sized: width=cellSize, height=wallHeight, depth=wallThickness");
-                return;
-            }
-
-            Log($"[CompleteMazeBuilder]  Spawning wall: {wallPrefab.name} at {pos}");
-
-            GameObject wall = Instantiate(wallPrefab, pos, rot);
-            wall.name = $"Wall_{name}";
-            wall.transform.SetParent(parent);
-
-            // Scale wall to match cell dimensions if needed
-            var transform1 = wall.transform;
-            transform1.localScale = new Vector3(cellSize, wallHeight, wallThickness);
-            Log($"[CompleteMazeBuilder]  Wall scaled to: {cellSize}m x {wallHeight}m x {wallThickness}m");
-
-            if (wallMaterial != null)
-            {
-                var r = wall.GetComponent<MeshRenderer>();
-                if (r != null)
-                {
-                    r.sharedMaterial = wallMaterial;
-                    Log($"[CompleteMazeBuilder]  Wall material applied: {wallMaterial.name}");
-                }
-                else
-                {
-                    LogWarning($"[CompleteMazeBuilder]  Wall {name} has no MeshRenderer");
-                }
-            }
-            else
-            {
-                LogWarning($"[CompleteMazeBuilder]  Wall material not loaded - using prefab default");
-            }
-        }
-
-        #endregion
-
         #region Exit Door
 
         /// <summary>
@@ -955,7 +698,7 @@ namespace Code.Lavos.Core
             // Save grid data only (no seed storage - procedural generation)
             MazeSaveData.SaveGridMaze(grid.SerializeToBytes(), spawnCell.x, spawnCell.y);
 
-            // ComputeGridEngine already received the data via EventHandler in PlaceWalls()
+            // ComputeGridEngine already received the data via MazeRenderer in RenderWalls()
             // It saved to binary automatically when it received the event
 
             Log("[CompleteMazeBuilder]  Maze saved");

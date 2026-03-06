@@ -223,7 +223,7 @@ namespace Code.Lavos.Core
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[ChestPlacer] ️ No chest prefab assigned - skipping");
+                    Debug.LogWarning($"[ChestPlacer] No chest prefab assigned - skipping");
             }
         }
 
@@ -303,7 +303,7 @@ namespace Code.Lavos.Core
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning("[ChestPlacer] ️ No ChestPrefab in Resources - will skip chest spawning");
+                    Debug.LogWarning("[ChestPlacer] No ChestPrefab in Resources - will skip chest spawning");
             }
         }
 

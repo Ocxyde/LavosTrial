@@ -49,7 +49,7 @@ namespace Code.Lavos.Core
         // REMOVED: Verbosity system removed - all logs show by default
         public static void SetVerbosity(string level)
         {
-            Debug.Log("[MazeConsole] ℹ️ Verbosity removed - all logs show by default");
+            Debug.Log("[MazeConsole] Verbosity removed - all logs show by default");
         }
 
         // Command: maze.generate
@@ -58,7 +58,7 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
             if (builder != null)
             {
-                Debug.Log("[MazeConsole] ️ Generating maze...");
+                Debug.Log("[MazeConsole] Generating maze...");
                 builder.GenerateMaze();
             }
             else

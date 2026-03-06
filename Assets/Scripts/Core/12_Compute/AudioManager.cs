@@ -25,7 +25,7 @@
 // - Audio mixing via Unity Audio Mixer
 // - Pre-warmed sound effect pool
 //
-// ️ IMPORTANT: Add AudioManager to your scene manually.
+// IMPORTANT: Add AudioManager to your scene manually.
 // Do NOT rely on auto-creation (plug-in-out violation).
 //
 // SETUP:
@@ -44,7 +44,7 @@ namespace Code.Lavos.Core
     /// AUDIOMANAGER - Professional audio management with pooling.
     /// Singleton pattern (DontDestroyOnLoad) for persistent audio across scenes.
     /// 
-    /// ️ Must be added to scene manually. Auto-creation is a fallback only.
+    /// Must be added to scene manually. Auto-creation is a fallback only.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -63,8 +63,8 @@ namespace Code.Lavos.Core
 
                     if (_instance == null)
                     {
-                        // ️ FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[AudioManager] ️ Not found in scene - auto-creating (add manually!)");
+                        // FALLBACK ONLY: Should be added to scene manually
+                        Debug.LogWarning("[AudioManager] Not found in scene - auto-creating (add manually!)");
                         var go = new GameObject("AudioManager");
                         _instance = go.AddComponent<AudioManager>();
                     }
@@ -279,7 +279,7 @@ namespace Code.Lavos.Core
             {
                 source = _sfxPool.Dequeue();
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ️ SFX reused from pool (remaining: {_sfxPool.Count})");
+                    Debug.Log($"[AudioManager] SFX reused from pool (remaining: {_sfxPool.Count})");
             }
             else if (canExpandSFXPool)
             {
@@ -289,7 +289,7 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogWarning("[AudioManager] ️ SFX pool exhausted!");
+                Debug.LogWarning("[AudioManager] SFX pool exhausted!");
                 return null;
             }
 
@@ -311,13 +311,13 @@ namespace Code.Lavos.Core
             {
                 _sfxPool.Enqueue(source);
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ️ SFX returned to pool (size: {_sfxPool.Count})");
+                    Debug.Log($"[AudioManager] SFX returned to pool (size: {_sfxPool.Count})");
             }
             else
             {
                 Destroy(source.gameObject);
                 if (debugAudio)
-                    Debug.Log($"[AudioManager] ️ SFX destroyed (pool full)");
+                    Debug.Log($"[AudioManager] SFX destroyed (pool full)");
             }
         }
 
@@ -435,7 +435,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log("[AudioManager] ️ Music stopped");
+                Debug.Log("[AudioManager] Music stopped");
         }
 
         /// <summary>
@@ -449,7 +449,7 @@ namespace Code.Lavos.Core
                 _activeMusicSource.UnPause();
             
             if (debugAudio)
-                Debug.Log(pause ? "[AudioManager] ️ Music paused" : "[AudioManager] ️ Music resumed");
+                Debug.Log(pause ? "[AudioManager] Music paused" : "[AudioManager] Music resumed");
         }
 
         private System.Collections.IEnumerator FadeVolume(AudioSource source, float from, float to, float duration, System.Action onComplete = null)
@@ -479,7 +479,7 @@ namespace Code.Lavos.Core
         {
             if (clip == null)
             {
-                Debug.LogWarning("[AudioManager] ️ Null SFX clip!");
+                Debug.LogWarning("[AudioManager] Null SFX clip!");
                 return;
             }
 
@@ -561,7 +561,7 @@ namespace Code.Lavos.Core
             }
 
             if (debugAudio)
-                Debug.Log("[AudioManager] ️ All SFX stopped");
+                Debug.Log("[AudioManager] All SFX stopped");
         }
 
         /// <summary>
@@ -742,7 +742,7 @@ namespace Code.Lavos.Core
             musicPlaylist.Clear();
             StopMusic();
             if (debugAudio)
-                Debug.Log("[AudioManager] ️ Playlist cleared");
+                Debug.Log("[AudioManager] Playlist cleared");
         }
 
         #endregion

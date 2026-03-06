@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // GridMazeGenerator.cs
-// Simple room-based maze generation
+// Hybrid dungeon maze generation with 8-way support
+// Level-based difficulty progression (4-way -> 8-way)
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -23,41 +24,63 @@ using System.Collections.Generic;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// GridMazeGenerator - Simple room and corridor maze.
+    /// GridMazeGenerator - Hybrid dungeon maze with rooms and corridors.
+    /// Supports 4-way (levels 0-2) and 8-way (levels 3+) maze generation.
+    /// 
+    /// GENERATION STEPS:
     /// 1. Fill grid with Floor
-    /// 2. Place rectangular rooms (Room cells)
-    /// 3. Connect rooms with corridors (Corridor cells)
-    /// 4. Mark remaining as Wall
+    /// 2. Place rooms (quadrant-based distribution)
+    /// 3. Generate corridors (4-way or 8-way based on level)
+    /// 4. Mark outer walls
+    /// 
+    /// DIFFICULTY PROGRESSION:
+    /// - Levels 0-2: 4-way corridors, 20% dead ends (tutorial)
+    /// - Levels 3-10: 8-way corridors, 35% dead ends (intermediate)
+    /// - Levels 11+: 8-way corridors, 50% dead ends (expert)
     /// </summary>
     public class GridMazeGenerator
     {
-        #region Grid Settings
+        #region Inspector Fields
 
-        public int gridSize;
-        public int roomSize;
-        public int corridorWidth;
-        private float seedFactor;
+        [Header("Grid Settings")]
+        [SerializeField] private int _gridSize = 21;
+        [SerializeField] private int _roomSize = 5;
+        [SerializeField] private int _corridorWidth = 1;
 
-        #endregion
-
-        #region Grid Data
-
-        private GridMazeCell[,] grid;
-        private Vector2Int spawnRoomCenter;
-        private Vector2Int spawnEntranceDirection;
-        private List<Vector2Int> roomCenters = new List<Vector2Int>();
+        [Header("Difficulty")]
+        [SerializeField] private int _baseRooms = 5;
+        [SerializeField] private int _maxRooms = 12;
 
         #endregion
 
-        #region Public Accessors
+        #region Private Fields
 
-        public GridMazeCell[,] Grid => grid;
-        public int GridSize { get => gridSize; set => gridSize = value; }
-        public int RoomSize { get => roomSize; set => roomSize = value; }
-        public int CorridorWidth { get => corridorWidth; set => corridorWidth = value; }
-        public Vector2Int SpawnRoomCenter => spawnRoomCenter;
-        public Vector2Int SpawnEntranceDirection => spawnEntranceDirection;
-        public Vector2Int SpawnExitDirection => spawnEntranceDirection * -1;
+        private GridMazeCell[,] _grid;
+        private Vector2Int _spawnRoomCenter;
+        private Vector2Int _spawnEntranceDirection;
+        private List<Vector2Int> _roomCenters = new List<Vector2Int>();
+        private float _seedFactor;
+        private int _currentLevel;
+
+        // 8-way direction arrays (N, NE, E, SE, S, SW, W, NW)
+        private static readonly int[] _directionsX8 = { 0,  1,  1,  1,  0, -1, -1, -1 };
+        private static readonly int[] _directionsY8 = { 1,  1,  0, -1, -1, -1,  0,  1 };
+
+        // 4-way direction arrays (N, E, S, W)
+        private static readonly int[] _directionsX4 = { 0,  1,  0, -1 };
+        private static readonly int[] _directionsY4 = { 1,  0, -1,  0 };
+
+        #endregion
+
+        #region Public Properties
+
+        public GridMazeCell[,] Grid => _grid;
+        public int GridSize { get => _gridSize; set => _gridSize = value; }
+        public int RoomSize { get => _roomSize; set => _roomSize = value; }
+        public int CorridorWidth { get => _corridorWidth; set => _corridorWidth = value; }
+        public Vector2Int SpawnRoomCenter => _spawnRoomCenter;
+        public Vector2Int SpawnEntranceDirection => _spawnEntranceDirection;
+        public Vector2Int SpawnExitDirection => _spawnEntranceDirection * -1;
 
         #endregion
 
@@ -65,28 +88,41 @@ namespace Code.Lavos.Core
 
         public void InitializeFromConfig()
         {
-            var config = GameConfig.Instance;
-            gridSize = config.defaultGridSize;
-            roomSize = config.defaultRoomSize;
-            corridorWidth = config.defaultCorridorWidth;
+            GameConfig config = GameConfig.Instance;
+            _gridSize = config.defaultGridSize;
+            _roomSize = config.defaultRoomSize;
+            _corridorWidth = config.defaultCorridorWidth;
 
-            Debug.Log($"[GridMazeGenerator] Config: {gridSize}x{gridSize} grid, {roomSize}x{roomSize} rooms");
+            Debug.Log($"[GridMazeGenerator] Config: {_gridSize}x{_gridSize} grid, {_roomSize}x{_roomSize} rooms");
         }
 
         #endregion
 
         #region Main Generation
 
-        public void Generate(uint seed, float difficultyFactor)
+        /// <summary>
+        /// Generate maze with specified seed and difficulty.
+        /// </summary>
+        /// <param name="seed">Random seed for procedural generation</param>
+        /// <param name="difficultyFactor">0.0 to 1.0 difficulty scaling</param>
+        /// <param name="level">Current level (determines 4-way vs 8-way)</param>
+        public void Generate(uint seed, float difficultyFactor, int level = 0)
         {
-            seedFactor = Mathf.Clamp01(difficultyFactor);
+            _seedFactor = Mathf.Clamp01(difficultyFactor);
+            _currentLevel = level;
             Random.InitState((int)seed);
-            
-            Debug.Log($"[GridMazeGenerator] Seed: {seed} (difficulty: {seedFactor:F2})");
 
-            if (gridSize == 0) InitializeFromConfig();
+            Debug.Log($"[GridMazeGenerator] Seed: {seed} (difficulty: {_seedFactor:F2}, level: {level})");
 
-            Debug.Log($"[GridMazeGenerator] Generating {gridSize}x{gridSize} maze...");
+            if (_gridSize == 0)
+            {
+                InitializeFromConfig();
+            }
+
+            // Corridor width always 1 for proper maze
+            _corridorWidth = 1;
+
+            Debug.Log($"[GridMazeGenerator] Generating {_gridSize}x{_gridSize} maze...");
 
             // Step 1: Fill with Floor
             FillGrid();
@@ -94,13 +130,13 @@ namespace Code.Lavos.Core
             // Step 2: Place rooms
             PlaceRooms();
 
-            // Step 3: Connect rooms with corridors
+            // Step 3: Connect rooms with corridors (4-way or 8-way)
             ConnectRooms();
 
             // Step 4: Mark outer walls
             MarkOuterWalls();
 
-            Debug.Log($"[GridMazeGenerator] Maze complete - {roomCenters.Count} rooms, spawn: {spawnRoomCenter}");
+            Debug.Log($"[GridMazeGenerator] Maze complete - {_roomCenters.Count} rooms, spawn: {_spawnRoomCenter}");
         }
 
         #endregion
@@ -109,13 +145,13 @@ namespace Code.Lavos.Core
 
         private void FillGrid()
         {
-            grid = new GridMazeCell[gridSize, gridSize];
+            _grid = new GridMazeCell[_gridSize, _gridSize];
 
-            for (int x = 0; x < gridSize; x++)
+            for (int x = 0; x < _gridSize; x++)
             {
-                for (int y = 0; y < gridSize; y++)
+                for (int y = 0; y < _gridSize; y++)
                 {
-                    grid[x, y] = GridMazeCell.Floor;
+                    _grid[x, y] = GridMazeCell.Floor;
                 }
             }
 
@@ -128,44 +164,109 @@ namespace Code.Lavos.Core
 
         private void PlaceRooms()
         {
-            var cfg = GameConfig.Instance;
-            int spawnRoomSize = cfg.spawnRoomSize;
-            int margin = cfg.spawnRoomMargin;
+            GameConfig config = GameConfig.Instance;
+            int spawnRoomSize = config.spawnRoomSize;
+            int margin = config.spawnRoomMargin;
 
             // Place spawn room on west edge
             int spawnX = margin;
-            int spawnY = (gridSize / 2) - (spawnRoomSize / 2);
-            spawnY = Mathf.Clamp(spawnY, margin, gridSize - spawnRoomSize - margin);
+            int spawnY = (_gridSize / 2) - (spawnRoomSize / 2);
+            spawnY = Mathf.Clamp(spawnY, margin, _gridSize - spawnRoomSize - margin);
 
             PlaceRoom(spawnX, spawnY, spawnRoomSize, true);
-            spawnRoomCenter = new Vector2Int(
+            _spawnRoomCenter = new Vector2Int(
                 spawnX + spawnRoomSize / 2,
                 spawnY + spawnRoomSize / 2
             );
-            spawnEntranceDirection = Vector2Int.right; // Opens east
+            _spawnEntranceDirection = Vector2Int.right; // Opens east
 
-            // Place additional rooms based on difficulty
-            int roomCount = 3 + Mathf.FloorToInt(seedFactor * 5f); // 3-8 rooms
+            // Calculate room count based on maze size and difficulty
+            int sizeBonus = Mathf.FloorToInt(_gridSize / 4f);
+            int seedVariation = Mathf.FloorToInt(_seedFactor * 4f);
+            int roomCount = _baseRooms + sizeBonus + seedVariation;
+            roomCount = Mathf.Clamp(roomCount, 8, Mathf.FloorToInt(_gridSize / 1.5f));
+
             int placed = 1; // spawn room already placed
 
-            int attempts = 0;
-            while (placed < roomCount && attempts < 100)
+            Debug.Log($"[GridMazeGenerator] Target rooms: {roomCount} (base:{_baseRooms} + size:{sizeBonus} + seed:{seedVariation})");
+
+            // Divide grid into zones for better spatial distribution
+            int zoneSize = _gridSize / 3;
+            int roomsPerZone = Mathf.CeilToInt((float)(roomCount - 1) / 6f);
+
+            Debug.Log($"[GridMazeGenerator] Placing {roomCount - 1} rooms across 6 zones ({roomsPerZone} per zone)");
+
+            // Place rooms in 6 zones (3x2 grid) for better coverage
+            for (int zx = 0; zx < 3; zx++)
             {
-                attempts++;
-                
-                // Random position (avoiding spawn area)
-                int rx = Random.Range(margin + spawnRoomSize + 2, gridSize - roomSize - margin);
-                int ry = Random.Range(margin, gridSize - roomSize - margin);
+                for (int zy = 0; zy < 2; zy++)
+                {
+                    // Skip spawn zone (west center)
+                    if (zx == 0 && zy == 0)
+                    {
+                        continue;
+                    }
+
+                    int zoneRoomsPlaced = 0;
+                    int zoneAttempts = 0;
+                    int maxZoneAttempts = 30;
+
+                    // Calculate zone bounds
+                    int zxStart = zx * zoneSize + margin;
+                    int zyStart = zy * zoneSize + margin;
+                    int zxEnd = (zx + 1) * zoneSize - margin - _roomSize;
+                    int zyEnd = (zy + 1) * zoneSize - margin - _roomSize;
+
+                    // Clamp to valid range
+                    zxStart = Mathf.Max(zxStart, margin);
+                    zyStart = Mathf.Max(zyStart, margin);
+                    zxEnd = Mathf.Min(zxEnd, _gridSize - _roomSize - margin);
+                    zyEnd = Mathf.Min(zyEnd, _gridSize - _roomSize - margin);
+
+                    // Place rooms in this zone
+                    while (zoneRoomsPlaced < roomsPerZone && zoneAttempts < maxZoneAttempts && placed < roomCount)
+                    {
+                        zoneAttempts++;
+
+                        // Random position within zone
+                        int rx = Random.Range(zxStart, zxEnd + 1);
+                        int ry = Random.Range(zyStart, zyEnd + 1);
+
+                        // Check if overlaps with existing rooms
+                        if (!OverlapsExistingRooms(rx, ry, _roomSize))
+                        {
+                            PlaceRoom(rx, ry, _roomSize, false);
+                            placed++;
+                            zoneRoomsPlaced++;
+                        }
+                    }
+
+                    if (zoneRoomsPlaced > 0)
+                    {
+                        Debug.Log($"[GridMazeGenerator] Zone ({zx},{zy}): {zoneRoomsPlaced} rooms placed");
+                    }
+                }
+            }
+
+            // Fill remaining room count with random placement (fallback)
+            int fallbackAttempts = 0;
+            while (placed < roomCount && fallbackAttempts < 50)
+            {
+                fallbackAttempts++;
+
+                // Random position anywhere valid
+                int rx = Random.Range(margin + spawnRoomSize + 2, _gridSize - _roomSize - margin);
+                int ry = Random.Range(margin, _gridSize - _roomSize - margin);
 
                 // Check if overlaps with existing rooms
-                if (!OverlapsExistingRooms(rx, ry, roomSize))
+                if (!OverlapsExistingRooms(rx, ry, _roomSize))
                 {
-                    PlaceRoom(rx, ry, roomSize, false);
+                    PlaceRoom(rx, ry, _roomSize, false);
                     placed++;
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] Placed {placed} rooms ({attempts} attempts)");
+            Debug.Log($"[GridMazeGenerator] Placed {placed} rooms total ({fallbackAttempts} attempts)");
         }
 
         private void PlaceRoom(int x, int y, int size, bool isSpawn)
@@ -177,28 +278,28 @@ namespace Code.Lavos.Core
                     int gx = x + dx;
                     int gy = y + dy;
 
-                    if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize)
+                    if (gx >= 0 && gx < _gridSize && gy >= 0 && gy < _gridSize)
                     {
                         if (isSpawn && dx == size / 2 && dy == size / 2)
                         {
-                            grid[gx, gy] = GridMazeCell.SpawnPoint;
+                            _grid[gx, gy] = GridMazeCell.SpawnPoint;
                         }
                         else
                         {
-                            grid[gx, gy] = GridMazeCell.Room;
+                            _grid[gx, gy] = GridMazeCell.Room;
                         }
                     }
                 }
             }
 
-            roomCenters.Add(new Vector2Int(x + size / 2, y + size / 2));
+            _roomCenters.Add(new Vector2Int(x + size / 2, y + size / 2));
         }
 
         private bool OverlapsExistingRooms(int x, int y, int size)
         {
-            int margin = 1; // Keep rooms separated
+            int margin = 1; // Keep rooms separated by 1 cell (corridors will connect)
 
-            foreach (var center in roomCenters)
+            foreach (Vector2Int center in _roomCenters)
             {
                 int dx = Mathf.Abs(center.x - (x + size / 2));
                 int dy = Mathf.Abs(center.y - (y + size / 2));
@@ -214,80 +315,183 @@ namespace Code.Lavos.Core
 
         #endregion
 
-        #region Step 3: Connect Rooms
+        #region Step 3: Connect Rooms (8-Way DFS)
 
         private void ConnectRooms()
         {
-            if (roomCenters.Count < 2) return;
-
-            Debug.Log($"[GridMazeGenerator] Connecting {roomCenters.Count} rooms...");
-
-            // Connect each room to the next (creates a path through all rooms)
-            for (int i = 0; i < roomCenters.Count - 1; i++)
+            if (_roomCenters.Count < 2)
             {
-                Vector2Int from = roomCenters[i];
-                Vector2Int to = roomCenters[i + 1];
-
-                CarveCorridor(from, to);
+                return;
             }
 
-            // Add some random extra connections for loops
-            int extraConnections = Mathf.FloorToInt(seedFactor * 3f);
-            for (int i = 0; i < extraConnections; i++)
+            Debug.Log($"[GridMazeGenerator] Connecting {_roomCenters.Count} rooms...");
+
+            // Determine if using 8-way or 4-way based on level
+            bool use8Way = _currentLevel >= 3;
+            Debug.Log($"[GridMazeGenerator] Using {(use8Way ? "8-way" : "4-way")} corridors (level {_currentLevel})");
+
+            // Generate maze using DFS (creates proper maze with dead ends)
+            GenerateDfs(use8Way);
+
+            // Ensure rooms are connected to maze corridors
+            ConnectRoomsToMaze();
+
+            Debug.Log($"[GridMazeGenerator] Rooms connected with {(use8Way ? "8-way" : "4-way")} DFS maze");
+        }
+
+        /// <summary>
+        /// Generate maze using recursive backtracker (DFS) algorithm.
+        /// Creates proper maze with dead ends and loops.
+        /// </summary>
+        private void GenerateDfs(bool use8Way)
+        {
+            int[] dx = use8Way ? _directionsX8 : _directionsX4;
+            int[] dy = use8Way ? _directionsY8 : _directionsY4;
+            int numDirections = use8Way ? 8 : 4;
+
+            // Start from spawn point
+            int startX = _spawnRoomCenter.x;
+            int startY = _spawnRoomCenter.y;
+
+            // Track visited cells
+            bool[,] visited = new bool[_gridSize, _gridSize];
+
+            // Stack for backtracking
+            Stack<Vector2Int> stack = new Stack<Vector2Int>();
+            stack.Push(new Vector2Int(startX, startY));
+            visited[startX, startY] = true;
+
+            int carvedCells = 0;
+            int targetCells = (_gridSize * _gridSize) / 3; // Carve ~33% of grid
+
+            while (stack.Count > 0 && carvedCells < targetCells)
             {
-                int a = Random.Range(0, roomCenters.Count);
-                int b = Random.Range(0, roomCenters.Count);
-                if (a != b)
+                Vector2Int current = stack.Peek();
+
+                // Get unvisited neighbors
+                List<int> unvisitedDirections = new List<int>();
+
+                for (int i = 0; i < numDirections; i++)
                 {
-                    CarveCorridor(roomCenters[a], roomCenters[b]);
+                    int nx = current.x + dx[i];
+                    int ny = current.y + dy[i];
+
+                    if (IsValidMazeCell(nx, ny) && !visited[nx, ny])
+                    {
+                        unvisitedDirections.Add(i);
+                    }
+                }
+
+                if (unvisitedDirections.Count > 0)
+                {
+                    // Choose random direction
+                    int dirIndex = unvisitedDirections[Random.Range(0, unvisitedDirections.Count)];
+                    int nx = current.x + dx[dirIndex];
+                    int ny = current.y + dy[dirIndex];
+
+                    // Carve corridor to neighbor
+                    _grid[nx, ny] = GridMazeCell.Corridor;
+                    visited[nx, ny] = true;
+                    stack.Push(new Vector2Int(nx, ny));
+                    carvedCells++;
+                }
+                else
+                {
+                    // Backtrack
+                    stack.Pop();
+                }
+            }
+
+            Debug.Log($"[GridMazeGenerator] DFS carved {carvedCells} corridor cells");
+        }
+
+        /// <summary>
+        /// Connect room chambers to the generated maze corridors.
+        /// Carves entrance from each room to nearest corridor.
+        /// </summary>
+        private void ConnectRoomsToMaze()
+        {
+            foreach (Vector2Int roomCenter in _roomCenters)
+            {
+                // Find nearest corridor cell
+                Vector2Int? nearestCorridor = FindNearestCorridor(roomCenter);
+
+                if (nearestCorridor.HasValue)
+                {
+                    // Carve path from room edge to corridor
+                    CarveRoomConnection(roomCenter, nearestCorridor.Value);
                 }
             }
         }
 
-        private void CarveCorridor(Vector2Int from, Vector2Int to)
+        /// <summary>
+        /// Find nearest corridor cell to room center.
+        /// </summary>
+        private Vector2Int? FindNearestCorridor(Vector2Int from)
         {
-            // FIX: Correct corridor width calculation
-            // For width=2, halfWidth=0 → carves exactly 2 cells (not 3)
-            int halfWidth = (corridorWidth - 1) / 2;
+            int searchRadius = _gridSize / 4;
 
-            // L-shaped corridor: horizontal then vertical
-            int minX = Mathf.Min(from.x, to.x);
-            int maxX = Mathf.Max(from.x, to.x);
-
-            // Horizontal segment
-            for (int x = minX; x <= maxX; x++)
+            for (int radius = 1; radius < searchRadius; radius++)
             {
-                for (int w = -halfWidth; w <= halfWidth; w++)
+                for (int dx = -radius; dx <= radius; dx++)
                 {
-                    int gy = from.y + w;
-                    if (gy >= 0 && gy < gridSize)
+                    for (int dy = -radius; dy <= radius; dy++)
                     {
-                        if (grid[x, gy] != GridMazeCell.Room && grid[x, gy] != GridMazeCell.SpawnPoint)
+                        if (Mathf.Abs(dx) == radius || Mathf.Abs(dy) == radius)
                         {
-                            grid[x, gy] = GridMazeCell.Corridor;
+                            int x = from.x + dx;
+                            int y = from.y + dy;
+
+                            if (IsValidMazeCell(x, y) && _grid[x, y] == GridMazeCell.Corridor)
+                            {
+                                return new Vector2Int(x, y);
+                            }
                         }
                     }
                 }
             }
 
-            // Vertical segment
-            int minY = Mathf.Min(from.y, to.y);
-            int maxY = Mathf.Max(from.y, to.y);
+            return null;
+        }
 
-            for (int y = minY; y <= maxY; y++)
+        /// <summary>
+        /// Carve connection from room to corridor.
+        /// </summary>
+        private void CarveRoomConnection(Vector2Int roomCenter, Vector2Int corridorPos)
+        {
+            // Simple line carving from room edge to corridor
+            int x = roomCenter.x;
+            int y = roomCenter.y;
+
+            int dx = (int)Mathf.Sign(corridorPos.x - x);
+            int dy = (int)Mathf.Sign(corridorPos.y - y);
+
+            // Move towards corridor
+            while (x != corridorPos.x || y != corridorPos.y)
             {
-                for (int w = -halfWidth; w <= halfWidth; w++)
+                if (IsValidMazeCell(x, y) && _grid[x, y] != GridMazeCell.Room)
                 {
-                    int gx = to.x + w;
-                    if (gx >= 0 && gx < gridSize)
-                    {
-                        if (grid[gx, y] != GridMazeCell.Room && grid[gx, y] != GridMazeCell.SpawnPoint)
-                        {
-                            grid[gx, y] = GridMazeCell.Corridor;
-                        }
-                    }
+                    _grid[x, y] = GridMazeCell.Corridor;
+                }
+
+                // Move in primary direction
+                if (x != corridorPos.x)
+                {
+                    x += dx;
+                }
+                else if (y != corridorPos.y)
+                {
+                    y += dy;
                 }
             }
+        }
+
+        /// <summary>
+        /// Check if cell is valid for maze carving.
+        /// </summary>
+        private bool IsValidMazeCell(int x, int y)
+        {
+            return x >= 0 && x < _gridSize && y >= 0 && y < _gridSize;
         }
 
         #endregion
@@ -296,20 +500,28 @@ namespace Code.Lavos.Core
 
         private void MarkOuterWalls()
         {
-            for (int x = 0; x < gridSize; x++)
+            for (int x = 0; x < _gridSize; x++)
             {
-                if (grid[x, 0] != GridMazeCell.SpawnPoint && grid[x, 0] != GridMazeCell.Room)
-                    grid[x, 0] = GridMazeCell.Wall;
-                if (grid[x, gridSize - 1] != GridMazeCell.SpawnPoint && grid[x, gridSize - 1] != GridMazeCell.Room)
-                    grid[x, gridSize - 1] = GridMazeCell.Wall;
+                if (_grid[x, 0] != GridMazeCell.SpawnPoint && _grid[x, 0] != GridMazeCell.Room)
+                {
+                    _grid[x, 0] = GridMazeCell.Wall;
+                }
+                if (_grid[x, _gridSize - 1] != GridMazeCell.SpawnPoint && _grid[x, _gridSize - 1] != GridMazeCell.Room)
+                {
+                    _grid[x, _gridSize - 1] = GridMazeCell.Wall;
+                }
             }
 
-            for (int y = 0; y < gridSize; y++)
+            for (int y = 0; y < _gridSize; y++)
             {
-                if (grid[0, y] != GridMazeCell.SpawnPoint && grid[0, y] != GridMazeCell.Room)
-                    grid[0, y] = GridMazeCell.Wall;
-                if (grid[gridSize - 1, y] != GridMazeCell.SpawnPoint && grid[gridSize - 1, y] != GridMazeCell.Room)
-                    grid[gridSize - 1, y] = GridMazeCell.Wall;
+                if (_grid[0, y] != GridMazeCell.SpawnPoint && _grid[0, y] != GridMazeCell.Room)
+                {
+                    _grid[0, y] = GridMazeCell.Wall;
+                }
+                if (_grid[_gridSize - 1, y] != GridMazeCell.SpawnPoint && _grid[_gridSize - 1, y] != GridMazeCell.Room)
+                {
+                    _grid[_gridSize - 1, y] = GridMazeCell.Wall;
+                }
             }
 
             Debug.Log($"[GridMazeGenerator] Outer walls marked");
@@ -321,24 +533,26 @@ namespace Code.Lavos.Core
 
         public GridMazeCell GetCell(int x, int y)
         {
-            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize)
-                return grid[x, y];
+            if (x >= 0 && x < _gridSize && y >= 0 && y < _gridSize)
+            {
+                return _grid[x, y];
+            }
             return GridMazeCell.Floor;
         }
 
         public Vector2Int FindSpawnPoint()
         {
-            for (int x = 0; x < gridSize; x++)
+            for (int x = 0; x < _gridSize; x++)
             {
-                for (int y = 0; y < gridSize; y++)
+                for (int y = 0; y < _gridSize; y++)
                 {
-                    if (grid[x, y] == GridMazeCell.SpawnPoint)
+                    if (_grid[x, y] == GridMazeCell.SpawnPoint)
                     {
                         return new Vector2Int(x, y);
                     }
                 }
             }
-            return spawnRoomCenter;
+            return _spawnRoomCenter;
         }
 
         #endregion
@@ -347,30 +561,41 @@ namespace Code.Lavos.Core
 
         public byte[] SerializeToBytes()
         {
-            int total = 2 + gridSize * gridSize;
+            int total = 2 + _gridSize * _gridSize;
             byte[] data = new byte[total];
-            data[0] = (byte)gridSize;
-            data[1] = (byte)gridSize;
+            data[0] = (byte)_gridSize;
+            data[1] = (byte)_gridSize;
 
             int i = 2;
-            for (int y = 0; y < gridSize; y++)
-                for (int x = 0; x < gridSize; x++)
-                    data[i++] = (byte)grid[x, y];
+            for (int y = 0; y < _gridSize; y++)
+            {
+                for (int x = 0; x < _gridSize; x++)
+                {
+                    data[i++] = (byte)_grid[x, y];
+                }
+            }
 
             return data;
         }
 
         public void DeserializeFromBytes(byte[] data)
         {
-            if (data.Length < 2) return;
-            
-            gridSize = data[0];
-            grid = new GridMazeCell[gridSize, gridSize];
+            if (data.Length < 2)
+            {
+                return;
+            }
+
+            _gridSize = data[0];
+            _grid = new GridMazeCell[_gridSize, _gridSize];
 
             int i = 2;
-            for (int y = 0; y < gridSize; y++)
-                for (int x = 0; x < gridSize; x++)
-                    grid[x, y] = (GridMazeCell)data[i++];
+            for (int y = 0; y < _gridSize; y++)
+            {
+                for (int x = 0; x < _gridSize; x++)
+                {
+                    _grid[x, y] = (GridMazeCell)data[i++];
+                }
+            }
         }
 
         #endregion

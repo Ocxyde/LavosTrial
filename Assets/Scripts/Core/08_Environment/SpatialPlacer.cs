@@ -68,9 +68,10 @@ namespace Code.Lavos.Core
         [Header(" Binary Storage Settings")]
         [Tooltip("Enable binary storage (RAM/cache)")]
         [SerializeField] private bool enableBinaryStorage = true;
-        
-        [Tooltip("Storage folder path")]
-        [SerializeField] private string storageFolder = "Assets/StreamingAssets/MazeStorage/";
+
+        [Tooltip("Storage folder path (uses persistentDataPath for cross-platform)")]
+        [SerializeField] private bool usePersistentDataPath = true;
+        [SerializeField] private string storageFolder = "MazeStorage/";
 
         [Header(" Debug")]
         [SerializeField] private bool showDebugLogs = true;
@@ -145,11 +146,16 @@ namespace Code.Lavos.Core
 
         private void InitializeBinaryStorage()
         {
-            _objectStorage = new BinaryObjectStorage(storageFolder);
-            
+            // FIX: Use persistentDataPath for cross-platform compatibility
+            string fullPath = usePersistentDataPath 
+                ? Path.Combine(Application.persistentDataPath, storageFolder)
+                : storageFolder;
+
+            _objectStorage = new BinaryObjectStorage(fullPath);
+
             if (showDebugLogs)
             {
-                Debug.Log($"[SpatialPlacer]  Binary storage initialized: {storageFolder}");
+                Debug.Log($"[SpatialPlacer]  Binary storage initialized: {fullPath}");
             }
         }
 

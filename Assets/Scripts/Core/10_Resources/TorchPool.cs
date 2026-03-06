@@ -141,7 +141,7 @@ namespace Code.Lavos.Core
             if (_pool.Count > 0)
             {
                 go = _pool.Dequeue();
-                Debug.Log($"[TorchPool] ️ REUSED from pool (remaining: {_pool.Count})");
+                Debug.Log($"[TorchPool] REUSED from pool (remaining: {_pool.Count})");
             }
             else
             {
@@ -153,7 +153,7 @@ namespace Code.Lavos.Core
                 }
                 else
                 {
-                    Debug.LogWarning("[TorchPool] ️ Pool exhausted and canExpand=false!");
+                    Debug.LogWarning("[TorchPool] Pool exhausted and canExpand=false!");
                     return null;
                 }
             }
@@ -239,7 +239,7 @@ namespace Code.Lavos.Core
             go.transform.SetParent(transform); // Reparent to pool container
             _pool.Enqueue(go);
 
-            Debug.Log($"[TorchPool] ️ Returned to pool (size: {_pool.Count})");
+            Debug.Log($"[TorchPool] Returned to pool (size: {_pool.Count})");
         }
 
         // ───────────────────────────────────────────────────────────────────────

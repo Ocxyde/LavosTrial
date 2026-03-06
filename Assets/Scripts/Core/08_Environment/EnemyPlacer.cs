@@ -214,7 +214,7 @@ namespace Code.Lavos.Core
             else
             {
                 if (showDebugLogs)
-                    Debug.LogWarning($"[EnemyPlacer] ️ No enemy prefab assigned - skipping");
+                    Debug.LogWarning($"[EnemyPlacer] No enemy prefab assigned - skipping");
             }
         }
 

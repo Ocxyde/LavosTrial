@@ -45,7 +45,7 @@ namespace Code.Lavos.Core
     {
         #region Inspector Fields (Serialized from JSON)
 
-        [Header("️ Room Dimensions (From JSON Config)")]
+        [Header("Room Dimensions (From JSON Config)")]
         [Tooltip("Room size in grid cells (loaded from JSON)")]
         [SerializeField] private int roomSize;
         
@@ -208,7 +208,7 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log($"[SpawningRoom] ️ Initialized at {gridPosition} → {spawnPosition}");
+                Debug.Log($"[SpawningRoom] Initialized at {gridPosition} → {spawnPosition}");
             }
         }
 
@@ -221,7 +221,7 @@ namespace Code.Lavos.Core
             
             if (player == null)
             {
-                Debug.LogWarning("[SpawningRoom] ️ PlayerController not found in scene");
+                Debug.LogWarning("[SpawningRoom] PlayerController not found in scene");
                 return;
             }
             
@@ -307,7 +307,7 @@ namespace Code.Lavos.Core
             if (torchPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ️ No torch prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] No torch prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
@@ -330,7 +330,7 @@ namespace Code.Lavos.Core
             if (chestPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ️ No chest prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] No chest prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
@@ -353,7 +353,7 @@ namespace Code.Lavos.Core
             if (itemPrefab == null)
             {
                 if (showDebugLogs)
-                    Debug.Log("[SpawningRoom] ️ No item prefab assigned - skipping (add prefab or use SpatialPlacer)");
+                    Debug.Log("[SpawningRoom] No item prefab assigned - skipping (add prefab or use SpatialPlacer)");
                 return;
             }
 
