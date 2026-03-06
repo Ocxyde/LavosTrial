@@ -125,9 +125,9 @@ namespace Code.Lavos.Core
         public int maxDifficultySizeBonus = 10;
         [Tooltip("Maximum room bonus from difficulty (0-5)")]
         public int maxDifficultyRoomBonus = 5;
-        [Tooltip("Base rooms random range (1-4 = 1 to 3 rooms)")]
+        [Tooltip("Base rooms random range (1-1 = 1 room)")]
         public int baseRoomMin = 1;
-        public int baseRoomMax = 4;
+        public int baseRoomMax = 1;
         [Tooltip("Spawn room size (3x3)")]
         public int spawnRoomSize = 3;
         [Tooltip("Margin from grid edge for spawn room")]

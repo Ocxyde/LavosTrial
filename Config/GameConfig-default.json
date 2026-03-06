@@ -46,6 +46,8 @@
     "minRooms": 3,
     "maxRooms": 8,
     "generateRooms": true,
+    "baseRoomMin": 1,
+    "baseRoomMax": 1,
 
     "spawnRoomSize": 5,
     "spawnRoomMargin": 2,

@@ -22,6 +22,11 @@ See [COPYING](../../COPYING) file for full license text.
 
 | Date | Update | Author |
 |------|--------|--------|
+| 2026-03-06 | GridMazeGenerator rewritten: Room-corridor approach (DFS abandoned) | Ocxyde |
+| 2026-03-06 | DFS maze generation attempts: Multiple rewrites, cell math mismatch identified | Ocxyde |
+| 2026-03-06 | Wall scaling fixed to snap to cell edges | Ocxyde |
+| 2026-03-06 | MazeCorridorGenerator bypassed (using simple corridor carving) | Ocxyde |
+| 2026-03-06 | Random.Range ambiguity fixed (UnityEngine.Random) | Ocxyde |
 | 2026-03-06 | MazeCorridorGenerator created with A* pathfinding (PathFinder integration) | Ocxyde |
 | 2026-03-06 | SeedManager moved to 11_Utilities/ (correct architecture) | Ocxyde |
 | 2026-03-06 | Compute seed system: Destroy after use, reseed immediately | Ocxyde |
@@ -30,8 +35,6 @@ See [COPYING](../../COPYING) file for full license text.
 | 2026-03-06 | CompleteMazeBuilder uses SeedManager.ComputeSeed | Ocxyde |
 | 2026-03-06 | GridMazeGenerator uses MazeCorridorGenerator for A* paths | Ocxyde |
 | 2026-03-06 | GameConfig-default.json: Added corridor settings | Ocxyde |
-| 2026-03-06 | MazeBuilderEditor reworked for full plug-in-out compliance (no component creation) | Ocxyde |
-| 2026-03-06 | SpawnPlacerEngine references updated to SpatialPlacer in comments | Ocxyde |
 | 2026-03-06 | Commented code cleaned from MazeIntegration.cs and SeedManager.cs | Ocxyde |
 | 2026-03-06 | Verified LightEngine.cs and ParticleGenerator.cs are complete (not truncated) | Ocxyde |
 | 2026-03-06 | GridPEnvPlacer.cs created for wall placement with exact border snapping | Ocxyde |
@@ -53,6 +56,145 @@ See [COPYING](../../COPYING) file for full license text.
 | **Audio** | `SFXVFXEngine.cs` | `AudioManager.cs` |
 
 **Why kept?** Legacy tests and scenes still use them.
+
+---
+
+## 🔴 **HIGH PRIORITY (CRITICAL)**
+
+### **🔴 1. Test Maze Generation in Unity**
+**Status:** ⏳ PENDING
+**Impact:** CRITICAL - Must verify before production
+**Steps:**
+```
+1. Open Unity 6000.3.7f1
+2. Load scene with CompleteMazeBuilder
+3. Press Play
+4. Verify:
+   - ✅ Spawn room generates (5x5)
+   - ✅ Outer walls (full perimeter)
+   - ✅ Interior walls (room boundaries)
+   - ✅ Corridors (connecting rooms)
+   - ✅ Rooms (3-8 rooms)
+   - ✅ Player spawns inside spawn room
+   - ✅ No console errors
+```
+
+---
+
+### **🔴 2. Run backup.ps1**
+**Status:** ⏳ PENDING
+**Impact:** CRITICAL - Save all changes
+**Command:**
+```powershell
+.\backup.ps1
+```
+
+---
+
+### **🔴 3. GridMazeGenerator - Cell Math Issue**
+**Status:** ⚠️ KNOWN ISSUE
+**Impact:** CRITICAL - DFS/wall grid doesn't match Unity cell system
+**Issue:** Wall placement system places walls on CELL BORDERS, not inside cells. DFS algorithms create walls inside cells, causing visual mismatch.
+**Solution:** Room-corridor approach implemented:
+- Fill grid with Floor (all walkable)
+- Place Room cells for rooms
+- Carve Corridor cells to connect rooms
+- Mark outer boundary as Wall
+**TODO:**
+- [ ] Test room-corridor approach in Unity
+- [ ] Verify walls spawn correctly on Room/Corridor borders
+- [ ] Adjust room spacing if needed
+- [ ] Verify player can navigate entire maze
+
+---
+
+### **🔴 4. Commit to Git**
+**Status:** ⏳ PENDING
+**Impact:** HIGH - Version control
+**Command:**
+```bash
+git add .
+git commit -m "refactor: GridMazeGenerator room-corridor approach
+
+- Replaced DFS with room-corridor generation
+- Cell math now matches Unity wall border system
+- Rooms placed with L-shaped corridor connections
+- Spawn room on west edge, opens east to maze
+- All values from GameConfig-default.json
+
+BREAKING: DFS maze generation abandoned (cell mismatch)"
+```
+
+---
+
+## 🟡 **MEDIUM PRIORITY**
+
+### **🟡 1. Add Diagonal Corridors**
+**Status:** ⏳ PENDING  
+**Impact:** MEDIUM - Better maze variety  
+**TODO:**
+- [ ] Update PathFinder.cs to support 8 directions
+- [ ] Change heuristic from Manhattan to Chebyshev/Octile
+- [ ] Add diagonal movement cost (1.414)
+- [ ] Test diagonal corridor generation
+- [ ] Verify wall placement with diagonals
+
+---
+
+### **🟡 2. Update Documentation**
+**Status:** ⏳ PARTIAL  
+**Impact:** MEDIUM - Keep docs current  
+**TODO:**
+- [ ] Update Manual.md with new systems
+- [ ] Create MazeCorridorGenerator documentation
+- [ ] Update PathFinder usage guide
+- [ ] Add seed system documentation
+
+---
+
+### **🟡 3. Add Debug Logging**
+**Status:** ⏳ PENDING  
+**Impact:** MEDIUM - Easier troubleshooting  
+**TODO:**
+- [ ] Add grid visualization in editor
+- [ ] Log room count after placement
+- [ ] Log corridor path lengths
+- [ ] Add console commands for debugging
+
+---
+
+## 🟢 **LOW PRIORITY**
+
+### **🟢 1. Wall Object Pooling**
+**Status:** ⏳ PENDING  
+**Impact:** LOW - Performance optimization  
+**TODO:**
+- [ ] Create WallPool class
+- [ ] Pool walls instead of instantiating
+- [ ] Reduce GC pressure
+- [ ] Measure performance gain
+
+---
+
+### **🟢 2. Diagonal Wall Support**
+**Status:** ⏳ PENDING  
+**Impact:** LOW - For diagonal corridors  
+**TODO:**
+- [ ] Create diagonal wall prefabs
+- [ ] Update wall placement logic
+- [ ] Handle corner cases
+- [ ] Test diagonal wall rendering
+
+---
+
+### **🟢 3. Create Test Scene**
+**Status:** ⏳ PENDING  
+**Impact:** LOW - Dedicated testing  
+**TODO:**
+- [ ] Create dedicated test scene
+- [ ] Add test controls (generate, clear, etc.)
+- [ ] Add visualization tools
+- [ ] Add performance metrics display
 
 ---
 
@@ -141,8 +283,10 @@ corridorGen.GenerateCorridors();
 
 **Files:**
 - ✅ `CompleteMazeBuilder.cs` (~500 lines, simplified)
-- ✅ `GridMazeGenerator.cs` (grid-based algorithm)
+- ✅ `GridMazeGenerator.cs` (room-corridor algorithm, DFS abandoned)
 - ✅ `MazeConsoleCommands.cs` (console commands)
+
+**Known Issue:** DFS maze generation abandoned due to cell math mismatch. Unity wall system places walls on CELL BORDERS, but DFS creates walls inside cells. Room-corridor approach uses Cell types (Room, Corridor, Floor, Wall) which correctly triggers wall border placement.
 
 ---
 
