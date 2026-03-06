@@ -78,7 +78,7 @@ namespace Code.Lavos.Core
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log($"  Level: {builder.CurrentLevel}");
                 Debug.Log($"  Maze Size: {builder.MazeSize}x{builder.MazeSize}");
-                Debug.Log($"  Seed: {builder.CurrentSeed}");
+                Debug.Log("  Seed: Random (procedural each load)");
                 Debug.Log("═══════════════════════════════════════");
             }
             else

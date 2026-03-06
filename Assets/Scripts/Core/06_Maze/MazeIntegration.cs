@@ -314,7 +314,5 @@ namespace Code.Lavos.Core
 
             return hash;
         }
-
-        #endregion
     }
 }

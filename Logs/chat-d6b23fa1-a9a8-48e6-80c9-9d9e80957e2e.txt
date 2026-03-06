@@ -1,0 +1,496 @@
+Chat 'ChatTitle(text="Hey buddy BetxyBoop…" with Qwen Code, isCustom=true)' (d6b23fa1-a9a8-48e6-80c9-9d9e80957e2e)
+Context:
+
+Messages: 32
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Hey buddy BetxyBoop, im Ocxyde welcome again ! 
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+do deep scan project
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+tell to run cmd shell or prompt before pursue.
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+read chat logs, where we were its on root project
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+runner !
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+runner !
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+runner ! done!
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+explain me why is there a door in middle of the maze ?
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+so it doors appears first why they are no room for it ? where's the matter 
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+put room for the door that one in the middle, befere unlaesh the beast
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+see no differenc, where the wall around the door ?
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+okay for option B
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+clean maze, there is nothing exclude surrounding walls, how did you process ?
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+rework re-rewrite, for compliance then wathc this ::
+////////////////////////////////////////////////////////////////
+[PlayerSetup] ️ No Camera found!
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.PlayerSetup:ValidateComponents () (at Assets/Scripts/Core/02_Player/PlayerSetup.cs:211)
+Code.Lavos.Core.PlayerSetup:FindComponents () (at Assets/Scripts/Core/02_Player/PlayerSetup.cs:188)
+Code.Lavos.Core.PlayerSetup:Awake () (at Assets/Scripts/Core/02_Player/PlayerSetup.cs:107)
+
+[LightPlacementEngine]  No torchPrefab assigned!
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000028743b1d47e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000028743b1d283 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000028743b1cf3b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000028743b1c3be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000028743b2720a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000028743b26b43 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:150)
+0x000002876a5c1d58 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff827d56bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff827c98984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff827c98a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e1694 (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]  Please ensure:
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000028743b1d47e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000028743b1d283 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000028743b1cf3b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000028743b1c3be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000028743b2720a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000028743b26b83 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:151)
+0x000002876a5c1d58 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff827d56bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff827c98984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff827c98a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e1694 (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]    1. TorchPool has torchHandlePrefab assigned in Inspector, OR
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000028743b1d47e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000028743b1d283 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000028743b1cf3b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000028743b1c3be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000028743b2720a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000028743b26bc3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:152)
+0x000002876a5c1d58 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff827d56bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff827c98984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff827c98a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e1694 (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]    2. Create Resources folder and add TorchHandlePrefab there, OR
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000028743b1d47e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000028743b1d283 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000028743b1cf3b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000028743b1c3be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000028743b2720a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000028743b26c03 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:153)
+0x000002876a5c1d58 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff827d56bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff827c98984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff827c98a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e1694 (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]    3. Have a TorchHandlePrefab in the scene
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000028743b1d47e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000028743b1d283 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000028743b1cf3b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000028743b1c3be (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000028743b2720a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000028743b26c43 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:154)
+0x000002876a5c1d58 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff827d56bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff827c98984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff827c98a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e1694 (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine] ️ Torches will NOT spawn until prefab is assigned!
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.LightPlacementEngine:Awake () (at Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:155)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+the player disappear from scen while launch on pause mode
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+are you using same seed each time ? one few wall was made, they not tif 2 pan of wall that is a kind of room I suggest you a complete rework. Compute math from mazengine; remove placing Torches from the flow; it' was because at new scene they're 2 camera, I remove the parent one..
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

@@ -54,6 +54,9 @@ namespace Code.Lavos.Core
         public int roomSize;
         public int corridorWidth;
 
+        // Difficulty scaling from seed
+        private float seedFactor;
+
         #endregion
 
         #region Grid Data
@@ -105,8 +108,17 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Generate complete maze grid with SPAWN ROOM FIRST.
         /// </summary>
-        public void Generate()
+        /// <param name="seed">Random seed for reproducible generation</param>
+        /// <param name="difficultyFactor">0.0-1.0 difficulty scaling (higher = more rooms, complex)</param>
+        public void Generate(uint seed, float difficultyFactor)
         {
+            // Store difficulty factor for room/complexity scaling
+            seedFactor = Mathf.Clamp01(difficultyFactor);
+            
+            // Initialize random state for reproducible generation
+            Random.InitState((int)seed);
+            Debug.Log($"[GridMazeGenerator]  Random seed initialized: {seed} (difficulty: {seedFactor:F2})");
+
             // Initialize from config if not already set
             if (gridSize == 0) InitializeFromConfig();
 
@@ -118,7 +130,7 @@ namespace Code.Lavos.Core
             // Step 2: Place SPAWN ROOM first (guaranteed with entrance/exit)
             PlaceSpawnRoom();
 
-            // Step 3: Place other rooms (random, don't block spawn corridors)
+            // Step 3: Place other rooms (scaled by difficulty)
             PlaceOtherRooms();
 
             // Step 4: Carve corridors TO spawn room (guaranteed connection)
@@ -216,11 +228,16 @@ namespace Code.Lavos.Core
         /// </summary>
         private void PlaceOtherRooms()
         {
-            Debug.Log($"[GridMazeGenerator] ️ STEP 3: Placing other rooms...");
+            Debug.Log($"[GridMazeGenerator]  STEP 3: Placing other rooms...");
 
-            // Place 1-3 additional rooms (random positions, avoid spawn corridors)
-            int additionalRooms = Random.Range(1, 4);
-            
+            // Scale room count by difficulty factor (from GameConfig)
+            var cfg = GameConfig.Instance;
+            int baseRooms = Random.Range(cfg.baseRoomMin, cfg.baseRoomMax);
+            int bonusRooms = Mathf.FloorToInt(seedFactor * cfg.maxDifficultyRoomBonus);
+            int additionalRooms = baseRooms + bonusRooms;
+
+            Debug.Log($"[GridMazeGenerator]  Placing {additionalRooms} rooms (base: {baseRooms}, bonus: {bonusRooms})");
+
             for (int i = 0; i < additionalRooms; i++)
             {
                 Vector2Int roomPos = FindValidRoomPosition();

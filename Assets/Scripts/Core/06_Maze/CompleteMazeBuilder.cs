@@ -27,6 +27,8 @@
 // 11. Textures  12. Save  13. Player (LAST)
 //
 
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -43,7 +45,6 @@ namespace Code.Lavos.Core
         [Header("Prefabs")]
         [SerializeField] private GameObject wallPrefab;
         [SerializeField] private GameObject doorPrefab;
-        [SerializeField] private GameObject torchPrefab;
 
         [Header("Materials")]
         [SerializeField] private Material wallMaterial;
@@ -52,13 +53,10 @@ namespace Code.Lavos.Core
 
         [Header("Components")]
         [SerializeField] private SpatialPlacer spatialPlacer;
-        [SerializeField] private LightPlacementEngine lightPlacementEngine;
-        [SerializeField] private TorchPool torchPool;
         [SerializeField] private PlayerController playerController;
 
         [Header("Game State")]
         [SerializeField] private int currentLevel = 0;
-        [SerializeField] private string currentSeed = "MazeSeed2026";
 
         #endregion
 
@@ -71,7 +69,6 @@ namespace Code.Lavos.Core
         private Vector3 spawnPos;
         private Vector2Int spawnCell;
         private int mazeSize;
-        private System.Collections.Generic.List<Vector3> wallPositions;  // For torch placement
 
         #endregion
 
@@ -80,7 +77,11 @@ namespace Code.Lavos.Core
         public static CompleteMazeBuilder Instance => _instance;
         public int CurrentLevel => currentLevel;
         public int MazeSize => mazeSize;
-        public string CurrentSeed => currentSeed;
+
+        /// <summary>
+        /// Get grid for external placers (plug-in-out API).
+        /// </summary>
+        public GridMazeGenerator GetGrid() => grid;
 
         #endregion
 
@@ -88,9 +89,6 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            // Initialize wall positions list
-            wallPositions = new System.Collections.Generic.List<Vector3>();
-
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -99,21 +97,38 @@ namespace Code.Lavos.Core
             _instance = this;
 
             LoadConfig();
-            mazeSize = 12 + currentLevel;
-            mazeSize = Mathf.Clamp(mazeSize, 12, 51);
+
+            // Generate random seed from system entropy (truly random each load)
+            uint rawSeed = (uint)System.Environment.TickCount ^ (uint)System.Guid.NewGuid().GetHashCode();
+            
+            // Hash seed for better distribution and encryption (SHA256 -> first 4 bytes)
+            byte[] seedBytes = System.BitConverter.GetBytes(rawSeed);
+            byte[] hash;
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                hash = sha256.ComputeHash(seedBytes);
+            }
+            seed = (uint)System.BitConverter.ToInt32(hash, 0) & 0x7FFFFFFF; // Ensure positive
+            
+            // Use seed magnitude to influence maze difficulty (from GameConfig)
+            var cfg = GameConfig.Instance;
+            float seedFactor = seed / (float)int.MaxValue; // 0.0 to 1.0
+            int bonusSize = Mathf.FloorToInt(seedFactor * cfg.maxDifficultySizeBonus);
+            int bonusRooms = Mathf.FloorToInt(seedFactor * cfg.maxDifficultyRoomBonus);
+
+            mazeSize = cfg.baseMazeSize + currentLevel + bonusSize;
+            mazeSize = Mathf.Clamp(mazeSize, cfg.minMazeSize, cfg.maxMazeSize);
 
             if (EventHandler.Instance != null)
-                Log("[CompleteMazeBuilder]  Connected to EventHandler");
+                Log("[CompleteMazeBuilder] Connected to EventHandler");
 
-            seed = ComputeSeed(currentSeed);
-
-            Log($"[CompleteMazeBuilder]  Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log($"[CompleteMazeBuilder] Level {currentLevel} - Maze {mazeSize}x{mazeSize} - Seed: {seed} (factor: {seedFactor:F2})");
         }
 
         private void Start()
         {
-            if (GameConfig.Instance.useRandomSeed)
-                GenerateMaze();
+            // Always generate maze on start (useRandomSeed from JSON config)
+            GenerateMaze();
         }
 
         private void OnApplicationQuit()
@@ -128,14 +143,9 @@ namespace Code.Lavos.Core
         public void NextLevel()
         {
             currentLevel++;
-            mazeSize = Mathf.Clamp(12 + currentLevel, 12, 51);
+            var cfg = GameConfig.Instance;
+            mazeSize = Mathf.Clamp(cfg.baseMazeSize + currentLevel, cfg.minMazeSize, cfg.maxMazeSize);
             Log($"[CompleteMazeBuilder]  Level {currentLevel} - Maze {mazeSize}x{mazeSize}");
-        }
-
-        public void SetSeed(string s)
-        {
-            currentSeed = s;
-            seed = ComputeSeed(s);
         }
 
         #endregion
@@ -151,7 +161,6 @@ namespace Code.Lavos.Core
 
             wallPrefab = LoadPrefab(cfg.wallPrefab);
             doorPrefab = LoadPrefab(cfg.doorPrefab);
-            torchPrefab = LoadPrefab(cfg.torchPrefab);
 
             wallMaterial = LoadMaterial(cfg.wallMaterial);
             floorMaterial = LoadMaterial(cfg.floorMaterial);
@@ -174,49 +183,39 @@ namespace Code.Lavos.Core
         [ContextMenu("Generate Maze")]
         public void GenerateMaze()
         {
-            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Log($"[CompleteMazeBuilder]  LEVEL {currentLevel} - Maze {mazeSize}x{mazeSize}");
-            Log("[CompleteMazeBuilder] ️ Starting maze generation...");
-            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] ========================================");
+            Log($"[CompleteMazeBuilder] LEVEL {currentLevel} - Maze {mazeSize}x{mazeSize}");
+            Log("[CompleteMazeBuilder] Starting maze generation...");
+            Log("[CompleteMazeBuilder] ========================================");
 
-            // Ensure wallPositions is initialized (editor may call before Awake)
-            if (wallPositions == null)
-            {
-                wallPositions = new System.Collections.Generic.List<Vector3>();
-            }
-
-            wallPositions.Clear();
             FindComponents();
             CleanupOldMaze();
-            Log("[CompleteMazeBuilder]  STEP 1: Cleanup complete");
+            Log("[CompleteMazeBuilder] STEP 1: Cleanup complete");
 
             SpawnGround();
-            Log("[CompleteMazeBuilder]  STEP 2: Ground spawned");
+            Log("[CompleteMazeBuilder] STEP 2: Ground spawned");
 
             GenerateGrid();
-            Log($"[CompleteMazeBuilder] ️ STEP 3: Spawn room placed at {spawnCell}");
+            Log($"[CompleteMazeBuilder] STEP 3: Spawn room placed at {spawnCell}");
 
             PlaceWalls();
-            Log("[CompleteMazeBuilder]  STEP 4: Walls placed (oriented)");
+            Log("[CompleteMazeBuilder] STEP 4: Walls placed");
 
-            PlaceDoors();
-            Log("[CompleteMazeBuilder]  STEP 5: Doors placed");
-
-            PlaceTorches();
-            Log("[CompleteMazeBuilder]  STEP 6: Torches mounted");
+            PlaceExitDoor();
+            Log("[CompleteMazeBuilder] STEP 5: Exit door placed on south wall");
 
             SaveMaze();
-            Log("[CompleteMazeBuilder]  STEP 7: Maze saved");
+            Log("[CompleteMazeBuilder] STEP 6: Maze saved");
 
             if (Application.isPlaying)
             {
                 SpawnPlayer();
-                Log($"[CompleteMazeBuilder]  STEP 8: Player spawned at {spawnPos}");
+                Log($"[CompleteMazeBuilder] STEP 8: Player spawned at {spawnPos}");
             }
 
-            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
-            Log($"[CompleteMazeBuilder]  Level {currentLevel} complete! Maze {mazeSize}x{mazeSize}");
-            Log("[CompleteMazeBuilder] ════════════════════════════════════════");
+            Log("[CompleteMazeBuilder] ========================================");
+            Log($"[CompleteMazeBuilder] Level {currentLevel} complete! Maze {mazeSize}x{mazeSize}");
+            Log("[CompleteMazeBuilder] ========================================");
         }
 
         public void ReloadScene() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -228,10 +227,8 @@ namespace Code.Lavos.Core
         private void FindComponents()
         {
             if (spatialPlacer == null) spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
-            if (lightPlacementEngine == null) lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
-            if (torchPool == null) torchPool = FindFirstObjectByType<TorchPool>();
             if (playerController == null) playerController = FindFirstObjectByType<PlayerController>();
-            Log("[CompleteMazeBuilder]  Components found");
+            Log("[CompleteMazeBuilder] Components found");
         }
 
         #endregion
@@ -255,7 +252,6 @@ namespace Code.Lavos.Core
             DestroyImmediate(FindObject("GroundFloor"));
             DestroyImmediate(FindObject("MazeWalls"));
             DestroyImmediate(FindObject("Doors"));
-            DestroyImmediate(FindObject("Torches"));
         }
 
         #endregion
@@ -295,13 +291,16 @@ namespace Code.Lavos.Core
 
         private void GenerateGrid()
         {
-            Log("[CompleteMazeBuilder] ️ Generating grid maze with spawn room first...");
+            Log("[CompleteMazeBuilder] Generating grid maze with spawn room first...");
 
             grid = new GridMazeGenerator();
             grid.gridSize = mazeSize;
             grid.roomSize = GameConfig.Instance.defaultRoomSize;
             grid.corridorWidth = GameConfig.Instance.defaultCorridorWidth;
-            grid.Generate();
+            
+            // Calculate difficulty factor from seed (same calculation as Awake)
+            float difficultyFactor = seed / (float)int.MaxValue;
+            grid.Generate(seed, difficultyFactor);
 
             spawnCell = grid.FindSpawnPoint();
             spawnPos = new Vector3(
@@ -310,7 +309,7 @@ namespace Code.Lavos.Core
                 spawnCell.y * cellSize + cellSize / 2f
             );
 
-            Log($"[CompleteMazeBuilder]  SpawnPoint: cell {spawnCell}");
+            Log($"[CompleteMazeBuilder] SpawnPoint: cell {spawnCell}");
             Log($"[CompleteMazeBuilder]  Spawn position: {spawnPos}");
             Log($"[CompleteMazeBuilder]  Grid maze generated ({mazeSize}x{mazeSize})");
         }
@@ -319,47 +318,212 @@ namespace Code.Lavos.Core
 
         #region Walls
 
-        private void PlaceWalls()
+        /// <summary>
+        /// Place walls on outer perimeter and interior cell boundaries.
+        /// Also publishes events to ComputeGridEngine via EventHandler.
+        /// </summary>
+        public void PlaceWalls()
         {
-            Log($"[CompleteMazeBuilder]  Placing walls with proper orientation...");
+            if (grid == null)
+            {
+                LogError("[CompleteMazeBuilder] Grid not generated! Call GenerateGrid() first");
+                return;
+            }
+
+            Log("[CompleteMazeBuilder] Computing walls from grid...");
 
             int spawned = 0;
+
+            // Destroy existing walls first
+            var existingWalls = GameObject.Find("MazeWalls");
+            if (existingWalls != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(existingWalls);
+                else
+                    DestroyImmediate(existingWalls);
+            }
+
             GameObject parent = new GameObject("MazeWalls");
+
+            // Build grid data for compute grid (byte-to-byte)
+            byte[] gridBytes = BuildGridBytesForComputeGrid();
+
+            // Publish to ComputeGridEngine via EventHandler (plug-in-out!)
+            if (Application.isPlaying && EventHandler.Instance != null)
+            {
+                string mazeId = $"Maze_{currentLevel:D3}";
+                EventHandler.Instance.InvokeComputeGridSaveRequested(mazeId, gridBytes, (int)seed);
+                Log($"[CompleteMazeBuilder] Published compute grid save event: {mazeId}");
+            }
+
+            PlaceOuterPerimeterWalls(parent.transform, ref spawned);
+            PlaceInteriorWalls(parent.transform, ref spawned);
+
+            Log($"[CompleteMazeBuilder] {spawned} wall segments placed");
+        }
+
+        /// <summary>
+        /// Build grid byte array from current grid state.
+        /// This is the data that will be sent to ComputeGridEngine.
+        /// </summary>
+        private byte[] BuildGridBytesForComputeGrid()
+        {
+            byte[] gridBytes = new byte[mazeSize * mazeSize];
+            int index = 0;
+
+            for (int z = 0; z < mazeSize; z++)
+            {
+                for (int x = 0; x < mazeSize; x++)
+                {
+                    GridMazeCell cell = grid.GetCell(x, z);
+
+                    // Map GridMazeCell to ComputeGridEngine.GridCell
+                    byte computeCell = cell switch
+                    {
+                        GridMazeCell.Floor => (byte)ComputeGridEngine.GridCell.Floor,
+                        GridMazeCell.Room => (byte)ComputeGridEngine.GridCell.Room,
+                        GridMazeCell.Corridor => (byte)ComputeGridEngine.GridCell.Corridor,
+                        GridMazeCell.Wall => (byte)ComputeGridEngine.GridCell.Wall,
+                        GridMazeCell.SpawnPoint => (byte)ComputeGridEngine.GridCell.SpawnPoint,
+                        _ => (byte)ComputeGridEngine.GridCell.Floor
+                    };
+
+                    gridBytes[index++] = computeCell;
+                }
+            }
+
+            Log($"[CompleteMazeBuilder] Grid bytes built: {gridBytes.Length} bytes");
+            return gridBytes;
+        }
+
+        /// <summary>
+        /// Place walls on outer perimeter (north, south, east, west).
+        /// </summary>
+        private void PlaceOuterPerimeterWalls(Transform parent, ref int spawned)
+        {
+            // NORTH WALL (Z = mazeSize * cellSize)
+            for (int x = 0; x < mazeSize; x++)
+            {
+                Vector3 pos = new Vector3(
+                    x * cellSize + cellSize / 2f,
+                    wallHeight / 2f,
+                    mazeSize * cellSize
+                );
+                SpawnWall(pos, Quaternion.identity, $"North_{x}", parent);
+                spawned++;
+            }
+
+            // SOUTH WALL (Z = 0)
+            for (int x = 0; x < mazeSize; x++)
+            {
+                Vector3 pos = new Vector3(
+                    x * cellSize + cellSize / 2f,
+                    wallHeight / 2f,
+                    0f
+                );
+                SpawnWall(pos, Quaternion.identity, $"South_{x}", parent);
+                spawned++;
+            }
+
+            // EAST WALL (X = mazeSize * cellSize)
+            for (int z = 0; z < mazeSize; z++)
+            {
+                Vector3 pos = new Vector3(
+                    mazeSize * cellSize,
+                    wallHeight / 2f,
+                    z * cellSize + cellSize / 2f
+                );
+                SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"East_{z}", parent);
+                spawned++;
+            }
+
+            // WEST WALL (X = 0)
+            for (int z = 0; z < mazeSize; z++)
+            {
+                Vector3 pos = new Vector3(
+                    0f,
+                    wallHeight / 2f,
+                    z * cellSize + cellSize / 2f
+                );
+                SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"West_{z}", parent);
+                spawned++;
+            }
+        }
+
+        /// <summary>
+        /// Place interior walls between adjacent cells (Room/Corridor vs Floor).
+        /// </summary>
+        private void PlaceInteriorWalls(Transform parent, ref int spawned)
+        {
+            int interiorCount = 0;
 
             for (int x = 0; x < mazeSize; x++)
             {
                 for (int y = 0; y < mazeSize; y++)
                 {
-                    if (grid.GetCell(x, y) == GridMazeCell.Wall)
+                    GridMazeCell current = grid.GetCell(x, y);
+
+                    if (current != GridMazeCell.Room && current != GridMazeCell.Corridor)
+                        continue;
+
+                    // Check EAST boundary
+                    if (x + 1 < mazeSize)
                     {
-                        Vector3 pos = new Vector3(
-                            x * cellSize + cellSize / 2f,
-                            wallHeight / 2f,
-                            y * cellSize + cellSize / 2f
-                        );
+                        GridMazeCell east = grid.GetCell(x + 1, y);
+                        if (NeedsWallBetween(current, east))
+                        {
+                            Vector3 pos = new Vector3(
+                                (x + 1) * cellSize,
+                                wallHeight / 2f,
+                                y * cellSize + cellSize / 2f
+                            );
+                            SpawnWall(pos, Quaternion.Euler(0f, 90f, 0f), $"Wall_E_{x}_{y}", parent);
+                            spawned++;
+                            interiorCount++;
+                        }
+                    }
 
-                        Quaternion rot = Quaternion.Euler(0f, 0f, 0f);
-                        bool hasVertical = (y + 1 < mazeSize && grid.GetCell(x, y + 1) == GridMazeCell.Wall) ||
-                                          (y - 1 >= 0 && grid.GetCell(x, y - 1) == GridMazeCell.Wall);
-                        if (hasVertical)
-                            rot = Quaternion.Euler(0f, 90f, 0f);
-
-                        SpawnWall(pos, rot, $"Wall_{x}_{y}", parent.transform);
-                        wallPositions.Add(pos);
-                        spawned++;
+                    // Check SOUTH boundary
+                    if (y + 1 < mazeSize)
+                    {
+                        GridMazeCell south = grid.GetCell(x, y + 1);
+                        if (NeedsWallBetween(current, south))
+                        {
+                            Vector3 pos = new Vector3(
+                                x * cellSize + cellSize / 2f,
+                                wallHeight / 2f,
+                                (y + 1) * cellSize
+                            );
+                            SpawnWall(pos, Quaternion.identity, $"Wall_S_{x}_{y}", parent);
+                            spawned++;
+                            interiorCount++;
+                        }
                     }
                 }
             }
-
-            Log($"[CompleteMazeBuilder]  {spawned} walls placed (oriented & textured)");
         }
+
+        /// <summary>
+        /// Determine if wall needed between two adjacent cells.
+        /// </summary>
+        private bool NeedsWallBetween(GridMazeCell a, GridMazeCell b)
+        {
+            bool aWalkable = (a == GridMazeCell.Room || a == GridMazeCell.Corridor);
+            bool bWalkable = (b == GridMazeCell.Room || b == GridMazeCell.Corridor);
+            return aWalkable != bWalkable;
+        }
+
+        #endregion
+
+        #region Exit Door
 
         private void SpawnWall(Vector3 pos, Quaternion rot, string name, Transform parent)
         {
             if (wallPrefab == null)
             {
-                LogError($"[CompleteMazeBuilder]  Wall prefab not loaded! Cannot spawn wall at {pos}");
-                LogError("[CompleteMazeBuilder]  Fix: Run Tools → Quick Setup Prefabs");
+                LogError($"[CompleteMazeBuilder] Wall prefab not loaded! Cannot spawn wall at {pos}");
+                LogError("[CompleteMazeBuilder] Fix: Run Tools -> Quick Setup Prefabs");
                 return;
             }
 
@@ -376,105 +540,36 @@ namespace Code.Lavos.Core
 
         #endregion
 
-        #region Doors
+        #region Exit Door
 
-        private void PlaceDoors()
+        /// <summary>
+        /// Place ONE exit door on the south perimeter wall.
+        /// Door is centered on south wall for easy finding.
+        /// </summary>
+        public void PlaceExitDoor()
         {
-            Log("[CompleteMazeBuilder]  Placing simple entrance/exit doors...");
-
-            GameObject parent = new GameObject("Doors");
-            Vector2Int doorPos = FindDoorPosition();
-
-            if (doorPos.x >= 0)
+            if (doorPrefab == null)
             {
-                Vector3 pos = new Vector3(
-                    doorPos.x * cellSize + cellSize / 2f,
-                    GameConfig.Instance.defaultDoorHeight / 2f,
-                    doorPos.y * cellSize + cellSize / 2f
-                );
-
-                if (doorPrefab != null)
-                {
-                    GameObject door = Instantiate(doorPrefab, pos, Quaternion.identity);
-                    door.name = $"Door_Entrance";
-                    door.transform.SetParent(parent.transform);
-                    Log($"[CompleteMazeBuilder]  Entrance door placed at ({doorPos.x}, {doorPos.y})");
-                }
-            }
-            else
-            {
-                Log("[CompleteMazeBuilder] ️ No suitable door position found");
-            }
-
-            Log($"[CompleteMazeBuilder]  Doors placed (entrance/exit only)");
-        }
-
-        private Vector2Int FindDoorPosition()
-        {
-            // Find room cell adjacent to corridor
-            for (int radius = 1; radius <= 3; radius++)
-            {
-                for (int x = spawnCell.x - radius; x <= spawnCell.x + radius; x++)
-                {
-                    for (int y = spawnCell.y - radius; y <= spawnCell.y + radius; y++)
-                    {
-                        if (x >= 0 && x < mazeSize && y >= 0 && y < mazeSize)
-                        {
-                            if (grid.GetCell(x, y) == GridMazeCell.Room)
-                            {
-                                if (IsAdjacentToCorridor(x, y))
-                                    return new Vector2Int(x, y);
-                            }
-                        }
-                    }
-                }
-            }
-            return new Vector2Int(-1, -1);
-        }
-
-        private bool IsAdjacentToCorridor(int x, int y)
-        {
-            if (x + 1 < mazeSize && grid.GetCell(x + 1, y) == GridMazeCell.Corridor) return true;
-            if (x - 1 >= 0 && grid.GetCell(x - 1, y) == GridMazeCell.Corridor) return true;
-            if (y + 1 < mazeSize && grid.GetCell(x, y + 1) == GridMazeCell.Corridor) return true;
-            if (y - 1 >= 0 && grid.GetCell(x, y - 1) == GridMazeCell.Corridor) return true;
-            return false;
-        }
-
-        #endregion
-
-        #region Torches
-
-        private void PlaceTorches()
-        {
-            Log("[CompleteMazeBuilder]  Mounting torches on walls (using prefab)...");
-
-            if (torchPrefab == null)
-            {
-                LogWarning("[CompleteMazeBuilder] ️ Torch prefab not loaded - skipping torch placement");
+                LogWarning("[CompleteMazeBuilder]  Door prefab not loaded - skipping exit door");
                 return;
             }
 
-            GameObject parent = new GameObject("Torches");
-            int placed = 0;
-            float chance = 0.3f;
+            // Calculate center of south wall
+            int doorX = mazeSize / 2;  // Center of south wall
+            Vector3 doorPos = new Vector3(
+                doorX * cellSize + cellSize / 2f,  // Center of cell in X
+                GameConfig.Instance.defaultDoorHeight / 2f,
+                0f  // South perimeter (Z = 0)
+            );
 
-            foreach (Vector3 wallPos in wallPositions)
-            {
-                if (Random.value > chance) continue;
+            // Door faces north (into the maze)
+            Quaternion doorRot = Quaternion.identity;
 
-                Vector3 pos = wallPos + Vector3.forward * (wallThickness / 2f + 0.2f);
-                pos.y = wallHeight * 0.6f;
+            GameObject door = Instantiate(doorPrefab, doorPos, doorRot);
+            door.name = "ExitDoor";
+            door.transform.SetParent(GameObject.Find("MazeWalls")?.transform);
 
-                Quaternion rot = Quaternion.Euler(35f, 0f, 0f);
-
-                GameObject torch = Instantiate(torchPrefab, pos, rot);
-                torch.name = $"Torch_{placed}";
-                torch.transform.SetParent(parent.transform);
-                placed++;
-            }
-
-            Log($"[CompleteMazeBuilder]  {placed} torches mounted on walls");
+            Log($"[CompleteMazeBuilder]  Exit door placed at south wall center (X={doorX})");
         }
 
         #endregion
@@ -491,7 +586,11 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            MazeSaveData.SaveGridMaze((int)seed, grid.SerializeToBytes(), spawnCell.x, spawnCell.y);
+            // Save grid data only (no seed storage - procedural generation)
+            MazeSaveData.SaveGridMaze(grid.SerializeToBytes(), spawnCell.x, spawnCell.y);
+
+            // ComputeGridEngine already received the data via EventHandler in PlaceWalls()
+            // It saved to binary automatically when it received the event
 
             Log("[CompleteMazeBuilder]  Maze saved");
         }
@@ -502,20 +601,22 @@ namespace Code.Lavos.Core
 
         private void SpawnPlayer()
         {
-            Log($"[CompleteMazeBuilder]  Spawning player at {spawnPos}...");
+            Log($"[CompleteMazeBuilder] Spawning player at {spawnPos}...");
 
             if (playerController == null)
                 playerController = FindFirstObjectByType<PlayerController>();
 
             if (playerController == null)
             {
-                LogWarning("[CompleteMazeBuilder] ️ PlayerController not in scene (add independently)");
-                LogWarning("[CompleteMazeBuilder]  Add PlayerController component to a GameObject in scene");
+                LogWarning("[CompleteMazeBuilder] PlayerController not in scene (add independently)");
+                LogWarning("[CompleteMazeBuilder] Add PlayerController component to a GameObject in scene");
                 return;
             }
 
+            // Set player position to spawn point
             playerController.transform.position = spawnPos;
 
+            // Add small random offset to prevent wall clipping
             float offset = GameConfig.Instance.defaultPlayerSpawnOffset;
             playerController.transform.position += new Vector3(
                 (Random.value - 0.5f) * offset,
@@ -523,31 +624,19 @@ namespace Code.Lavos.Core
                 (Random.value - 0.5f) * offset
             );
 
+            // Set camera to eye level
             var cam = playerController.GetComponentInChildren<Camera>();
             if (cam != null)
             {
                 cam.transform.localPosition = new Vector3(0f, GameConfig.Instance.defaultPlayerEyeHeight, 0f);
                 cam.transform.localRotation = Quaternion.identity;
-                Log($"[CompleteMazeBuilder]  FPS camera set to eye level ({GameConfig.Instance.defaultPlayerEyeHeight}m)");
+                Log($"[CompleteMazeBuilder] FPS camera set to eye level ({GameConfig.Instance.defaultPlayerEyeHeight}m)");
             }
 
             playerController.transform.rotation = Quaternion.identity;
 
-            Log($"[CompleteMazeBuilder]  Player spawned INSIDE maze at {playerController.transform.position}");
-            Log($"[CompleteMazeBuilder]  Camera at FPS eye level - ready to explore!");
-        }
-
-        #endregion
-
-        #region Utilities
-
-        private uint ComputeSeed(string s)
-        {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(s);
-            uint hash = 0;
-            for (int i = 0; i < bytes.Length; i++)
-                hash = hash * 31 + bytes[i];
-            return hash;
+            Log($"[CompleteMazeBuilder] Player spawned INSIDE maze at {playerController.transform.position}");
+            Log("[CompleteMazeBuilder] Ready to explore!");
         }
 
         #endregion

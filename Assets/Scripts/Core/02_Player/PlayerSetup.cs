@@ -122,14 +122,26 @@ namespace Code.Lavos.Core
         {
             if (!_isInitialized)
             {
-                Debug.LogWarning("[PlayerSetup] ️ Not initialized in Awake - initializing now");
+                Debug.LogWarning("[PlayerSetup] Not initialized in Awake - initializing now");
                 Awake();
             }
 
-            PositionPlayer();
+            // Check if CompleteMazeBuilder exists - if yes, it will spawn the player
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            if (mazeBuilder != null)
+            {
+                Debug.Log("[PlayerSetup] CompleteMazeBuilder found - skipping player positioning (maze builder will spawn)");
+                // Don't position player here - CompleteMazeBuilder will do it after maze generation
+            }
+            else
+            {
+                // No maze builder - position player manually (for non-maze scenes)
+                PositionPlayer();
+            }
+
             SetupCamera();
 
-            Debug.Log("[PlayerSetup]  Player initialized");
+            Debug.Log("[PlayerSetup] Player initialized");
         }
 
         /// <summary>
@@ -156,7 +168,7 @@ namespace Code.Lavos.Core
             _eyeHeight = config.defaultPlayerEyeHeight;
             _followSpeed = config.mouseSensitivity * 5f;
 
-            Debug.Log($"[PlayerSetup]  Config loaded: EyeHeight={_eyeHeight}m, FollowSpeed={_followSpeed}");
+            Debug.Log($"[PlayerSetup] Config loaded: EyeHeight={_eyeHeight}m, FollowSpeed={_followSpeed}");
         }
 
         #endregion
@@ -196,24 +208,24 @@ namespace Code.Lavos.Core
         {
             if (_playerController == null)
             {
-                Debug.LogError("[PlayerSetup]  PlayerController not found!");
-                Debug.LogError("[PlayerSetup]  Add PlayerController component");
+                Debug.LogError("[PlayerSetup] PlayerController not found!");
+                Debug.LogError("[PlayerSetup] Add PlayerController component");
             }
 
             if (_playerStats == null)
             {
-                Debug.LogError("[PlayerSetup]  PlayerStats not found!");
-                Debug.LogError("[PlayerSetup]  Add PlayerStats component");
+                Debug.LogError("[PlayerSetup] PlayerStats not found!");
+                Debug.LogError("[PlayerSetup] Add PlayerStats component");
             }
 
             if (_playerCamera == null)
             {
-                Debug.LogWarning("[PlayerSetup] ️ No Camera found!");
+                Debug.LogWarning("[PlayerSetup] No Camera found! Add Main Camera as child.");
             }
 
             if (_cameraFollow == null && _playerCamera != null)
             {
-                Debug.LogWarning("[PlayerSetup] ️ CameraFollow not found!");
+                Debug.LogWarning("[PlayerSetup] CameraFollow not found! Add CameraFollow component.");
             }
         }
 
@@ -228,11 +240,11 @@ namespace Code.Lavos.Core
         private void InitializeComponents()
         {
             // PlayerStats auto-initializes in Awake() - no manual call needed
-            Debug.Log("[PlayerSetup]  PlayerStats initialized (auto in Awake)");
+            Debug.Log("[PlayerSetup] PlayerStats initialized (auto in Awake)");
 
             // CameraFollow auto-finds target automatically (set in Inspector)
             // Can't set autoFindTarget from here (it's private)
-            Debug.Log("[PlayerSetup]  CameraFollow will auto-find target");
+            Debug.Log("[PlayerSetup] CameraFollow will auto-find target");
         }
 
         /// <summary>
@@ -247,12 +259,12 @@ namespace Code.Lavos.Core
                 if (mazeBuilder != null)
                 {
                     transform.position = _startPosition;
-                    Debug.Log("[PlayerSetup]  Using maze spawn point");
+                    Debug.Log("[PlayerSetup] Using maze spawn point");
                 }
                 else
                 {
                     transform.position = _startPosition;
-                    Debug.Log("[PlayerSetup] ️ No CompleteMazeBuilder - using start position");
+                    Debug.Log("[PlayerSetup] No CompleteMazeBuilder - using start position");
                 }
             }
             else
@@ -260,7 +272,7 @@ namespace Code.Lavos.Core
                 transform.position = _startPosition;
             }
 
-            Debug.Log($"[PlayerSetup]  Player positioned at {transform.position}");
+            Debug.Log($"[PlayerSetup] Player positioned at {transform.position}");
         }
 
         /// <summary>
@@ -274,7 +286,7 @@ namespace Code.Lavos.Core
             _playerCamera.transform.localPosition = new Vector3(0f, _eyeHeight, 0f);
             _playerCamera.transform.localRotation = Quaternion.identity;
 
-            Debug.Log($"[PlayerSetup]  Camera at eye height ({_eyeHeight}m)");
+            Debug.Log($"[PlayerSetup] Camera at eye height ({_eyeHeight}m)");
         }
 
         #endregion

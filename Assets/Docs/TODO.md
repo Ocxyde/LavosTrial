@@ -22,14 +22,15 @@ See [COPYING](../../COPYING) file for full license text.
 
 | Date | Update | Author |
 |------|--------|--------|
-| 2026-03-06 | MazeBuilderEditor reworked for full plug-in-out compliance (no component creation) | Ocxyde & BetsyBoop |
-| 2026-03-06 | SpawnPlacerEngine references updated to SpatialPlacer in comments | Ocxyde & BetsyBoop |
-| 2026-03-06 | Commented code cleaned from MazeIntegration.cs and SeedManager.cs | Ocxyde & BetsyBoop |
-| 2026-03-06 | Verified LightEngine.cs and ParticleGenerator.cs are complete (not truncated) | Ocxyde & BetsyBoop |
+| 2026-03-06 | MazeBuilderEditor reworked for full plug-in-out compliance (no component creation) | Ocxyde |
+| 2026-03-06 | SpawnPlacerEngine references updated to SpatialPlacer in comments | Ocxyde |
+| 2026-03-06 | Commented code cleaned from MazeIntegration.cs and SeedManager.cs | Ocxyde |
+| 2026-03-06 | Verified LightEngine.cs and ParticleGenerator.cs are complete (not truncated) | Ocxyde |
+| 2026-03-06 | GridPEnvPlacer.cs created for wall placement with exact border snapping | Ocxyde |
 | 2026-03-06 | CompleteMazeBuilder SIMPLIFIED (verbosity removed, ~500 lines, short logging only) | Ocxyde |
-| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~550 lines, verbosity logging restored) | Ocxyde & BetsyBoop |
-| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~500 lines, better perf) | Ocxyde & BetsyBoop |
-| 2026-03-06 | CompleteMazeBuilder rewritten as MAIN ORCHESTRATOR | Ocxyde & BetsyBoop |
+| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~550 lines, verbosity logging restored) | Ocxyde |
+| 2026-03-06 | CompleteMazeBuilder OPTIMIZED (~500 lines, better perf) | Ocxyde |
+| 2026-03-06 | CompleteMazeBuilder rewritten as MAIN ORCHESTRATOR | Ocxyde |
 
 ---
 
@@ -270,18 +271,25 @@ Tools → Next Level (Harder)
 - ✅ Cleaned commented code from `SeedManager.cs` (~60 lines removed)
 - ✅ Verified `LightEngine.cs` complete (927 lines)
 - ✅ Verified `ParticleGenerator.cs` complete (896 lines)
+- ✅ Created `GridPEnvPlacer.cs` - Wall placement with exact border snapping
+- ✅ Refactored `CompleteMazeBuilder.PlaceWalls()` - N/W borders, byte-to-byte RAM storage
+- ✅ Made `PlaceWalls()`, `PlaceDoors()`, `PlaceTorches()` public for modular calls
 
 ### **TOOLS CREATED:**
 - ✅ `remove-emoji-from-cs.ps1` - Removes emoji from all C# files (ready to run)
+- ✅ `PlugInOutComplianceChecker.cs` - Scans for architecture violations
+- ✅ `GIT_INSTRUCTIONS.md` - Git commit instructions
 
 ---
 
-**Generated:** 2026-03-06
-**Unity Version:** 6000.3.7f1
-**Status:** ✅ **READY FOR TESTING** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **0 COMPILATION ERRORS**
+**Generated:** 2026-03-06  
+**Unity Version:** 6000.3.7f1  
+**Status:** READY FOR TESTING | PLUG-IN-OUT COMPLIANT | 0 COMPILATION ERRORS
 
 ---
 
 *Document generated - Unity 6 compatible - UTF-8 encoding - Unix LF*
 
-**We made it, coder friend!** 🫡🎮⚔️
+---
+
+**Ocxyde & BetsyBoop** - 2026

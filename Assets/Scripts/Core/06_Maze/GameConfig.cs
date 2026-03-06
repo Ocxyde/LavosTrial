@@ -111,7 +111,22 @@ namespace Code.Lavos.Core
         public bool generateRooms = true;
         public int minRooms = 3;
         public int maxRooms = 8;
-        
+
+        [Header("️ Difficulty Scaling")]
+        [Tooltip("Base maze size (before difficulty bonus)")]
+        public int baseMazeSize = 12;
+        [Tooltip("Minimum maze size")]
+        public int minMazeSize = 12;
+        [Tooltip("Maximum maze size")]
+        public int maxMazeSize = 51;
+        [Tooltip("Maximum size bonus from difficulty (0-10)")]
+        public int maxDifficultySizeBonus = 10;
+        [Tooltip("Maximum room bonus from difficulty (0-5)")]
+        public int maxDifficultyRoomBonus = 5;
+        [Tooltip("Base rooms random range (1-4 = 1 to 3 rooms)")]
+        public int baseRoomMin = 1;
+        public int baseRoomMax = 4;
+
         [Header("️ Generation Options")]
         public bool useRandomSeed = true;
         public string manualSeed = "MazeSeed2026";

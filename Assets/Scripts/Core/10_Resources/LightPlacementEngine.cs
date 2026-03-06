@@ -147,12 +147,12 @@ namespace Code.Lavos.Core
             // Final check
             if (torchPrefab == null)
             {
-                Debug.LogError("[LightPlacementEngine]  No torchPrefab assigned!");
-                Debug.LogError("[LightPlacementEngine]  Please ensure:");
-                Debug.LogError("[LightPlacementEngine]    1. TorchPool has torchHandlePrefab assigned in Inspector, OR");
-                Debug.LogError("[LightPlacementEngine]    2. Create Resources folder and add TorchHandlePrefab there, OR");
-                Debug.LogError("[LightPlacementEngine]    3. Have a TorchHandlePrefab in the scene");
-                Debug.LogWarning("[LightPlacementEngine] ️ Torches will NOT spawn until prefab is assigned!");
+                Debug.LogError("[LightPlacementEngine] No torchPrefab assigned!");
+                Debug.LogError("[LightPlacementEngine] Please ensure:");
+                Debug.LogError("[LightPlacementEngine]   1. TorchPool has torchHandlePrefab assigned in Inspector, OR");
+                Debug.LogError("[LightPlacementEngine]   2. Create Resources folder and add TorchHandlePrefab there, OR");
+                Debug.LogError("[LightPlacementEngine]   3. Have a TorchHandlePrefab in the scene");
+                Debug.LogWarning("[LightPlacementEngine] Torches will NOT spawn until prefab is assigned!");
                 // Don't disable - allow graceful degradation (torches just won't appear)
                 return;
             }

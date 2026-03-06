@@ -153,6 +153,15 @@ namespace Code.Lavos.Core
         public event Action OnMazeGenerated;  // Published when complete maze generation finishes
 
         #endregion
+
+        #region Compute Grid Events
+
+        public event Action<string, byte[], int> OnComputeGridSaveRequested;
+        public event Action<string, int> OnComputeGridLoadRequested;
+        public event Action<byte[], int, int> OnComputeGridCellSet;
+        public event Action OnComputeGridCleared;
+
+        #endregion
         
         #region Material Events
         
@@ -392,7 +401,11 @@ namespace Code.Lavos.Core
             OnAchievementUnlocked?.Invoke(achievementName);
             if (debugEvents) Debug.Log($"[EventHandler] AchievementUnlocked: {achievementName}");
         }
-        
+
+        #endregion
+
+        #region Maze Event Invokers
+
         public void InvokeMazeLevelChanged(int newLevel)
         {
             OnMazeLevelChanged?.Invoke(newLevel);
@@ -405,22 +418,54 @@ namespace Code.Lavos.Core
             if (debugEvents) Debug.Log($"[EventHandler] MazeGenerated: Complete maze generation finished");
         }
 
+        #endregion
+
+        #region Compute Grid Event Invokers
+
+        public void InvokeComputeGridSaveRequested(string mazeId, byte[] gridData, int seed)
+        {
+            OnComputeGridSaveRequested?.Invoke(mazeId, gridData, seed);
+            if (debugEvents) Debug.Log($"[EventHandler] ComputeGridSaveRequested: {mazeId} ({gridData.Length} bytes)");
+        }
+
+        public void InvokeComputeGridLoadRequested(string mazeId, int seed)
+        {
+            OnComputeGridLoadRequested?.Invoke(mazeId, seed);
+            if (debugEvents) Debug.Log($"[EventHandler] ComputeGridLoadRequested: {mazeId}");
+        }
+
+        public void InvokeComputeGridCellSet(byte[] gridData, int x, int z)
+        {
+            OnComputeGridCellSet?.Invoke(gridData, x, z);
+            if (debugEvents) Debug.Log($"[EventHandler] ComputeGridCellSet: ({x}, {z})");
+        }
+
+        public void InvokeComputeGridCleared()
+        {
+            OnComputeGridCleared?.Invoke();
+            if (debugEvents) Debug.Log($"[EventHandler] ComputeGridCleared");
+        }
+
+        #endregion
+
+        #region Material/Texture Request Invokers
+
         public void RequestMaterial(ProceduralCompute.MaterialType type, ProceduralCompute.TextureType textureType)
         {
             // PLUG-IN-AND-OUT: Invoke event, don't call ProceduralCompute directly!
             OnMaterialRequested?.Invoke(type, textureType);
             if (debugEvents) Debug.Log($"[EventHandler] MaterialRequested: {type}_{textureType}");
-            
+
             // Let subscribers respond to the event
             // ProceduralCompute (or any other system) can listen and provide material
         }
-        
+
         public void RequestTexture(ProceduralCompute.TextureType type, ProceduralCompute.MaterialType material)
         {
             // PLUG-IN-AND-OUT: Invoke event, don't call ProceduralCompute directly!
             OnTextureRequested?.Invoke(type, material);
             if (debugEvents) Debug.Log($"[EventHandler] TextureRequested: {type}_{material}");
-            
+
             // Let subscribers respond to the event
         }
 
