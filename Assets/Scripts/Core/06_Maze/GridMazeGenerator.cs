@@ -131,11 +131,14 @@ namespace Code.Lavos.Core
             // Step 1: Fill with Wall (all solid)
             FillGridWithWalls();
 
-            // Step 2: Carve maze with DFS (marks cells as walkable)
+            // Step 2: Mark outer boundary FIRST (so DFS won't carve into it)
+            MarkOuterBoundary();
+
+            // Step 3: Carve maze with DFS (marks cells as walkable, respects boundary)
             CarveMazeWithDfs();
 
-            // Step 3: Mark outer boundary (perimeter walls)
-            MarkOuterBoundary();
+            // Step 4: Carve exit corridor to south wall (ensures player can reach exit)
+            CarveExitToSouth();
 
             Debug.Log($"[GridMazeGenerator] Maze complete - spawn: {_spawnPoint}");
             LogGridStatistics();
@@ -166,6 +169,8 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// DFS carves corridors by marking cells as walkable.
+        /// Boundary is already marked, so DFS won't carve into it.
+        /// Ensures spawn point has at least one exit corridor.
         /// Walls will be placed on cell boundaries by MazeRenderer.
         /// </summary>
         private void CarveMazeWithDfs()
@@ -176,7 +181,8 @@ namespace Code.Lavos.Core
 
             Debug.Log($"[GridMazeGenerator] Carving maze with DFS (4-way)...");
 
-            // Start from west edge area (spawn zone)
+            // Start from inner area (not on boundary)
+            // Spawn is at x=1, which is just inside the west boundary (x=0)
             int startX = 1;
             int startY = _gridSize / 2;
 
@@ -198,6 +204,8 @@ namespace Code.Lavos.Core
             Debug.Log($"[GridMazeGenerator] DFS target: {targetCells} walkable cells");
 
             int backtrackCount = 0;
+            bool spawnedExit = false;
+
             while (stack.Count > 0 && carvedCells < targetCells)
             {
                 Vector2Int current = stack.Peek();
@@ -213,6 +221,7 @@ namespace Code.Lavos.Core
                     if (IsValidMazeCell(nx, ny) && !visited[nx, ny])
                     {
                         // Check if it's a wall (can carve into it)
+                        // Boundary walls are already marked, so DFS won't carve into them
                         if (_grid[nx, ny] == GridMazeCell.Wall)
                         {
                             unvisitedDirections.Add(i);
@@ -232,6 +241,13 @@ namespace Code.Lavos.Core
                     visited[nx, ny] = true;
                     stack.Push(new Vector2Int(nx, ny));
                     carvedCells++;
+
+                    // Mark that we've carved at least one exit from spawn
+                    if (!spawnedExit && current.x == startX && current.y == startY)
+                    {
+                        spawnedExit = true;
+                        Debug.Log($"[GridMazeGenerator] Spawn exit carved at ({nx}, {ny})");
+                    }
                 }
                 else
                 {
@@ -241,7 +257,107 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[GridMazeGenerator] Maze carved: {carvedCells} walkable cells, {backtrackCount} backtracks");
+            // Ensure spawn has at least one exit (fallback)
+            if (!spawnedExit)
+            {
+                Debug.Log($"[GridMazeGenerator] Forcing spawn exit (DFS didn't carve one)...");
+                // Try to carve east from spawn (most likely direction)
+                int eastX = startX + 1;
+                int eastY = startY;
+                if (IsValidMazeCell(eastX, eastY) && _grid[eastX, eastY] == GridMazeCell.Wall)
+                {
+                    _grid[eastX, eastY] = GridMazeCell.Corridor;
+                    Debug.Log($"[GridMazeGenerator] Forced exit east to ({eastX}, {eastY})");
+                }
+                else
+                {
+                    // Try all directions
+                    for (int i = 0; i < numDirections; i++)
+                    {
+                        int nx = startX + dirX[i];
+                        int ny = startY + dirY[i];
+                        if (IsValidMazeCell(nx, ny) && _grid[nx, ny] == GridMazeCell.Wall)
+                        {
+                            _grid[nx, ny] = GridMazeCell.Corridor;
+                            Debug.Log($"[GridMazeGenerator] Forced exit to ({nx}, {ny})");
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Debug.Log($"[GridMazeGenerator] Maze carved: {carvedCells} walkable cells, {backtrackCount} backtracks, spawn exit: {spawnedExit}");
+        }
+
+        /// <summary>
+        /// Carve an exit corridor to the south boundary.
+        /// Ensures player can reach the exit door.
+        /// </summary>
+        public void CarveExitToSouth()
+        {
+            int exitX = _gridSize / 2;  // Center of south wall
+            int exitY = _gridSize - 2;  // Just inside south boundary
+
+            // Find nearest walkable cell to exit
+            Vector2Int nearestWalkable = FindNearestWalkableTo(exitX, exitY);
+
+            if (nearestWalkable.x >= 0)
+            {
+                // Carve corridor from nearest walkable to exit
+                CarveCorridorTo(nearestWalkable, new Vector2Int(exitX, exitY));
+                _grid[exitX, exitY] = GridMazeCell.Corridor;
+                Debug.Log($"[GridMazeGenerator] Exit corridor carved to south wall at ({exitX}, {exitY})");
+            }
+            else
+            {
+                Debug.LogWarning($"[GridMazeGenerator] Could not find path to exit!");
+            }
+        }
+
+        /// <summary>
+        /// Find nearest walkable cell to target position.
+        /// </summary>
+        private Vector2Int FindNearestWalkableTo(int targetX, int targetY)
+        {
+            // Search outward from target
+            for (int radius = 1; radius < _gridSize / 2; radius++)
+            {
+                for (int x = targetX - radius; x <= targetX + radius; x++)
+                {
+                    for (int y = targetY - radius; y <= targetY + radius; y++)
+                    {
+                        if (IsValidMazeCell(x, y) && 
+                            (_grid[x, y] == GridMazeCell.Corridor || _grid[x, y] == GridMazeCell.SpawnPoint))
+                        {
+                            return new Vector2Int(x, y);
+                        }
+                    }
+                }
+            }
+            return new Vector2Int(-1, -1); // Not found
+        }
+
+        /// <summary>
+        /// Carve corridor from start to end (straight line).
+        /// </summary>
+        private void CarveCorridorTo(Vector2Int start, Vector2Int end)
+        {
+            int x = start.x;
+            int y = start.y;
+
+            while (x != end.x || y != end.y)
+            {
+                if (x < end.x) x++;
+                else if (x > end.x) x--;
+                
+                if (y < end.y) y++;
+                else if (y > end.y) y--;
+
+                if (IsValidMazeCell(x, y) && _grid[x, y] == GridMazeCell.Wall)
+                {
+                    _grid[x, y] = GridMazeCell.Corridor;
+                }
+            }
         }
 
         #endregion
@@ -250,11 +366,12 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Mark outer perimeter as Wall boundary.
-        /// Walls will be placed on these cell edges by MazeRenderer.
+        /// Called BEFORE DFS so DFS won't carve into boundary.
         /// </summary>
         private void MarkOuterBoundary()
         {
             // Mark perimeter cells as Wall (boundary)
+            // DFS will respect this and won't carve into it
             for (int x = 0; x < _gridSize; x++)
             {
                 _grid[x, 0] = GridMazeCell.Wall;
@@ -265,16 +382,6 @@ namespace Code.Lavos.Core
             {
                 _grid[0, y] = GridMazeCell.Wall;
                 _grid[_gridSize - 1, y] = GridMazeCell.Wall;
-            }
-
-            // Ensure spawn point is not on boundary
-            if (_spawnPoint.x == 0 || _spawnPoint.x == _gridSize - 1 ||
-                _spawnPoint.y == 0 || _spawnPoint.y == _gridSize - 1)
-            {
-                // Move spawn inward
-                _spawnPoint.x = Mathf.Clamp(_spawnPoint.x, 1, _gridSize - 2);
-                _spawnPoint.y = Mathf.Clamp(_spawnPoint.y, 1, _gridSize - 2);
-                _grid[_spawnPoint.x, _spawnPoint.y] = GridMazeCell.SpawnPoint;
             }
 
             Debug.Log($"[GridMazeGenerator] Outer boundary marked (perimeter walls)");

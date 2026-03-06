@@ -356,7 +356,7 @@ namespace Code.Lavos.Core
             Log("[CompleteMazeBuilder] STEP 2: Ground spawned");
 
             GenerateGrid();
-            Log($"[CompleteMazeBuilder] STEP 3: Spawn point placed at {_spawnCell}");
+            Log($"[CompleteMazeBuilder] STEP 3: Grid carved with exit corridor");
 
             RenderWalls();
             Log("[CompleteMazeBuilder] STEP 4: Walls placed");
