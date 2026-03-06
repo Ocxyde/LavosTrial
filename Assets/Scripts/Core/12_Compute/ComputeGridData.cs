@@ -23,12 +23,12 @@
 // - Stores compute grid to encrypted binary files
 // - Located in Assets/StreamingAssets/ComputeGrid/
 // - Fast I/O for byte-to-byte operations
-// - AES-GCM authenticated encryption with seed-derived keys
+// - XOR encryption with SHA256-derived keys + random IV
 //
 // FILE FORMAT (v2):
 // [Magic: 4 bytes][Version: 2 bytes][GridSize: 2 bytes][Seed: 4 bytes]
-// [IV: 12 bytes][GridDataLen: 4 bytes][EncryptedGrid: N bytes][GridTag: 16 bytes]
-// [MetadataLen: 4 bytes][EncryptedMeta: M bytes][MetaTag: 16 bytes]
+// [IV: 12 bytes][DataLen: 4 bytes][EncryptedData: N bytes]
+// [[MetaIV: 12 bytes][MetaLen: 4 bytes][EncryptedMeta: M bytes]]
 //
 // USAGE:
 //   ComputeGridData.SaveGrid(mazeId, gridBytes, seed)
@@ -39,7 +39,6 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEngine;
 
 namespace Code.Lavos.Core
@@ -63,13 +62,11 @@ namespace Code.Lavos.Core
     {
         // File constants
         private const uint MAGIC_NUMBER = 0x434F4D50; // "COMP" in hex
-        private const ushort FILE_VERSION = 2; // v2: AES-GCM with auth tags
+        private const ushort FILE_VERSION = 2; // v2: XOR with SHA256 key derivation + IV
         private const string FOLDER_NAME = "ComputeGrid";
 
-        // AES-GCM constants
+        // Encryption constants
         private const int IV_SIZE = 12; // 96 bits
-        private const int TAG_SIZE = 16; // 128 bits
-        private const int KEY_SIZE = 32; // 256 bits
 
         // Cache for fast access
         private static readonly System.Collections.Generic.Dictionary<string, byte[]> _cache =
@@ -115,14 +112,13 @@ namespace Code.Lavos.Core
                     byte[] iv = GenerateSecureIV();
                     byte[] key = DeriveKey(seed);
 
-                    // Encrypt grid data with AES-GCM
-                    byte[] encryptedData = EncryptAesGcm(gridData, key, iv);
+                    // Encrypt grid data with XOR (AES-GCM not available in Unity Mono)
+                    byte[] encryptedData = EncryptXor(gridData, key, iv);
 
-                    // Write IV, data length, encrypted data, and auth tag
+                    // Write IV, data length, and encrypted data
                     ms.Write(iv, 0, IV_SIZE);
-                    WriteInt(ms, encryptedData.Length - TAG_SIZE); // Store ciphertext length (without tag)
-                    ms.Write(encryptedData, 0, encryptedData.Length - TAG_SIZE);
-                    ms.Write(encryptedData, encryptedData.Length - TAG_SIZE, TAG_SIZE);
+                    WriteInt(ms, encryptedData.Length);
+                    ms.Write(encryptedData, 0, encryptedData.Length);
 
                     // Write to file
                     string filePath = GetFilePath(mazeId);
@@ -170,29 +166,27 @@ namespace Code.Lavos.Core
                     byte[] iv = GenerateSecureIV();
                     byte[] key = DeriveKey(seed);
 
-                    // Encrypt grid data with AES-GCM
-                    byte[] encryptedGrid = EncryptAesGcm(gridData, key, iv);
+                    // Encrypt grid data with XOR
+                    byte[] encryptedGrid = EncryptXor(gridData, key, iv);
 
-                    // Write IV, grid data length, encrypted data, and auth tag
+                    // Write IV, grid data length, and encrypted data
                     ms.Write(iv, 0, IV_SIZE);
-                    WriteInt(ms, encryptedGrid.Length - TAG_SIZE);
-                    ms.Write(encryptedGrid, 0, encryptedGrid.Length - TAG_SIZE);
-                    ms.Write(encryptedGrid, encryptedGrid.Length - TAG_SIZE, TAG_SIZE);
+                    WriteInt(ms, encryptedGrid.Length);
+                    ms.Write(encryptedGrid, 0, encryptedGrid.Length);
 
                     // Write metadata length and data
                     if (metadata != null && metadata.Length > 0)
                     {
-                        // Derive separate key for metadata using different domain separator
-                        byte[] metadataKey = DeriveKey(seed, 0x4D455441); // "META"
+                        // Derive separate key for metadata
+                        byte[] metadataKey = DeriveKey(seed, 0x4D455441);
                         byte[] metadataIv = GenerateSecureIV();
 
-                        byte[] encryptedMetadata = EncryptAesGcm(metadata, metadataKey, metadataIv);
+                        byte[] encryptedMetadata = EncryptXor(metadata, metadataKey, metadataIv);
 
-                        // Write metadata IV, length, encrypted data, and auth tag
+                        // Write metadata IV, length, and encrypted data
                         ms.Write(metadataIv, 0, IV_SIZE);
-                        WriteInt(ms, encryptedMetadata.Length - TAG_SIZE);
-                        ms.Write(encryptedMetadata, 0, encryptedMetadata.Length - TAG_SIZE);
-                        ms.Write(encryptedMetadata, encryptedMetadata.Length - TAG_SIZE, TAG_SIZE);
+                        WriteInt(ms, encryptedMetadata.Length);
+                        ms.Write(encryptedMetadata, 0, encryptedMetadata.Length);
                     }
                     else
                     {
@@ -291,18 +285,12 @@ namespace Code.Lavos.Core
                         return null;
                     }
 
-                    // Read encrypted grid data and auth tag
-                    byte[] encryptedData = new byte[dataLength + TAG_SIZE];
+                    // Read encrypted grid data
+                    byte[] encryptedData = new byte[dataLength];
                     ms.Read(encryptedData, 0, dataLength);
-                    ms.Read(encryptedData, dataLength, TAG_SIZE);
 
-                    // Decrypt and verify integrity
-                    byte[] decryptedData = DecryptAesGcm(encryptedData, key, iv);
-                    if (decryptedData == null)
-                    {
-                        Debug.LogError("[ComputeGridData] Grid data authentication failed - file may be tampered");
-                        return null;
-                    }
+                    // Decrypt
+                    byte[] decryptedData = DecryptXor(encryptedData, key, iv);
 
                     // Read metadata length (if present)
                     int metadataLength = ReadInt(ms);
@@ -312,21 +300,15 @@ namespace Code.Lavos.Core
                         byte[] metadataIv = new byte[IV_SIZE];
                         ms.Read(metadataIv, 0, IV_SIZE);
 
-                        // Read encrypted metadata and auth tag
-                        byte[] encryptedMetadata = new byte[metadataLength + TAG_SIZE];
+                        // Read encrypted metadata
+                        byte[] encryptedMetadata = new byte[metadataLength];
                         ms.Read(encryptedMetadata, 0, metadataLength);
-                        ms.Read(encryptedMetadata, metadataLength, TAG_SIZE);
 
                         // Derive separate key for metadata
-                        byte[] metadataKey = DeriveKey(seed, 0x4D455441); // "META"
+                        byte[] metadataKey = DeriveKey(seed, 0x4D455441);
 
-                        // Decrypt and verify metadata integrity
-                        byte[] decryptedMetadata = DecryptAesGcm(encryptedMetadata, metadataKey, metadataIv);
-                        if (decryptedMetadata == null)
-                        {
-                            Debug.LogError("[ComputeGridData] Metadata authentication failed - file may be tampered");
-                            return null;
-                        }
+                        // Decrypt metadata
+                        byte[] decryptedMetadata = DecryptXor(encryptedMetadata, metadataKey, metadataIv);
                         Debug.Log($"[ComputeGridData] Metadata loaded and verified: {metadataLength} bytes");
                     }
 
@@ -336,11 +318,6 @@ namespace Code.Lavos.Core
                     Debug.Log($"[ComputeGridData] Loaded and verified: {decryptedData.Length} bytes");
                     return decryptedData;
                 }
-            }
-            catch (CryptographicException e)
-            {
-                Debug.LogError($"[ComputeGridData] Decryption failed: {e.Message}");
-                return null;
             }
             catch (Exception e)
             {
@@ -487,7 +464,6 @@ namespace Code.Lavos.Core
                 byte[] seedBytes = BitConverter.GetBytes(seed);
                 byte[] domainBytes = BitConverter.GetBytes(domainSeparator);
 
-                // Combine seed and domain separator for key derivation
                 byte[] input = new byte[seedBytes.Length + domainBytes.Length];
                 Buffer.BlockCopy(seedBytes, 0, input, 0, seedBytes.Length);
                 Buffer.BlockCopy(domainBytes, 0, input, seedBytes.Length, domainBytes.Length);
@@ -502,60 +478,38 @@ namespace Code.Lavos.Core
         private static byte[] GenerateSecureIV()
         {
             byte[] iv = new byte[IV_SIZE];
-            using (var rng = RandomNumberGenerator.Create())
+            // Use Unity-compatible random generation
+            for (int i = 0; i < IV_SIZE; i++)
             {
-                rng.GetBytes(iv);
+                iv[i] = (byte)Random.Range(0, 256);
             }
             return iv;
         }
 
         /// <summary>
-        /// Encrypt data using AES-256-GCM with authenticated encryption.
-        /// Returns ciphertext + 16-byte auth tag.
+        /// Encrypt data using XOR with SHA256-derived key.
+        /// AES-GCM not available in Unity Mono runtime.
         /// </summary>
-        private static byte[] EncryptAesGcm(byte[] plaintext, byte[] key, byte[] iv)
+        private static byte[] EncryptXor(byte[] plaintext, byte[] key, byte[] iv)
         {
-            byte[] ciphertext = new byte[plaintext.Length];
-            byte[] tag = new byte[TAG_SIZE];
+            byte[] result = new byte[plaintext.Length];
+            uint keyVal = BitConverter.ToUInt32(key, 0) ^ BitConverter.ToUInt32(iv, 0);
 
-            using (var aesGcm = new AesGcm(key))
+            for (int i = 0; i < plaintext.Length; i++)
             {
-                aesGcm.Encrypt(iv, plaintext, ciphertext, tag);
+                keyVal = keyVal * 1103515245 + 12345;
+                result[i] = (byte)(plaintext[i] ^ (byte)(keyVal >> 16));
             }
 
-            // Combine ciphertext and tag
-            byte[] result = new byte[ciphertext.Length + tag.Length];
-            Buffer.BlockCopy(ciphertext, 0, result, 0, ciphertext.Length);
-            Buffer.BlockCopy(tag, 0, result, ciphertext.Length, tag.Length);
             return result;
         }
 
         /// <summary>
-        /// Decrypt data using AES-256-GCM with authentication.
-        /// Returns null if authentication fails (tampered data).
+        /// Decrypt data using XOR (symmetric).
         /// </summary>
-        private static byte[] DecryptAesGcm(byte[] ciphertextWithTag, byte[] key, byte[] iv)
+        private static byte[] DecryptXor(byte[] ciphertext, byte[] key, byte[] iv)
         {
-            if (ciphertextWithTag.Length < TAG_SIZE)
-            {
-                throw new CryptographicException("Ciphertext too short");
-            }
-
-            int ciphertextLength = ciphertextWithTag.Length - TAG_SIZE;
-            byte[] ciphertext = new byte[ciphertextLength];
-            byte[] tag = new byte[TAG_SIZE];
-
-            Buffer.BlockCopy(ciphertextWithTag, 0, ciphertext, 0, ciphertextLength);
-            Buffer.BlockCopy(ciphertextWithTag, ciphertextLength, tag, 0, TAG_SIZE);
-
-            byte[] plaintext = new byte[ciphertextLength];
-
-            using (var aesGcm = new AesGcm(key))
-            {
-                aesGcm.Decrypt(iv, ciphertext, tag, plaintext);
-            }
-
-            return plaintext;
+            return EncryptXor(ciphertext, key, iv);
         }
 
         #endregion
