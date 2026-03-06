@@ -27,6 +27,7 @@
 // 11. Textures  12. Save  13. Player (LAST)
 //
 
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
@@ -374,7 +375,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private uint GenerateFallbackSeed()
         {
-            uint rawSeed = (uint)Environment.TickCount64 ^ (uint)Guid.NewGuid().GetHashCode();
+            uint rawSeed = (uint)Environment.TickCount ^ (uint)Guid.NewGuid().GetHashCode();
             byte[] hash;
             using (var sha256 = SHA256.Create())
             {
@@ -694,7 +695,8 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Spawn single wall segment at specified position.
-        /// Wall prefab is centered on cell edge (snapped to grid line).
+        /// Wall prefab should be sized to match cellSize (width=cellSize, height=wallHeight, depth=wallThickness).
+        /// Wall is positioned on cell edge (snapped to grid line).
         /// </summary>
         private void SpawnWall(Vector3 pos, Quaternion rot, string name, Transform parent)
         {
@@ -702,12 +704,17 @@ namespace Code.Lavos.Core
             {
                 LogError($"[CompleteMazeBuilder] Wall prefab not loaded! Cannot spawn wall at {pos}");
                 LogError("[CompleteMazeBuilder] Fix: Run Tools -> Quick Setup Prefabs");
+                LogError("[CompleteMazeBuilder] Wall prefab should be sized: width=cellSize, height=wallHeight, depth=wallThickness");
                 return;
             }
 
             GameObject wall = Instantiate(wallPrefab, pos, rot);
             wall.name = $"Wall_{name}";
             wall.transform.SetParent(parent);
+
+            // Scale wall to match cell dimensions if needed
+            var transform1 = wall.transform;
+            transform1.localScale = new Vector3(cellSize, wallHeight, wallThickness);
 
             if (wallMaterial != null)
             {
@@ -808,9 +815,9 @@ namespace Code.Lavos.Core
             // Add small random offset to prevent wall clipping
             float offset = GameConfig.Instance.defaultPlayerSpawnOffset;
             playerController.transform.position += new Vector3(
-                (Random.value - 0.5f) * offset,
+                (UnityEngine.Random.value - 0.5f) * offset,
                 0f,
-                (Random.value - 0.5f) * offset
+                (UnityEngine.Random.value - 0.5f) * offset
             );
 
             // Set camera to eye level

@@ -180,8 +180,6 @@ namespace Code.Lavos.Core
         /// </summary>
         private void PlaceSpawnRoom()
         {
-            Debug.Log($"[GridMazeGenerator]  STEP 2: Placing SPAWN ROOM ({spawnRoomSize}x{spawnRoomSize}, priority #1)...");
-
             // Load spawn room settings from GameConfig (JSON)
             var cfg = GameConfig.Instance;
             int spawnRoomSize = cfg.spawnRoomSize;           // Default 5 (from JSON)
@@ -189,6 +187,8 @@ namespace Code.Lavos.Core
             int spawnPointX = cfg.spawnPointInRoomX;         // Default 2 (center of 5x5)
             int spawnPointY = cfg.spawnPointInRoomY;         // Default 2 (center of 5x5)
             int openWall = cfg.spawnRoomOpenWall;            // Default 0 (west: 0=left, 1=right, 2=top, 3=bottom)
+
+            Debug.Log($"[GridMazeGenerator]  STEP 2: Placing SPAWN ROOM ({spawnRoomSize}x{spawnRoomSize}, priority #1)...");
 
             // Compute spawn room position: 1/4 from left, centered vertically
             int spawnRoomX = margin + 1;  // Fixed margin (cell 3 on 21x21 grid)
@@ -301,8 +301,8 @@ namespace Code.Lavos.Core
 
             for (int i = 0; i < attempts; i++)
             {
-                int x = Random.Range(1, gridSize - roomSize - 1);
-                int y = Random.Range(1, gridSize - roomSize - 1);
+                int x = UnityEngine.Random.Range(1, gridSize - roomSize - 1);
+                int y = UnityEngine.Random.Range(1, gridSize - roomSize - 1);
 
                 // Skip spawn room area and its corridors
                 if (IsInSpawnCorridorArea(x, y))
@@ -319,7 +319,7 @@ namespace Code.Lavos.Core
 
                         if (checkX >= 0 && checkX < gridSize && checkY >= 0 && checkY < gridSize)
                         {
-                            if (grid[checkX, checkY] == GridMazeCell.Room || 
+                            if (grid[checkX, checkY] == GridMazeCell.Room ||
                                 grid[checkX, checkY] == GridMazeCell.SpawnPoint)
                             {
                                 overlaps = true;
@@ -393,12 +393,125 @@ namespace Code.Lavos.Core
         {
             Debug.Log($"[GridMazeGenerator]  STEP 4: Generating corridors with A* pathfinding...");
 
-            // Use MazeCorridorGenerator for optimal corridor generation
-            MazeCorridorGenerator corridorGen = new MazeCorridorGenerator();
-            corridorGen.Initialize(grid, (uint)Random.Range(0, int.MaxValue));
-            corridorGen.GenerateCorridors();
+            // TEMPORARY: Use simple corridor carving until MazeCorridorGenerator is fixed
+            CarveCorridorToSpawn(spawnEntranceDirection);
+            CarveCorridorFromSpawn(spawnExitDirection);
+            ConnectOtherRooms();
 
-            Debug.Log($"[GridMazeGenerator]  Corridors generated with A* pathfinding");
+            Debug.Log($"[GridMazeGenerator]  Corridors generated (simple carving)");
+        }
+
+        /// <summary>
+        /// Carve corridor TO spawn room from specified direction.
+        /// </summary>
+        private void CarveCorridorToSpawn(Vector2Int direction)
+        {
+            int startX = direction == Vector2Int.left ? 0 : spawnRoomCenter.x;
+            int endX = direction == Vector2Int.left ? spawnRoomCenter.x : gridSize - 1;
+            int y = spawnRoomCenter.y;
+
+            CarveHorizontalCorridor(startX, endX, y);
+        }
+
+        /// <summary>
+        /// Carve corridor FROM spawn room to specified direction.
+        /// </summary>
+        private void CarveCorridorFromSpawn(Vector2Int direction)
+        {
+            int startX = spawnRoomCenter.x;
+            int endX = direction == Vector2Int.right ? gridSize - 1 : 0;
+            int y = spawnRoomCenter.y;
+
+            CarveHorizontalCorridor(startX, endX, y);
+        }
+
+        /// <summary>
+        /// Carve horizontal corridor.
+        /// </summary>
+        private void CarveHorizontalCorridor(int startX, int endX, int y)
+        {
+            int halfWidth = corridorWidth / 2;
+            int minX = Mathf.Min(startX, endX);
+            int maxX = Mathf.Max(startX, endX);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int w = -halfWidth; w <= halfWidth; w++)
+                {
+                    int checkY = y + w;
+                    if (x >= 0 && x < gridSize && checkY >= 0 && checkY < gridSize)
+                    {
+                        if (grid[x, checkY] != GridMazeCell.Room &&
+                            grid[x, checkY] != GridMazeCell.SpawnPoint)
+                        {
+                            grid[x, checkY] = GridMazeCell.Corridor;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Connect other rooms with L-shaped corridors.
+        /// </summary>
+        private void ConnectOtherRooms()
+        {
+            if (roomCenters.Count < 2)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] Not enough rooms to connect ({roomCenters.Count})");
+                return;
+            }
+
+            for (int i = 1; i < roomCenters.Count; i++)
+            {
+                Vector2Int start = roomCenters[i - 1];
+                Vector2Int end = roomCenters[i];
+                CarveLShapedCorridor(start, end);
+            }
+        }
+
+        /// <summary>
+        /// Carve L-shaped corridor between two points.
+        /// </summary>
+        private void CarveLShapedCorridor(Vector2Int start, Vector2Int end)
+        {
+            int halfWidth = corridorWidth / 2;
+
+            int minX = Mathf.Min(start.x, end.x);
+            int maxX = Mathf.Max(start.x, end.x);
+
+            for (int x = minX - halfWidth; x <= maxX + halfWidth; x++)
+            {
+                for (int w = -halfWidth; w <= halfWidth; w++)
+                {
+                    int y = start.y + w;
+                    if (x >= 0 && x < gridSize && y >= 0 && y < gridSize)
+                    {
+                        if (grid[x, y] != GridMazeCell.Room && grid[x, y] != GridMazeCell.SpawnPoint)
+                        {
+                            grid[x, y] = GridMazeCell.Corridor;
+                        }
+                    }
+                }
+            }
+
+            int minY = Mathf.Min(start.y, end.y);
+            int maxY = Mathf.Max(start.y, end.y);
+
+            for (int y = minY - halfWidth; y <= maxY + halfWidth; y++)
+            {
+                for (int w = -halfWidth; w <= halfWidth; w++)
+                {
+                    int x = end.x + w;
+                    if (x >= 0 && x < gridSize && y >= 0 && y < gridSize)
+                    {
+                        if (grid[x, y] != GridMazeCell.Room && grid[x, y] != GridMazeCell.SpawnPoint)
+                        {
+                            grid[x, y] = GridMazeCell.Corridor;
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

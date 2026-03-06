@@ -383,7 +383,7 @@ namespace Code.Lavos.Core
             while (x != endX)
             {
                 path.Add(new Vector2Int(x, startY));
-                x += Mathf.Sign(endX - x);
+                x += (int)Mathf.Sign(endX - x);
             }
 
             // Then vertical segment
@@ -391,7 +391,7 @@ namespace Code.Lavos.Core
             while (y != endY)
             {
                 path.Add(new Vector2Int(x, y));
-                y += Mathf.Sign(endY - y);
+                y += (int)Mathf.Sign(endY - y);
             }
 
             path.Add(new Vector2Int(endX, endY));

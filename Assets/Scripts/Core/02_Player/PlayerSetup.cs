@@ -65,7 +65,7 @@ namespace Code.Lavos.Core
 
         [Header("Camera Settings (From JSON)")]
         [Tooltip("Camera child (assign in Inspector or auto-find)")]
-        [SerializeField] private Camera _playerCamera;
+        [SerializeField] private Camera _playerCamera = null;
 
         [Tooltip("Eye height - loaded from JSON config")]
         [SerializeField] private float _eyeHeight;

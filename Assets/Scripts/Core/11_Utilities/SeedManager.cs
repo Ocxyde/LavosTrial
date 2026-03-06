@@ -266,19 +266,19 @@ namespace Code.Lavos.Core
         private uint GenerateComputeSeed()
         {
             // Combine multiple entropy sources
-            ulong tickCount64 = (ulong)Environment.TickCount64;
+            int tickCount = Environment.TickCount;
             int guidHash = Guid.NewGuid().GetHashCode();
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             float random = UnityEngine.Random.value;
 
             // Convert to uint and XOR for maximum entropy
-            uint tickCount = (uint)(tickCount64 & 0xFFFFFFFF);
-            uint guid = (uint)(guidHash & 0xFFFFFFFF);
+            uint tick = (uint)tickCount;
+            uint guid = (uint)guidHash;
             uint time = (uint)(timestamp & 0xFFFFFFFF);
             uint rand = (uint)(random * uint.MaxValue);
 
             // XOR all sources
-            uint seed = tickCount ^ guid ^ time ^ rand;
+            uint seed = tick ^ guid ^ time ^ rand;
 
             // Hash for better distribution (SHA256 -> first 4 bytes)
             byte[] seedBytes = BitConverter.GetBytes(seed);

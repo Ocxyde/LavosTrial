@@ -1,4 +1,4 @@
-// Copyright (C) 2026 Ocxyde
+﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -80,6 +80,8 @@ namespace Code.Lavos.Core
         public int defaultRoomSize = 5;        // 5x5 rooms
         public int defaultCorridorWidth = 2;   // 2 cells wide
         public int defaultGridSize = 21;       // Base grid size
+        public float corridorRandomness = 0.3f; // 0.0=straight, 1.0=chaotic
+        public bool generatePerimeterCorridor = true; // perimeter ring
 
         [Header(" Door Settings")]
         public float defaultDoorSpawnChance = 0.6f;
