@@ -39,6 +39,7 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace Code.Lavos.Core
@@ -481,7 +482,7 @@ namespace Code.Lavos.Core
             // Use Unity-compatible random generation
             for (int i = 0; i < IV_SIZE; i++)
             {
-                iv[i] = (byte)Random.Range(0, 256);
+                iv[i] = (byte)UnityEngine.Random.Range(0, 256);
             }
             return iv;
         }
