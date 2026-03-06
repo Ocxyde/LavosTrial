@@ -18,6 +18,20 @@
 // Generic spawning room system for all maze testing tools
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  ⚠️  DEPRECATED - 2026-03-07                                  ║
+// ╠═══════════════════════════════════════════════════════════════╣
+// ║  This file is NO LONGER USED in the core maze system.         ║
+// ║  Spawn room functionality is now handled by GridMazeGenerator ║
+// ║  via the CarveSpawnRoom() method which carves a 5x5 room.     ║
+// ║                                                               ║
+// ║  REASON: Simplified architecture - spawn room is now just a   ║
+// ║  cleared cell region in the grid, not a separate system.      ║
+// ║                                                               ║
+// ║  ACTION: DO NOT MODIFY. Safe to delete after verification.    ║
+// ║  Kept for reference only.                                     ║
+// ╚═══════════════════════════════════════════════════════════════╝
+//
 // PLUG-IN-OUT ARCHITECTURE:
 // - Finds components (never creates)
 // - Uses prefabs ONLY (no procedural fallback)

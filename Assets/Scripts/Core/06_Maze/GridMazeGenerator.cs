@@ -15,477 +15,372 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // GridMazeGenerator.cs
-// PROPER GRID MAZE - Walls snap to grid boundaries
+// 8-axis maze generation with DFS + A* pathfinding
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
-//
-// GRID MATH:
-// - Grid cells are WALKABLE spaces (Floor/Corridor/SpawnPoint)
-// - Walls are placed on CELL BOUNDARIES (between cells)
-// - DFS carves corridors through cells
-// - Outer perimeter = walls on boundary
-//
-// RESULT: Walls snap perfectly to grid!
 
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Code.Lavos.Core
 {
-    /// <summary>
-    /// GridMazeGenerator - PROPER GRID MAZE with wall snapping.
-    /// 
-    /// GRID STRUCTURE:
-    /// - Each cell represents a WALKABLE space (6m x 6m)
-    /// - Walls are placed on CELL BOUNDARIES (edges)
-    /// - DFS carves corridors by marking cells as walkable
-    /// 
-    /// CELL TYPES:
-    /// - Wall: Solid boundary (not walkable)
-    /// - Floor: Empty walkable space
-    /// - Corridor: DFS-carved path
-    /// - SpawnPoint: Player spawn location
-    /// 
-    /// GENERATION STEPS:
-    /// 1. Fill grid with Wall (all solid)
-    /// 2. DFS carves corridors (marks cells as walkable)
-    /// 3. Mark spawn point (single cell)
-    /// 4. Mark outer boundary (perimeter walls)
-    /// 
-    /// WALL PLACEMENT (by MazeRenderer):
-    /// - Walls placed on cell boundaries (edges between cells)
-    /// - Each wall segment = cellSize x wallHeight
-    /// - Walls snap to grid perfectly
-    /// </summary>
-    public class GridMazeGenerator
+    // ─────────────────────────────────────────────────────────────
+    //  GridMazeGenerator
+    //
+    //  Generates a procedural maze on an 8-axis grid.
+    //
+    //  Algorithm:
+    //    1. Fill all cells — all 8 walls set (ushort = 0x00FF)
+    //    2. Recursive Backtracker (DFS) — shuffled over 8 axes
+    //       Diagonal step: dx=±2, dz=±2  (intermediate cell cleared)
+    //       Cardinal step: dx=±2 OR dz=±2 (standard wall removal)
+    //    3. Carve guaranteed 5×5 spawn room at (1,1)
+    //    4. Place exit at (W-2, H-2)
+    //    5. A* from spawn → exit  (diagonal cost = 14, cardinal = 10)
+    //    6. Torch placement  (30% of wall-adjacent, non-spawn cells)
+    //    7. Chest + enemy placement on open interior cells
+    //
+    //  Diagonal passages share the same DFS logic — the intermediate
+    //  cell at (cx+dx/2, cz+dz/2) is cleared of all walls so the
+    //  visual corridor is unambiguous.
+    //
+    //  Usage:
+    //      var gen  = new GridMazeGenerator();
+    //      var data = gen.Generate(seed: 42, level: 0, cfg: mazeCfg);
+    //      
+    //  Backward compatibility:
+    //      - GridSize returns data.Width
+    //      - GetCell(x,z) returns data.GetCell(x,z)
+    // ─────────────────────────────────────────────────────────────
+    public sealed class GridMazeGenerator
     {
-        #region Inspector Fields
-
-        [Header("Grid Settings")]
-        [SerializeField] private int _gridSize = 21;
-        [SerializeField] private int _corridorWidth = 1;
-
-        #endregion
-
-        #region Private Fields
-
-        private GridMazeCell[,] _grid;
-        private Vector2Int _spawnPoint;
-        private float _seedFactor;
-        private int _currentLevel;
-
-        // 4-way direction arrays (N, E, S, W)
-        private static readonly int[] _directionsX4 = { 0,  1,  0, -1 };
-        private static readonly int[] _directionsY4 = { 1,  0, -1,  0 };
-
-        #endregion
-
-        #region Public Properties
-
-        public GridMazeCell[,] Grid => _grid;
-        public int GridSize { get => _gridSize; set => _gridSize = value; }
-        public int CorridorWidth { get => _corridorWidth; set => _corridorWidth = value; }
-        public Vector2Int SpawnPoint => _spawnPoint;
-
-        #endregion
-
-        #region Initialization
-
-        public void InitializeFromConfig()
+        // ─────────────────────────────────────────────────────────
+        //  A* node
+        // ─────────────────────────────────────────────────────────
+        private sealed class Node
         {
-            GameConfig config = GameConfig.Instance;
-            _gridSize = config.defaultGridSize;
-            _corridorWidth = config.defaultCorridorWidth;
-
-            Debug.Log($"[GridMazeGenerator] Config: {_gridSize}x{_gridSize} grid, cell size: {config.defaultCellSize}m");
+            public int   X, Z;
+            public int   G;           // cost from start
+            public int   H;           // heuristic to goal
+            public int   F => G + H;
+            public Node  Parent;
         }
 
-        #endregion
+        // ─────────────────────────────────────────────────────────
+        //  Generated maze data
+        // ─────────────────────────────────────────────────────────
+        private MazeData8 _generatedData;
 
-        #region Main Generation
-
-        /// <summary>
-        /// Generate proper grid maze with wall snapping.
-        /// Grid cells = walkable spaces, walls on boundaries.
-        /// </summary>
-        /// <param name="seed">Random seed for procedural generation</param>
-        /// <param name="difficultyFactor">0.0 to 1.0 difficulty scaling</param>
-        /// <param name="level">Current level</param>
-        public void Generate(uint seed, float difficultyFactor = 0f, int level = 0)
+        // ─────────────────────────────────────────────────────────
+        //  PUBLIC — Generate with difficulty scaling
+        // ─────────────────────────────────────────────────────────
+        public MazeData8 Generate(int seed, int level, MazeConfig cfg, DifficultyScaler scaler = null)
         {
-            _seedFactor = Mathf.Clamp01(difficultyFactor);
-            _currentLevel = level;
-            Random.InitState((int)seed);
+            // Use provided scaler or create default
+            if (scaler == null) scaler = new DifficultyScaler();
 
-            Debug.Log($"[GridMazeGenerator] Seed: {seed} (grid maze with wall snapping)");
+            // Compute difficulty factor for this level
+            float difficultyFactor = scaler.Factor(level);
 
-            if (_gridSize == 0)
-            {
-                InitializeFromConfig();
-            }
+            // Scale values using DifficultyScaler
+            int size = scaler.MazeSize(level, cfg.BaseSize, cfg.MinSize, cfg.MaxSize);
+            float scaledTorchChance = scaler.TorchChance(cfg.TorchChance, level);
+            float scaledChestDensity = scaler.ChestDensity(cfg.ChestDensity, level);
+            float scaledEnemyDensity = scaler.EnemyDensity(cfg.EnemyDensity, level);
+            int scaledWallPenalty = scaler.WallCrossPenalty(cfg.BaseWallPenalty, level);
 
-            // Corridor width always 1 for proper maze
-            _corridorWidth = 1;
+            Debug.Log($"[GridMazeGenerator] LEVEL {level} | factor={difficultyFactor:F3} | " +
+                      $"size={size}×{size} | torch={scaledTorchChance:P1} | " +
+                      $"chest={scaledChestDensity:P1} | enemy={scaledEnemyDensity:P1} | " +
+                      $"wallPenalty={scaledWallPenalty}");
 
-            Debug.Log($"[GridMazeGenerator] Generating {_gridSize}x{_gridSize} grid maze...");
+            var rng  = new System.Random(seed);
+            var data = new MazeData8(size, size, seed, level);
 
-            // Step 1: Fill with Wall (all solid)
-            FillGridWithWalls();
+            // Store difficulty factor in data for binary save
+            data.DifficultyFactor = difficultyFactor;
 
-            // Step 2: Mark outer boundary FIRST (so DFS won't carve into it)
-            MarkOuterBoundary();
+            // ── Step 1: fill all walls ────────────────────────────
+            FillAllWalls(data);
 
-            // Step 3: Carve maze with DFS (marks cells as walkable, respects boundary)
-            CarveMazeWithDfs();
+            // ── Step 2: DFS over 8 axes ───────────────────────────
+            var visited = new bool[size, size];
+            CarvePassages8(data, rng, visited, 1, 1);
 
-            // Step 4: Carve exit corridor to south wall (ensures player can reach exit)
-            CarveExitToSouth();
+            // ── Step 3: spawn room ────────────────────────────────
+            CarveSpawnRoom(data, 1, 1, cfg.SpawnRoomSize);
+            data.SetSpawn(1, 1);
 
-            Debug.Log($"[GridMazeGenerator] Maze complete - spawn: {_spawnPoint}");
-            LogGridStatistics();
-        }
+            // ── Step 4: exit ──────────────────────────────────────
+            data.SetExit(size - 2, size - 2);
 
-        #endregion
+            // ── Step 5: A* guaranteed path ────────────────────────
+            EnsurePath(data,
+                       data.SpawnCell.x, data.SpawnCell.z,
+                       data.ExitCell.x,  data.ExitCell.z,
+                       scaledWallPenalty);  // Use scaled wall penalty
 
-        #region Step 1: Fill Grid with WALL
+            // ── Step 6: torches ───────────────────────────────────
+            PlaceTorches(data, rng, scaledTorchChance);
 
-        private void FillGridWithWalls()
-        {
-            _grid = new GridMazeCell[_gridSize, _gridSize];
+            // ── Step 7: chests + enemies ──────────────────────────
+            PlaceObjects(data, rng, scaledChestDensity, scaledEnemyDensity);
 
-            for (int x = 0; x < _gridSize; x++)
-            {
-                for (int y = 0; y < _gridSize; y++)
-                {
-                    _grid[x, y] = GridMazeCell.Wall;
-                }
-            }
-
-            Debug.Log($"[GridMazeGenerator] Grid filled with WALL ({_gridSize}x{_gridSize} cells)");
-        }
-
-        #endregion
-
-        #region Step 2: Carve Maze with DFS
-
-        /// <summary>
-        /// DFS carves corridors by marking cells as walkable.
-        /// Boundary is already marked, so DFS won't carve into it.
-        /// Ensures spawn point has at least one exit corridor.
-        /// Walls will be placed on cell boundaries by MazeRenderer.
-        /// </summary>
-        private void CarveMazeWithDfs()
-        {
-            int[] dirX = _directionsX4;
-            int[] dirY = _directionsY4;
-            int numDirections = 4;
-
-            Debug.Log($"[GridMazeGenerator] Carving maze with DFS (4-way)...");
-
-            // Start from inner area (not on boundary)
-            // Spawn is at x=1, which is just inside the west boundary (x=0)
-            int startX = 1;
-            int startY = _gridSize / 2;
-
-            // Mark spawn point (SINGLE CELL)
-            _spawnPoint = new Vector2Int(startX, startY);
-            _grid[startX, startY] = GridMazeCell.SpawnPoint;
-
-            // Track visited cells
-            bool[,] visited = new bool[_gridSize, _gridSize];
-            visited[startX, startY] = true;
-
-            // Stack for backtracking
-            Stack<Vector2Int> stack = new Stack<Vector2Int>();
-            stack.Push(new Vector2Int(startX, startY));
-
-            int carvedCells = 0;
-            int targetCells = (_gridSize * _gridSize) / 3; // ~33% walkable
-
-            Debug.Log($"[GridMazeGenerator] DFS target: {targetCells} walkable cells");
-
-            int backtrackCount = 0;
-            bool spawnedExit = false;
-
-            while (stack.Count > 0 && carvedCells < targetCells)
-            {
-                Vector2Int current = stack.Peek();
-
-                // Get unvisited neighbors (1 cell away)
-                List<int> unvisitedDirections = new List<int>();
-
-                for (int i = 0; i < numDirections; i++)
-                {
-                    int nx = current.x + dirX[i];
-                    int ny = current.y + dirY[i];
-
-                    if (IsValidMazeCell(nx, ny) && !visited[nx, ny])
-                    {
-                        // Check if it's a wall (can carve into it)
-                        // Boundary walls are already marked, so DFS won't carve into them
-                        if (_grid[nx, ny] == GridMazeCell.Wall)
-                        {
-                            unvisitedDirections.Add(i);
-                        }
-                    }
-                }
-
-                if (unvisitedDirections.Count > 0)
-                {
-                    // Choose random direction
-                    int dirIndex = unvisitedDirections[Random.Range(0, unvisitedDirections.Count)];
-                    int nx = current.x + dirX[dirIndex];
-                    int ny = current.y + dirY[dirIndex];
-
-                    // Carve corridor (mark cell as walkable)
-                    _grid[nx, ny] = GridMazeCell.Corridor;
-                    visited[nx, ny] = true;
-                    stack.Push(new Vector2Int(nx, ny));
-                    carvedCells++;
-
-                    // Mark that we've carved at least one exit from spawn
-                    if (!spawnedExit && current.x == startX && current.y == startY)
-                    {
-                        spawnedExit = true;
-                        Debug.Log($"[GridMazeGenerator] Spawn exit carved at ({nx}, {ny})");
-                    }
-                }
-                else
-                {
-                    // Backtrack
-                    stack.Pop();
-                    backtrackCount++;
-                }
-            }
-
-            // Ensure spawn has at least one exit (fallback)
-            if (!spawnedExit)
-            {
-                Debug.Log($"[GridMazeGenerator] Forcing spawn exit (DFS didn't carve one)...");
-                // Try to carve east from spawn (most likely direction)
-                int eastX = startX + 1;
-                int eastY = startY;
-                if (IsValidMazeCell(eastX, eastY) && _grid[eastX, eastY] == GridMazeCell.Wall)
-                {
-                    _grid[eastX, eastY] = GridMazeCell.Corridor;
-                    Debug.Log($"[GridMazeGenerator] Forced exit east to ({eastX}, {eastY})");
-                }
-                else
-                {
-                    // Try all directions
-                    for (int i = 0; i < numDirections; i++)
-                    {
-                        int nx = startX + dirX[i];
-                        int ny = startY + dirY[i];
-                        if (IsValidMazeCell(nx, ny) && _grid[nx, ny] == GridMazeCell.Wall)
-                        {
-                            _grid[nx, ny] = GridMazeCell.Corridor;
-                            Debug.Log($"[GridMazeGenerator] Forced exit to ({nx}, {ny})");
-                            break;
-                        }
-                    }
-                }
-            }
-
-            Debug.Log($"[GridMazeGenerator] Maze carved: {carvedCells} walkable cells, {backtrackCount} backtracks, spawn exit: {spawnedExit}");
-        }
-
-        /// <summary>
-        /// Carve an exit corridor to the south boundary.
-        /// Ensures player can reach the exit door.
-        /// </summary>
-        public void CarveExitToSouth()
-        {
-            int exitX = _gridSize / 2;  // Center of south wall
-            int exitY = _gridSize - 2;  // Just inside south boundary
-
-            // Find nearest walkable cell to exit
-            Vector2Int nearestWalkable = FindNearestWalkableTo(exitX, exitY);
-
-            if (nearestWalkable.x >= 0)
-            {
-                // Carve corridor from nearest walkable to exit
-                CarveCorridorTo(nearestWalkable, new Vector2Int(exitX, exitY));
-                _grid[exitX, exitY] = GridMazeCell.Corridor;
-                Debug.Log($"[GridMazeGenerator] Exit corridor carved to south wall at ({exitX}, {exitY})");
-            }
-            else
-            {
-                Debug.LogWarning($"[GridMazeGenerator] Could not find path to exit!");
-            }
-        }
-
-        /// <summary>
-        /// Find nearest walkable cell to target position.
-        /// </summary>
-        private Vector2Int FindNearestWalkableTo(int targetX, int targetY)
-        {
-            // Search outward from target
-            for (int radius = 1; radius < _gridSize / 2; radius++)
-            {
-                for (int x = targetX - radius; x <= targetX + radius; x++)
-                {
-                    for (int y = targetY - radius; y <= targetY + radius; y++)
-                    {
-                        if (IsValidMazeCell(x, y) && 
-                            (_grid[x, y] == GridMazeCell.Corridor || _grid[x, y] == GridMazeCell.SpawnPoint))
-                        {
-                            return new Vector2Int(x, y);
-                        }
-                    }
-                }
-            }
-            return new Vector2Int(-1, -1); // Not found
-        }
-
-        /// <summary>
-        /// Carve corridor from start to end (straight line).
-        /// </summary>
-        private void CarveCorridorTo(Vector2Int start, Vector2Int end)
-        {
-            int x = start.x;
-            int y = start.y;
-
-            while (x != end.x || y != end.y)
-            {
-                if (x < end.x) x++;
-                else if (x > end.x) x--;
-                
-                if (y < end.y) y++;
-                else if (y > end.y) y--;
-
-                if (IsValidMazeCell(x, y) && _grid[x, y] == GridMazeCell.Wall)
-                {
-                    _grid[x, y] = GridMazeCell.Corridor;
-                }
-            }
-        }
-
-        #endregion
-
-        #region Step 3: Mark Outer Boundary
-
-        /// <summary>
-        /// Mark outer perimeter as Wall boundary.
-        /// Called BEFORE DFS so DFS won't carve into boundary.
-        /// </summary>
-        private void MarkOuterBoundary()
-        {
-            // Mark perimeter cells as Wall (boundary)
-            // DFS will respect this and won't carve into it
-            for (int x = 0; x < _gridSize; x++)
-            {
-                _grid[x, 0] = GridMazeCell.Wall;
-                _grid[x, _gridSize - 1] = GridMazeCell.Wall;
-            }
-
-            for (int y = 0; y < _gridSize; y++)
-            {
-                _grid[0, y] = GridMazeCell.Wall;
-                _grid[_gridSize - 1, y] = GridMazeCell.Wall;
-            }
-
-            Debug.Log($"[GridMazeGenerator] Outer boundary marked (perimeter walls)");
-        }
-
-        #endregion
-
-        #region Grid Access
-
-        public GridMazeCell GetCell(int x, int y)
-        {
-            if (x >= 0 && x < _gridSize && y >= 0 && y < _gridSize)
-            {
-                return _grid[x, y];
-            }
-            return GridMazeCell.Wall;
-        }
-
-        public Vector2Int FindSpawnPoint()
-        {
-            return _spawnPoint;
-        }
-
-        #endregion
-
-        #region Utilities
-
-        private bool IsValidMazeCell(int x, int y)
-        {
-            return x >= 0 && x < _gridSize && y >= 0 && y < _gridSize;
-        }
-
-        /// <summary>
-        /// Log grid statistics for debugging.
-        /// </summary>
-        private void LogGridStatistics()
-        {
-            int wallCount = 0, corridorCount = 0, spawnCount = 0, floorCount = 0;
-
-            for (int x = 0; x < _gridSize; x++)
-            {
-                for (int y = 0; y < _gridSize; y++)
-                {
-                    switch (_grid[x, y])
-                    {
-                        case GridMazeCell.Wall: wallCount++; break;
-                        case GridMazeCell.Corridor: corridorCount++; break;
-                        case GridMazeCell.SpawnPoint: spawnCount++; break;
-                        case GridMazeCell.Floor: floorCount++; break;
-                    }
-                }
-            }
-
-            int total = _gridSize * _gridSize;
-            Debug.Log($"[GridMazeGenerator] GRID STATS: {_gridSize}x{_gridSize} = {total} cells");
-            Debug.Log($"[GridMazeGenerator]   Walls: {wallCount} ({wallCount * 100 / total}%)");
-            Debug.Log($"[GridMazeGenerator]   Corridors: {corridorCount} ({corridorCount * 100 / total}%)");
-            Debug.Log($"[GridMazeGenerator]   Spawn: {spawnCount}");
-            Debug.Log($"[GridMazeGenerator]   Floor: {floorCount}");
-        }
-
-        #endregion
-
-        #region Serialization
-
-        public byte[] SerializeToBytes()
-        {
-            int total = 2 + _gridSize * _gridSize;
-            byte[] data = new byte[total];
-            data[0] = (byte)_gridSize;
-            data[1] = (byte)_gridSize;
-
-            int i = 2;
-            for (int y = 0; y < _gridSize; y++)
-            {
-                for (int x = 0; x < _gridSize; x++)
-                {
-                    data[i++] = (byte)_grid[x, y];
-                }
-            }
+            // Store for backward compatibility accessors
+            _generatedData = data;
 
             return data;
         }
 
-        public void DeserializeFromBytes(byte[] data)
+        // ─────────────────────────────────────────────────────────
+        //  Backward Compatibility API (for legacy code)
+        // ─────────────────────────────────────────────────────────
+        public int GridSize => _generatedData?.Width ?? 0;
+        
+        public CellFlags8 GetCell(int x, int z)
         {
-            if (data.Length < 2)
+            return _generatedData?.GetCell(x, z) ?? CellFlags8.AllWalls;
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 1 — Fill every cell with all 8 walls
+        // ─────────────────────────────────────────────────────────
+        private static void FillAllWalls(MazeData8 d)
+        {
+            for (int x = 0; x < d.Width;  x++)
+            for (int z = 0; z < d.Height; z++)
+                d.SetCell(x, z, CellFlags8.AllWalls);
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 2 — Recursive Backtracker (DFS), 8 directions
+        //
+        //  For cardinal directions:
+        //    step = 2 cells along one axis
+        //    intermediate wall cell = (cx+dx, cz+dz)
+        //
+        //  For diagonal directions:
+        //    step = 2 cells along both axes  (cx+2, cz+2) etc.
+        //    intermediate cell = (cx+dx, cz+dz) — the shared corner
+        //    We clear all walls on the intermediate cell so no
+        //    invisible collision blocks diagonal traversal.
+        // ─────────────────────────────────────────────────────────
+        private static void CarvePassages8(MazeData8 d, System.Random rng,
+                                            bool[,] visited, int cx, int cz)
+        {
+            visited[cx, cz] = true;
+
+            // Shuffle all 8 directions
+            var dirs = (Direction8[])Direction8Helper.All.Clone();
+            Shuffle(dirs, rng);
+
+            foreach (var dir in dirs)
             {
-                return;
+                var (dx, dz) = Direction8Helper.ToOffset(dir);
+
+                // Destination cell — 2 steps away
+                int nx = cx + dx * 2;
+                int nz = cz + dz * 2;
+
+                if (!d.InBounds(nx, nz) || visited[nx, nz]) continue;
+
+                // ── Remove walls on both ends ─────────────────────
+                d.ClearFlag(cx, cz, Direction8Helper.ToWallFlag(dir));
+                d.ClearFlag(nx, nz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
+
+                // ── Clear the intermediate cell ───────────────────
+                int wx = cx + dx, wz = cz + dz;
+                d.SetCell(wx, wz, CellFlags8.None);
+
+                CarvePassages8(d, rng, visited, nx, nz);
             }
+        }
 
-            _gridSize = data[0];
-            _grid = new GridMazeCell[_gridSize, _gridSize];
-
-            int i = 2;
-            for (int y = 0; y < _gridSize; y++)
+        // ─────────────────────────────────────────────────────────
+        //  Step 3 — Carve spawn room (square, centered on ox, oz)
+        // ─────────────────────────────────────────────────────────
+        private static void CarveSpawnRoom(MazeData8 d, int ox, int oz, int roomSize)
+        {
+            int half = roomSize / 2;
+            for (int x = ox - half; x <= ox + half; x++)
+            for (int z = oz - half; z <= oz + half; z++)
             {
-                for (int x = 0; x < _gridSize; x++)
+                if (d.InBounds(x, z))
+                    d.SetCell(x, z, CellFlags8.None);   // wipe all wall flags
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 5 — A* guaranteed path (8-directional movement)
+        //
+        //  Cost model (standard diagonal A*):
+        //    Cardinal move   = 10
+        //    Diagonal move   = 14  (approx √2 × 10)
+        //    Crossing a wall = +wallPenalty (from DifficultyScaler)
+        // ─────────────────────────────────────────────────────────
+        private static void EnsurePath(MazeData8 d,
+                                        int sx, int sz, int ex, int ez,
+                                        int wallPenalty = 100)
+        {
+            // Open set — sorted by F cost; use list + linear min for simplicity
+            var open   = new List<Node>();
+            var closed = new HashSet<int>();   // packed key = z*Width + x
+
+            open.Add(new Node { X = sx, Z = sz, G = 0, H = Heuristic8(sx, sz, ex, ez) });
+
+            while (open.Count > 0)
+            {
+                // Find minimum F
+                int  best  = 0;
+                for (int i = 1; i < open.Count; i++)
+                    if (open[i].F < open[best].F) best = i;
+
+                var current = open[best];
+                open.RemoveAt(best);
+
+                if (current.X == ex && current.Z == ez)
                 {
-                    _grid[x, y] = (GridMazeCell)data[i++];
+                    // Trace path back and carve any walls
+                    var node = current;
+                    while (node.Parent != null)
+                    {
+                        CarveStep(d, node.Parent.X, node.Parent.Z, node.X, node.Z);
+                        node = node.Parent;
+                    }
+                    return;
+                }
+
+                int key = current.Z * d.Width + current.X;
+                if (closed.Contains(key)) continue;
+                closed.Add(key);
+
+                // Expand all 8 neighbours
+                foreach (var dir in Direction8Helper.All)
+                {
+                    var (dx, dz) = Direction8Helper.ToOffset(dir);
+                    int nx = current.X + dx;
+                    int nz = current.Z + dz;
+
+                    if (!d.InBounds(nx, nz)) continue;
+                    if (closed.Contains(nz * d.Width + nx)) continue;
+
+                    // Movement cost
+                    int moveCost = Direction8Helper.IsDiagonal(dir) ? 14 : 10;
+                    // Wall crossing penalty (scaled by difficulty)
+                    int penalty = d.HasWall(current.X, current.Z, dir) ? wallPenalty : 0;
+                    int g = current.G + moveCost + penalty;
+
+                    open.Add(new Node
+                    {
+                        X      = nx,
+                        Z      = nz,
+                        G      = g,
+                        H      = Heuristic8(nx, nz, ex, ez),
+                        Parent = current,
+                    });
                 }
             }
         }
 
-        #endregion
+        // Chebyshev heuristic — correct for 8-directional movement
+        private static int Heuristic8(int ax, int az, int bx, int bz)
+        {
+            int dx = Math.Abs(ax - bx);
+            int dz = Math.Abs(az - bz);
+            // Chebyshev × 10 (matches movement cost scale)
+            return 10 * Math.Max(dx, dz);
+        }
+
+        private static void CarveStep(MazeData8 d, int fx, int fz, int tx, int tz)
+        {
+            int ddx = tx - fx;
+            int ddz = tz - fz;
+
+            // Map delta → Direction8
+            Direction8 dir = (Math.Sign(ddx), Math.Sign(ddz)) switch
+            {
+                ( 0,  1) => Direction8.N,
+                ( 0, -1) => Direction8.S,
+                ( 1,  0) => Direction8.E,
+                (-1,  0) => Direction8.W,
+                ( 1,  1) => Direction8.NE,
+                (-1,  1) => Direction8.NW,
+                ( 1, -1) => Direction8.SE,
+                (-1, -1) => Direction8.SW,
+                _ => Direction8.N
+            };
+
+            d.ClearFlag(fx, fz, Direction8Helper.ToWallFlag(dir));
+            d.ClearFlag(tx, tz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 6 — Torch placement
+        // ─────────────────────────────────────────────────────────
+        private static void PlaceTorches(MazeData8 d, System.Random rng, float chance)
+        {
+            for (int x = 0; x < d.Width;  x++)
+            for (int z = 0; z < d.Height; z++)
+            {
+                var cell = d.GetCell(x, z);
+                bool hasAnyWall  = (cell & CellFlags8.AllWalls) != CellFlags8.None;
+                bool isSpawnRoom = (cell & CellFlags8.SpawnRoom) != CellFlags8.None;
+
+                if (hasAnyWall && !isSpawnRoom && rng.NextDouble() < chance)
+                    d.AddFlag(x, z, CellFlags8.HasTorch);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 7 — Chest + enemy placement
+        // ─────────────────────────────────────────────────────────
+        private static void PlaceObjects(MazeData8 d, System.Random rng,
+                                          float chestDensity, float enemyDensity)
+        {
+            for (int x = 0; x < d.Width;  x++)
+            for (int z = 0; z < d.Height; z++)
+            {
+                var cell = d.GetCell(x, z);
+                if ((cell & CellFlags8.AllWalls)  == CellFlags8.AllWalls)  continue;
+                if ((cell & CellFlags8.SpawnRoom) != CellFlags8.None)      continue;
+                if ((cell & CellFlags8.IsExit)    != CellFlags8.None)      continue;
+
+                if (rng.NextDouble() < chestDensity)
+                    d.AddFlag(x, z, CellFlags8.HasChest);
+                else if (rng.NextDouble() < enemyDensity)
+                    d.AddFlag(x, z, CellFlags8.HasEnemy);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Fisher-Yates in-place shuffle
+        // ─────────────────────────────────────────────────────────
+        private static void Shuffle<T>(T[] arr, System.Random rng)
+        {
+            for (int i = arr.Length - 1; i > 0; i--)
+            {
+                int j = rng.Next(i + 1);
+                (arr[i], arr[j]) = (arr[j], arr[i]);
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  MazeConfig  —  all values loaded from JSON, no hardcodes
+    // ─────────────────────────────────────────────────────────────
+    [Serializable]
+    public sealed class MazeConfig
+    {
+        public int   BaseSize       = 12;
+        public int   MinSize        = 12;
+        public int   MaxSize        = 51;
+        public int   SpawnRoomSize  = 5;
+        public float TorchChance    = 0.30f;
+        public float ChestDensity   = 0.03f;
+        public float EnemyDensity   = 0.05f;
+        public bool  DiagonalWalls  = true;   // toggle diagonal wall rendering
+        
+        // A* pathfinding
+        public int BaseWallPenalty = 100;  // penalty for crossing a wall
     }
 }

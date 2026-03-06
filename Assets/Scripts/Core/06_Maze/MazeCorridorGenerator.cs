@@ -54,10 +54,8 @@ namespace Code.Lavos.Core
         #region Corridor Settings (From JSON Config)
 
         private int corridorWidth = 2;            // defaultCorridorWidth
-        private float corridorRandomness = 0.3f;  // NEW: 0.0=straight, 1.0=chaotic
-        private bool generatePerimeterCorridor = true; // NEW: perimeter ring
-        private int minCorridorLength = 3;
-        private int maxCorridorLength = 12;
+        private float corridorRandomness = 0.3f;  // 0.0=straight, 1.0=chaotic
+        private bool generatePerimeterCorridor = true; // perimeter ring
 
         #endregion
 

@@ -18,6 +18,20 @@
 // Maze data persistence layer (PlayerPrefs + Binary)
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  ⚠️  DEPRECATED - 2026-03-07                                  ║
+// ╠═══════════════════════════════════════════════════════════════╣
+// ║  This file is NO LONGER USED in the core maze system.         ║
+// ║  Binary storage is now handled by MazeBinaryStorage8.cs       ║
+// ║  which uses byte-exact binary persistence (.lvm files).       ║
+// ║                                                               ║
+// ║  REASON: Replaced by MazeBinaryStorage8 - lighter, faster,    ║
+// ║  and uses byte-exact binary format instead of PlayerPrefs.    ║
+// ║                                                               ║
+// ║  ACTION: DO NOT MODIFY. Safe to delete after verification.    ║
+// ║  Kept for reference only.                                     ║
+// ╚═══════════════════════════════════════════════════════════════╝
+//
 // PLUG-IN-OUT ARCHITECTURE:
 // - Independent data persistence layer
 // - Stores maze data to PlayerPrefs

@@ -49,4 +49,67 @@ namespace Code.Lavos.Core
         IsLit = 4 << 4,       // 0100 0000
         IsLocked = 5 << 4,    // 0101 0000
     }
+
+    // ─────────────────────────────────────────────────────────────
+    //  Compatibility helpers for 8-axis system (CellFlags8)
+    // ─────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Extension methods for CellFlags8 to GridMazeCell compatibility.
+    /// </summary>
+    public static class CellTypeCompatibility
+    {
+        /// <summary>
+        /// Check if CellFlags8 represents a wall (all 8 walls set).
+        /// Compatible with old GridMazeCell.Wall check.
+        /// </summary>
+        public static bool IsWall(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.AllWalls) == CellFlags8.AllWalls;
+        }
+
+        /// <summary>
+        /// Check if CellFlags8 represents a walkable cell (not all walls).
+        /// Compatible with old GridMazeCell.Corridor/Room/Floor checks.
+        /// </summary>
+        public static bool IsWalkable(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.AllWalls) != CellFlags8.AllWalls;
+        }
+
+        /// <summary>
+        /// Check if CellFlags8 has spawn room flag.
+        /// Compatible with old GridMazeCell.SpawnPoint check.
+        /// </summary>
+        public static bool IsSpawnPoint(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.SpawnRoom) != CellFlags8.None;
+        }
+
+        /// <summary>
+        /// Check if CellFlags8 has torch flag.
+        /// Compatible with old GridMazeFlags.HasTorch.
+        /// </summary>
+        public static bool HasTorch(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.HasTorch) != CellFlags8.None;
+        }
+
+        /// <summary>
+        /// Check if CellFlags8 has chest flag.
+        /// Compatible with old GridMazeFlags.HasChest.
+        /// </summary>
+        public static bool HasChest(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.HasChest) != CellFlags8.None;
+        }
+
+        /// <summary>
+        /// Check if CellFlags8 has enemy flag.
+        /// Compatible with old GridMazeFlags.HasEnemy.
+        /// </summary>
+        public static bool HasEnemy(this CellFlags8 cell)
+        {
+            return (cell & CellFlags8.HasEnemy) != CellFlags8.None;
+        }
+    }
 }
