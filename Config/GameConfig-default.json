@@ -23,6 +23,8 @@
     "defaultRoomSize": 5,
     "defaultCorridorWidth": 2,
     "defaultGridSize": 21,
+    "corridorRandomness": 0.3,
+    "generatePerimeterCorridor": true,
 
     "defaultDoorSpawnChance": 0.6,
     "defaultLockedDoorChance": 0.3,
@@ -44,7 +46,13 @@
     "minRooms": 3,
     "maxRooms": 8,
     "generateRooms": true,
-    
+
+    "spawnRoomSize": 5,
+    "spawnRoomMargin": 2,
+    "spawnPointInRoomX": 2,
+    "spawnPointInRoomY": 2,
+    "spawnRoomOpenWall": 0,
+
     "useRandomSeed": true,
     "manualSeed": "MazeSeed2026",
     "spawnInsideRoom": true,

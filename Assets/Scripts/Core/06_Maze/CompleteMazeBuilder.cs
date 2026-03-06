@@ -1,19 +1,19 @@
 ﻿// Copyright (C) 2026 Ocxyde
 //
-// This file is part of PeuImporte.
+// This file is part of Code.Lavos.
 //
-// PeuImporte is free software: you can redistribute it and/or modify
+// Code.Lavos is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// PeuImporte is distributed in the hope that it will be useful,
+// Code.Lavos is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // CompleteMazeBuilder.cs
 // MAIN GAME ORCHESTRATOR - Optimized for performance
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -98,18 +98,19 @@ namespace Code.Lavos.Core
 
             LoadConfig();
 
-            // Generate random seed from system entropy (truly random each load)
-            uint rawSeed = (uint)System.Environment.TickCount ^ (uint)System.Guid.NewGuid().GetHashCode();
-            
-            // Hash seed for better distribution and encryption (SHA256 -> first 4 bytes)
-            byte[] seedBytes = System.BitConverter.GetBytes(rawSeed);
-            byte[] hash;
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            // Get compute seed from SeedManager (fresh seed for this scene)
+            if (SeedManager.Instance != null)
             {
-                hash = sha256.ComputeHash(seedBytes);
+                seed = SeedManager.Instance.ComputeSeed;
+                Log($"[CompleteMazeBuilder] Using compute seed from SeedManager: {seed}");
             }
-            seed = (uint)System.BitConverter.ToInt32(hash, 0) & 0x7FFFFFFF; // Ensure positive
-            
+            else
+            {
+                // Fallback: generate locally (shouldn't happen)
+                seed = GenerateFallbackSeed();
+                Log($"[CompleteMazeBuilder] Fallback seed (SeedManager not found): {seed}");
+            }
+
             // Use seed magnitude to influence maze difficulty (from GameConfig)
             var cfg = GameConfig.Instance;
             float seedFactor = seed / (float)int.MaxValue; // 0.0 to 1.0
@@ -123,6 +124,7 @@ namespace Code.Lavos.Core
                 Log("[CompleteMazeBuilder] Connected to EventHandler");
 
             Log($"[CompleteMazeBuilder] Level {currentLevel} - Maze {mazeSize}x{mazeSize} - Seed: {seed} (factor: {seedFactor:F2})");
+            Log("[CompleteMazeBuilder] Seed is procedural - new seed each scene!");
         }
 
         private void Start()
@@ -159,22 +161,153 @@ namespace Code.Lavos.Core
             wallHeight = cfg.defaultWallHeight;
             wallThickness = cfg.defaultWallThickness;
 
-            wallPrefab = LoadPrefab(cfg.wallPrefab);
-            doorPrefab = LoadPrefab(cfg.doorPrefab);
+            // Load prefabs from config paths with fallback to folder search
+            wallPrefab = LoadPrefabWithFallback(cfg.wallPrefab, "Wall");
+            doorPrefab = LoadPrefabWithFallback(cfg.doorPrefab, "Door");
 
-            wallMaterial = LoadMaterial(cfg.wallMaterial);
-            floorMaterial = LoadMaterial(cfg.floorMaterial);
-            groundTexture = LoadTexture(cfg.groundTexture);
+            // Load materials from config paths with fallback to folder search
+            wallMaterial = LoadMaterialWithFallback(cfg.wallMaterial, "Wall");
+            floorMaterial = LoadMaterialWithFallback(cfg.floorMaterial, "Floor");
+            groundTexture = LoadTextureWithFallback(cfg.groundTexture, "Floor");
         }
 
-        private GameObject LoadPrefab(string path) =>
-            Resources.Load<GameObject>(path.Replace("Assets/Resources/", "").Replace(".prefab", ""));
+        /// <summary>
+        /// Load prefab from config path, or search in Resources folders if not found.
+        /// </summary>
+        private GameObject LoadPrefabWithFallback(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".prefab", "");
+                GameObject prefab = Resources.Load<GameObject>(resourcePath);
+                if (prefab != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Loaded prefab from config: {resourcePath}");
+                    return prefab;
+                }
+            }
 
-        private Material LoadMaterial(string path) =>
-            Resources.Load<Material>(path.Replace("Assets/Resources/", "").Replace(".mat", ""));
+            // Fallback: search in Resources subfolders
+            Log($"[CompleteMazeBuilder]  Prefab not found in config, searching folders for: {searchName}");
+            string[] folders = { "Prefabs", "Prefabs/Walls", "Prefabs/Doors", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                GameObject prefab = Resources.Load<GameObject>(searchPath);
+                if (prefab != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Found prefab in folder: {searchPath}");
+                    return prefab;
+                }
+            }
 
-        private Texture2D LoadTexture(string path) =>
-            Resources.Load<Texture2D>(path.Replace("Assets/Resources/", "").Replace(".png", ""));
+            // Fallback: search all Resources
+            GameObject[] allPrefabs = Resources.LoadAll<GameObject>("");
+            foreach (GameObject p in allPrefabs)
+            {
+                if (p != null && p.name.Contains(searchName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Log($"[CompleteMazeBuilder]  Found prefab by name search: {p.name}");
+                    return p;
+                }
+            }
+
+            LogWarning($"[CompleteMazeBuilder]  Prefab '{searchName}' not found!");
+            return null;
+        }
+
+        /// <summary>
+        /// Load material from config path, or search in Resources folders if not found.
+        /// </summary>
+        private Material LoadMaterialWithFallback(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".mat", "");
+                Material mat = Resources.Load<Material>(resourcePath);
+                if (mat != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Loaded material from config: {resourcePath}");
+                    return mat;
+                }
+            }
+
+            // Fallback: search in Resources subfolders
+            Log($"[CompleteMazeBuilder]  Material not found in config, searching folders for: {searchName}");
+            string[] folders = { "Materials", "Materials/Walls", "Materials/Floors", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                Material mat = Resources.Load<Material>(searchPath);
+                if (mat != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Found material in folder: {searchPath}");
+                    return mat;
+                }
+            }
+
+            // Fallback: search all Resources
+            Material[] allMats = Resources.LoadAll<Material>("");
+            foreach (Material m in allMats)
+            {
+                if (m != null && m.name.Contains(searchName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Log($"[CompleteMazeBuilder]  Found material by name search: {m.name}");
+                    return m;
+                }
+            }
+
+            LogWarning($"[CompleteMazeBuilder]  Material '{searchName}' not found!");
+            return null;
+        }
+
+        /// <summary>
+        /// Load texture from config path, or search in Resources folders if not found.
+        /// </summary>
+        private Texture2D LoadTextureWithFallback(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".png", "").Replace(".jpg", "");
+                Texture2D tex = Resources.Load<Texture2D>(resourcePath);
+                if (tex != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Loaded texture from config: {resourcePath}");
+                    return tex;
+                }
+            }
+
+            // Fallback: search in Resources subfolders
+            Log($"[CompleteMazeBuilder]  Texture not found in config, searching folders for: {searchName}");
+            string[] folders = { "Textures", "Textures/Floors", "Textures/Walls", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                Texture2D tex = Resources.Load<Texture2D>(searchPath);
+                if (tex != null)
+                {
+                    Log($"[CompleteMazeBuilder]  Found texture in folder: {searchPath}");
+                    return tex;
+                }
+            }
+
+            // Fallback: search all Resources
+            Texture2D[] allTex = Resources.LoadAll<Texture2D>("");
+            foreach (Texture2D t in allTex)
+            {
+                if (t != null && t.name.Contains(searchName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Log($"[CompleteMazeBuilder]  Found texture by name search: {t.name}");
+                    return t;
+                }
+            }
+
+            LogWarning($"[CompleteMazeBuilder]  Texture '{searchName}' not found!");
+            return null;
+        }
 
         #endregion
 
@@ -233,6 +366,25 @@ namespace Code.Lavos.Core
 
         #endregion
 
+        #region Seed Helpers
+
+        /// <summary>
+        /// Fallback seed generation (if SeedManager not available).
+        /// Execution time: ~0.03ms
+        /// </summary>
+        private uint GenerateFallbackSeed()
+        {
+            uint rawSeed = (uint)Environment.TickCount64 ^ (uint)Guid.NewGuid().GetHashCode();
+            byte[] hash;
+            using (var sha256 = SHA256.Create())
+            {
+                hash = sha256.ComputeHash(BitConverter.GetBytes(rawSeed));
+            }
+            return (uint)BitConverter.ToInt32(hash, 0) & 0x7FFFFFFF;
+        }
+
+        #endregion
+
         #region Cleanup
 
         private void DestroyImmediate(GameObject obj)
@@ -269,17 +421,37 @@ namespace Code.Lavos.Core
             ground.transform.position = new Vector3(size / 2f, -0.1f, size / 2f);
             ground.transform.localScale = new Vector3(size, 0.1f, size);
 
-            if (floorMaterial != null)
+            // Apply material and texture
+            var renderer = ground.GetComponent<MeshRenderer>();
+            if (renderer == null)
             {
-                var r = ground.GetComponent<MeshRenderer>();
-                if (r != null) r.sharedMaterial = floorMaterial;
+                LogWarning("[CompleteMazeBuilder]  Ground has no MeshRenderer!");
+                return;
             }
 
-            if (groundTexture != null)
+            if (floorMaterial != null)
             {
-                var r = ground.GetComponent<MeshRenderer>();
-                if (r != null && r.sharedMaterial != null)
-                    r.sharedMaterial.mainTexture = groundTexture;
+                renderer.sharedMaterial = floorMaterial;
+                Log($"[CompleteMazeBuilder]  Ground material applied: {floorMaterial.name}");
+                
+                if (groundTexture != null)
+                {
+                    renderer.sharedMaterial.mainTexture = groundTexture;
+                    Log($"[CompleteMazeBuilder]  Ground texture applied: {groundTexture.name}");
+                }
+                else
+                {
+                    LogWarning("[CompleteMazeBuilder]  Ground texture not loaded - using material default");
+                }
+            }
+            else
+            {
+                LogWarning("[CompleteMazeBuilder]  Ground material not loaded - using default white");
+                
+                // Create default material if none loaded
+                Material defaultMat = new Material(Shader.Find("Standard"));
+                defaultMat.color = Color.gray;
+                renderer.sharedMaterial = defaultMat;
             }
 
             Log($"[CompleteMazeBuilder]  Ground spawned ({size}m x {size}m)");
@@ -399,10 +571,11 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Place walls on outer perimeter (north, south, east, west).
+        /// Walls are snapped to cell edges (boundaries), not centers.
         /// </summary>
         private void PlaceOuterPerimeterWalls(Transform parent, ref int spawned)
         {
-            // NORTH WALL (Z = mazeSize * cellSize)
+            // NORTH WALL (Z = mazeSize * cellSize) - on outer edge
             for (int x = 0; x < mazeSize; x++)
             {
                 Vector3 pos = new Vector3(
@@ -414,7 +587,7 @@ namespace Code.Lavos.Core
                 spawned++;
             }
 
-            // SOUTH WALL (Z = 0)
+            // SOUTH WALL (Z = 0) - on outer edge
             for (int x = 0; x < mazeSize; x++)
             {
                 Vector3 pos = new Vector3(
@@ -426,7 +599,7 @@ namespace Code.Lavos.Core
                 spawned++;
             }
 
-            // EAST WALL (X = mazeSize * cellSize)
+            // EAST WALL (X = mazeSize * cellSize) - on outer edge
             for (int z = 0; z < mazeSize; z++)
             {
                 Vector3 pos = new Vector3(
@@ -438,7 +611,7 @@ namespace Code.Lavos.Core
                 spawned++;
             }
 
-            // WEST WALL (X = 0)
+            // WEST WALL (X = 0) - on outer edge
             for (int z = 0; z < mazeSize; z++)
             {
                 Vector3 pos = new Vector3(
@@ -453,6 +626,7 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Place interior walls between adjacent cells (Room/Corridor vs Floor).
+        /// Walls are snapped to cell edges (grid lines), not cell centers.
         /// </summary>
         private void PlaceInteriorWalls(Transform parent, ref int spawned)
         {
@@ -467,7 +641,7 @@ namespace Code.Lavos.Core
                     if (current != GridMazeCell.Room && current != GridMazeCell.Corridor)
                         continue;
 
-                    // Check EAST boundary
+                    // Check EAST boundary - wall on vertical grid line at x+1
                     if (x + 1 < mazeSize)
                     {
                         GridMazeCell east = grid.GetCell(x + 1, y);
@@ -484,7 +658,7 @@ namespace Code.Lavos.Core
                         }
                     }
 
-                    // Check SOUTH boundary
+                    // Check SOUTH boundary - wall on horizontal grid line at y+1
                     if (y + 1 < mazeSize)
                     {
                         GridMazeCell south = grid.GetCell(x, y + 1);
@@ -518,6 +692,10 @@ namespace Code.Lavos.Core
 
         #region Exit Door
 
+        /// <summary>
+        /// Spawn single wall segment at specified position.
+        /// Wall prefab is centered on cell edge (snapped to grid line).
+        /// </summary>
         private void SpawnWall(Vector3 pos, Quaternion rot, string name, Transform parent)
         {
             if (wallPrefab == null)
@@ -534,7 +712,18 @@ namespace Code.Lavos.Core
             if (wallMaterial != null)
             {
                 var r = wall.GetComponent<MeshRenderer>();
-                if (r != null) r.sharedMaterial = wallMaterial;
+                if (r != null)
+                {
+                    r.sharedMaterial = wallMaterial;
+                }
+                else
+                {
+                    LogWarning($"[CompleteMazeBuilder]  Wall {name} has no MeshRenderer");
+                }
+            }
+            else
+            {
+                LogWarning($"[CompleteMazeBuilder]  Wall material not loaded - using prefab default");
             }
         }
 

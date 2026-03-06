@@ -58,6 +58,9 @@ private void CreateComponents()
 │  MazeBuilder (GameObject)                               │
 │  ├── CompleteMazeBuilder (Main Orchestrator)           │
 │  ├── GridMazeGenerator (Created by CompleteMazeBuilder)│
+│  ├── MazeCorridorGenerator (A* pathfinding)            │
+│  ├── PathFinder (Static utility, 11_Utilities)         │
+│  ├── SeedManager (Static utility, 11_Utilities)        │
 │  ├── SpatialPlacer (Object Placement)                  │
 │  ├── LightPlacementEngine (Torch Storage)              │
 │  └── TorchPool (Torch Management)                      │
@@ -67,6 +70,8 @@ private void CreateComponents()
 │  └── Main Camera (FPS, local pos: 0,1.7,0)             │
 │                                                         │
 │  EventHandler (Singleton, Scene-based)                 │
+│  ├── OnComputeSeedChanged                              │
+│  └── OnComputeGridSaveRequested                        │
 │                                                         │
 │  GameManager (Singleton, Scene-based)                  │
 │                                                         │

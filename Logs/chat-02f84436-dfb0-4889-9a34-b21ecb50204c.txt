@@ -1,0 +1,1339 @@
+Chat 'ChatTitle(text="Find potential prob…" with Qwen Code, isCustom=true)' (02f84436-dfb0-4889-9a34-b21ecb50204c)
+Context:
+builtin_findproblems
+Messages: 100
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Find potential problems in 
+```C#
+byte[] decryptedMetadata = DecryptData(encryptedMetadata, seed ^ 0xDEADBEEF);
+
+```
+
+Attachments:
+Attachment Name: ComputeGridData.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// ComputeGridData.cs
+using UnityEngine;
+namespace Code.Lavos.Core
+{
+    
+    public static class ComputeGridData
+    {
+        private const uint MAGIC_NUMBER = 0x434F4D50; 
+        private const ushort FILE_VERSION = 1;
+        
+        public static byte[] LoadGrid(string mazeId, int seed)
+        {
+        << Some code inside `ComputeGridData.LoadGrid()` >>
+            {
+                byte[] fileData = File.ReadAllBytes(filePath);
+
+                using (var ms = new MemoryStream(fileData))
+                {
+                    // Read and verify header
+                    uint magic = ReadUInt(ms);
+                    if (magic != MAGIC_NUMBER)
+                    {
+                        Debug.LogError($"[ComputeGridData] Invalid magic number: {magic:X8}");
+                        return null;
+                    }
+
+                    ushort version = ReadUShort(ms);
+                    if (version != FILE_VERSION)
+                    {
+                        Debug.LogError($"[ComputeGridData] Unsupported version: {version}");
+                        return null;
+                    }
+
+                    ushort gridSize = ReadUShort(ms);
+                    int fileSeed = ReadInt(ms);
+
+                    // Read grid data length
+                    int dataLength = ReadInt(ms);
+                    if (dataLength <= 0 || dataLength > fileData.Length)
+                    {
+                        Debug.LogError($"[ComputeGridData] Invalid data length: {dataLength}");
+                        return null;
+                    }
+
+                    // Read and decrypt grid data
+                    byte[] encryptedData = new byte[dataLength];
+                    ms.Read(encryptedData, 0, dataLength);
+                    byte[] decryptedData = DecryptData(encryptedData, seed);
+
+                    // Read metadata length (if present)
+                    int metadataLength = ReadInt(ms);
+                    if (metadataLength > 0)
+                    {
+                        byte[] encryptedMetadata = new byte[metadataLength];
+                        ms.Read(encryptedMetadata, 0, (int)metadataLength);
+/*START_USER_CODE*/                        byte[] decryptedMetadata = DecryptData(encryptedMetadata, seed ^ 0xDEADBEEF);
+                        /*END_USER_CODE*/Debug.Log($"[ComputeGridData] Metadata loaded: {metadataLength} bytes");
+                    }
+
+                    // Verify checksum
+                    uint storedChecksum = ReadUInt(ms);
+                    uint calculatedChecksum = CalculateChecksum(encryptedData);
+                    if (storedChecksum != calculatedChecksum)
+                    {
+                        Debug.LogError($"[ComputeGridData] Checksum mismatch: {storedChecksum:X8} vs {calculatedChecksum:X8}");
+                        return null;
+                    }
+
+                    // Cache and return
+                    _cache[mazeId] = decryptedData;
+
+                    Debug.Log($"[ComputeGridData] Loaded: {decryptedData.Length} bytes");
+                    return decryptedData;
+                }
+            }
+        }
+        private static uint ReadUInt(Stream stream)
+        {...}
+        private static ushort ReadUShort(Stream stream)
+        {...}
+        private static int ReadInt(Stream stream)
+        {...}
+        
+        private static byte[] DecryptData(byte[] data, int seed)
+        {...}
+        
+        private static uint CalculateChecksum(byte[] data)
+        {...}
+
+    }
+}
+
+```
+
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+can you do so ?
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+Assets\Scripts\Core\02_Player\PlayerSetup.cs(68,41): warning CS8618: Non-nullable field '_playerCamera' must contain a non-null value when exiting constructor. Consider declaring the field as nullable.
+
+Assets\Scripts\Core\12_Compute\ComputeGridData.cs(521,37): error CS1729: 'AesGcm' does not contain a constructor that takes 2 arguments
+
+Assets\Scripts\Core\12_Compute\ComputeGridData.cs(553,37): error CS1729: 'AesGcm' does not contain a constructor that takes 2 arguments
+
+
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+did you used same seed each time ? if yes do fix that, if not is seems to be same. only few walls placement, player pop surround by a corner .. it's the mazengine have bad computations.
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+use usage of seed on load scene each time load game too; need to rebuild that
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+do not sotre seed anymore into DB or RAM/storage, let him use as it as procedurally gen.; so each load each different maze, that simplify code usage, check compliance ?
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+PS D:\travaux_Unity\CodeDotLavos> powershell -Command "(Get-Content 'D:\travaux_Unity\CodeDotLavos\Assets\Scripts\Core\06_Maze\MazeSaveData.cs' -Raw) -replace '        /// <summary>\r\n        /// Load saved seed string from database\.\r\n        /// Returns null if no save exists\.\r\n        /// </summary>\r\n        public static string LoadSeedString\(\)\r\n        \{\r\n            Initialize\(\);\r\n\r\n            if \(PlayerPrefs\.HasKey\(\"GridDB_SeedString\"\)\)\r\n            \{\r\n                string seedString = PlayerPrefs\.GetString\(\"GridDB_SeedString\"\);\r\n                Debug\.Log\$\(\"\\[MazeSaveData\\]  Loaded seed string: \\{seedString\\}\"\);\r\n                return seedString;\r\n            \}\r\n\r\n            return null;\r\n        \}\r\n', '' | Set-Content 'D:\travaux_Unity\CodeDotLavos\Assets\Scripts\Core\06_Maze\MazeSaveData.cs'"                                                                                               
+powershell.exe: ScriptBlock should only be specified as a value of the Command parameter.
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+so how the seed will be gen. preocedurally when it happen?
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+backup done ! but better encrypt seed maybe ? or better usage of it? larger = more difficult maze
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+done ! go ahead
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                 
+  Fichiers modifies  : 1                                                                                                                          
+
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+implementation done ? compliance? check re-read twice rework if utils
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                 
+  Fichiers modifies  : 1                                                                                                                          
+
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+doen backuped
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+as reminder :p
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+harcoded values ? check
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+backup done !
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+Assets\Scripts\Core\06_Maze\MazeConsoleCommands.cs(81,46): error CS1061: 'CompleteMazeBuilder' does not contain a definition for 'CurrentSeed' and no accessible extension method 'CurrentSeed' accepting a first argument of type 'CompleteMazeBuilder' could be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #33 ====
+User: 
+git summary ?
+
+kotlin.Unit
+
+==== AgentMessage #34 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #35 ====
+User: 
+title me my commit for this session
+
+kotlin.Unit
+
+==== AgentMessage #36 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #37 ====
+User: 
+mmh must I do output to you ? happy debuging hunting ! its show time !
+[LightPlacementEngine] No torchPrefab assigned!
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe1dfb1b3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:150)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine] Please ensure:
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe1dfb1f3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:151)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]   1. TorchPool has torchHandlePrefab assigned in Inspector, OR
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe1dfb233 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:152)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]   2. Create Resources folder and add TorchHandlePrefab there, OR
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe1dfb273 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:153)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[LightPlacementEngine]   3. Have a TorchHandlePrefab in the scene
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe1dfb2b3 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:154)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5bb070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007fffd5be7ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007fffd5abb48b (Unity) MonoBehaviour::CallAwake
+0x00007fffd5ab9b66 (Unity) MonoBehaviour::AddToManager
+0x00007fffd5aba58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007fffd5c1a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007fffd5c1f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007fffd5c1f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007fffd5b4b2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007fffd5b4bbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007fffd5b4c941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007fffd5b4f87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007fffd5b50068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007fffd67bdf11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e5254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[ComputeGridData] Save failed: Operation is not supported on this platform.
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd51dd2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000002bfe1de7efe (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000002bfe1de7d03 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000002bfe1de79bb (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000002bfe1de6e3e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000002bfe1dfb87a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000002bfe456884b (Mono JIT Code) Code.Lavos.Core.ComputeGridData:SaveGrid (string,byte[],int) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/12_Compute/ComputeGridData.cs:141)
+0x000002bfe4567603 (Mono JIT Code) Code.Lavos.Core.ComputeGridEngine:SaveToBinary () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/12_Compute/ComputeGridEngine.cs:542)
+0x000002bfe4566bc3 (Mono JIT Code) Code.Lavos.Core.ComputeGridEngine:HandleSaveRequested (string,byte[],int) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/12_Compute/ComputeGridEngine.cs:261)
+0x000002bfe456689e (Mono JIT Code) Code.Lavos.Core.EventHandler:InvokeComputeGridSaveRequested (string,byte[],int) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/01_CoreSystems/EventHandler.cs:427)
+0x000002bfe4565bb3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:PlaceWalls () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:356)
+0x000002bfe455b783 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:201)
+0x000002bfe455b1f3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+0x000002c018d39c68 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007fffefb16bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007fffefa58984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007fffefa58a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007fffd5ba9764 (Unity) scripting_method_invoke
+0x00007fffd5bb0623 (Unity) ScriptingInvocation::Invoke
+0x00007fffd5ac19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007fffd5ac1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007fffd5abc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007fffd5666b98 (Unity) DelayedCallManager::Update
+0x00007fffd5a7558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007fffd5a5480f (Unity) ExecutePlayerLoop
+0x00007fffd5a54985 (Unity) ExecutePlayerLoop
+0x00007fffd5a5982f (Unity) PlayerLoop
+0x00007fffd63cf3ca (Unity) EditorPlayerLoop::Execute
+0x00007fffd63e64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007fffd63e5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007fffd63e717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+Some objects were not cleaned up when closing the scene. (Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+LightEngine
+
+0x00007fffd537221e (Unity) StackWalker::ShowCallstack
+0x00007fffd6ba5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007fffd6ba5afe (Unity) Stacktrace::GetStacktrace
+0x00007fffd5322c7f (Unity) DebugStringToFile
+0x00007fffd5a46c59 (Unity) ValidateNoSceneObjectsAreLoaded
+0x00007fffd67bd819 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007fffd63e54cd (Unity) PlayerLoopController::ExitPlayMode
+0x00007fffd63e7199 (Unity) PlayerLoopController::SetIsPlaying
+0x00007fffd63e264c (Unity) Application::TickTimer
+0x00007fffd61c4e4c (Unity) MainMessageLoop
+0x00007fffd61cc8e2 (Unity) UnityMain
+0x00007ff7261d2f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #38 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #39 ====
+User: 
+Assets\Scripts\Core\12_Compute\ComputeGridData.cs(462,33): error CS0103: The name 'SHA256' does not exist in the current context
+
+Assets\Scripts\Core\12_Compute\ComputeGridData.cs(484,31): error CS0104: 'Random' is an ambiguous reference between 'UnityEngine.Random' and 'System.Random'
+
+
+
+kotlin.Unit
+
+==== AgentMessage #40 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #41 ====
+User: 
+backup done!
+
+kotlin.Unit
+
+==== AgentMessage #42 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #43 ====
+User: 
+fill empty prefab from config file pls
+
+kotlin.Unit
+
+==== AgentMessage #44 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #45 ====
+User: 
+bakcuped
+
+kotlin.Unit
+
+==== AgentMessage #46 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #47 ====
+User: 
+dont put torches rn , await for task;
+do better computer for room, espacially the spwnRomm with hole wall as entrance;
+the room must be 3x3 ; player must spwn inside 3x3 wall not into the wall of a corner inbetween;
+do compute maze after spwnRoom poped'in;
+let's test
+
+kotlin.Unit
+
+==== AgentMessage #48 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #49 ====
+User: 
+backupd
+
+kotlin.Unit
+
+==== AgentMessage #50 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #51 ====
+User: 
+the 3x3 room 1 wall will be empty? check compliance? check hardcoded? check!
+
+kotlin.Unit
+
+==== AgentMessage #52 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #53 ====
+User: 
+backd
+
+kotlin.Unit
+
+==== AgentMessage #54 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #55 ====
+User: 
+schematize me the spwnRoom pls
+
+kotlin.Unit
+
+==== AgentMessage #56 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #57 ====
+User: 
+the playr must be surround by walls, except one for exit/entrance
+
+kotlin.Unit
+
+==== AgentMessage #58 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #59 ====
+User: 
+need one more corridor instead of a wall, sacrifie one wall made it empty (corridor)
+
+kotlin.Unit
+
+==== AgentMessage #60 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #61 ====
+User: 
+bakcd
+
+kotlin.Unit
+
+==== AgentMessage #62 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #63 ====
+User: 
+update TODO.md on assets/docs/
+do 3x3 room, made 1 empty wall all surround by wall except one, no corridor at all, the empy cell must remain exit/entrance; dont touch file just schematize me
+
+kotlin.Unit
+
+==== AgentMessage #64 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #65 ====
+User: 
+no room cell walkable at all, surround 'by walls except one empty cell'
+
+kotlin.Unit
+
+==== AgentMessage #66 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #67 ====
+User: 
+taht empty cell deserve to be a door, implement on schematic form the door
+
+kotlin.Unit
+
+==== AgentMessage #68 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #69 ====
+User: 
+now schematize me a complete random w/ seed a maze made it 12x12
+
+kotlin.Unit
+
+==== AgentMessage #70 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #71 ====
+User: 
+put a corridor on outward of a door from spwnRoom , now schematic! please
+
+kotlin.Unit
+
+==== AgentMessage #72 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #73 ====
+User: 
+each wall are on snap over edge of each cell ?
+
+kotlin.Unit
+
+==== AgentMessage #74 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #75 ====
+User: 
+implement that onto files cs appropriatelly, with conventional , plug-in-out systm; not hardcoded; do rewrite often as possible , avoid error/warn; no emoji on comment
+
+kotlin.Unit
+
+==== AgentMessage #76 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #77 ====
+User: 
+bakd
+
+kotlin.Unit
+
+==== AgentMessage #78 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #79 ====
+User: 
+re redo check for validation, let me check on my side error output
+
+kotlin.Unit
+
+==== AgentMessage #80 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #81 ====
+User: 
+assign mats & prefab from config file, if not yet on it implement that, if not in config load mat found in folder , same for prefab ;
+
+kotlin.Unit
+
+==== AgentMessage #82 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #83 ====
+User: 
+bakd
+
+kotlin.Unit
+
+==== AgentMessage #84 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #85 ====
+User: 
+may I test ? where is the schematic theory we made, where is the algorythm we made is there somewhere in code ? pov of mine there no changes, no tex on wall ground etc. eihter spwnRoom isn't there.
+
+kotlin.Unit
+
+==== AgentMessage #86 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #87 ====
+User: 
+and the seed method ! We forgot it too?
+
+kotlin.Unit
+
+==== AgentMessage #88 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #89 ====
+User: 
+[CompleteMazeBuilder] Level 0 - Maze 20x20 - Seed: 1802535282 (factor: 0,84)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:Awake () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:125)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #90 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #91 ====
+User: 
+[GridMazeGenerator] ️ Total rooms: 3
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceOtherRooms () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:269)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:134)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  STEP 4: Carving corridors TO spawn room...
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:CarveCorridorsToSpawn () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:369)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:137)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  Corridors carved (2 cells wide)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:CarveCorridorsToSpawn () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:380)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:137)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  Exit direction: (1, 0)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:145)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  SpawnPoint found at (6, 10)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:FindSpawnPoint () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:559)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:436)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] SpawnPoint: cell (6, 10)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:443)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] STEP 6: Maze saved
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:339)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] Spawning player at (39.00, 1.70, 63.00)...
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:SpawnPlayer () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:741)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:343)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] FPS camera set to eye level (1,7m)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:SpawnPlayer () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:770)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:343)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] Player spawned INSIDE maze at (38.98, 1.70, 63.09)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:SpawnPlayer () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:775)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:343)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] Ready to explore!
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:SpawnPlayer () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:776)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:343)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[CompleteMazeBuilder] STEP 8: Player spawned at (39.00, 1.70, 63.00)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.CompleteMazeBuilder:Log (string) (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:784)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:344)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #92 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #93 ====
+User: 
+[GridMazeGenerator]  STEP 2: Placing SPAWN ROOM (3x3, priority #1)...
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceSpawnRoom () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:182)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:131)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  SpawnPoint (CENTER) at (6, 10)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceSpawnRoom () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:210)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:131)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  Spawn room placed at (5, 9) - 3x3
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceSpawnRoom () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:232)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:131)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  ONE OPENING: WEST side only (for door)
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceSpawnRoom () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:233)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:131)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  Player protected: NORTH + SOUTH + EAST walls
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceSpawnRoom () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:234)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:131)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+[GridMazeGenerator]  STEP 3: Placing other rooms...
+UnityEngine.Debug:Log (object)
+Code.Lavos.Core.GridMazeGenerator:PlaceOtherRooms () (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:246)
+Code.Lavos.Core.GridMazeGenerator:Generate (uint,single) (at Assets/Scripts/Core/06_Maze/GridMazeGenerator.cs:134)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:434)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:329)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:131)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #94 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #95 ====
+User: 
+seed is poorly generativ procedurall process , i must find another solution for gen. maze! seed is used twice between load game/newGame;
+SwpnRoom consit in fact of 1 corner of 2walls.;
+
+
+
+kotlin.Unit
+
+==== AgentMessage #96 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #97 ====
+User: 
+tesxture not load either; also bakd
+
+kotlin.Unit
+
+==== AgentMessage #98 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #99 ====
+User: 
+same seed used twice onLoadGame/Scene, that will not be happen, seed used to be once
+
+kotlin.Unit
+
+==== AgentMessage #100 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

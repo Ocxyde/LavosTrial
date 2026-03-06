@@ -1,19 +1,19 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
-// This file is part of PeuImporte.
+// This file is part of Code.Lavos.
 //
-// PeuImporte is free software: you can redistribute it and/or modify
+// Code.Lavos is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// PeuImporte is distributed in the hope that it will be useful,
+// Code.Lavos is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with PeuImporte.  If not, see <https://www.gnu.org/licenses/>.
+// along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // GameConfig.cs
 // JSON configuration file for game defaults and modding support
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -126,6 +126,15 @@ namespace Code.Lavos.Core
         [Tooltip("Base rooms random range (1-4 = 1 to 3 rooms)")]
         public int baseRoomMin = 1;
         public int baseRoomMax = 4;
+        [Tooltip("Spawn room size (3x3)")]
+        public int spawnRoomSize = 3;
+        [Tooltip("Margin from grid edge for spawn room")]
+        public int spawnRoomMargin = 2;
+        [Tooltip("Spawn point position in room (1,1 = center of 3x3)")]
+        public int spawnPointInRoomX = 1;
+        public int spawnPointInRoomY = 1;
+        [Tooltip("Which wall is open (0=left, 1=right, 2=top, 3=bottom)")]
+        public int spawnRoomOpenWall = 0;
 
         [Header("️ Generation Options")]
         public bool useRandomSeed = true;
