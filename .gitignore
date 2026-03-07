@@ -1,4 +1,4 @@
-# Unity generated
+﻿# Unity generated
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -22,6 +22,12 @@
 *.bak
 *.bak.meta
 *.tmp
+
+# Backup folder numbered files (e.g., Script_00001.cs)
+Backup/**/*_00*.cs
+Backup/**/*_00*.cs.meta
+**/Backup_*/**/*_00*.cs
+**/Backup_*/**/*_00*.cs.meta
 
 # ZIP archives in Assets
 Assets/**/*.zip
