@@ -105,3 +105,9 @@ ProjectSettings/*.prefab
 # Unity 6 specific
 *.unityhub
 *.unity-6
+
+# Script files (PowerShell, Batch, CMD)
+*.ps1
+*.bat
+*.cmd
+*.sh

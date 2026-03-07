@@ -3,6 +3,9 @@ REM ============================================================
 REM  Git Auto-Commit - Quick Update Script
 REM  Usage: git-auto.bat "Your commit message here"
 REM
+REM  Note: This script is NOT tracked by git (see .gitignore)
+REM  Scripts excluded: *.bat, *.cmd, *.ps1, *.sh
+REM
 REM  Respects .gitignore exclusions:
 REM    - Logs/, *.log, *.sysinfo
 REM    - Backup_Solution/, backup/, backups/
@@ -10,6 +13,8 @@ REM    - diff_tmp/, diff/
 REM    - Library/, Temp/, Obj/, Build/
 REM    - *.bak, *.backup, *.unitybackup
 REM ============================================================
+
+setlocal enabledelayedexpansion
 
 echo.
 echo ============================================
@@ -27,7 +32,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 REM --- Check if we're in a Git repo ---
 if not exist ".git" (
-    echo ERROR: Not a Git repository. Run this from project root.
+    echo ERROR: Not a Git repository
     pause
     exit /b 1
 )
@@ -35,107 +40,86 @@ if not exist ".git" (
 REM --- Get commit message from argument ---
 set "COMMIT_MSG=%~1"
 if "%COMMIT_MSG%"=="" (
-    echo ERROR: No commit message provided.
+    echo ERROR: No commit message provided
     echo Usage: git-auto.bat "Your commit message"
     echo.
     pause
     exit /b 1
 )
 
-echo [1/6] Current Git Status...
+REM --- Show status ---
+echo [1/5] Git Status...
 echo --------------------------------------------
 git status --short
 echo.
 
-REM --- Check for changes (respects .gitignore) ---
+REM --- Check for changes ---
 git diff --quiet && git diff --cached --quiet
 if %ERRORLEVEL% EQU 0 (
     echo No changes to commit.
     echo.
-    echo Note: Files in .gitignore are excluded:
-    echo   - Logs/, *.log, *.sysinfo
-    echo   - Backup_Solution/, diff_tmp/
-    echo   - Library/, Temp/, Build/
-    echo   - *.bak, *.backup, *.meta
+    echo Excluded by .gitignore:
+    echo   *.log, *.sysinfo, Logs/
+    echo   Backup_Solution/, diff_tmp/
+    echo   Library/, Temp/, Build/
+    echo   *.bak, *.backup, *.meta
+    echo   *.bat, *.cmd, *.ps1, *.sh
     pause
     exit /b 0
 )
 
-REM --- Stage changes (respects .gitignore) ---
-echo [2/6] Staging changes (excluding .gitignore files)...
+REM --- Stage changes ---
+echo [2/5] Staging changes...
 git add .
-echo       Done: Changes staged
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Failed to stage changes
+    pause
+    exit /b 1
+)
+echo       Done
 echo.
 
-REM --- Normalize line endings ---
-echo [3/6] Normalizing line endings to LF...
-git add --renormalize . 2>nul
-echo       Done: Line endings normalized
-echo.
-
-REM --- Show what will be committed ---
-echo [4/6] Changes to be committed:
+REM --- Show staged changes ---
+echo [3/5] Staged Changes:
 echo --------------------------------------------
 git diff --cached --stat
 echo.
 
-REM --- Run backup if script exists ---
-if exist "backup.ps1" (
-    echo [5/6] Running backup...
-    powershell -ExecutionPolicy Bypass -File backup.ps1
-    if %ERRORLEVEL% EQU 0 (
-        echo       Done: Backup completed
-    ) else (
-        echo       Warning: Backup failed or skipped
-    )
-    echo.
-) else (
-    echo [5/6] Skipping backup (backup.ps1 not found)
-    echo.
-)
-
 REM --- Commit ---
-echo [6/6] Committing changes...
+echo [4/5] Committing...
 git commit -m "%COMMIT_MSG%"
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo ERROR: Commit failed!
-    echo Possible reasons:
-    echo   - No changes to commit
-    echo   - Git configuration issue
-    echo.
     pause
     exit /b 1
 )
-echo       Done: Changes committed
+echo       Done
 echo.
 
-REM --- Show commit summary ---
-echo ============================================
-echo  Commit Summary
-echo ============================================
-git log -1 --stat
+REM --- Show commit ---
+echo [5/5] Commit Summary:
+echo --------------------------------------------
+git log -1 --oneline
 echo.
 
 REM --- Ask to push ---
-set /p push_now="Push to remote now? (y/n): "
+set /p push_now="Push to remote? (y/n): "
 if /i "%push_now%"=="y" (
     echo.
-    echo Pushing to remote...
+    echo Pushing...
     git push
     if %ERRORLEVEL% EQU 0 (
-        echo       Done: Pushed to remote
+        echo       Done
     ) else (
-        echo       Warning: Push failed - check connection/credentials
+        echo       Push failed
     )
-) else (
-    echo.
-    echo Changes committed locally. Run 'git push' when ready.
 )
 
 echo.
 echo ============================================
-echo  Auto-Update Complete!
+echo  Complete!
 echo ============================================
 echo.
 pause
+endlocal
