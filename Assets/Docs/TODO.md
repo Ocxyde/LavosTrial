@@ -1,9 +1,9 @@
 # TODO.md - Project Tasks & Priorities
 
 **Project:** CodeDotLavos (Unity 6000.3.7f1)
-**Last Updated:** 2026-03-07 (Maze Sharing System + Critical Fixes + Type Safety Fix + Physics Fix)
+**Last Updated:** 2026-03-07
 **License:** GPL-3.0
-**Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **TYPE CAST FIX (XCom)** | ✅ **PHYSICS COLLISION FIX (Floor + Player)**
+**Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **PHYSICS & COLLISION** | ✅ **8-AXIS MAZE SYSTEM**
 
 ---
 
@@ -14,6 +14,181 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 See [COPYING](../../COPYING) file for full license text.
 
 **Copyright © 2026 CodeDotLavos. All rights reserved.**
+
+---
+
+## 🔴 **TODAY'S SESSION - 2026-03-07**
+
+### **Summary of Fixes Applied:**
+
+| # | Fix | Impact | Files Modified |
+|---|-----|--------|----------------|
+| 1 | MD5 Compatibility | CRITICAL | `ShareSystm.cs` |
+| 2 | Type Cast (XCom) | CRITICAL | `XCom.cs` |
+| 3 | Floor Collider | CRITICAL | `FloorTilePrefab.prefab` |
+| 4 | Player Physics | CRITICAL | `MazeLav8s_V0-9_2.unity` |
+| 5 | Scene Components | HIGH | `MazeLav8s_V0-9_2.unity` |
+| 6 | Documentation | MEDIUM | `TODO.md` |
+| 7 | Deprecation Banners Removed | MEDIUM | 3 files |
+| 8 | FloorPrefab Path Fixed | HIGH | `CompleteMazeBuilder8.cs` |
+| 9 | Geometry TODOs Implemented | MEDIUM | `Tetrahedron.cs`, `Triangle.cs` |
+
+---
+
+### **✅ FIX 1: MD5 COMPATIBILITY (Unity Framework)**
+**Problem:** `MD5.HashData` not available in Unity's .NET framework
+**Solution:** Use `MD5.Create().ComputeHash()` instead
+
+```csharp
+// BEFORE (❌ .NET 6+ only)
+byte[] hash = MD5.HashData(bytes);
+
+// AFTER (✅ Unity compatible)
+using (MD5 md5 = MD5.Create())
+{
+    byte[] hash = md5.ComputeHash(bytes);
+}
+```
+
+**File:** `Assets/Scripts/Core/11_Utilities/ShareSystm.cs`
+
+---
+
+### **✅ FIX 2: TYPE CAST IN XCOM (Seed Safety)**
+**Problem:** Implicit `int` → `uint` conversion for `CurrentSeed`
+**Risk:** Negative seeds wrap to large positive values
+
+```csharp
+// BEFORE (❌ implicit conversion)
+string code = ShareSystm.ExportCode(builder.CurrentSeed, builder.CurrentLevel);
+
+// AFTER (✅ explicit cast)
+string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
+```
+
+**Files:** `Assets/Scripts/Core/11_Utilities/XCom.cs` (lines 239, 298)
+
+---
+
+### **✅ FIX 3: FLOOR COLLIDER (Player Was Falling!)**
+**Problem:** `FloorTilePrefab` had no collider component
+
+```yaml
+BEFORE:
+  ✅ MeshFilter
+  ✅ MeshRenderer
+  ❌ NO Collider → Player falls through floor!
+
+AFTER:
+  ✅ MeshFilter
+  ✅ MeshRenderer
+  ✅ BoxCollider (size: 1,1,1)
+```
+
+**File:** `Assets/Resources/Prefabs/FloorTilePrefab.prefab`
+
+---
+
+### **✅ FIX 4: PLAYER PHYSICS (CharacterController)**
+**Problems:**
+1. CharacterController center at `{0, 0, 0}` → bottom at y=-1
+2. Player spawn at y=1.0 → too low
+3. Redundant CapsuleCollider → conflicts
+4. Redundant Rigidbody → conflicts
+
+**Solutions:**
+```yaml
+CharacterController:
+  Center: {0, 0, 0} → {0, 1, 0} ✅
+
+Player Spawn:
+  Position y: 1.0 → 1.5 ✅
+
+Cleanup:
+  Removed: CapsuleCollider ✅
+  Removed: Rigidbody ✅
+```
+
+**Physics Math:**
+```
+Floor:  y=0, scale y=1 → top surface at y=0.5
+Player: y=1.5, CC center {0,1,0} → bottom at y=0.5 ✅
+Result: Player stands ON floor (not in it, not above it)
+```
+
+**File:** `Assets/Scenes/MazeLav8s_V0-9_2.unity`
+
+---
+
+### **✅ FIX 5: SCENE COMPONENTS (Missing Systems)**
+**Added to Scene:**
+- `GameManager` - Game state management
+- `TorchPool` - Torch pooling system
+- `DoorsEngine` - Door behavior
+- `LightPlacementEngine` - Torch placement
+- `SpatialPlacer` - Object placement (chests, enemies)
+
+**Removed from Scene:**
+- Disabled `GameConfig` (duplicate - `GameConfig8` is active)
+
+**File:** `Assets/Scenes/MazeLav8s_V0-9_2.unity`
+
+---
+
+### **✅ FIX 6: DOCUMENTATION (TODO.md)**
+- Added physics collision fix documentation
+- Added scene setup requirements
+- Added player/floor setup specifications
+- Added testing checklist for physics
+
+**File:** `Assets/Docs/TODO.md`
+
+---
+
+### **✅ FIX 7: DEPRECATION BANNERS REMOVED**
+Removed ASCII deprecation banners from 3 files (per user request):
+- `SpawningRoom.cs` - Spawn handled by GridMazeGenerator8
+- `MazeSaveData.cs` - Replaced by MazeBinaryStorage8
+- `MazeRenderer.cs` - Wall spawning in CompleteMazeBuilder8
+
+**Files:** `Assets/Scripts/Core/06_Maze/`
+
+**Scripts created for cleanup:**
+- `cleanup-deprecated-maze-files.ps1` - Backup and delete deprecated files
+- `archive-old-scenes.ps1` - Move old scenes to archive
+
+---
+
+### **✅ FIX 8: FLOORPREFAB PATH FIXED**
+**Problem:** Code loaded "Prefabs/FloorPrefab" but file is named "FloorTilePrefab"
+**Solution:** Updated path to match actual prefab name
+
+```csharp
+// BEFORE
+floorPrefab ??= Resources.Load<GameObject>("Prefabs/FloorPrefab");
+
+// AFTER
+floorPrefab ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
+```
+
+**File:** `Assets/Scripts/Core/06_Maze/CompleteMazeBuilder8.cs` (line 178)
+
+---
+
+### **✅ FIX 9: GEOMETRY TODOs IMPLEMENTED**
+**Tetrahedron.cs - Implemented 4 methods:**
+- `Volume()` - Scalar triple product: V = |AB · (AC × AD)| / 6
+- `SurfaceArea()` - Sum of 4 triangular face areas
+- `Centroid()` - Center of mass: (A + B + C + D) / 4
+- `ContainsPoint()` - Barycentric volume test
+
+**Triangle.cs - Updated documentation:**
+- Marked Area, Centroid, Circumcenter as ✅ IMPLEMENTED
+- Remaining TODOs: Incenter, Orthocenter, Point-in-triangle test
+
+**Files:** 
+- `Assets/Scripts/Core/13_Geometry/Tetrahedron.cs`
+- `Assets/Scripts/Core/13_Geometry/Triangle.cs`
 
 ---
 
@@ -227,8 +402,6 @@ git commit -m "fix: Grid maze math - walls snap to cell boundaries
 
 This fixes wall snapping - walls now align perfectly
 with corridor edges!
-
-Co-authored-by: BetsyBoop"
 ```
 
 ---
@@ -650,13 +823,10 @@ Tools → Next Level (Harder)
 ---
 
 **Last Updated:** 2026-03-07
-**Author:** Ocxyde
 
 ---
 
-## 🔴 **CRITICAL FIXES - 2026-03-07 (BetsyBoop Session)**
-
-### **✅ 6. PHYSICS COLLISION FIX - FLOOR AND PLAYER**
+## 🧪 **TESTING CHECKLIST - POST-FIX**
 **Status:** ✅ **COMPLETED**
 **Impact:** CRITICAL - Player was falling through floor
 **Files Modified:** 

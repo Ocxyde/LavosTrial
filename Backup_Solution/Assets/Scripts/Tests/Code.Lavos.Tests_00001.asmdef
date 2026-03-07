@@ -1,0 +1,19 @@
+﻿{
+    "name": "Code.Lavos.Tests",
+    "rootNamespace": "Code.Lavos.Tests",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Status",
+        "Code.Lavos.Inventory",
+        "Code.Lavos.HUD"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

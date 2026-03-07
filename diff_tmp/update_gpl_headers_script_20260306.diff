@@ -1,0 +1,154 @@
+﻿# Update-GPLHeaders.ps1 - Creation Diff
+# Date: 2026-03-06
+# Unity 6 (6000.3.7f1) - UTF-8 encoding - Unix LF
+#
+# PURPOSE: Batch update GPL headers from "PeuImporte" to "Code.Lavos"
+
+================================================================================
+FILES CREATED
+================================================================================
+
+1. Update-GPLHeaders.ps1          (Project root)
+   - PowerShell script for batch updating
+   - Scans Assets/Scripts/**/*.cs
+   - Replaces "PeuImporte" → "Code.Lavos"
+   - Creates backup log in diff_tmp/
+
+2. Assets/Docs/update_gpl_headers_guide.md
+   - Full documentation
+   - Usage examples
+   - Troubleshooting guide
+
+================================================================================
+USAGE
+================================================================================
+
+## Test Run (Dry Run):
+```powershell
+.\Update-GPLHeaders.ps1 -WhatIf
+```
+
+## Apply Changes:
+```powershell
+.\Update-GPLHeaders.ps1
+```
+
+## Verbose Mode:
+```powershell
+.\Update-GPLHeaders.ps1 -Verbose
+```
+
+================================================================================
+WHAT IT CHANGES
+================================================================================
+
+In ALL .cs files with GPL header:
+
+Line 3:  "This file is part of PeuImporte."
+      → "This file is part of Code.Lavos."
+
+Line 5:  "PeuImporte is free software:"
+      → "Code.Lavos is free software:"
+
+Line 10: "PeuImporte is distributed"
+      → "Code.Lavos is distributed"
+
+Line 16: "along with PeuImporte."
+      → "along with Code.Lavos."
+
+================================================================================
+SAFETY FEATURES
+================================================================================
+
+✅ WhatIf Mode:
+   - Test without modifying
+   - Shows what would change
+
+✅ Backup Log:
+   - Automatic backup in diff_tmp/
+   - Timestamp: gpl_headers_backup_YYYYMMDD_HHMMSS.txt
+   - Lists all modified files
+
+✅ Encoding Safe:
+   - Preserves UTF-8
+   - Enforces Unix LF
+   - No BOM added
+
+✅ Error Handling:
+   - Continues on error
+   - Reports issues
+   - Summary at end
+
+================================================================================
+EXPECTED RESULTS
+================================================================================
+
+Total .cs files:        ~80
+Files with GPL header:  ~60 (will be updated)
+Files without header:   ~20 (skipped)
+
+Time estimate: 2-5 seconds
+
+================================================================================
+EXAMPLE OUTPUT
+================================================================================
+
+════════════════════════════════════════════════
+  GPL HEADER UPDATE: PeuImporte → Code.Lavos   
+════════════════════════════════════════════════
+
+[Update-GPLHeaders] Scanning for .cs files...
+[Update-GPLHeaders] Found 80 C# files
+
+  ✓ Updated: PathFinder.cs
+  ✓ Updated: CompleteMazeBuilder.cs
+  ✓ Updated: GridMazeGenerator.cs
+  ...
+
+════════════════════════════════════════════════
+  SUMMARY                                      
+════════════════════════════════════════════════
+  Total Files Scanned:  80
+  Files Modified:       60
+  Errors:               0
+════════════════════════════════════════════════
+
+[Update-GPLHeaders] ✓ Successfully updated 60 files!
+[REMINDER] Run backup.ps1 to save these changes!
+
+================================================================================
+WORKFLOW
+================================================================================
+
+1. Test first:
+   .\Update-GPLHeaders.ps1 -WhatIf
+
+2. Apply changes:
+   .\Update-GPLHeaders.ps1
+
+3. Verify:
+   Select-String -Path "Assets\Scripts\**\*.cs" -Pattern "PeuImporte"
+   (Should return no results)
+
+4. Backup:
+   .\backup.ps1
+
+5. Commit (git users):
+   git add .
+   git commit -m "Update GPL headers to Code.Lavos"
+
+================================================================================
+COMPLIANCE
+================================================================================
+
+✅ UTF-8 Encoding: YES
+✅ Unix LF: YES
+✅ Unity 6 (6000.3.7f1): Compatible
+✅ GPL-3.0 License: YES
+✅ Plug-in-Out: N/A (script, not Unity code)
+✅ Relative Paths: YES
+✅ No cmd execution: YES (PowerShell only)
+
+================================================================================
+STORED FOR LATER USE - diff_tmp/update_gpl_headers_script_20260306.diff
+================================================================================

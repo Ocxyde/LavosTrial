@@ -1,0 +1,18 @@
+﻿{
+    "name": "Code.Lavos.Gameplay",
+    "rootNamespace": "Code.Lavos",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Inventory",
+        "Code.Lavos.HUD"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

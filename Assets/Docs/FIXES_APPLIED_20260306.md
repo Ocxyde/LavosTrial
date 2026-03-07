@@ -1,4 +1,4 @@
-﻿# FIXES APPLIED - PROJECT COMPLIANCE UPDATE
+# FIXES APPLIED - PROJECT COMPLIANCE UPDATE
 ## CodeDotLavos Unity Project - Issue Resolution Report
 
 **Date:** 2026-03-06  

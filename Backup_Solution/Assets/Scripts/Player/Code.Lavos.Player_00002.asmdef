@@ -1,0 +1,21 @@
+﻿{
+    "name": "Code.Lavos.Player",
+    "rootNamespace": "Code.Lavos",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Status",
+        "Code.Lavos.Inventory",
+        "Code.Lavos.HUD",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

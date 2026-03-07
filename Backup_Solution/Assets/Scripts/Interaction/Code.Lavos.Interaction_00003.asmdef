@@ -1,0 +1,15 @@
+{
+  "autoReferenced": true,
+  "rootNamespace": "Code.Lavos.Interaction",
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "name": "Code.Lavos.Interaction",
+  "references": [
+    "Code.Lavos.Core",
+    "Code.Lavos.Player"
+  ],
+  "generateProgrammingAssets": false,
+  "excludePlatforms": [],
+  "precompiledReferences": [],
+  "includePlatforms": []
+}

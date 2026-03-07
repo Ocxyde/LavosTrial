@@ -1,0 +1,19 @@
+﻿{
+    "name": "Code.Lavos.HUD",
+    "rootNamespace": "Code.Lavos.HUD",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Status",
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

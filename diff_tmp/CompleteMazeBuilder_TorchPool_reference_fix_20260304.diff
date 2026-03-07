@@ -1,0 +1,111 @@
+﻿--- CompleteMazeBuilder TorchPool Reference Fix - 2026-03-04
++++ Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+ISSUE:
+======
+[SpatialPlacer] TorchPool reference not assigned!
+
+ROOT CAUSE:
+===========
+SpatialPlacer.PlaceTorches() requires torchPool reference to be assigned,
+but CompleteMazeBuilder wasn't wiring up this reference before calling
+SpatialPlacer.PlaceAll().
+
+ERROR LOCATION:
+===============
+Assets/Scripts/Core/08_Environment/SpatialPlacer.cs:537
+  if (torchPool == null)
+  {
+      Debug.LogError("[SpatialPlacer] TorchPool reference not assigned!");
+      return;
+  }
+
+FIX APPLIED:
+============
+1. Added code to wire up TorchPool reference to SpatialPlacer
+2. Added code to wire up LightPlacementEngine reference to SpatialPlacer
+3. Added System.Reflection using statement
+
+CHANGES:
+========
+
+BEFORE:
+-------
+private void PlaceObjects()
+{
+    PlaceTorches();
+    
+    spatialPlacer = GetComponent<SpatialPlacer>();
+    if (spatialPlacer != null)
+    {
+        spatialPlacer.PlaceTorchesEnabled = true;
+        spatialPlacer.PlaceAll();
+    }
+}
+
+AFTER:
+------
+private void PlaceObjects()
+{
+    // Step 8a: Place torches using LightPlacementEngine
+    PlaceTorches();
+
+    // Step 8b: Place other objects using SpatialPlacer
+    spatialPlacer = GetComponent<SpatialPlacer>();
+    if (spatialPlacer != null)
+    {
+        // Wire up TorchPool reference (required for torch placement)
+        if (torchPool == null)
+        {
+            torchPool = FindFirstObjectByType<TorchPool>();
+            if (torchPool == null)
+            {
+                var torchGO = new GameObject("TorchPool");
+                torchPool = torchGO.AddComponent<TorchPool>();
+            }
+        }
+        
+        // Assign TorchPool to SpatialPlacer via reflection
+        var torchPoolField = typeof(SpatialPlacer).GetField("torchPool", 
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        if (torchPoolField != null)
+        {
+            torchPoolField.SetValue(spatialPlacer, torchPool);
+        }
+        
+        // Assign LightPlacementEngine to SpatialPlacer via reflection
+        var lightPlacementEngineField = typeof(SpatialPlacer).GetField(
+            "lightPlacementEngine", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (lightPlacementEngineField != null && lightPlacementEngine != null)
+        {
+            lightPlacementEngineField.SetValue(spatialPlacer, lightPlacementEngine);
+        }
+
+        // Enable torch placement in SpatialPlacer (dual placement for redundancy)
+        spatialPlacer.PlaceTorchesEnabled = true;
+        spatialPlacer.PlaceAll();
+        Debug.Log("[CompleteMazeBuilder] ✅ Objects placed...");
+    }
+}
+
+// Added using statement at top of file:
+using System.Reflection;
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+VERIFICATION:
+=============
+1. Open Unity Editor
+2. Press Play with CompleteMazeBuilder in scene
+3. Check Console for:
+   - No "TorchPool reference not assigned" errors
+   - "[CompleteMazeBuilder] ✅ Objects placed (torches, chests, enemies, items)"
+4. Verify torches are placed correctly
+
+NEXT STEPS:
+===========
+1. Ask user to run backup.ps1
+2. Test torch placement
+3. Commit changes to git

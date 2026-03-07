@@ -1,0 +1,17 @@
+﻿{
+    "name": "Code.Lavos.Ressources",
+    "rootNamespace": "Code.Lavos",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Player"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateAssemblyInfo": true,
+    "versionDefines": [],
+    "noEngineReferences": false
+}

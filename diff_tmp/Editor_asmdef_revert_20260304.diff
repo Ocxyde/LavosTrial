@@ -1,0 +1,11 @@
+﻿--- a/Assets/Scripts/Editor/Code.Lavos.Editor.asmdef
++++ b/Assets/Scripts/Editor/Code.Lavos.Editor.asmdef
+@@ -10,7 +10,6 @@
+         "Code.Lavos.Ressources",
+         "Code.Lavos.Ennemies",
+         "Code.Lavos.Gameplay",
+-        "Code.Lavos.Interaction",
+-        "Code.Lavos.Tests",
++        "Code.Lavos.Interaction",
+         "Unity.RenderPipelines.Universal.Runtime"
+     ],

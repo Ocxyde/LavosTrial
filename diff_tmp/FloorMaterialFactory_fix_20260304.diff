@@ -1,0 +1,49 @@
+﻿--- FloorMaterialFactory.cs Fix - 2026-03-04
++++ Assets/Scripts/Core/09_Art/FloorMaterialFactory.cs
+
+SUMMARY OF CHANGES:
+===================
+
+1. Updated header comment to clarify plug-in-and-out architecture
+2. Added comment explaining PixelCanvas is from DrawingManager (global namespace)
+3. Minor documentation improvements
+
+DIFF:
+=====
+
+Line 4-10: Updated header comment
+- OLD: "- Reusable across scenes"
+- NEW: "- Reusable across scenes - independent plugin module"
+
+Line 18: Updated class summary
+- OLD: "/// Supports multiple floor types: Stone, Wood, Tile, etc."
+- NEW: "/// Supports multiple floor types: Stone, Wood, Tile, etc.\n    /// Plug-in module for Core system."
+
+Line 87: Added explanatory comment
+- OLD: "// Generate texture"
+- NEW: "// Generate texture using PixelCanvas from DrawingManager (global namespace)"
+
+VERIFICATION:
+=============
+- PixelCanvas class is defined in DrawingManager.cs (line 366)
+- PixelCanvas is in global namespace (outside Code.Lavos.Core)
+- FloorMaterialFactory is in Code.Lavos.Core namespace
+- Access pattern: Global namespace classes are accessible from any namespace
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Core/09_Art/FloorMaterialFactory.cs
+
+NOTES:
+======
+- No functional changes to texture generation logic
+- No changes to URP material properties
+- Code structure preserved for plug-in-out compatibility
+- PixelCanvas dependency is intentional (part of Core system)
+
+NEXT STEPS:
+===========
+1. Ask user to run backup.ps1
+2. Regenerate floor materials in Unity Editor:
+   Tools > Floor Materials > Generate All Floor Materials
+3. Verify textures appear correctly in scene

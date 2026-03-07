@@ -1,4 +1,4 @@
-﻿# Clean Maze Setup Guide - 8-Axis with Diagonal Walls
+# Clean Maze Setup Guide - 8-Axis with Diagonal Walls
 
 **Version:** 1.0  
 **Date:** 2026-03-07  

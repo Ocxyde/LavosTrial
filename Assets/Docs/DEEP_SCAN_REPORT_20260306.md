@@ -1,4 +1,4 @@
-﻿# COMPREHENSIVE PROJECT SCAN REPORT
+# COMPREHENSIVE PROJECT SCAN REPORT
 ## CodeDotLavos Unity Project - Deep Analysis
 
 **Scan Date:** 2026-03-06  

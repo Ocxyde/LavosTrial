@@ -1,0 +1,124 @@
+--- a/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder8.cs
++++ b/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder8.cs
+
+@@ Inspector header - new field added @@
+
++    // If true, the WallPrefab pivot is at the mesh center (default Unity cube).
++    // If false, pivot is already at the bottom edge and no Y offset is needed.
++    [Header("Wall Prefab Settings")]
++    [SerializeField] private bool wallPivotIsAtMeshCenter = true;
+
+@@ SpawnCardinalWall - FULL REPLACEMENT @@
+
+-    private void SpawnCardinalWall(int cx, int cz, Direction8 dir, float cs, float wh)
+-    {
+-        Vector3    center = CellCenter(cx, cz, wh * 0.5f);
+-        Vector3    offset;
+-        Quaternion rot;
+-
+-        switch (dir)
+-        {
+-            case Direction8.N: offset = new Vector3(0,         0,  cs * 0.5f); rot = Quaternion.identity;        break;
+-            case Direction8.S: offset = new Vector3(0,         0, -cs * 0.5f); rot = Quaternion.identity;        break;
+-            case Direction8.E: offset = new Vector3( cs * 0.5f, 0, 0);         rot = Quaternion.Euler(0, 90f, 0); break;
+-            case Direction8.W: offset = new Vector3(-cs * 0.5f, 0, 0);         rot = Quaternion.Euler(0, 90f, 0); break;
+-            default: return;
+-        }
+-
+-        var wall = Instantiate(wallPrefab, center + offset, rot, _wallsRoot);
+-        wall.transform.localScale = new Vector3(cs, wh, 0.2f);
+-        wall.name = $"Wall_{cx}_{cz}_{dir}";
+-    }
++    private void SpawnCardinalWall(int cx, int cz, Direction8 dir, float cs, float wh)
++    {
++        var (dx, dz) = Direction8Helper.ToOffset(dir);
++
++        // Bottom-center of the wall edge at floor level (y = 0)
++        var edgePos = new Vector3(
++            (cx + 0.5f + dx * 0.5f) * cs,
++            0f,
++            (cz + 0.5f + dz * 0.5f) * cs
++        );
++
++        Quaternion rot = (dir == Direction8.E || dir == Direction8.W)
++            ? Quaternion.Euler(0f, 90f, 0f)
++            : Quaternion.identity;
++
++        var wall = Instantiate(wallPrefab, edgePos, rot, _wallsRoot);
++        wall.transform.localScale = new Vector3(cs, wh, 0.2f);
++
++        // Shift Y so wall sits on floor when prefab pivot is at mesh center
++        if (wallPivotIsAtMeshCenter)
++        {
++            var p = wall.transform.position;
++            wall.transform.position = new Vector3(p.x, wh * 0.5f, p.z);
++        }
++
++        wall.name = $"Wall_{cx}_{cz}_{dir}";
++    }
+
+@@ SpawnDoors - FULL REPLACEMENT @@
+
+-    private void SpawnDoors()
+-    {
+-        if (doorPrefab == null) return;
+-        PlaceAtCell(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, doorPrefab, "Door_Entry");
+-        PlaceAtCell(_mazeData.ExitCell.x,  _mazeData.ExitCell.z,  doorPrefab, "Door_Exit");
+-    }
++    private void SpawnDoors()
++    {
++        if (doorPrefab == null) return;
++        SpawnDoorOnAccessWall(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, "Door_Entry");
++        SpawnDoorOnAccessWall(_mazeData.ExitCell.x,  _mazeData.ExitCell.z,  "Door_Exit");
++    }
+
+@@ new method SpawnDoorOnAccessWall added @@
+
++    private void SpawnDoorOnAccessWall(int cx, int cz, string doorName)
++    {
++        if (doorPrefab == null) return;
++
++        float cs = _config.CellSize;
++        float wh = _config.WallHeight;
++
++        Direction8[] cardinals = { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
++
++        foreach (var dir in cardinals)
++        {
++            if (_mazeData.HasWall(cx, cz, dir)) continue;
++
++            var (dx, dz) = Direction8Helper.ToOffset(dir);
++            int nx = cx + dx;
++            int nz = cz + dz;
++            if (!_mazeData.InBounds(nx, nz)) continue;
++
++            var wallEdgePos = new Vector3(
++                (cx + 0.5f + dx * 0.5f) * cs,
++                0f,
++                (cz + 0.5f + dz * 0.5f) * cs
++            );
++
++            float rotY = (dir == Direction8.E || dir == Direction8.W) ? 90f : 0f;
++
++            var door = Instantiate(doorPrefab, wallEdgePos, Quaternion.Euler(0f, rotY, 0f));
++            door.name                 = doorName;
++            door.transform.localScale = new Vector3(cs, wh, 0.2f);
++
++            if (wallPivotIsAtMeshCenter)
++            {
++                var p = door.transform.position;
++                door.transform.position = new Vector3(p.x, wh * 0.5f, p.z);
++            }
++
++            break;
++        }
++    }
+
+@@ MazeData8.cs - CellFlags8 enum - IsRoom flag added @@
+
+-    IsExit    = 1 << 12,  // 0x1000
++    IsExit    = 1 << 12,  // 0x1000
++    IsRoom    = 1 << 13,  // 0x2000  - carved room (dead-end / crossroads)
+
+-    AllObjects  = SpawnRoom | HasChest | HasEnemy | HasTorch | IsExit,
++    AllObjects  = SpawnRoom | HasChest | HasEnemy | HasTorch | IsExit | IsRoom,

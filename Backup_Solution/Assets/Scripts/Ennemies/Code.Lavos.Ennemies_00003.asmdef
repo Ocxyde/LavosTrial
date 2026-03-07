@@ -1,0 +1,16 @@
+﻿{
+    "name": "Code.Lavos.Ennemies",
+    "rootNamespace": "Code.Lavos.Ennemies",
+    "references": [
+        "Code.Lavos.Core",
+        "Code.Lavos.Status",
+        "Code.Lavos.Player"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateProgrammingAssets": false
+}

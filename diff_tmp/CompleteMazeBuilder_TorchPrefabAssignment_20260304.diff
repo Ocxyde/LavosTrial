@@ -1,0 +1,66 @@
+﻿--- CompleteMazeBuilder Torch Prefab Assignment Fix - 2026-03-04
++++ Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+ISSUE:
+======
+LightPlacementEngine requires torchPrefab to be assigned, but it was not being
+set by CompleteMazeBuilder, causing torches to not spawn.
+
+ROOT CAUSE:
+===========
+LightPlacementEngine.LoadAndInstantiateTorches() checks if torchPrefab is null:
+  if (torchPrefab == null) {
+      Debug.LogError("❌ Please assign torchPrefab in Inspector!");
+      return;
+  }
+
+CompleteMazeBuilder was not assigning the torch prefab before calling
+LoadAndInstantiateTorches().
+
+FIX APPLIED:
+============
+Added code to get torchHandlePrefab from TorchPool and assign it to
+LightPlacementEngine's torchPrefab field via reflection.
+
+CHANGES:
+========
+
+Added in PlaceTorches():
+```csharp
+// Assign torch prefab from TorchPool to LightPlacementEngine
+var torchPrefabField = typeof(LightPlacementEngine).GetField(
+    "torchPrefab", BindingFlags.NonPublic | BindingFlags.Instance);
+if (torchPrefabField != null)
+{
+    // Try to get torchHandlePrefab from TorchPool
+    var torchHandleField = typeof(TorchPool).GetField(
+        "torchHandlePrefab", BindingFlags.NonPublic | BindingFlags.Instance);
+    if (torchHandleField != null)
+    {
+        var torchHandlePrefab = torchHandleField.GetValue(torchPool) as GameObject;
+        if (torchHandlePrefab != null)
+        {
+            torchPrefabField.SetValue(lightPlacementEngine, torchHandlePrefab);
+            Debug.Log($"[CompleteMazeBuilder] 🎆 Assigned torch prefab: {torchHandlePrefab.name}");
+        }
+    }
+}
+```
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+VERIFICATION:
+=============
+1. Press Play with CompleteMazeBuilder in scene
+2. Check Console for:
+   - "[CompleteMazeBuilder] 🎆 Assigned torch prefab: TorchHandlePrefab"
+   - "[CompleteMazeBuilder] 🎆 Torches placed from binary storage"
+3. Verify torches are visible on walls with animated flames
+
+NEXT STEPS:
+===========
+1. Ask user to run backup.ps1
+2. Test torch placement in Unity
+3. Verify torches have flames animated

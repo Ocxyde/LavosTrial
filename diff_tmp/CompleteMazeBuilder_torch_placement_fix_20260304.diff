@@ -1,0 +1,82 @@
+﻿--- CompleteMazeBuilder Torch Placement Fix - 2026-03-04
++++ Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+ISSUE:
+======
+Torches were not being placed in the maze when using CompleteMazeBuilder.
+
+FIX APPLIED:
+============
+1. Added PlaceTorches() method that uses LightPlacementEngine
+2. Enabled SpatialPlacer.PlaceTorchesEnabled = true for dual placement
+
+CHANGES:
+========
+
+BEFORE:
+-------
+private void PlaceObjects()
+{
+    spatialPlacer = GetComponent<SpatialPlacer>();
+    if (spatialPlacer != null)
+    {
+        spatialPlacer.PlaceAll();
+        Debug.Log("[CompleteMazeBuilder] ✅ Objects placed...");
+    }
+}
+
+AFTER:
+------
+private void PlaceObjects()
+{
+    // Step 8a: Place torches using LightPlacementEngine
+    PlaceTorches();
+
+    // Step 8b: Place other objects using SpatialPlacer
+    spatialPlacer = GetComponent<SpatialPlacer>();
+    if (spatialPlacer != null)
+    {
+        // Enable torch placement in SpatialPlacer (dual placement for redundancy)
+        spatialPlacer.PlaceTorchesEnabled = true;
+        spatialPlacer.PlaceAll();
+        Debug.Log("[CompleteMazeBuilder] ✅ Objects placed...");
+    }
+}
+
+private void PlaceTorches()
+{
+    // Get LightPlacementEngine
+    lightPlacementEngine = GetComponent<LightPlacementEngine>();
+    if (lightPlacementEngine == null)
+    {
+        Debug.LogWarning("[CompleteMazeBuilder] ⚠️ LightPlacementEngine not found...");
+        return;
+    }
+
+    // Get TorchPool
+    torchPool = FindFirstObjectByType<TorchPool>();
+    if (torchPool == null)
+    {
+        var torchGO = new GameObject("TorchPool");
+        torchPool = torchGO.AddComponent<TorchPool>();
+    }
+
+    // Get maze ID for binary storage
+    string mazeId = $"Maze_{mazeWidth}x{mazeHeight}_{currentSeed}";
+
+    // Load and instantiate torches from binary storage
+    bool success = lightPlacementEngine.LoadAndInstantiateTorches(mazeId, (int)currentSeed);
+    
+    if (success)
+    {
+        Debug.Log($"[CompleteMazeBuilder] 🎆 Torches placed from binary storage (maze: {mazeId})");
+    }
+    else
+    {
+        Debug.LogWarning($"[CompleteMazeBuilder] ⚠️ Torch placement failed...");
+    }
+}
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs

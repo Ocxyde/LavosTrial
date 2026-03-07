@@ -1,0 +1,12 @@
+﻿{
+    "name": "Code.Lavos.Status",
+    "rootNamespace": "Code.Lavos.Status",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "generateProgrammingAssets": false
+}

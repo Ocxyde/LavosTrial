@@ -1,0 +1,94 @@
+﻿--- QuickSceneSetup Static Class Fix - 2026-03-04
++++ Assets/Scripts/Editor/QuickSceneSetup.cs
+
+ISSUE:
+======
+ArgumentException: GetComponent requires that the requested component 
+'GroundPlaneGenerator' derives from MonoBehaviour or Component or is an 
+interface.
+
+ROOT CAUSE:
+===========
+GroundPlaneGenerator and CeilingGenerator are STATIC CLASSES, not 
+MonoBehaviour components. They cannot be added via AddComponent().
+
+ERROR LOCATION:
+===============
+Assets/Scripts/Editor/QuickSceneSetup.cs line 127:
+  AddComponentIfMissing(mazeTest, "Code.Lavos.Core.GroundPlaneGenerator");
+  AddComponentIfMissing(mazeTest, "Code.Lavos.Core.CeilingGenerator");
+
+FIX APPLIED:
+============
+1. Removed GroundPlaneGenerator and CeilingGenerator from AddCoreComponents()
+2. Updated component count: 13 → 11 components
+3. Updated debug log to clarify FpsMazeTest handles ground/ceiling
+4. Added comment explaining static classes
+
+CHANGES:
+========
+
+BEFORE:
+-------
+private static void AddCoreComponents(GameObject mazeTest)
+{
+    // ... other components ...
+    
+    // Environment components
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.GroundPlaneGenerator");
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.CeilingGenerator");
+    
+    // Test controller
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.FpsMazeTest");
+    
+    Debug.Log("  ✅ Added 13 components");
+}
+
+AFTER:
+------
+private static void AddCoreComponents(GameObject mazeTest)
+{
+    // ... other components ...
+    
+    // Lighting components
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.LightPlacementEngine");
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.LightEngine");
+    
+    // Test controller (FpsMazeTest handles ground/ceiling generation internally)
+    AddComponentIfMissing(mazeTest, "Code.Lavos.Core.FpsMazeTest");
+    
+    Debug.Log("  ✅ Added 11 components (GroundPlaneGenerator/CeilingGenerator are static classes)");
+}
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Editor/QuickSceneSetup.cs
+
+PLUG-IN-OUT ARCHITECTURE:
+=========================
+Static classes (like GroundPlaneGenerator) are utility modules that:
+- Don't need to be attached to GameObjects
+- Are called directly via static methods
+- Are still part of the plug-in-out system as utility modules
+
+Component classes (like MazeGenerator) are:
+- Attached to GameObjects
+- Can be configured via Inspector
+- Can be enabled/disabled at runtime
+
+Both types are valid plug-in modules, just used differently.
+
+VERIFICATION:
+=============
+1. Open Unity Editor
+2. Tools → Quick Scene Setup → Generate Complete Scene
+3. Check Console for:
+   - "✅ Added 11 components (GroundPlaneGenerator/CeilingGenerator are static classes)"
+   - No ArgumentException errors
+4. Press Play - scene should work correctly
+
+NEXT STEPS:
+===========
+1. Ask user to run backup.ps1
+2. Test scene generation
+3. Commit changes to git

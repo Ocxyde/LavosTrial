@@ -1,0 +1,99 @@
+﻿--- CompleteMazeBuilder Plug-in-Out Compliance & FPS Player - 2026-03-04
++++ Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+CHANGES FOR PLUG-IN-OUT COMPLIANCE:
+===================================
+
+1. HEADER DOCUMENTATION
+   Added plug-in-out architecture notes:
+   - CompleteMazeBuilder is a plug-in module for maze generation
+   - Communicates with core systems via EventHandler
+   - Independent but revolves around GameManager/EventHandler hub
+   - Can be enabled/disabled without breaking core system
+
+2. EVENTHANDLER INTEGRATION
+   Added event handler reference and subscription:
+   
+   private EventHandler eventHandler;
+   
+   Awake():
+   - Gets EventHandler.Instance (central hub)
+   - Logs connection status
+   
+   OnEnable():
+   - Subscribes to OnGameStateChanged event
+   
+   OnDisable():
+   - Unsubscribes from OnGameStateChanged event
+   
+   OnGameStateChanged():
+   - Handles game state changes via events (not direct GameManager access)
+
+3. FPS PLAYER WITH CAMERA BETWEEN EYES
+   PlacePlayerAtSpawn() now:
+   - Creates proper FPS player with CharacterController
+   - Adds PlayerController component (not just capsule)
+   - PlayerController auto-positions camera at eye height (1.75m)
+   - FPS movement enabled (WASD + mouse look + sprint + jump)
+   
+   Player Setup:
+   ```csharp
+   var playerGO = new GameObject("Player");
+   playerGO.transform.position = new Vector3(cellSize * 1.5f, 1f, cellSize * 1.5f);
+   
+   // Add CharacterController (required for PlayerController)
+   var controller = playerGO.AddComponent<CharacterController>();
+   controller.radius = 0.4f;
+   controller.height = 1.8f;
+   controller.center = new Vector3(0f, 0.9f, 0f);
+   
+   // Add PlayerController (FPS movement + camera between eyes)
+   player = playerGO.AddComponent<PlayerController>();
+   ```
+
+4. UNITY 6 COMPLIANCE
+   - Uses FindFirstObjectByType (Unity 6 API)
+   - New Input System (via PlayerController)
+   - UTF-8 encoding, Unix LF line endings
+   - Proper namespace: Code.Lavos.Core
+
+PLUG-IN-OUT ARCHITECTURE COMPLIANCE:
+====================================
+
+BEFORE:
+❌ Direct component references
+❌ No EventHandler integration
+❌ No event subscription/unsubscription
+❌ Simple capsule for player (no FPS movement)
+
+AFTER:
+✅ EventHandler.Instance for core communication
+✅ Subscribes to OnGameStateChanged events
+✅ Unsubscribes on disable (no memory leaks)
+✅ Proper FPS player with PlayerController
+✅ Camera positioned at eye height (1.75m)
+✅ Independent module that can be added/removed safely
+
+FILES MODIFIED:
+===============
+- Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+VERIFICATION:
+=============
+1. Press Play
+2. Check Console for:
+   [CompleteMazeBuilder] 🔌 Connected to EventHandler (plug-in-out ready)
+   [CompleteMazeBuilder] 👤 FPS player spawned at entrance: (X, Y, Z)
+   [CompleteMazeBuilder] 👤 Camera at eye height - ready for FPS movement
+3. Test FPS movement:
+   - WASD = walk
+   - Shift = sprint
+   - Space = jump
+   - Mouse = look around
+   - Camera at eye height (between eyes)
+
+NEXT STEPS:
+===========
+1. Ask user to run backup.ps1
+2. Test FPS movement in maze
+3. Verify plug-in-out compliance
