@@ -32,6 +32,7 @@ See [COPYING](../../COPYING) file for full license text.
 | 7 | Deprecation Banners Removed | MEDIUM | 3 files |
 | 8 | FloorPrefab Path Fixed | HIGH | `CompleteMazeBuilder8.cs` |
 | 9 | Geometry TODOs Implemented | MEDIUM | `Tetrahedron.cs`, `Triangle.cs` |
+| 10 | Git Ignore Updated | LOW | `.gitignore` |
 
 ---
 
@@ -189,6 +190,28 @@ floorPrefab ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
 **Files:** 
 - `Assets/Scripts/Core/13_Geometry/Tetrahedron.cs`
 - `Assets/Scripts/Core/13_Geometry/Triangle.cs`
+
+---
+
+### **✅ FIX 10: GIT IGNORE UPDATED (BACKUP FILES)**
+**Added exclusions for backup folder artifacts:**
+
+```gitignore
+# Backup folder numbered files (e.g., Script_00001.cs)
+Backup/**/*_00*.cs
+Backup/**/*_00*.cs.meta
+**/Backup_*/**/*_00*.cs
+**/Backup_*/**/*_00*.cs.meta
+
+# ZIP archives in backup folders
+Backup/**/*.zip
+Backup/**/*.zip.meta
+**/Backup_*/**/*.zip
+**/Backup_*/**/*.zip.meta
+```
+
+**Purpose:** Prevents backup copies and archives from being tracked in git
+**File:** `.gitignore`
 
 ---
 

@@ -29,9 +29,17 @@ Backup/**/*_00*.cs.meta
 **/Backup_*/**/*_00*.cs
 **/Backup_*/**/*_00*.cs.meta
 
-# ZIP archives in Assets
+# ZIP archives in backup folders
+Backup/**/*.zip
+Backup/**/*.zip.meta
+**/Backup_*/**/*.zip
+**/Backup_*/**/*.zip.meta
 Assets/**/*.zip
 Assets/**/*.zip.meta
+
+# Prevent duplicate TODO.md outside Assets/Docs
+Docs/TODO.md
+Docs/TODO.md.meta
 
 # Recovery & temp Unity folders
 Assets/Temp/
