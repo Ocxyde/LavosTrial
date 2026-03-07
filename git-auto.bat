@@ -2,6 +2,13 @@
 REM ============================================================
 REM  Git Auto-Commit - Quick Update Script
 REM  Usage: git-auto.bat "Your commit message here"
+REM
+REM  Respects .gitignore exclusions:
+REM    - Logs/, *.log, *.sysinfo
+REM    - Backup_Solution/, backup/, backups/
+REM    - diff_tmp/, diff/
+REM    - Library/, Temp/, Obj/, Build/
+REM    - *.bak, *.backup, *.unitybackup
 REM ============================================================
 
 echo.
@@ -40,18 +47,24 @@ echo --------------------------------------------
 git status --short
 echo.
 
-REM --- Check for changes ---
+REM --- Check for changes (respects .gitignore) ---
 git diff --quiet && git diff --cached --quiet
 if %ERRORLEVEL% EQU 0 (
     echo No changes to commit.
+    echo.
+    echo Note: Files in .gitignore are excluded:
+    echo   - Logs/, *.log, *.sysinfo
+    echo   - Backup_Solution/, diff_tmp/
+    echo   - Library/, Temp/, Build/
+    echo   - *.bak, *.backup, *.meta
     pause
     exit /b 0
 )
 
-REM --- Stage all changes ---
-echo [2/6] Staging all changes...
-git add -A
-echo       Done: All changes staged
+REM --- Stage changes (respects .gitignore) ---
+echo [2/6] Staging changes (excluding .gitignore files)...
+git add .
+echo       Done: Changes staged
 echo.
 
 REM --- Normalize line endings ---
