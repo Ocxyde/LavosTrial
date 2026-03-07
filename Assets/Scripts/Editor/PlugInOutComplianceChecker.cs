@@ -89,9 +89,9 @@ namespace Code.Lavos.Editor
             violations.Clear();
             scanComplete = false;
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("========================================");
             Debug.Log("  PLUG-IN-OUT COMPLIANCE CHECK");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("========================================");
 
             string scriptsPath = "Assets/Scripts/Core";
 
@@ -122,11 +122,11 @@ namespace Code.Lavos.Editor
                 else errors++;
             }
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("========================================");
             Debug.Log($"  SCAN COMPLETE");
             Debug.Log($"  Errors: {errors}");
             Debug.Log($"  Warnings: {warnings}");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("========================================");
 
             if (errors == 0)
             {

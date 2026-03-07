@@ -1,0 +1,1628 @@
+Chat 'ChatTitle(text="Find potential prob…" with OpenCode, isCustom=true)' (7e7fe505-1d97-435b-823d-f611d148c0d0)
+Context:
+builtin_findproblems
+Messages: 22
+=================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Find potential problems in 
+```C#
+private void SpawnExitDoor()
+{
+    if (!spawnExitDoor) return;
+    int exitX = _gen.ExitCell.x;
+    int exitY = _gen.ExitCell.y;
+    float doorX = (exitX + 0.5f) * cellSize;
+    float doorZ = (exitY + 0.5f) * cellSize;
+    _exitDoor = new GameObject("ExitDoor");
+    _exitDoor.transform.position = new Vector3(doorX, 0f, doorZ);
+    var door = _exitDoor.AddComponent<Door>();
+    door.Initialize(cellSize, wallHeight);
+    Debug.Log($"[MazeRenderer] Spawned exit door at ({doorX}, {doorZ})");
+}
+```
+
+Attachments:
+Attachment Name: MazeRenderer.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// MazeRenderer.cs
+using UnityEngine;
+private void SetupEnvironment()
+    {
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = ambientColor;
+        RenderSettings.fog = true;
+        RenderSettings.fogMode = FogMode.Linear;
+        RenderSettings.fogColor = new Color(0.08f, 0.05f, 0.03f);
+        RenderSettings.fogStartDistance = cellSize * 2f;
+        RenderSettings.fogEndDistance = cellSize * 15f;
+    }
+
+    private void SpawnPlayer()
+    {
+        Vector3 spawnPos = new Vector3((_gen.StartCell.x + 0.5f) * cellSize, playerSpawnOffsetY, (_gen.StartCell.y + 0.5f) * cellSize);
+        if (playerPrefab) 
+            Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        else 
+        {
+            var player = FindFirstObjectByType<PlayerController>();
+            if (player) player.transform.position = spawnPos;
+        }
+    }
+
+    /*START_USER_CODE*/private void SpawnExitDoor()
+    {
+        if (!spawnExitDoor) return;
+
+        int exitX = _gen.ExitCell.x;
+        int exitY = _gen.ExitCell.y;
+
+        float doorX = (exitX + 0.5f) * cellSize;
+        float doorZ = (exitY + 0.5f) * cellSize;
+
+        _exitDoor = new GameObject("ExitDoor");
+        _exitDoor.transform.position = new Vector3(doorX, 0f, doorZ);
+
+        var door = _exitDoor.AddComponent<Door>();
+        door.Initialize(cellSize, wallHeight);
+
+        Debug.Log($"[MazeRenderer] Spawned exit door at ({doorX}, {doorZ})");
+    }
+/*END_USER_CODE*/
+    private void EnsureRuntimeStatusUI()
+    {
+        if (RuntimeStatusUI.Instance == null)
+        {
+            var go = new GameObject("RuntimeStatusUI");
+            go.AddComponent<Runtimes.RuntimeStatusUI>();
+        }
+    }
+
+    if (RuntimeStatusUI.Instance == null)
+    {
+        var go = new GameObject("RuntimeStatusUI");
+        go.AddComponent<Runtimes.RuntimeStatusUI>();
+    }
+```
+
+Attachment Name: Door.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// Door.cs
+public class Door : MonoBehaviour
+{
+
+}
+```
+
+Attachment Name: URPReflectionProbeSettings.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// URPReflectionProbeSettings.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: RenderGraphGraphicsAutomatedTests.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// RenderGraphGraphicsAutomatedTests.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceType.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceType.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: OcclusionCullingCommon.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// OcclusionCullingCommon.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUInstanceDataBuffer.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUInstanceDataBuffer.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceCuller.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceCuller.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: LODGroupDataPoolBurst.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// LODGroupDataPoolBurst.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUInstanceDataUploader.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUInstanceDataUploader.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceAllocator.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceAllocator.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUResidentDrawerDebug.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUResidentDrawerDebug.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: MemoryUtilities.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// MemoryUtilities.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: RenderersParameters.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// RenderersParameters.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceData.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceData.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: AABB.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// AABB.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: IGPUResidentRenderPipeline.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// IGPUResidentRenderPipeline.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceTransformUpdateDefs.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceTransformUpdateDefs.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: OccluderDepthPyramidConstants.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// OccluderDepthPyramidConstants.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: DebugDisplayGPUResidentDrawer.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// DebugDisplayGPUResidentDrawer.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: ParallelBitArray.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// ParallelBitArray.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceOcclusionCullerShaderVariables.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceOcclusionCullerShaderVariables.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUResidentDrawer.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUResidentDrawer.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceOcclusionCuller.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceOcclusionCuller.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUResidentDrawerResources.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUResidentDrawerResources.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceDataSystem.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceDataSystem.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: DisallowGPUDrivenRendering.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// DisallowGPUDrivenRendering.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: LODRenderingUtils.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// LODRenderingUtils.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: OcclusionCullingCommonShaderVariables.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// OcclusionCullingCommonShaderVariables.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUResidentDrawerTypes.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUResidentDrawerTypes.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: GPUResidentDrawer.Validator.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GPUResidentDrawer.Validator.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceCullingBatcherBurst.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceCullingBatcherBurst.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: DisallowSmallMeshCulling.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// DisallowSmallMeshCulling.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: LODGroupDataPool.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// LODGroupDataPool.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceCullerBurst.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceCullerBurst.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: ParallelSortExtensions.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// ParallelSortExtensions.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: BatchLayers.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// BatchLayers.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: RenderersBatchersContext.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// RenderersBatchersContext.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceWindDataUpdateDefs.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceWindDataUpdateDefs.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: InstanceDataSystem.Jobs.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// InstanceDataSystem.Jobs.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: FrustumPlanes.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// FrustumPlanes.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+Attachment Name: OcclusionCullingDebugShaderVariables.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// OcclusionCullingDebugShaderVariables.cs
+namespace UnityEngine.Rendering
+{
+}
+
+```
+
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+fix them all
+Attachments:
+Attachment Name: MazeRenderer.cs
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```c#
+using UnityEngine;
+using Unity6.LavosTrial.HUD;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+
+public class MazeRenderer : MonoBehaviour
+{
+    [Header("Dimensions")]
+    [SerializeField] private float cellSize = 4f;
+    [SerializeField] private float wallHeight = 3f;
+
+    [Header("Torches")]
+    [SerializeField] private float torchProbability = 0.15f;
+    [SerializeField] private float torchHeightRatio = 0.55f;
+
+    [Header("Player")]
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private float playerSpawnOffsetY = 1.5f;
+
+    [Header("Ambiance")]
+    [SerializeField] private Color ambientColor = new Color(0.15f, 0.1f, 0.08f);
+
+    [Header("Exit Door")]
+    [SerializeField] private bool spawnExitDoor = true;
+
+    private MazeGenerator _gen;
+    private TorchPool _torchPool;
+
+    private Material _wallMat;
+    private Material _floorMat;
+    private Material _ceilMat;
+    private Material _flameMat;
+    private Material _handleMat;
+
+    private Transform _mazeRoot;
+    private Transform _torchRoot;
+    private GameObject _exitDoor;
+
+    private static Shader _litShader;
+    private static Shader _unlitShader;
+
+    private bool _isInitialized = false;
+
+    void Awake()
+    {
+        if (_isInitialized) return;
+        _isInitialized = true;
+        
+        _gen = GetComponent<MazeGenerator>();
+        _torchPool = GetComponent<TorchPool>();
+        EnsureDrawingPoolExists();
+        EnsureRuntimeStatusUI();
+    }
+
+    private void EnsureDrawingPoolExists()
+    {
+        if (DrawingPool.Instance == null)
+        {
+            var go = new GameObject("DrawingPool");
+            go.AddComponent<DrawingPool>();
+            Debug.Log("[MazeRenderer] Created DrawingPool instance");
+        }
+    }
+
+    void Start() => BuildMaze();
+
+    public void BuildMaze()
+    {
+        if (_gen == null) 
+        {
+            Debug.LogError("[MazeRenderer] MazeGenerator component not found!");
+            return;
+        }
+        
+        CleanupOld();
+        SetupEnvironment();
+        _gen.Generate();
+        CreateMaterials();
+        CreateContainers();
+        BuildGeometry();
+        // UI: no per-maze UI bars now; runtime UI handles status globally
+        SpawnPlayer();
+        SpawnExitDoor();
+    }
+
+    public void Regenerate() => BuildMaze();
+
+    private void CleanupOld()
+    {
+        if (_mazeRoot) Destroy(_mazeRoot.gameObject);
+        if (_torchRoot) Destroy(_torchRoot.gameObject);
+        if (_exitDoor) Destroy(_exitDoor);
+        _torchPool.ReleaseAll();
+        DestroyMaterial(ref _wallMat);
+        DestroyMaterial(ref _floorMat);
+        DestroyMaterial(ref _ceilMat);
+        DestroyMaterial(ref _flameMat);
+        DestroyMaterial(ref _handleMat);
+        if (DrawingPool.Instance != null) DrawingPool.Instance.Clear();
+    }
+
+    private void DestroyMaterial(ref Material mat)
+    {
+        if (mat) { Destroy(mat); mat = null; }
+    }
+
+    private void CreateMaterials()
+    {
+        if (DrawingPool.Instance == null)
+        {
+            Debug.LogError("[MazeRenderer] DrawingPool.Instance is null! Cannot create materials.");
+            return;
+        }
+
+        uint seed = _gen.CurrentSeed;
+        
+        if (!DrawingPool.Instance.IsInitialized || DrawingPool.Instance.CurrentSeed != seed)
+        {
+            DrawingPool.Instance.Initialize(seed);
+        }
+
+        InitShaders();
+        _wallMat = MakeMaterial(DrawingPool.Instance.GetWall(0), cellSize / 2f, wallHeight / 2f);
+        _floorMat = MakeMaterial(DrawingPool.Instance.GetFloor(0), 1f, 1f);
+        _ceilMat = MakeMaterial(DrawingPool.Instance.GetCeiling(0), 1f, 1f);
+        _handleMat = MakeMaterial(DrawingPool.Instance.GetTorch(0), 1f, 1f);
+        
+        var flameFrames = DrawingPool.Instance.GetFlameTextures();
+        if (flameFrames != null && flameFrames.Length > 0)
+            _flameMat = MakeTransparentMaterial(flameFrames[0]);
+        else
+            Debug.LogWarning("[MazeRenderer] No flame frames found!");
+    }
+
+    private static void InitShaders()
+    {
+        _litShader ??= Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("URP/Lit") ?? Shader.Find("Standard");
+        _unlitShader ??= Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("URP/Unlit") ?? Shader.Find("Unlit/Transparent");
+        
+        if (_unlitShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Unlit shader not found! Trying Sprites/Default.");
+            _unlitShader = Shader.Find("Sprites/Default");
+        }
+        if (_litShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Lit shader not found! Trying Standard.");
+            _litShader = Shader.Find("Standard");
+        }
+    }
+
+    private Material MakeMaterial(Texture2D tex, float tilingX, float tilingY)
+    {
+        if (!_litShader)
+        {
+            Debug.LogError("[MazeRenderer] Lit shader is null! Cannot create wall material.");
+            return null;
+        }
+        if (!tex)
+        {
+            Debug.LogError("[MazeRenderer] Wall texture is null!");
+            return null;
+        }
+        var mat = new Material(_litShader) { mainTexture = tex, mainTextureScale = new Vector2(tilingX, tilingY) };
+        mat.SetFloat("_Smoothness", 0f);
+        return mat;
+    }
+
+    private Material MakeTransparentMaterial(Texture2D tex)
+    {
+        if (!_unlitShader)
+        {
+            Debug.LogError("[MazeRenderer] Unlit shader is null! Cannot create flame material.");
+            return null;
+        }
+        if (!tex)
+        {
+            Debug.LogError("[MazeRenderer] Flame texture is null!");
+            return null;
+        }
+        var mat = new Material(_unlitShader) { mainTexture = tex, renderQueue = 3000 };
+        mat.SetFloat("_SurfaceType", 1f);
+        mat.SetFloat("_BlendMode", 0f);
+        return mat;
+    }
+
+    private void CreateContainers()
+    {
+        _mazeRoot = new GameObject("MazeGeometry").transform;
+        _torchRoot = new GameObject("Torches").transform;
+    }
+
+    private void BuildGeometry()
+    {
+        var wallFaces = new System.Collections.Generic.List<(Vector3, Quaternion)>();
+
+        for (int x = 0; x < _gen.Width; x++)
+        for (int y = 0; y < _gen.Height; y++)
+        {
+            float cx = (x + 0.5f) * cellSize;
+            float cz = (y + 0.5f) * cellSize;
+            float wx = x * cellSize;
+            float wz = y * cellSize;
+
+            CreateQuad(new Vector3(cx, 0f, cz), Quaternion.Euler(90f, 0f, 0f), cellSize, cellSize, _floorMat);
+            CreateQuad(new Vector3(cx, wallHeight, cz), Quaternion.Euler(-90f, 0f, 0f), cellSize, cellSize, _ceilMat);
+
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.North)) { var p = new Vector3(cx, wallHeight * .5f, wz + cellSize); var r = Quaternion.Euler(0f, 180f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.South)) { var p = new Vector3(cx, wallHeight * .5f, wz); var r = Quaternion.identity; CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.East)) { var p = new Vector3(wx + cellSize, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, -90f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.West)) { var p = new Vector3(wx, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, 90f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+        }
+
+        PlaceTorches(wallFaces);
+    }
+
+    private void CreateWall(Vector3 pos, Quaternion rot)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.SetPositionAndRotation(pos, rot);
+        go.transform.localScale = new Vector3(cellSize, wallHeight, 0.3f);
+        go.GetComponent<MeshRenderer>().sharedMaterial = _wallMat;
+        go.isStatic = true;
+    }
+
+    private void CreateQuad(Vector3 pos, Quaternion rot, float w, float h, Material mat)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        go.transform.SetPositionAndRotation(pos, rot);
+        go.transform.localScale = new Vector3(w, h, 1f);
+        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        go.isStatic = true;
+    }
+
+    private void PlaceTorches(System.Collections.Generic.List<(Vector3, Quaternion)> wallFaces)
+    {
+        if (DrawingPool.Instance == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Cannot place torches: DrawingPool.Instance is null");
+            return;
+        }
+
+        // Fisher-Yates shuffle (correct bounds)
+        for (int i = wallFaces.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (wallFaces[i], wallFaces[j]) = (wallFaces[j], wallFaces[i]);
+        }
+
+        var placed = new System.Collections.Generic.List<Vector3>();
+        float minDist = cellSize * 1.5f;
+        var frames = DrawingPool.Instance.GetFlameTextures();
+
+        if (frames == null || frames.Length == 0)
+        {
+            Debug.LogWarning("[MazeRenderer] No flame frames available for torches");
+            return;
+        }
+
+        foreach (var (wallPos, wallRot) in wallFaces)
+        {
+            if (Random.value > torchProbability) continue;
+            if (placed.Exists(p >> Vector3.Distance(wallPos, p) < minDist)) continue;
+
+            Vector3 inward = wallRot * Vector3.forward;
+            float torchY = torchHeightRatio * wallHeight;
+            Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z) + inward * 0.35f;
+
+            _torchPool.Get(torchPos, wallRot, _torchRoot, frames, _flameMat, _handleMat);
+            placed.Add(wallPos);
+        }
+    }
+
+        for (int i = wallFaces.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (wallFaces[i], wallFaces[j]) = (wallFaces[j], wallFaces[i]);
+        }
+
+        var placed = new System.Collections.Generic.List<Vector3>();
+        float minDist = cellSize * 1.5f;
+        var frames = DrawingPool.Instance.GetFlameTextures();
+
+        if (frames == null || frames.Length == 0)
+        {
+            Debug.LogWarning("[MazeRenderer] No flame frames available for torches");
+            return;
+        }
+
+        foreach (var (wallPos, wallRot) in wallFaces)
+        {
+            if (Random.value > torchProbability) continue;
+            if (placed.Exists(p => Vector3.Distance(wallPos, p) < minDist)) continue;
+
+            Vector3 inward = wallRot * Vector3.forward;
+            float torchY = torchHeightRatio * wallHeight;
+            Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z) + inward * 0.35f;
+
+            _torchPool.Get(torchPos, wallRot, _torchRoot, frames, _flameMat, _handleMat);
+            placed.Add(wallPos);
+        }
+    }
+
+    private void SetupEnvironment()
+    {
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = ambientColor;
+        RenderSettings.fog = true;
+        RenderSettings.fogMode = FogMode.Linear;
+        RenderSettings.fogColor = new Color(0.08f, 0.05f, 0.03f);
+        RenderSettings.fogStartDistance = cellSize * 2f;
+        RenderSettings.fogEndDistance = cellSize * 15f;
+    }
+
+    private void SpawnPlayer()
+    {
+        Vector3 spawnPos = new Vector3((_gen.StartCell.x + 0.5f) * cellSize, playerSpawnOffsetY, (_gen.StartCell.y + 0.5f) * cellSize);
+        if (playerPrefab) 
+            Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        else 
+        {
+            var player = FindFirstObjectByType<PlayerController>();
+            if (player) player.transform.position = spawnPos;
+        }
+    }
+
+    private void SpawnExitDoor()
+    {
+        if (!spawnExitDoor) return;
+
+        int exitX = _gen.ExitCell.x;
+        int exitY = _gen.ExitCell.y;
+
+        float doorX = (exitX + 0.5f) * cellSize;
+        float doorZ = (exitY + 0.5f) * cellSize;
+
+        _exitDoor = new GameObject("ExitDoor");
+        _exitDoor.transform.position = new Vector3(doorX, 0f, doorZ);
+
+        var door = _exitDoor.AddComponent<Door>();
+        door.Initialize(cellSize, wallHeight);
+
+        Debug.Log($"[MazeRenderer] Spawned exit door at ({doorX}, {doorZ})");
+    }
+
+    private void EnsureRuntimeStatusUI()
+    {
+        if (RuntimeStatusUI.Instance == null)
+        {
+            var go = new GameObject("RuntimeStatusUI");
+            go.AddComponent<Runtimes.RuntimeStatusUI>();
+        }
+    }
+
+    if (RuntimeStatusUI.Instance == null)
+    {
+        var go = new GameObject("RuntimeStatusUI");
+        go.AddComponent<Runtimes.RuntimeStatusUI>();
+    }
+}
+
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+several error reported on my IDE from that file and in status effect the class def is duplicate
+Attachments:
+Attachment Name: MazeRenderer.cs
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```c#
+using UnityEngine;
+using Unity6.LavosTrial.HUD;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+
+public class MazeRenderer : MonoBehaviour
+{
+    [Header("Dimensions")]
+    [SerializeField] private float cellSize = 4f;
+    [SerializeField] private float wallHeight = 3f;
+
+    [Header("Torches")]
+    [SerializeField] private float torchProbability = 0.15f;
+    [SerializeField] private float torchHeightRatio = 0.55f;
+
+    [Header("Player")]
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private float playerSpawnOffsetY = 1.5f;
+
+    [Header("Ambiance")]
+    [SerializeField] private Color ambientColor = new Color(0.15f, 0.1f, 0.08f);
+
+    [Header("Exit Door")]
+    [SerializeField] private bool spawnExitDoor = true;
+
+    private MazeGenerator _gen;
+    private TorchPool _torchPool;
+
+    private Material _wallMat;
+    private Material _floorMat;
+    private Material _ceilMat;
+    private Material _flameMat;
+    private Material _handleMat;
+
+    private Transform _mazeRoot;
+    private Transform _torchRoot;
+    private GameObject _exitDoor;
+
+    private static Shader _litShader;
+    private static Shader _unlitShader;
+
+    private bool _isInitialized = false;
+
+    void Awake()
+    {
+        if (_isInitialized) return;
+        _isInitialized = true;
+        
+        _gen = GetComponent<MazeGenerator>();
+        _torchPool = GetComponent<TorchPool>();
+        EnsureDrawingPoolExists();
+        EnsureRuntimeStatusUI();
+    }
+
+    private void EnsureDrawingPoolExists()
+    {
+        if (DrawingPool.Instance == null)
+        {
+            var go = new GameObject("DrawingPool");
+            go.AddComponent<DrawingPool>();
+            Debug.Log("[MazeRenderer] Created DrawingPool instance");
+        }
+    }
+
+    void Start() => BuildMaze();
+
+    public void BuildMaze()
+    {
+        if (_gen == null) 
+        {
+            Debug.LogError("[MazeRenderer] MazeGenerator component not found!");
+            return;
+        }
+        
+        CleanupOld();
+        SetupEnvironment();
+        _gen.Generate();
+        CreateMaterials();
+        CreateContainers();
+        BuildGeometry();
+        // UI: no per-maze UI bars now; runtime UI handles status globally
+        SpawnPlayer();
+        SpawnExitDoor();
+    }
+
+    public void Regenerate() => BuildMaze();
+
+    private void CleanupOld()
+    {
+        if (_mazeRoot) Destroy(_mazeRoot.gameObject);
+        if (_torchRoot) Destroy(_torchRoot.gameObject);
+        if (_exitDoor) Destroy(_exitDoor);
+        _torchPool.ReleaseAll();
+        DestroyMaterial(ref _wallMat);
+        DestroyMaterial(ref _floorMat);
+        DestroyMaterial(ref _ceilMat);
+        DestroyMaterial(ref _flameMat);
+        DestroyMaterial(ref _handleMat);
+        if (DrawingPool.Instance != null) DrawingPool.Instance.Clear();
+    }
+
+    private void DestroyMaterial(ref Material mat)
+    {
+        if (mat) { Destroy(mat); mat = null; }
+    }
+
+    private void CreateMaterials()
+    {
+        if (DrawingPool.Instance == null)
+        {
+            Debug.LogError("[MazeRenderer] DrawingPool.Instance is null! Cannot create materials.");
+            return;
+        }
+
+        uint seed = _gen.CurrentSeed;
+        
+        if (!DrawingPool.Instance.IsInitialized || DrawingPool.Instance.CurrentSeed != seed)
+        {
+            DrawingPool.Instance.Initialize(seed);
+        }
+
+        InitShaders();
+        _wallMat = MakeMaterial(DrawingPool.Instance.GetWall(0), cellSize / 2f, wallHeight / 2f);
+        _floorMat = MakeMaterial(DrawingPool.Instance.GetFloor(0), 1f, 1f);
+        _ceilMat = MakeMaterial(DrawingPool.Instance.GetCeiling(0), 1f, 1f);
+        _handleMat = MakeMaterial(DrawingPool.Instance.GetTorch(0), 1f, 1f);
+        
+        var flameFrames = DrawingPool.Instance.GetFlameTextures();
+        if (flameFrames != null && flameFrames.Length > 0)
+            _flameMat = MakeTransparentMaterial(flameFrames[0]);
+        else
+            Debug.LogWarning("[MazeRenderer] No flame frames found!");
+    }
+
+    private static void InitShaders()
+    {
+        _litShader ??= Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("URP/Lit") ?? Shader.Find("Standard");
+        _unlitShader ??= Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("URP/Unlit") ?? Shader.Find("Unlit/Transparent");
+        
+        if (_unlitShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Unlit shader not found! Trying Sprites/Default.");
+            _unlitShader = Shader.Find("Sprites/Default");
+        }
+        if (_litShader == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Lit shader not found! Trying Standard.");
+            _litShader = Shader.Find("Standard");
+        }
+    }
+
+    private Material MakeMaterial(Texture2D tex, float tilingX, float tilingY)
+    {
+        if (!_litShader)
+        {
+            Debug.LogError("[MazeRenderer] Lit shader is null! Cannot create wall material.");
+            return null;
+        }
+        if (!tex)
+        {
+            Debug.LogError("[MazeRenderer] Wall texture is null!");
+            return null;
+        }
+        var mat = new Material(_litShader) { mainTexture = tex, mainTextureScale = new Vector2(tilingX, tilingY) };
+        mat.SetFloat("_Smoothness", 0f);
+        return mat;
+    }
+
+    private Material MakeTransparentMaterial(Texture2D tex)
+    {
+        if (!_unlitShader)
+        {
+            Debug.LogError("[MazeRenderer] Unlit shader is null! Cannot create flame material.");
+            return null;
+        }
+        if (!tex)
+        {
+            Debug.LogError("[MazeRenderer] Flame texture is null!");
+            return null;
+        }
+        var mat = new Material(_unlitShader) { mainTexture = tex, renderQueue = 3000 };
+        mat.SetFloat("_SurfaceType", 1f);
+        mat.SetFloat("_BlendMode", 0f);
+        return mat;
+    }
+
+    private void CreateContainers()
+    {
+        _mazeRoot = new GameObject("MazeGeometry").transform;
+        _torchRoot = new GameObject("Torches").transform;
+    }
+
+    private void BuildGeometry()
+    {
+        var wallFaces = new System.Collections.Generic.List<(Vector3, Quaternion)>();
+
+        for (int x = 0; x < _gen.Width; x++)
+        for (int y = 0; y < _gen.Height; y++)
+        {
+            float cx = (x + 0.5f) * cellSize;
+            float cz = (y + 0.5f) * cellSize;
+            float wx = x * cellSize;
+            float wz = y * cellSize;
+
+            CreateQuad(new Vector3(cx, 0f, cz), Quaternion.Euler(90f, 0f, 0f), cellSize, cellSize, _floorMat);
+            CreateQuad(new Vector3(cx, wallHeight, cz), Quaternion.Euler(-90f, 0f, 0f), cellSize, cellSize, _ceilMat);
+
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.North)) { var p = new Vector3(cx, wallHeight * .5f, wz + cellSize); var r = Quaternion.Euler(0f, 180f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.South)) { var p = new Vector3(cx, wallHeight * .5f, wz); var r = Quaternion.identity; CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.East)) { var p = new Vector3(wx + cellSize, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, -90f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+            if (_gen.HasWall(x, y, MazeGenerator.Wall.West)) { var p = new Vector3(wx, wallHeight * .5f, cz); var r = Quaternion.Euler(0f, 90f, 0f); CreateWall(p, r); wallFaces.Add((p, r)); }
+        }
+
+        PlaceTorches(wallFaces);
+    }
+
+    private void CreateWall(Vector3 pos, Quaternion rot)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.transform.SetPositionAndRotation(pos, rot);
+        go.transform.localScale = new Vector3(cellSize, wallHeight, 0.3f);
+        go.GetComponent<MeshRenderer>().sharedMaterial = _wallMat;
+        go.isStatic = true;
+    }
+
+    private void CreateQuad(Vector3 pos, Quaternion rot, float w, float h, Material mat)
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        go.transform.SetPositionAndRotation(pos, rot);
+        go.transform.localScale = new Vector3(w, h, 1f);
+        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+        go.isStatic = true;
+    }
+
+    private void PlaceTorches(System.Collections.Generic.List<(Vector3, Quaternion)> wallFaces)
+    {
+        if (DrawingPool.Instance == null)
+        {
+            Debug.LogWarning("[MazeRenderer] Cannot place torches: DrawingPool.Instance is null");
+            return;
+        }
+
+        // Fisher-Yates shuffle (correct bounds)
+        for (int i = wallFaces.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (wallFaces[i], wallFaces[j]) = (wallFaces[j], wallFaces[i]);
+        }
+
+        var placed = new System.Collections.Generic.List<Vector3>();
+        float minDist = cellSize * 1.5f;
+        var frames = DrawingPool.Instance.GetFlameTextures();
+
+        if (frames == null || frames.Length == 0)
+        {
+            Debug.LogWarning("[MazeRenderer] No flame frames available for torches");
+            return;
+        }
+
+        foreach (var (wallPos, wallRot) in wallFaces)
+        {
+            if (Random.value > torchProbability) continue;
+            if (placed.Exists(p >> Vector3.Distance(wallPos, p) < minDist)) continue;
+
+            Vector3 inward = wallRot * Vector3.forward;
+            float torchY = torchHeightRatio * wallHeight;
+            Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z) + inward * 0.35f;
+
+            _torchPool.Get(torchPos, wallRot, _torchRoot, frames, _flameMat, _handleMat);
+            placed.Add(wallPos);
+        }
+    }
+
+        for (int i = wallFaces.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (wallFaces[i], wallFaces[j]) = (wallFaces[j], wallFaces[i]);
+        }
+
+        var placed = new System.Collections.Generic.List<Vector3>();
+        float minDist = cellSize * 1.5f;
+        var frames = DrawingPool.Instance.GetFlameTextures();
+
+        if (frames == null || frames.Length == 0)
+        {
+            Debug.LogWarning("[MazeRenderer] No flame frames available for torches");
+            return;
+        }
+
+        foreach (var (wallPos, wallRot) in wallFaces)
+        {
+            if (Random.value > torchProbability) continue;
+            if (placed.Exists(p => Vector3.Distance(wallPos, p) < minDist)) continue;
+
+            Vector3 inward = wallRot * Vector3.forward;
+            float torchY = torchHeightRatio * wallHeight;
+            Vector3 torchPos = new Vector3(wallPos.x, torchY, wallPos.z) + inward * 0.35f;
+
+            _torchPool.Get(torchPos, wallRot, _torchRoot, frames, _flameMat, _handleMat);
+            placed.Add(wallPos);
+        }
+    }
+
+    private void SetupEnvironment()
+    {
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = ambientColor;
+        RenderSettings.fog = true;
+        RenderSettings.fogMode = FogMode.Linear;
+        RenderSettings.fogColor = new Color(0.08f, 0.05f, 0.03f);
+        RenderSettings.fogStartDistance = cellSize * 2f;
+        RenderSettings.fogEndDistance = cellSize * 15f;
+    }
+
+    private void SpawnPlayer()
+    {
+        Vector3 spawnPos = new Vector3((_gen.StartCell.x + 0.5f) * cellSize, playerSpawnOffsetY, (_gen.StartCell.y + 0.5f) * cellSize);
+        if (playerPrefab) 
+            Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        else 
+        {
+            var player = FindFirstObjectByType<PlayerController>();
+            if (player) player.transform.position = spawnPos;
+        }
+    }
+
+    private void SpawnExitDoor()
+    {
+        if (!spawnExitDoor) return;
+        if (_gen == null || _gen.ExitCell == null) return;
+
+        int exitX = _gen.ExitCell.x;
+        int exitY = _gen.ExitCell.y;
+
+        float doorX = (exitX + 0.5f) * cellSize;
+        float doorZ = (exitY + 0.5f) * cellSize;
+
+        _exitDoor = new GameObject("ExitDoor");
+        _exitDoor.transform.position = new Vector3(doorX, 0f, doorZ);
+
+        var door = _exitDoor.AddComponent<Door>();
+        door.Initialize(cellSize, wallHeight);
+
+        Debug.Log($"[MazeRenderer] Spawned exit door at ({doorX}, {doorZ})");
+    }
+
+    private void EnsureRuntimeStatusUI()
+    {
+        if (RuntimeStatusUI.Instance == null)
+        {
+            var go = new GameObject("RuntimeStatusUI");
+            go.AddComponent<Runtimes.RuntimeStatusUI>();
+        }
+    }
+
+    if (RuntimeStatusUI.Instance == null)
+    {
+        var go = new GameObject("RuntimeStatusUI");
+        go.AddComponent<Runtimes.RuntimeStatusUI>();
+    }
+}
+
+```
+Attachment Name: StatusEffectData.cs
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```c#
+using UnityEngine;
+
+[System.Serializable]
+public class StatusEffectData
+{
+    public string id;
+    public string effectName;
+    public StatusEffectType type;
+    public Sprite icon;
+    public float duration;
+    public float intensity;
+    public int maxStacks = 1;
+    public int currentStacks;
+    public float remainingTime;
+    public float tickRate;
+    
+    public StatusEffectData() {}
+    
+    public StatusEffectData(StatusEffect effect)
+    {
+        if (effect == null) return;
+        
+        id = effect.id;
+        effectName = effect.effectName;
+        icon = effect.icon;
+        type = effect.type;
+        duration = effect.duration;
+        intensity = effect.intensity;
+        maxStacks = effect.maxStacks;
+        currentStacks = effect.currentStacks;
+        remainingTime = effect.remainingTime;
+        tickRate = effect.tickRate;
+    }
+    
+    public StatusEffect ToStatusEffect()
+    {
+        StatusEffect effect = new StatusEffect
+        {
+            id = id,
+            effectName = effectName,
+            icon = icon,
+            type = type,
+            duration = duration,
+            intensity = intensity,
+            maxStacks = maxStacks,
+            currentStacks = currentStacks,
+            remainingTime = remainingTime,
+            tickRate = tickRate,
+            nextTickTime = Time.time
+        };
+        return effect;
+    }
+}
+```
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+StatusEffectData
+Attachment Name: Errors in selection
+Attachments Kind: Visible
+Attachments Source: CurrentSelectionRetriever / SelectionProblemsChatAttachment
+Attachments Text:
+
+Duplicate definition 'StatusEffectData'. Possibly missing keyword 'partial'
+at: class StatusEffectData
+on the lines:
+public class StatusEffectData
+
+
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+update TODO.md in Docs/ from what are be done and what to expect next
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+update TODO.md in Docs/ from what are be done and what to expect next
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+update TODO.md in Docs/ from what are done and what to expect next
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+Assets\Scripts\Core\MazeRenderer.cs(327,5): error CS8803: Top-level statements must precede namespace and type declarations.
+
+Assets\Scripts\Core\MazeRenderer.cs(332,1): error CS1022: Type or namespace definition, or end-of-file expected
+
+
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+Assets\Scripts\Core\MazeRenderer.cs(327,5): error CS8803: Top-level statements must precede namespace and type declarations.
+
+Assets\Scripts\Core\MazeRenderer.cs(332,1): error CS1022: Type or namespace definition, or end-of-file expected
+
+
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+Always remember to use backup.ps1 to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte 
+Also always show me the diff from changing files.
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+Cannot resolve symbol 'RuntimeStatusUI' : 319
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+RuntimeStatusUI
+Attachment Name: Errors in selection
+Attachments Kind: Visible
+Attachments Source: CurrentSelectionRetriever / SelectionProblemsChatAttachment
+Attachments Text:
+
+Cannot resolve symbol 'RuntimeStatusUI'
+at: RuntimeStatusUI
+on the lines:
+        if (RuntimeStatusUI.Instance == null)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+Assets\Scripts\Core\MazeRenderer.cs(326,5): error CS1519: Invalid token 'if' in class, record, struct, or interface member declaration
+
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

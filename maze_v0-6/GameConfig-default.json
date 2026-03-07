@@ -1,0 +1,15 @@
+{
+    "cellSize":           6.0,
+    "wallHeight":         4.0,
+    "playerEyeHeight":    1.7,
+    "playerSpawnOffset":  0.5,
+
+    "mazeBaseSize":       12,
+    "mazeMinSize":        12,
+    "mazeMaxSize":        51,
+    "spawnRoomSize":      5,
+
+    "torchChance":        0.30,
+    "chestDensity":       0.03,
+    "enemyDensity":       0.05
+}

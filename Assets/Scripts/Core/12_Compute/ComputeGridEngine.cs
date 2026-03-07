@@ -42,14 +42,14 @@ namespace Code.Lavos.Core
     /// <summary>
     /// ComputeGridEngine - Byte-to-byte wall storage in RAM/Storage.
     /// Independent process for compute grid management.
-    /// 
+    ///
     /// MEMORY LAYOUT:
     /// - Grid stored as byte array (1 byte per cell)
     /// - Direct memory mapping for instant access
     /// - Binary storage for persistence across sessions
-    /// 
-    /// PLUG-IN-OUT: Finds components, never creates.
-    /// Must be added to scene manually.
+    ///
+    /// IMPORTANT: Must be added to scene manually.
+    /// Do NOT rely on auto-creation (plug-in-out violation).
     /// </summary>
     public class ComputeGridEngine : MonoBehaviour
     {
@@ -65,10 +65,7 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<ComputeGridEngine>();
                     if (_instance == null)
                     {
-                        Debug.LogWarning("[ComputeGridEngine] Not found in scene - auto-creating (add manually!)");
-                        var go = new GameObject("ComputeGridEngine");
-                        _instance = go.AddComponent<ComputeGridEngine>();
-                        DontDestroyOnLoad(go);
+                        Debug.LogError("[ComputeGridEngine] No instance found in scene! Add ComputeGridEngine GameObject manually.");
                     }
                 }
                 return _instance;

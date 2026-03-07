@@ -21,6 +21,7 @@ compliance about C# unity 6 too, don't forget , use also conventionnal C# rules 
 I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
 Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
 use conventioal C# unity uses for naming variables; /!\
+/!\ my computer my rules, no exec cmd shell allowed, only me can exec shell cmd. remember that !
 ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
 BetsyBoop is your codename until now.
 happy coding with me BetsyBoop :) 

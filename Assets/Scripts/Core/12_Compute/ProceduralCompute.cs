@@ -44,8 +44,9 @@ namespace Code.Lavos.Core
     /// <summary>
     /// ProceduralCompute - Central procedural generation system.
     /// Handles all generative processes: textures, materials, meshes, patterns.
-    /// 
-    /// Must be added to scene manually. Auto-creation is a fallback only.
+    ///
+    /// IMPORTANT: Must be added to scene manually.
+    /// Do NOT rely on auto-creation (plug-in-out violation).
     /// </summary>
     public class ProceduralCompute : MonoBehaviour
     {
@@ -61,12 +62,7 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<ProceduralCompute>();
                     if (_instance == null)
                     {
-                        // FALLBACK ONLY: Should be added to scene manually
-                        // This auto-creation is a plug-in-out violation
-                        Debug.LogWarning("[ProceduralCompute] Not found in scene - auto-creating (add manually!)");
-                        var go = new GameObject("ProceduralCompute");
-                        _instance = go.AddComponent<ProceduralCompute>();
-                        DontDestroyOnLoad(go);
+                        Debug.LogError("[ProceduralCompute] No instance found in scene! Add ProceduralCompute GameObject manually.");
                     }
                 }
                 return _instance;

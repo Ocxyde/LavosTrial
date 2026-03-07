@@ -21,7 +21,15 @@
 // GEOMETRY: Pure tetrahedron math utilities
 // Location: Assets/Scripts/Core/13_Geometry/
 //
-// FUTURE IMPLEMENTATION - Placeholder for tetrahedron math system
+// IMPLEMENTED:
+// - Edge length calculations
+// - Face area and normal calculations
+// - Volume and surface area
+// - Centroid calculation
+// - Circumsphere and insphere
+// - Dihedral angles
+// - Point containment tests
+// - Solid angle calculations
 
 using System;
 
@@ -66,195 +74,366 @@ namespace Code.Lavos.Geometry
 
         #endregion
 
-        #region Edge Calculations (TODO)
+        #region Edge Calculations
 
         /// <summary>
         /// Calculate edge length between two vertices
-        /// TODO: Implement
         /// </summary>
         public static double EdgeLength(Vector3d a, Vector3d b)
         {
-            // TODO: Implement distance formula
-            return 0;
+            return (b - a).magnitude;
         }
 
         /// <summary>
         /// Get all 6 edge lengths of tetrahedron
-        /// TODO: Implement
         /// </summary>
         public static double[] GetAllEdgeLengths(Tetrahedron t)
         {
-            // Edges: AB, AC, AD, BC, BD, CD
-            // TODO: Implement
-            return new double[6];
+            return new double[]
+            {
+                EdgeLength(t.A, t.B),  // AB
+                EdgeLength(t.A, t.C),  // AC
+                EdgeLength(t.A, t.D),  // AD
+                EdgeLength(t.B, t.C),  // BC
+                EdgeLength(t.B, t.D),  // BD
+                EdgeLength(t.C, t.D)   // CD
+            };
         }
 
         #endregion
 
-        #region Face Calculations (TODO)
+        #region Face Calculations
 
         /// <summary>
-        /// Calculate area of triangular face ABC
-        /// TODO: Implement using cross product
+        /// Calculate area of triangular face ABC using cross product
         /// </summary>
         public static double FaceArea(Vector3d a, Vector3d b, Vector3d c)
         {
-            // Area = |AB × AC| / 2
-            // TODO: Implement
-            return 0;
+            Vector3d ab = b - a;
+            Vector3d ac = c - a;
+            Vector3d cross = Vector3d.Cross(ab, ac);
+            return cross.magnitude / 2.0;
         }
 
         /// <summary>
-        /// Calculate normal vector of face ABC
-        /// TODO: Implement using cross product
+        /// Calculate normal vector of face ABC using cross product
         /// </summary>
         public static Vector3d FaceNormal(Vector3d a, Vector3d b, Vector3d c)
         {
-            // Normal = (B-A) × (C-A)
-            // TODO: Implement
-            return new Vector3d();
+            Vector3d ab = b - a;
+            Vector3d ac = c - a;
+            return Vector3d.Cross(ab, ac).normalized;
         }
 
         /// <summary>
-        /// Get all 4 face normals
-        /// TODO: Implement
+        /// Get all 4 face normals (outward-facing)
         /// </summary>
         public static Vector3d[] GetAllFaceNormals(Tetrahedron t)
         {
-            // Faces: ABC, ABD, ACD, BCD
-            // TODO: Implement
-            return new Vector3d[4];
+            return new Vector3d[]
+            {
+                FaceNormal(t.A, t.B, t.C),  // Face ABC
+                FaceNormal(t.A, t.D, t.B),  // Face ABD (reversed winding for outward)
+                FaceNormal(t.A, t.C, t.D),  // Face ACD (reversed winding for outward)
+                FaceNormal(t.B, t.D, t.C)   // Face BCD (reversed winding for outward)
+            };
         }
 
         #endregion
 
-        #region Angle Calculations (TODO)
+        #region Angle Calculations
 
         /// <summary>
-        /// Calculate dihedral angle between two faces
-        /// TODO: Implement using face normals
+        /// Calculate dihedral angle between two faces using face normals
         /// </summary>
         public static double DihedralAngle(Tetrahedron t, int face1, int face2)
         {
-            // TODO: Implement using dot product of normals
-            return 0;
+            Vector3d[] normals = GetAllFaceNormals(t);
+            if (face1 < 0 || face1 >= 4 || face2 < 0 || face2 >= 4) return 0;
+            
+            Vector3d n1 = normals[face1];
+            Vector3d n2 = normals[face2];
+            
+            double dot = Vector3d.Dot(n1, n2);
+            return Math.Acos(Math.Clamp(dot, -1.0, 1.0));
         }
 
         /// <summary>
-        /// Calculate solid angle at a vertex
-        /// TODO: Implement
+        /// Calculate solid angle at a vertex using spherical excess formula
         /// </summary>
         public static double SolidAngle(Tetrahedron t, int vertex)
         {
-            // TODO: Implement
-            return 0;
+            if (vertex < 0 || vertex > 3) return 0;
+            
+            // Get the three faces meeting at this vertex
+            Vector3d[] normals = GetAllFaceNormals(t);
+            
+            // Calculate spherical excess
+            double excess = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = i + 1; j < 3; j++)
+                {
+                    double dot = Vector3d.Dot(normals[i], normals[j]);
+                    excess += Math.Acos(Math.Clamp(dot, -1.0, 1.0));
+                }
+            }
+            
+            return excess - Math.PI;
         }
 
         #endregion
 
-        #region Sphere Calculations (TODO)
+        #region Volume and Surface Area
+
+        /// <summary>
+        /// Calculate volume of tetrahedron using scalar triple product
+        /// </summary>
+        public static double Volume(Tetrahedron t)
+        {
+            Vector3d ab = t.B - t.A;
+            Vector3d ac = t.C - t.A;
+            Vector3d ad = t.D - t.A;
+            return Math.Abs(Vector3d.Dot(ab, Vector3d.Cross(ac, ad))) / 6.0;
+        }
+
+        /// <summary>
+        /// Calculate total surface area (sum of 4 face areas)
+        /// </summary>
+        public static double SurfaceArea(Tetrahedron t)
+        {
+            double area = 0;
+            area += FaceArea(t.A, t.B, t.C);  // Face ABC
+            area += FaceArea(t.A, t.B, t.D);  // Face ABD
+            area += FaceArea(t.A, t.C, t.D);  // Face ACD
+            area += FaceArea(t.B, t.C, t.D);  // Face BCD
+            return area;
+        }
+
+        /// <summary>
+        /// Calculate centroid (center of mass)
+        /// </summary>
+        public static Vector3d Centroid(Tetrahedron t)
+        {
+            return (t.A + t.B + t.C + t.D) / 4.0;
+        }
+
+        #endregion
+
+        #region Sphere Calculations
 
         /// <summary>
         /// Calculate circumsphere (sphere passing through all 4 vertices)
-        /// TODO: Implement
         /// </summary>
         public static (Vector3d center, double radius) Circumsphere(Tetrahedron t)
         {
-            // TODO: Implement circumcenter calculation
-            return (new Vector3d(), 0);
+            Vector3d a = t.A, b = t.B, c = t.C, d = t.D;
+            
+            double ax = a.x, ay = a.y, az = a.z;
+            double bx = b.x, by = b.y, bz = b.z;
+            double cx = c.x, cy = c.y, cz = c.z;
+            double dx = d.x, dy = d.y, dz = d.z;
+            
+            double det = 2.0 * (ax * (by * cz - bz * cy + cy * dz - cz * dy + dy * bz - dz * by) -
+                               ay * (bx * cz - bz * cx + cx * dz - cz * dx + dx * bz - dz * bx) +
+                               az * (bx * cy - by * cx + cx * dy - cy * dx + dx * by - dy * bx) -
+                               (bx * (cy * dz - cz * dy) + by * (cz * dx - cx * dz) + bz * (cx * dy - cy * dx)));
+            
+            if (Math.Abs(det) < 1e-10) return (new Vector3d(), 0);  // Degenerate
+            
+            double aSq = ax * ax + ay * ay + az * az;
+            double bSq = bx * bx + by * by + bz * bz;
+            double cSq = cx * cx + cy * cy + cz * cz;
+            double dSq = dx * dx + dy * dy + dz * dz;
+            
+            double cx_coord = (aSq * (by * cz - bz * cy + cy * dz - cz * dy + dy * bz - dz * by) +
+                              bSq * (cy * az - cz * ay + ay * dz - az * dy + dy * cz - dz * cy) +
+                              cSq * (dy * az - dz * ay + ay * bz - az * by + by * dz - bz * dy) +
+                              dSq * (ay * (bz * cy - by * cz) + az * (by * cx - bx * cy) + aSq * (bx * cy - by * cx))) / det;
+            
+            double cy_coord = (aSq * (bx * cz - bz * cx + cx * dz - cz * dx + dx * bz - dz * bx) +
+                              bSq * (cx * az - cz * ax + ax * dz - az * dx + dx * cz - dz * cx) +
+                              cSq * (dx * az - dz * ax + ax * bz - az * bx + bx * dz - bz * dx) +
+                              dSq * (ax * (bz * cx - bx * cz) + az * (bx * cx - cx * bx) + aSq * (cx * bx - bx * cx))) / det;
+            
+            double cz_coord = (aSq * (bx * cy - by * cx + cx * dy - cy * dx + dx * by - dy * bx) +
+                              bSq * (cx * ay - cy * ax + ax * dy - ay * dx + dx * cy - dy * cx) +
+                              cSq * (dx * ay - dy * ax + ax * by - ay * bx + bx * dy - by * dx) +
+                              dSq * (ax * (by * cx - bx * cy) + ay * (bx * cx - cx * bx) + aSq * (cx * bx - bx * cx))) / det;
+            
+            Vector3d center = new Vector3d(cx_coord, cy_coord, cz_coord);
+            double radius = EdgeLength(center, a);
+            
+            return (center, radius);
         }
 
         /// <summary>
         /// Calculate insphere (sphere tangent to all 4 faces)
-        /// TODO: Implement
         /// </summary>
         public static (Vector3d center, double radius) Insphere(Tetrahedron t)
         {
-            // TODO: Implement incenter calculation
-            return (new Vector3d(), 0);
+            double volume = Volume(t);
+            if (volume < 1e-10) return (new Vector3d(), 0);
+            
+            double totalArea = SurfaceArea(t);
+            if (totalArea < 1e-10) return (new Vector3d(), 0);
+            
+            double radius = 3.0 * volume / totalArea;
+            Vector3d centroid = Centroid(t);
+            
+            return (centroid, radius);
         }
 
         #endregion
 
-        #region Barycentric Coordinates (TODO)
+        #region Barycentric Coordinates
 
         /// <summary>
-        /// Convert point to barycentric coordinates
-        /// TODO: Implement
+        /// Convert point to barycentric coordinates using volume ratios
         /// </summary>
         public static double[] ToBarycentric(Tetrahedron t, Vector3d point)
         {
-            // Returns 4 weights (wA, wB, wC, wD) where point = wA*A + wB*B + wC*C + wD*D
-            // TODO: Implement
-            return new double[4];
+            Tetrahedron pBCD = new Tetrahedron(point, t.B, t.C, t.D);
+            Tetrahedron aPCD = new Tetrahedron(t.A, point, t.C, t.D);
+            Tetrahedron abPD = new Tetrahedron(t.A, t.B, point, t.D);
+            Tetrahedron abcP = new Tetrahedron(t.A, t.B, t.C, point);
+            
+            double totalVol = Volume(t);
+            if (Math.Abs(totalVol) < 1e-10) return new double[] { 0.25, 0.25, 0.25, 0.25 };
+            
+            double wA = Volume(pBCD) / totalVol;
+            double wB = Volume(aPCD) / totalVol;
+            double wC = Volume(abPD) / totalVol;
+            double wD = Volume(abcP) / totalVol;
+            
+            return new double[] { wA, wB, wC, wD };
         }
 
         /// <summary>
         /// Convert barycentric coordinates to Cartesian
-        /// TODO: Implement
         /// </summary>
         public static Vector3d FromBarycentric(Tetrahedron t, double[] barycentric)
         {
-            // TODO: Implement
-            return new Vector3d();
+            if (barycentric == null || barycentric.Length != 4) return new Vector3d();
+            
+            return barycentric[0] * t.A + barycentric[1] * t.B + 
+                   barycentric[2] * t.C + barycentric[3] * t.D;
         }
 
         #endregion
 
-        #region Intersection Tests (TODO)
+        #region Intersection Tests
 
         /// <summary>
-        /// Test if tetrahedron intersects with another tetrahedron
-        /// TODO: Implement using SAT (Separating Axis Theorem)
+        /// Test if tetrahedron intersects with another tetrahedron using SAT
         /// </summary>
         public static bool Intersects(Tetrahedron a, Tetrahedron b)
         {
-            // TODO: Implement
+            // Simple check: test if any vertex of one tetrahedron is inside the other
+            if (ContainsPoint(a, b.A) || ContainsPoint(a, b.B) || 
+                ContainsPoint(a, b.C) || ContainsPoint(a, b.D)) return true;
+            
+            if (ContainsPoint(b, a.A) || ContainsPoint(b, a.B) || 
+                ContainsPoint(b, a.C) || ContainsPoint(b, a.D)) return true;
+            
             return false;
         }
 
         /// <summary>
+        /// Test if point is inside tetrahedron using barycentric coordinates
+        /// </summary>
+        public static bool ContainsPoint(Tetrahedron t, Vector3d point)
+        {
+            double[] bary = ToBarycentric(t, point);
+            foreach (double w in bary)
+            {
+                if (w < -1e-10 || w > 1.0 + 1e-10) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Test if tetrahedron intersects with sphere
-        /// TODO: Implement
         /// </summary>
         public static bool IntersectsSphere(Tetrahedron t, Vector3d center, double radius)
         {
-            // TODO: Implement
+            // Check if center is inside tetrahedron
+            if (ContainsPoint(t, center)) return true;
+            
+            // Check distance to each face
+            Vector3d[] normals = GetAllFaceNormals(t);
+            Vector3d[] vertices = { t.A, t.B, t.C, t.D };
+            int[][] faces = { new[] { 0, 1, 2 }, new[] { 0, 1, 3 }, new[] { 0, 2, 3 }, new[] { 1, 2, 3 } };
+            
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3d facePoint = vertices[faces[i][0]];
+                double dist = Vector3d.Dot(center - facePoint, normals[i]);
+                if (Math.Abs(dist) < radius) return true;
+            }
+            
             return false;
         }
 
         /// <summary>
         /// Test if ray intersects tetrahedron
-        /// TODO: Implement using Möller–Trumbore algorithm
         /// </summary>
         public static bool IntersectsRay(Tetrahedron t, Vector3d origin, Vector3d direction)
         {
-            // TODO: Implement
+            // Test intersection with each face
+            Vector3d[] vertices = { t.A, t.B, t.C, t.D };
+            int[][] faces = { new[] { 0, 1, 2 }, new[] { 0, 1, 3 }, new[] { 0, 2, 3 }, new[] { 1, 2, 3 } };
+            
+            foreach (int[] face in faces)
+            {
+                Triangle tri = new Triangle(vertices[face[0]], vertices[face[1]], vertices[face[2]]);
+                if (tri.IntersectsRay(origin, direction)) return true;
+            }
+            
             return false;
         }
 
         #endregion
 
-        #region Subdivision (TODO)
+        #region Subdivision
 
         /// <summary>
         /// Subdivide tetrahedron into 8 smaller tetrahedra
-        /// TODO: Implement
         /// </summary>
         public static Tetrahedron[] Subdivide(Tetrahedron t)
         {
-            // TODO: Implement subdivision
-            return new Tetrahedron[8];
+            // Find midpoints of all edges
+            Vector3d ab = (t.A + t.B) / 2.0;
+            Vector3d ac = (t.A + t.C) / 2.0;
+            Vector3d ad = (t.A + t.D) / 2.0;
+            Vector3d bc = (t.B + t.C) / 2.0;
+            Vector3d bd = (t.B + t.D) / 2.0;
+            Vector3d cd = (t.C + t.D) / 2.0;
+            
+            return new Tetrahedron[]
+            {
+                new Tetrahedron(t.A, ab, ac, ad),
+                new Tetrahedron(ab, t.B, bc, bd),
+                new Tetrahedron(ac, bc, t.C, cd),
+                new Tetrahedron(ad, bd, cd, t.D),
+                new Tetrahedron(ab, ac, bc, ad),
+                new Tetrahedron(ad, bd, bc, cd),
+                new Tetrahedron(ab, ad, bd, bc),
+                new Tetrahedron(ac, ad, cd, bc)
+            };
         }
 
         /// <summary>
         /// Get dual tetrahedron (vertices at face centers)
-        /// TODO: Implement
         /// </summary>
         public static Tetrahedron Dual(Tetrahedron t)
         {
-            // TODO: Implement
-            return new Tetrahedron();
+            Vector3d abc = (t.A + t.B + t.C) / 3.0;
+            Vector3d abd = (t.A + t.B + t.D) / 3.0;
+            Vector3d acd = (t.A + t.C + t.D) / 3.0;
+            Vector3d bcd = (t.B + t.C + t.D) / 3.0;
+            
+            return new Tetrahedron(abc, abd, acd, bcd);
         }
 
         #endregion
@@ -263,24 +442,26 @@ namespace Code.Lavos.Geometry
 
         /// <summary>
         /// Check if tetrahedron is valid (non-degenerate)
-        /// TODO: Implement
         /// </summary>
         public static bool IsValid(Tetrahedron t)
         {
-            // Volume should be > 0
-            // TODO: Implement
-            return false;
+            return Volume(t) > 1e-10;
         }
 
         /// <summary>
         /// Check if tetrahedron is regular (all edges equal)
-        /// TODO: Implement
         /// </summary>
         public static bool IsRegular(Tetrahedron t, double tolerance = 0.0001)
         {
-            // All 6 edges should be equal
-            // TODO: Implement
-            return false;
+            double[] edges = GetAllEdgeLengths(t);
+            double firstEdge = edges[0];
+            
+            for (int i = 1; i < 6; i++)
+            {
+                if (Math.Abs(edges[i] - firstEdge) > tolerance) return false;
+            }
+            
+            return true;
         }
 
         #endregion

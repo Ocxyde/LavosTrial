@@ -188,9 +188,10 @@ namespace Code.Lavos.Core
                 for (int y = 0; y < size; y++)
                 {
                     var cell = gridMazeGenerator.GetCell(x, y);
-                    
+
                     // Place holes in room cells that have adjacent walls
-                    if (cell == GridMazeCell.Room || cell == GridMazeCell.Corridor)
+                    // 8-axis compatibility: Check if NOT all walls (walkable)
+                    if (!cell.IsWall())
                     {
                         if (TryPlaceHole(x, y, gridMazeGenerator))
                         {
@@ -246,7 +247,7 @@ namespace Code.Lavos.Core
 
                 // Check if adjacent cell is a wall
                 var adjacentCell = grid.GetCell(checkX, checkY);
-                if (adjacentCell == GridMazeCell.Wall)
+                if (adjacentCell.IsWall())  // 8-axis compatibility
                 {
                     // Roll for door spawn
                     if (Random.value > doorSpawnChance)
@@ -321,12 +322,10 @@ namespace Code.Lavos.Core
             // Try JSON config first
             if (GameConfig.Instance != null)
                 return GameConfig.Instance.defaultCellSize;
-            
-            // HARDCODED FALLBACK (comment out to disable warning):
-            // return hardcodedCellSize;  // Default: 6f
-            
-            // Last resort default
-            return 6f;
+
+            // Should never reach here - GameConfig is required
+            Debug.LogError("[DoorHolePlacer] GameConfig not available - cell size undefined");
+            return 0f;
         }
 
         #endregion

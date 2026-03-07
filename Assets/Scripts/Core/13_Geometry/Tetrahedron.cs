@@ -182,11 +182,29 @@ namespace Code.Lavos.Geometry
     {
         public double X, Y, Z;
 
+        // Alias properties for compatibility (lowercase x, y, z)
+        public double x => X;
+        public double y => Y;
+        public double z => Z;
+
         public Vector3d(double x, double y, double z)
         {
             X = x;
             Y = y;
             Z = z;
+        }
+
+        // Magnitude (length) of the vector
+        public double magnitude => Math.Sqrt(X * X + Y * Y + Z * Z);
+
+        // Normalized vector (unit vector)
+        public Vector3d normalized
+        {
+            get
+            {
+                double mag = magnitude;
+                return mag > 0 ? new Vector3d(X / mag, Y / mag, Z / mag) : this;
+            }
         }
 
         public static Vector3d operator +(Vector3d a, Vector3d b)
@@ -197,5 +215,26 @@ namespace Code.Lavos.Geometry
 
         public static Vector3d operator *(Vector3d v, double s)
             => new Vector3d(v.X * s, v.Y * s, v.Z * s);
+
+        public static Vector3d operator *(double s, Vector3d v)
+            => new Vector3d(v.X * s, v.Y * s, v.Z * s);
+
+        public static Vector3d operator /(Vector3d v, double s)
+            => new Vector3d(v.X / s, v.Y / s, v.Z / s);
+
+        /// <summary>
+        /// Dot product of two vectors
+        /// </summary>
+        public static double Dot(Vector3d a, Vector3d b)
+            => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
+
+        /// <summary>
+        /// Cross product of two vectors
+        /// </summary>
+        public static Vector3d Cross(Vector3d a, Vector3d b)
+            => new Vector3d(
+                a.Y * b.Z - a.Z * b.Y,
+                a.Z * b.X - a.X * b.Z,
+                a.X * b.Y - a.Y * b.X);
     }
 }

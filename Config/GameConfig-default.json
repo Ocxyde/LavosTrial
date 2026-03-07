@@ -13,15 +13,16 @@
     "groundTexture": "Textures/floor_texture.png",
     "wallTexture": "Textures/wall_texture.png",
     "ceilingTexture": "Textures/ceiling_texture.png",
-    
+
     "defaultMazeWidth": 21,
     "defaultMazeHeight": 21,
     "defaultCellSize": 6.0,
     "defaultWallHeight": 4.0,
     "defaultWallThickness": 0.5,
     "defaultCeilingHeight": 5.0,
+    
     "defaultRoomSize": 5,
-    "defaultCorridorWidth": 2,
+    "defaultCorridorWidth": 1,
     "defaultGridSize": 21,
     "corridorRandomness": 0.3,
     "generatePerimeterCorridor": true,
@@ -58,7 +59,7 @@
     "useRandomSeed": true,
     "manualSeed": "MazeSeed2026",
     "spawnInsideRoom": true,
-    
+
     "damageScale": 1.0,
     "healthScale": 1.0,
     "enemyHealthScale": 1.0,
@@ -68,7 +69,7 @@
     "oneHitKill": false,
     "infiniteStamina": false,
     "noClip": false,
-    
+
     "graphicsQuality": "Medium",
     "soundVolume": 0.8,
     "musicVolume": 0.6,

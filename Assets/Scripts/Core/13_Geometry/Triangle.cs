@@ -21,7 +21,14 @@
 // GEOMETRY: Pure triangle math (not Unity-dependent)
 // Location: Assets/Scripts/Core/13_Geometry/
 //
-// FUTURE IMPLEMENTATION - Placeholder for triangle geometry system
+// IMPLEMENTED:
+// - Edge calculations (lengths, perimeter)
+// - Area calculations (Heron's formula, cross product)
+// - Center calculations (centroid, circumcenter, incenter, orthocenter)
+// - Normal calculation
+// - Point tests (ContainsPoint2D, ContainsPoint3D, barycentric)
+// - Intersection tests (ray, segment, triangle)
+// - Triangle classification (valid, equilateral, isosceles, right-angled)
 
 using System;
 
@@ -106,7 +113,7 @@ namespace Code.Lavos.Geometry
 
         #endregion
 
-        #region Edge Calculations (TODO)
+        #region Edge Calculations
 
         /// <summary>
         /// Get the 3 edges as vertex pairs
@@ -123,177 +130,285 @@ namespace Code.Lavos.Geometry
 
         /// <summary>
         /// Calculate edge lengths
-        /// TODO: Implement
         /// </summary>
         public double[] EdgeLengths()
         {
-            // TODO: Implement distance formula for each edge
-            return new double[] { 0, 0, 0 };
+            return new double[]
+            {
+                (B - A).magnitude,  // Edge AB
+                (C - B).magnitude,  // Edge BC
+                (A - C).magnitude   // Edge CA
+            };
         }
 
         /// <summary>
         /// Calculate perimeter
-        /// TODO: Implement
         /// </summary>
         public double Perimeter()
         {
-            // TODO: Sum of all edge lengths
-            return 0;
+            double[] edges = EdgeLengths();
+            return edges[0] + edges[1] + edges[2];
         }
 
         #endregion
 
-        #region Area Calculations (TODO)
+        #region Area Calculations
 
         /// <summary>
         /// Calculate area using Heron's formula
-        /// TODO: Implement
         /// </summary>
         public double Area()
         {
-            // s = (a + b + c) / 2
-            // Area = sqrt(s * (s-a) * (s-b) * (s-c))
-            // TODO: Implement
-            return 0;
+            double[] edges = EdgeLengths();
+            double a = edges[0], b = edges[1], c = edges[2];
+            double s = Perimeter() / 2.0;  // Semi-perimeter
+            return Math.Sqrt(s * (s - a) * (s - b) * (s - c));
         }
 
         /// <summary>
         /// Calculate area using cross product (3D)
-        /// TODO: Implement
         /// </summary>
         public double Area3D()
         {
-            // Area = |AB × AC| / 2
-            // TODO: Implement
-            return 0;
+            Vector3d ab = B - A;
+            Vector3d ac = C - A;
+            Vector3d cross = Vector3d.Cross(ab, ac);
+            return cross.magnitude / 2.0;
         }
 
         #endregion
 
-        #region Center Calculations (TODO)
+        #region Center Calculations
 
         /// <summary>
         /// Calculate centroid (center of mass)
-        /// TODO: Implement
         /// </summary>
         public Vector3d Centroid()
         {
-            // Centroid = (A + B + C) / 3
-            // TODO: Implement
-            return new Vector3d();
+            return (A + B + C) / 3.0;
         }
 
         /// <summary>
         /// Calculate circumcenter (center of circle passing through all vertices)
-        /// TODO: Implement
         /// </summary>
         public Vector3d Circumcenter()
         {
-            // TODO: Implement circumcenter calculation
-            return new Vector3d();
+            double d = 2.0 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+            if (Math.Abs(d) < 1e-10) return new Vector3d();  // Degenerate triangle
+            
+            double ux = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + 
+                        (B.x * B.x + B.y * B.y) * (C.y - A.y) + 
+                        (C.x * C.x + C.y * C.y) * (A.y - B.y)) / d;
+            double uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + 
+                        (B.x * B.x + B.y * B.y) * (A.x - C.x) + 
+                        (C.x * C.x + C.y * C.y) * (B.x - A.x)) / d;
+            return new Vector3d(ux, uy, (A.z + B.z + C.z) / 3.0);
         }
 
         /// <summary>
         /// Calculate incenter (center of inscribed circle)
-        /// TODO: Implement
         /// </summary>
         public Vector3d Incenter()
         {
-            // TODO: Implement incenter calculation
-            return new Vector3d();
+            double[] edges = EdgeLengths();
+            double a = edges[0], b = edges[1], c = edges[2];
+            double perimeter = Perimeter();
+            if (perimeter < 1e-10) return new Vector3d();
+            
+            double x = (a * A.x + b * B.x + c * C.x) / perimeter;
+            double y = (a * A.y + b * B.y + c * C.y) / perimeter;
+            double z = (a * A.z + b * B.z + c * C.z) / perimeter;
+            return new Vector3d(x, y, z);
         }
 
         /// <summary>
         /// Calculate orthocenter (intersection of altitudes)
-        /// TODO: Implement
         /// </summary>
         public Vector3d Orthocenter()
         {
-            // TODO: Implement orthocenter calculation
-            return new Vector3d();
+            double d = 2.0 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+            if (Math.Abs(d) < 1e-10) return new Vector3d();  // Degenerate triangle
+            
+            // Calculate using the relationship with circumcenter and centroid
+            Vector3d circumcenter = Circumcenter();
+            Vector3d centroid = Centroid();
+            return 3.0 * centroid - 2.0 * circumcenter;
         }
 
         #endregion
 
-        #region Normal Calculation (TODO)
+        #region Normal Calculation
 
         /// <summary>
         /// Calculate normal vector (3D triangles only)
-        /// TODO: Implement using cross product
         /// </summary>
         public Vector3d Normal()
         {
-            // Normal = (B-A) × (C-A), normalized
-            // TODO: Implement
-            return new Vector3d();
+            Vector3d ab = B - A;
+            Vector3d ac = C - A;
+            Vector3d normal = Vector3d.Cross(ab, ac);
+            return normal.normalized;
         }
 
         #endregion
 
-        #region Point Tests (TODO)
+        #region Point Tests
 
         /// <summary>
-        /// Check if point is inside triangle (2D)
-        /// TODO: Implement using barycentric coordinates
+        /// Check if point is inside triangle (2D) using barycentric coordinates
         /// </summary>
         public bool ContainsPoint2D(Vector3d point)
         {
-            // TODO: Implement point-in-triangle test
-            return false;
+            double[] bary = GetBarycentric(point);
+            return bary[0] >= 0 && bary[1] >= 0 && bary[2] >= 0 && 
+                   Math.Abs(bary[0] + bary[1] + bary[2] - 1.0) < 1e-10;
         }
 
         /// <summary>
         /// Check if point is inside triangle (3D, on triangle plane)
-        /// TODO: Implement
         /// </summary>
         public bool ContainsPoint3D(Vector3d point)
         {
-            // TODO: Implement 3D point-in-triangle test
-            return false;
+            // Project to 2D by dropping the smallest component of normal
+            Vector3d normal = Normal();
+            double absX = Math.Abs(normal.x);
+            double absY = Math.Abs(normal.y);
+            double absZ = Math.Abs(normal.z);
+            
+            Vector3d a2D, b2D, c2D, p2D;
+            if (absX > absY && absX > absZ)
+            {
+                a2D = new Vector3d(0, A.y, A.z);
+                b2D = new Vector3d(0, B.y, B.z);
+                c2D = new Vector3d(0, C.y, C.z);
+                p2D = new Vector3d(0, point.y, point.z);
+            }
+            else if (absY > absX && absY > absZ)
+            {
+                a2D = new Vector3d(A.x, 0, A.z);
+                b2D = new Vector3d(B.x, 0, B.z);
+                c2D = new Vector3d(C.x, 0, C.z);
+                p2D = new Vector3d(point.x, 0, point.z);
+            }
+            else
+            {
+                a2D = new Vector3d(A.x, A.y, 0);
+                b2D = new Vector3d(B.x, B.y, 0);
+                c2D = new Vector3d(C.x, C.y, 0);
+                p2D = new Vector3d(point.x, point.y, 0);
+            }
+            
+            Triangle t2D = new Triangle(a2D, b2D, c2D);
+            return t2D.ContainsPoint2D(p2D);
         }
 
         /// <summary>
         /// Get barycentric coordinates of point
-        /// TODO: Implement
         /// </summary>
         public double[] GetBarycentric(Vector3d point)
         {
-            // Returns (u, v, w) where point = u*A + v*B + w*C and u+v+w=1
-            // TODO: Implement
-            return new double[] { 0, 0, 0 };
+            Vector3d v0 = C - A;
+            Vector3d v1 = B - A;
+            Vector3d v2 = point - A;
+            
+            double dot00 = Vector3d.Dot(v0, v0);
+            double dot01 = Vector3d.Dot(v0, v1);
+            double dot02 = Vector3d.Dot(v0, v2);
+            double dot11 = Vector3d.Dot(v1, v1);
+            double dot12 = Vector3d.Dot(v1, v2);
+            
+            double denom = dot00 * dot11 - dot01 * dot01;
+            if (Math.Abs(denom) < 1e-10) return new double[] { 1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0 };
+            
+            double invDenom = 1.0 / denom;
+            double u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+            double v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+            double w = 1.0 - u - v;
+            
+            return new double[] { w, v, u };
         }
 
         #endregion
 
-        #region Intersection Tests (TODO)
+        #region Intersection Tests
 
         /// <summary>
-        /// Test if ray intersects triangle
-        /// TODO: Implement using Möller–Trumbore algorithm
+        /// Test if ray intersects triangle using Möller–Trumbore algorithm
         /// </summary>
         public bool IntersectsRay(Vector3d origin, Vector3d direction)
         {
-            // TODO: Implement ray-triangle intersection
-            return false;
+            Vector3d edge1 = B - A;
+            Vector3d edge2 = C - A;
+            Vector3d h = Vector3d.Cross(direction, edge2);
+            double a = Vector3d.Dot(edge1, h);
+            
+            if (Math.Abs(a) < 1e-10) return false;  // Ray parallel to triangle
+            
+            double f = 1.0 / a;
+            Vector3d s = origin - A;
+            double u = f * Vector3d.Dot(s, h);
+            
+            if (u < 0.0 || u > 1.0) return false;
+            
+            Vector3d q = Vector3d.Cross(s, edge1);
+            double v = f * Vector3d.Dot(direction, q);
+            
+            if (v < 0.0 || u + v > 1.0) return false;
+            
+            double t = f * Vector3d.Dot(edge2, q);
+            return t > 1e-10;  // Ray intersects triangle
         }
 
         /// <summary>
         /// Test if line segment intersects triangle
-        /// TODO: Implement
         /// </summary>
         public bool IntersectsSegment(Vector3d p1, Vector3d p2)
         {
-            // TODO: Implement segment-triangle intersection
-            return false;
+            Vector3d direction = p2 - p1;
+            if (!IntersectsRay(p1, direction)) return false;
+            
+            // Check if intersection point is within segment
+            Vector3d edge1 = B - A;
+            Vector3d edge2 = C - A;
+            Vector3d h = Vector3d.Cross(direction, edge2);
+            double a = Vector3d.Dot(edge1, h);
+            
+            if (Math.Abs(a) < 1e-10) return false;
+            
+            double f = 1.0 / a;
+            Vector3d s = p1 - A;
+            double u = f * Vector3d.Dot(s, h);
+            
+            if (u < 0.0 || u > 1.0) return false;
+            
+            Vector3d q = Vector3d.Cross(s, edge1);
+            double v = f * Vector3d.Dot(direction, q);
+            
+            if (v < 0.0 || u + v > 1.0) return false;
+            
+            double t = f * Vector3d.Dot(edge2, q);
+            return t >= 0.0 && t <= 1.0;  // Intersection within segment
         }
 
         /// <summary>
         /// Test if triangle intersects another triangle
-        /// TODO: Implement
         /// </summary>
         public bool IntersectsTriangle(Triangle other)
         {
-            // TODO: Implement triangle-triangle intersection
+            // Check if any edge of this triangle intersects the other triangle
+            var edges = Edges();
+            foreach (var (start, end) in edges)
+            {
+                if (other.IntersectsSegment(start, end)) return true;
+            }
+            
+            // Check if any edge of other triangle intersects this triangle
+            var otherEdges = other.Edges();
+            foreach (var (start, end) in otherEdges)
+            {
+                if (IntersectsSegment(start, end)) return true;
+            }
+            
             return false;
         }
 
@@ -322,46 +437,45 @@ namespace Code.Lavos.Geometry
 
         /// <summary>
         /// Check if triangle is valid (non-degenerate)
-        /// TODO: Implement
         /// </summary>
         public bool IsValid()
         {
-            // Area should be > 0
-            // TODO: Implement
-            return false;
+            return Area() > 1e-10;
         }
 
         /// <summary>
         /// Check if triangle is equilateral (all sides equal)
-        /// TODO: Implement
         /// </summary>
         public bool IsEquilateral(double tolerance = 0.0001)
         {
-            // All 3 edges should be equal
-            // TODO: Implement
-            return false;
+            double[] edges = EdgeLengths();
+            return Math.Abs(edges[0] - edges[1]) < tolerance &&
+                   Math.Abs(edges[1] - edges[2]) < tolerance;
         }
 
         /// <summary>
         /// Check if triangle is isosceles (2 sides equal)
-        /// TODO: Implement
         /// </summary>
         public bool IsIsosceles(double tolerance = 0.0001)
         {
-            // At least 2 edges should be equal
-            // TODO: Implement
-            return false;
+            double[] edges = EdgeLengths();
+            return Math.Abs(edges[0] - edges[1]) < tolerance ||
+                   Math.Abs(edges[1] - edges[2]) < tolerance ||
+                   Math.Abs(edges[0] - edges[2]) < tolerance;
         }
 
         /// <summary>
-        /// Check if triangle is right-angled
-        /// TODO: Implement using Pythagorean theorem
+        /// Check if triangle is right-angled using Pythagorean theorem
         /// </summary>
         public bool IsRightAngled(double tolerance = 0.0001)
         {
-            // a² + b² = c² (for some permutation)
-            // TODO: Implement
-            return false;
+            double[] edges = EdgeLengths();
+            double a = edges[0], b = edges[1], c = edges[2];
+            
+            // Check all permutations (a² + b² = c²)
+            return Math.Abs(a * a + b * b - c * c) < tolerance ||
+                   Math.Abs(a * a + c * c - b * b) < tolerance ||
+                   Math.Abs(b * b + c * c - a * a) < tolerance;
         }
 
         #endregion

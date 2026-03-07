@@ -99,6 +99,50 @@ namespace Code.Lavos.Editor
             }
         }
 
+        [MenuItem("Tools/Maze/Set Level 0 (Tutorial)")]
+        public static void SetLevel0()
+        {
+            SetLevel(0);
+        }
+
+        [MenuItem("Tools/Maze/Set Level 3 (8-Way)")]
+        public static void SetLevel3()
+        {
+            SetLevel(3);
+        }
+
+        [MenuItem("Tools/Maze/Set Level 10 (Expert)")]
+        public static void SetLevel10()
+        {
+            SetLevel(10);
+        }
+
+        [MenuItem("Tools/Maze/Set Level 20 (Master)")]
+        public static void SetLevel20()
+        {
+            SetLevel(20);
+        }
+
+        private static void SetLevel(int level)
+        {
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            if (mazeBuilder != null)
+            {
+                // Use reflection to set currentLevel field
+                var field = typeof(CompleteMazeBuilder).GetField("currentLevel", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    field.SetValue(mazeBuilder, level);
+                    Debug.Log($"[MazeBuilderEditor]  Level set to {level}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder found!");
+            }
+        }
+
         [MenuItem("Tools/Maze/Clear Maze Objects")]
         public static void ClearMazeObjects()
         {
@@ -158,6 +202,7 @@ namespace Code.Lavos.Editor
                 EnsureComponent<SpatialPlacer>(mazeBuilder.gameObject);
                 EnsureComponent<LightPlacementEngine>(mazeBuilder.gameObject);
                 EnsureComponent<TorchPool>(mazeBuilder.gameObject);
+                // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder directly
 
                 // Auto-assign references
                 AutoAssignReferences(mazeBuilder);
@@ -173,6 +218,7 @@ namespace Code.Lavos.Editor
             mazeGO.AddComponent<SpatialPlacer>();
             mazeGO.AddComponent<LightPlacementEngine>();
             mazeGO.AddComponent<TorchPool>();
+            // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder directly
 
             AutoAssignReferences(mazeBuilder);
 
@@ -255,11 +301,13 @@ namespace Code.Lavos.Editor
 
         /// <summary>
         /// Auto-assign component references via SerializedObject.
+        /// Also fills prefabs and materials from GameConfig defaults.
         /// </summary>
         private static void AutoAssignReferences(CompleteMazeBuilder mazeBuilder)
         {
             var serializedObject = new SerializedObject(mazeBuilder);
 
+            // Component references
             var spatialPlacerProp = serializedObject.FindProperty("spatialPlacer");
             var lightEngineProp = serializedObject.FindProperty("lightPlacementEngine");
             var torchPoolProp = serializedObject.FindProperty("torchPool");
@@ -267,6 +315,7 @@ namespace Code.Lavos.Editor
             var spatialPlacer = mazeBuilder.GetComponent<SpatialPlacer>();
             var lightEngine = mazeBuilder.GetComponent<LightPlacementEngine>();
             var torchPool = mazeBuilder.GetComponent<TorchPool>();
+            // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder directly
 
             if (spatialPlacerProp != null && spatialPlacer != null)
             {
@@ -286,7 +335,170 @@ namespace Code.Lavos.Editor
                 Debug.Log("   Auto-assigned: torchPool");
             }
 
+            // Prefab and material references from GameConfig
+            AutoAssignPrefabsFromConfig(serializedObject);
+
             serializedObject.ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Auto-assign prefabs and materials from GameConfig defaults.
+        /// Prevents pink missing textures and ensures proper generation.
+        /// </summary>
+        private static void AutoAssignPrefabsFromConfig(SerializedObject serializedObject)
+        {
+            var config = GameConfig.Instance;
+
+            // Wall Prefab
+            var wallPrefabProp = serializedObject.FindProperty("wallPrefab");
+            if (wallPrefabProp != null && wallPrefabProp.objectReferenceValue == null)
+            {
+                wallPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.wallPrefab, "Wall");
+                if (wallPrefabProp.objectReferenceValue != null)
+                    Debug.Log($"   Auto-assigned: wallPrefab from config ({config.wallPrefab})");
+            }
+
+            // Door Prefab
+            var doorPrefabProp = serializedObject.FindProperty("doorPrefab");
+            if (doorPrefabProp != null && doorPrefabProp.objectReferenceValue == null)
+            {
+                doorPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.doorPrefab, "Door");
+                if (doorPrefabProp.objectReferenceValue != null)
+                    Debug.Log($"   Auto-assigned: doorPrefab from config ({config.doorPrefab})");
+            }
+
+            // Wall Material
+            var wallMaterialProp = serializedObject.FindProperty("wallMaterial");
+            if (wallMaterialProp != null && wallMaterialProp.objectReferenceValue == null)
+            {
+                wallMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.wallMaterial, "Wall");
+                if (wallMaterialProp.objectReferenceValue != null)
+                    Debug.Log($"   Auto-assigned: wallMaterial from config ({config.wallMaterial})");
+            }
+
+            // Floor Material
+            var floorMaterialProp = serializedObject.FindProperty("floorMaterial");
+            if (floorMaterialProp != null && floorMaterialProp.objectReferenceValue == null)
+            {
+                floorMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.floorMaterial, "Floor");
+                if (floorMaterialProp.objectReferenceValue != null)
+                    Debug.Log($"   Auto-assigned: floorMaterial from config ({config.floorMaterial})");
+            }
+
+            // Ground Texture
+            var groundTextureProp = serializedObject.FindProperty("groundTexture");
+            if (groundTextureProp != null && groundTextureProp.objectReferenceValue == null)
+            {
+                groundTextureProp.objectReferenceValue = LoadTextureFromConfig(config.groundTexture, "Floor");
+                if (groundTextureProp.objectReferenceValue != null)
+                    Debug.Log($"   Auto-assigned: groundTexture from config ({config.groundTexture})");
+            }
+        }
+
+        /// <summary>
+        /// Load prefab from config path with fallback search.
+        /// </summary>
+        private static UnityEngine.Object LoadPrefabFromConfig(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".prefab", "");
+                UnityEngine.Object prefab = Resources.Load(resourcePath);
+                if (prefab != null)
+                {
+                    return prefab;
+                }
+            }
+
+            // Fallback: search in Resources subfolders
+            string[] folders = { "Prefabs", "Prefabs/Walls", "Prefabs/Doors", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                UnityEngine.Object prefab = Resources.Load(searchPath);
+                if (prefab != null)
+                {
+                    return prefab;
+                }
+            }
+
+            // Fallback: search all Resources by name
+            UnityEngine.Object[] allPrefabs = Resources.LoadAll("");
+            foreach (UnityEngine.Object p in allPrefabs)
+            {
+                if (p != null && p.name.Contains(searchName, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    return p;
+                }
+            }
+
+            Debug.LogWarning($"[MazeBuilderEditor] Prefab '{searchName}' not found in Resources!");
+            return null;
+        }
+
+        /// <summary>
+        /// Load material from config path with fallback search.
+        /// </summary>
+        private static UnityEngine.Object LoadMaterialFromConfig(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".mat", "");
+                UnityEngine.Object mat = Resources.Load(resourcePath);
+                if (mat != null)
+                {
+                    return mat;
+                }
+            }
+
+            // Fallback: search in Resources subfolders
+            string[] folders = { "Materials", "Materials/Walls", "Materials/Floors", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                UnityEngine.Object mat = Resources.Load(searchPath);
+                if (mat != null)
+                {
+                    return mat;
+                }
+            }
+
+            Debug.LogWarning($"[MazeBuilderEditor] Material '{searchName}' not found in Resources!");
+            return null;
+        }
+
+        /// <summary>
+        /// Load texture from config path with fallback search.
+        /// </summary>
+        private static UnityEngine.Object LoadTextureFromConfig(string configPath, string searchName)
+        {
+            // Try config path first
+            if (!string.IsNullOrEmpty(configPath))
+            {
+                string resourcePath = configPath.Replace("Assets/Resources/", "").Replace(".png", "").Replace(".jpg", "");
+                UnityEngine.Object tex = Resources.Load(resourcePath);
+                if (tex != null)
+                {
+                    return tex;
+                }
+            }
+
+            // Fallback: search in Resources subfolders
+            string[] folders = { "Textures", "Textures/Floors", "Textures/Walls", "" };
+            foreach (string folder in folders)
+            {
+                string searchPath = string.IsNullOrEmpty(folder) ? searchName : $"{folder}/{searchName}";
+                UnityEngine.Object tex = Resources.Load(searchPath);
+                if (tex != null)
+                {
+                    return tex;
+                }
+            }
+
+            Debug.LogWarning($"[MazeBuilderEditor] Texture '{searchName}' not found in Resources!");
+            return null;
         }
 
         #endregion
@@ -323,6 +535,32 @@ namespace Code.Lavos.Editor
 
             GUILayout.Space(15);
 
+            // Level selector
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label("Set Level:", GUILayout.Width(70));
+            if (GUILayout.Button("0")) SetLevel(0);
+            if (GUILayout.Button("3")) SetLevel(3);
+            if (GUILayout.Button("10")) SetLevel(10);
+            if (GUILayout.Button("20")) SetLevel(20);
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(10);
+
+            // Display current level
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            if (mazeBuilder != null)
+            {
+                var field = typeof(CompleteMazeBuilder).GetField("currentLevel", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (field != null)
+                {
+                    int level = (int)field.GetValue(mazeBuilder);
+                    EditorGUILayout.HelpBox($"Current Level: {level}\nMaze Size: {mazeBuilder.MazeSize}x{mazeBuilder.MazeSize}", MessageType.Info);
+                }
+            }
+
+            GUILayout.Space(15);
+
             if (GUILayout.Button("Generate Maze", GUILayout.Height(35)))
             {
                 GenerateMaze();
@@ -346,14 +584,13 @@ namespace Code.Lavos.Editor
             GUILayout.Space(20);
 
             EditorGUILayout.HelpBox(
-                "Click 'Generate Maze' to:\n" +
-                "1. Find existing components (plug-in-out)\n" +
-                "2. Create missing components (editor tool)\n" +
-                "3. Generate maze instantly\n" +
-                "4. Press Play to test\n\n" +
-                "Shortcut: Ctrl+Alt+G\n\n" +
-                "NOTE: Runtime code follows strict plug-in-out.\n" +
-                "This editor tool creates only for convenience.",
+                "Maze-First Generation:\n" +
+                "✓ Real maze walls (not hallways)\n" +
+                "✓ Chambers at intersections\n" +
+                "✓ Dead ends and loops\n" +
+                "✓ Proper dungeon structure\n\n" +
+                "Level 0-2: 4-way (tutorial)\n" +
+                "Level 3+: 8-way (diagonal walls)",
                 MessageType.Info);
         }
 

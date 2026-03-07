@@ -1,10 +1,10 @@
 # CodeDotLavos - Procedural Maze Game
 
-**Unity Version:** 6000.3.7f1  
-**Architecture:** Plug-in-Out  
-**Config:** JSON-driven (no hardcoded values)  
-**License:** GPL-3.0  
-**Status:** ✅ Ready for Testing
+**Unity Version:** 6000.3.7f1
+**Architecture:** Plug-in-Out
+**Config:** JSON-driven (no hardcoded values)
+**License:** GPL-3.0
+**Status:** ✅ **Pure Maze with Exit Corridor** | ✅ **Walls Snap to Grid**
 
 ---
 
@@ -31,14 +31,17 @@ To add headers to all files, run:
 ## 🎮 **GAME OVERVIEW**
 
 Procedural maze generation game with:
+- **Pure maze structure** (corridors only, no rooms)
+- **Single spawn point cell** (not a room)
 - **Level progression** (12x12 → 51x51 mazes)
 - **Seed-based difficulty** (new seed each scene load/reload)
 - **FPS player controller** (WASD + mouse look)
 - **Dynamic lighting** (torches on walls)
 - **Chests, enemies, items** (object placement system)
 - **Binary storage** (fast maze caching)
-- **A* pathfinding** (optimal corridor generation)
-- **Perimeter corridors** (ring around maze edge)
+- **DFS corridor carving** (proper maze algorithm)
+- **Exit corridor** (guaranteed path to south wall door)
+- **Wall snapping** (perfect grid alignment)
 
 ---
 
@@ -64,7 +67,7 @@ var component = gameObject.AddComponent<T>();
 - Spawns player LAST (after geometry)
 - All values from JSON config
 
-### **Generation Order**
+### **Generation Order (CURRENT)**
 
 ```
 1. Config         → Load from JSON
@@ -72,16 +75,55 @@ var component = gameObject.AddComponent<T>();
 3. Components     → Find (never create)
 4. Cleanup        → Destroy old objects
 5. Ground         → Spawn floor
-6. Spawn Room     → Place FIRST (guaranteed 5x5)
-7. Corridors      → A* pathfinding (optimal paths)
-8. Walls          → Place with orientation
-9. Doors          → Simple entrance/exit
-10. Torches       → Mount on walls (30% chance)
-11. Save          → Binary storage + ComputeGrid
-12. Player        → Spawn LAST (FPS camera)
+6. Grid           → Fill with Wall (all solid)
+7. Boundary       → Mark outer perimeter (sealed)
+8. DFS Carve      → Carve corridors (respects boundary)
+                    → Ensures spawn has exit
+9. Exit Corridor  → Carve path to south wall door
+10. Walls         → Render (snap to grid boundaries)
+11. Doors         → Place exit on south wall
+12. Save          → Binary storage
+13. Player        → Spawn at spawn point (FPS camera)
 ```
 
 **Performance:** ~7.52ms total generation time (fits in 60 FPS frame)
+
+---
+
+## 🧱 **GRID MATH - WALL SNAPPING**
+
+### **Grid Structure:**
+
+```
+CELLS = WALKABLE SPACES (6m x 6m each)
+┌─────┬─────┬─────┬─────┬─────┐
+│  W  │  W  │  W  │  W  │  W  │  ← Wall cells (boundary)
+├─────┼─────┼─────┼─────┼─────┤
+│  W  │  S  │  C  │  W  │  W  │  ← S = Spawn, C = Corridor
+├─────┼─────┼─────┼─────┼─────┤
+│  W  │  C  │  C  │  C  │  W  │  ← C = Corridor (walkable)
+├─────┼─────┼─────┼─────┼─────┤
+│  W  │  W  │  C  │  W  │  W  │  ← Dead end corridor
+├─────┼─────┼─────┼─────┼─────┤
+│  W  │  W  │  W  │  W  │  W  │  ← Wall cells (boundary)
+└─────┴─────┴─────┴─────┴─────┘
+
+WALL PLACEMENT:
+- Walls placed on CELL BOUNDARIES (edges)
+- Each wall segment = cellSize x wallHeight
+- Perfect grid snapping!
+```
+
+### **Key Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Cell Size** | 6m x 6m (from GameConfig) |
+| **Corridor Width** | 1 cell (6m wide) |
+| **Spawn Point** | Single cell at (1, gridSize/2) |
+| **Exit** | South wall center (gridSize/2, 0) |
+| **Exit Corridor** | Guaranteed path to exit door |
+| **Boundary** | Perimeter sealed (DFS respects it) |
 
 ---
 

@@ -35,9 +35,9 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Create Maze Prefabs")]
         public static void CreateAllPrefabs()
         {
-            Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
-            Debug.Log("[CreateMazePrefabs] ️ Creating maze prefabs...");
-            Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
+            Debug.Log("[CreateMazePrefabs] ========================================");
+            Debug.Log("[CreateMazePrefabs] Creating maze prefabs...");
+            Debug.Log("[CreateMazePrefabs] ========================================");
 
             // Ensure folders exist
             EnsureFolder("Assets/Prefabs");
@@ -56,10 +56,10 @@ namespace Code.Lavos.Editor
             // Create materials
             CreateWallMaterial();
 
-            Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
-            Debug.Log("[CreateMazePrefabs]  All prefabs created!");
-            Debug.Log("[CreateMazePrefabs]  Location: Assets/Prefabs/");
-            Debug.Log("[CreateMazePrefabs] ════════════════════════════════════════");
+            Debug.Log("[CreateMazePrefabs] ========================================");
+            Debug.Log("[CreateMazePrefabs] All prefabs created!");
+            Debug.Log("[CreateMazePrefabs] Location: Assets/Prefabs/");
+            Debug.Log("[CreateMazePrefabs] ========================================");
         }
 
         private static void EnsureFolder(string path)

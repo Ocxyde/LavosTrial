@@ -1,7 +1,7 @@
 ﻿# CompleteMazeBuilder - User Manual
 
-**Version:** 1.0
-**Date:** 2026-03-05
+**Version:** 1.1
+**Date:** 2026-03-07
 **Unity Version:** 6000.3.7f1
 
 ---
@@ -14,8 +14,9 @@
 4. [Configuration](#configuration)
 5. [Gameplay](#gameplay)
 6. [Modding](#modding)
-7. [Troubleshooting](#troubleshooting)
-8. [Technical Details](#technical-details)
+7. [Editor Tools](#editor-tools)
+8. [Troubleshooting](#troubleshooting)
+9. [Technical Details](#technical-details)
 
 ---
 
@@ -163,6 +164,61 @@ The config file supports many more settings than documented here. **Experiment a
 2. Save to `Assets/Prefabs/`
 3. Update path in `GameConfig-default.json`
 4. Restart game
+
+---
+
+## 🛠️ **EDITOR TOOLS**
+
+### **MazePreviewEditor - Visual Maze Preview (No Play Mode)**
+
+The `MazePreviewEditor` allows you to preview the entire maze in the Editor without entering Play mode.
+
+#### **Access Methods:**
+
+1. **Menu:** `Tools → Maze → Preview Maze (1-Click Render)`
+2. **Context Menu:** Select `CompleteMazeBuilder` → Right-click → `Preview Maze in Editor`
+
+#### **Features:**
+
+- ✅ **Instant Preview** - Generate maze without entering Play mode
+- ✅ **Visual Verification** - Check maze layout before testing
+- ✅ **Prefab-Based** - Uses existing prefabs from `Resources/`
+- ✅ **Editor-Only** - Objects tagged "EditorOnly", excluded from builds
+- ✅ **JSON-Driven** - All values from `GameConfig`
+- ✅ **8-Axis Support** - Cardinal + diagonal walls
+
+#### **Usage:**
+
+1. **Select** the `CompleteMazeBuilder` in your scene
+2. **Run** the preview via menu or right-click
+3. **Inspect** the generated maze in the Scene view
+4. **Clear** with `Tools → Maze → Clear Preview` when done
+
+#### **What Gets Generated:**
+
+| Element | Description |
+|---------|-------------|
+| **Walls** | Cardinal walls (N, E, S, W) |
+| **Diagonal Walls** | If enabled in config (NE, NW, SE, SW) |
+| **Torches** | At torch positions from maze data |
+| **Chests** | At chest positions from maze data |
+| **Enemies** | At enemy positions from maze data |
+
+#### **Notes:**
+
+- Preview objects are parented under `_previewRoot` in the hierarchy
+- Objects are tagged `EditorOnly` - automatically excluded from builds
+- Preview is cleared when generating a new maze or closing the scene
+- Missing prefabs are logged as warnings (not errors)
+
+#### **Troubleshooting:**
+
+| Issue | Solution |
+|-------|----------|
+| **Preview empty** | Check prefabs exist in `Resources/` folder |
+| **Pink prefabs** | Verify material paths in `GameConfig` |
+| **Walls misaligned** | Check `CellSize` and `WallHeight` config values |
+| **Diagonal walls missing** | Ensure `DiagonalWalls: true` in config + prefab exists |
 
 ---
 

@@ -217,7 +217,8 @@ namespace Code.Lavos.Core
                 {
                     var cell = gridMazeGenerator.GetCell(x, y);
 
-                    if (cell != GridMazeCell.Wall)
+                    // 8-axis compatibility: Check if cell is a wall
+                    if (!cell.IsWall())
                         continue;
 
                     Vector3 cellCenter = new Vector3(
@@ -227,16 +228,16 @@ namespace Code.Lavos.Core
                     );
 
                     // Check adjacent cells for open faces
-                    if (y + 1 < size && gridMazeGenerator.GetCell(x, y + 1) != GridMazeCell.Wall)
+                    if (y + 1 < size && !gridMazeGenerator.GetCell(x, y + 1).IsWall())
                         wallFaces.Add((cellCenter, Quaternion.Euler(0f, 180f, 0f)));
 
-                    if (y - 1 >= 0 && gridMazeGenerator.GetCell(x, y - 1) != GridMazeCell.Wall)
+                    if (y - 1 >= 0 && !gridMazeGenerator.GetCell(x, y - 1).IsWall())
                         wallFaces.Add((cellCenter, Quaternion.identity));
 
-                    if (x + 1 < size && gridMazeGenerator.GetCell(x + 1, y) != GridMazeCell.Wall)
+                    if (x + 1 < size && !gridMazeGenerator.GetCell(x + 1, y).IsWall())
                         wallFaces.Add((cellCenter, Quaternion.Euler(0f, -90f, 0f)));
 
-                    if (x - 1 >= 0 && gridMazeGenerator.GetCell(x - 1, y) != GridMazeCell.Wall)
+                    if (x - 1 >= 0 && !gridMazeGenerator.GetCell(x - 1, y).IsWall())
                         wallFaces.Add((cellCenter, Quaternion.Euler(0f, 90f, 0f)));
                 }
             }

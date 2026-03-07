@@ -15,11 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // DoorFactory.cs
-// Procedural 3D door generation with pixel art textures
+// DEPRECATED - Procedural door generation violates plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Creates doors that fit into surfaces (walls, floors, ceilings)
-// Replaces surface geometry with door models + effects
+// STATUS: DEPRECATED - Not used anywhere in project
+// REASON: Violates plug-in-out architecture (creates GameObjects at runtime)
+// REPLACEMENT: Use door prefabs from Assets/Prefabs/DoorPrefab.prefab
+//
+// DO NOT USE THIS FILE - Kept for reference only
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,9 +32,11 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// Factory for generating 3D doors with pixel art textures.
-    /// Doors fit into surfaces and replace surface geometry.
+    /// DEPRECATED - DoorFactory violates plug-in-out architecture.
+    /// Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).
+    /// This file is kept for reference only - DO NOT USE.
     /// </summary>
+    [System.Obsolete("DoorFactory violates plug-in-out architecture. Use door prefabs instead.")]
     public class DoorFactory : MonoBehaviour
     {
         [Header("Door Dimensions")]

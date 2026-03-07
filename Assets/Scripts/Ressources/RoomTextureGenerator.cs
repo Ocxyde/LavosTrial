@@ -30,7 +30,8 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// Generates unique 2D pixel art textures for each room type.
-    /// Plug-in-out: Access via RoomTextureGenerator.Instance
+    /// Plug-in-out: Must be added to scene manually.
+    /// IMPORTANT: Do NOT rely on auto-creation - add RoomTextureGenerator to your scene.
     /// </summary>
     public class RoomTextureGenerator : MonoBehaviour
     {
@@ -46,9 +47,7 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<RoomTextureGenerator>();
                     if (_instance == null)
                     {
-                        GameObject go = new GameObject("RoomTextureGenerator");
-                        _instance = go.AddComponent<RoomTextureGenerator>();
-                        DontDestroyOnLoad(go);
+                        Debug.LogError("[RoomTextureGenerator] No instance found in scene! Add RoomTextureGenerator GameObject manually.");
                     }
                 }
                 return _instance;

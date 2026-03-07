@@ -240,16 +240,17 @@ namespace Code.Lavos.Core
             {
                 int x = Random.Range(0, size);
                 int y = Random.Range(0, size);
-                
+
                 var cell = gridMazeGenerator.GetCell(x, y);
-                
+
                 // Only place in rooms or corridors (not walls)
-                if (cell == GridMazeCell.Room || cell == GridMazeCell.Corridor)
+                // 8-axis compatibility: Check if cell is walkable (not all walls)
+                if (cell.IsWalkable())
                 {
                     return new Vector2Int(x, y);
                 }
             }
-            
+
             return new Vector2Int(-1, -1);  // No valid cell found
         }
 

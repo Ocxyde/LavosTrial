@@ -82,8 +82,8 @@ namespace Code.Lavos.Editor
             Debug.Log(" Materials created in: Assets/Resources/Materials/");
             Debug.Log(" Prefabs auto-assigned to CompleteMazeBuilder");
             Debug.Log("");
-            Debug.Log("️  Now test: Press Ctrl+Alt+G to generate maze");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("  Now test: Press Ctrl+Alt+G to generate maze");
+            Debug.Log("============================================");
         }
 
         /// <summary>
@@ -92,10 +92,10 @@ namespace Code.Lavos.Editor
         private static void AutoAssignPrefabsToBuilder()
         {
             var builder = Object.FindFirstObjectByType<Code.Lavos.Core.CompleteMazeBuilder>();
-            
+
             if (builder == null)
             {
-                Debug.Log("️  No CompleteMazeBuilder in scene - prefabs not auto-assigned");
+                Debug.Log("  No CompleteMazeBuilder in scene - prefabs not auto-assigned");
                 return;
             }
 
