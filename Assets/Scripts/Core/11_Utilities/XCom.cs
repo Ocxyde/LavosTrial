@@ -211,13 +211,20 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
             if (builder != null)
             {
+                var cfg = GameConfig.Instance;
+                int mazeSize = cfg.DifficultyCfg.MazeSize(
+                    builder.CurrentLevel,
+                    cfg.MazeCfg.BaseSize,
+                    cfg.MazeCfg.MinSize,
+                    cfg.MazeCfg.MaxSize
+                );
+
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log("  MAZE STATUS");
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log($"  Level: {builder.CurrentLevel}");
-                Debug.Log($"  Maze Size: {builder.MazeSize}x{builder.MazeSize}");
+                Debug.Log($"  Maze Size: {mazeSize}x{mazeSize}");
                 Debug.Log($"  Seed: {builder.CurrentSeed}");
-                Debug.Log($"  Generation Time: {builder.LastGenMs:F2}ms");
                 Debug.Log("═══════════════════════════════════════");
             }
             else

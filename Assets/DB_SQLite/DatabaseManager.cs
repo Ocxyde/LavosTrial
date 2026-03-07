@@ -521,7 +521,17 @@ namespace Code.Lavos.DB
     {
         if (!_isInitialized) return;
 
-        _gameSettings[key] = value;
+        // Find existing key and update, or add new pair
+        for (int i = 0; i < _gameSettings.Count; i++)
+        {
+            if (_gameSettings[i].key == key)
+            {
+                _gameSettings[i] = new StringPair { key = key, value = value };
+                return;
+            }
+        }
+        // Key not found, add new pair
+        _gameSettings.Add(new StringPair { key = key, value = value });
     }
 
     /// <summary>
