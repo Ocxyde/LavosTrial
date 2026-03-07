@@ -72,3 +72,14 @@ Builds_*/
 # PowerShell scripts and batch files (user-managed)
 *.ps1
 *.bat
+
+# Backup folders (all variants)
+Backup/
+Backup_*/
+Backup*/
+**/Backup/**
+**/Backup_*/**
+
+# Maze version folders (all variants)
+maze_v0-*/
+**/maze_v0-*/**

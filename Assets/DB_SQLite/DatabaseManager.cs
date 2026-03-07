@@ -62,11 +62,22 @@ namespace Code.Lavos.DB
     private bool _isInitialized = false;
     private string _databasePath;
 
+    /// <summary>
+    /// Get the save file path for a specific slot.
+    /// </summary>
+    private string GetSavePath(int slot)
+    {
+        string dir = Path.GetDirectoryName(_databasePath);
+        string fileName = Path.GetFileNameWithoutExtension(_databasePath);
+        string extension = Path.GetExtension(_databasePath);
+        return Path.Combine(dir, $"{fileName}_slot{slot}{extension}");
+    }
+
     // In-memory data storage
     private PlayerDataRecord _currentPlayerData;
     private List<InventoryRecord> _currentInventory = new();
     private List<StatusEffectRecord> _currentStatusEffects = new();
-    private Dictionary<string, string> _gameSettings = new();
+    private List<StringPair> _gameSettings = new();
 
     // Events
     public event Action OnDatabaseInitialized;
@@ -102,6 +113,7 @@ namespace Code.Lavos.DB
     private void OnDestroy()
     {
         _isInitialized = false;
+        if (_instance == this) _instance = null;
     }
 
     /// <summary>
@@ -127,7 +139,7 @@ namespace Code.Lavos.DB
             // Initialize collections
             _currentInventory = new List<InventoryRecord>();
             _currentStatusEffects = new List<StatusEffectRecord>();
-            _gameSettings = new Dictionary<string, string>();
+            _gameSettings = new List<StringPair>();
             _currentPlayerData = new PlayerDataRecord();
 
             _isInitialized = true;
@@ -154,6 +166,14 @@ namespace Code.Lavos.DB
 
         try
         {
+            // Convert List<StringPair> to Dictionary for serialization
+            Dictionary<string, string> settingsDict = new Dictionary<string, string>();
+            foreach (var pair in _gameSettings)
+            {
+                if (!string.IsNullOrEmpty(pair.key))
+                    settingsDict[pair.key] = pair.value;
+            }
+
             // Create save data container
             GameSaveData saveData = new GameSaveData
             {
@@ -161,7 +181,7 @@ namespace Code.Lavos.DB
                 playerData = _currentPlayerData,
                 inventory = new List<InventoryRecord>(_currentInventory),
                 statusEffects = new List<StatusEffectRecord>(_currentStatusEffects),
-                gameSettings = new Dictionary<string, string>(_gameSettings),
+                gameSettings = settingsDict,
                 saveTimestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 gameVersion = Application.version
             };
@@ -169,15 +189,18 @@ namespace Code.Lavos.DB
             // Serialize to JSON
             string json = JsonUtility.ToJson(new GameSaveDataWrapper { data = saveData }, true);
 
+            // Get slot-specific path
+            string savePath = GetSavePath(saveSlot);
+
             // Ensure directory exists
-            string dir = Path.GetDirectoryName(_databasePath);
+            string dir = Path.GetDirectoryName(savePath);
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
 
             // Write to file
-            File.WriteAllText(_databasePath, json, System.Text.Encoding.UTF8);
+            File.WriteAllText(savePath, json, System.Text.Encoding.UTF8);
 
             Debug.Log($"[DatabaseManager] Data saved to slot {saveSlot}");
             OnDatabaseSaved?.Invoke();
@@ -200,18 +223,21 @@ namespace Code.Lavos.DB
             return false;
         }
 
-        if (!File.Exists(_databasePath))
+        // Get slot-specific path
+        string savePath = GetSavePath(saveSlot);
+
+        if (!File.Exists(savePath))
         {
-            Debug.LogWarning("[DatabaseManager] No save file found");
+            Debug.LogWarning($"[DatabaseManager] No save file found for slot {saveSlot}");
             return false;
         }
 
         try
         {
-            string json = File.ReadAllText(_databasePath, System.Text.Encoding.UTF8);
+            string json = File.ReadAllText(savePath, System.Text.Encoding.UTF8);
             var wrapper = JsonUtility.FromJson<GameSaveDataWrapper>(json);
 
-            if (wrapper.data == null || wrapper.data.saveSlot != saveSlot)
+            if (wrapper.data == null)
             {
                 Debug.LogWarning($"[DatabaseManager] No data found for save slot {saveSlot}");
                 return false;
@@ -228,8 +254,15 @@ namespace Code.Lavos.DB
             // Load status effects
             _currentStatusEffects = saveData.statusEffects ?? new List<StatusEffectRecord>();
 
-            // Load game settings
-            _gameSettings = saveData.gameSettings ?? new Dictionary<string, string>();
+            // Load game settings (convert Dictionary to List<StringPair>)
+            _gameSettings = new List<StringPair>();
+            if (saveData.gameSettings != null)
+            {
+                foreach (var kvp in saveData.gameSettings)
+                {
+                    _gameSettings.Add(new StringPair { key = kvp.Key, value = kvp.Value });
+                }
+            }
 
             Debug.Log($"[DatabaseManager] Data loaded from slot {saveSlot}");
             OnDatabaseLoaded?.Invoke();
@@ -311,6 +344,7 @@ namespace Code.Lavos.DB
     /// </summary>
     public Vector3 GetPlayerPosition()
     {
+        if (!_isInitialized || _currentPlayerData == null) return Vector3.zero;
         return new Vector3(
             _currentPlayerData.positionX,
             _currentPlayerData.positionY,
@@ -323,6 +357,7 @@ namespace Code.Lavos.DB
     /// </summary>
     public Quaternion GetPlayerRotation()
     {
+        if (!_isInitialized || _currentPlayerData == null) return Quaternion.identity;
         return new Quaternion(
             _currentPlayerData.rotationX,
             _currentPlayerData.rotationY,
@@ -437,7 +472,8 @@ namespace Code.Lavos.DB
                     effectName = effect.effectName,
                     duration = effect.duration,
                     stacks = effect.currentStacks,
-                    isActive = !effect.IsExpired
+                    isActive = !effect.IsExpired,
+                    remainingTime = effect.remainingTime // Save remaining time
                 });
             }
         }
@@ -464,7 +500,7 @@ namespace Code.Lavos.DB
                     duration = record.duration,
                     intensity = 1f,
                     currentStacks = record.stacks,
-                    remainingTime = record.duration,
+                    remainingTime = record.remainingTime, // FIX: Use remainingTime instead of duration
                     tickRate = 1f
                 };
                 effects.Add(effectData);
@@ -493,10 +529,14 @@ namespace Code.Lavos.DB
     /// </summary>
     public string GetSetting(string key, string defaultValue = "")
     {
-        if (!_isInitialized || !_gameSettings.ContainsKey(key))
-            return defaultValue;
+        if (!_isInitialized) return defaultValue;
 
-        return _gameSettings[key];
+        foreach (var pair in _gameSettings)
+        {
+            if (pair.key == key)
+                return pair.value ?? defaultValue;
+        }
+        return defaultValue;
     }
 
     /// <summary>
@@ -535,9 +575,42 @@ namespace Code.Lavos.DB
     /// </summary>
     public void ApplyPlayerDataToStats(PlayerStats stats)
     {
-        if (!_isInitialized || stats == null) return;
+        if (!_isInitialized || stats == null || _currentPlayerData == null) return;
 
+        // Apply loaded stats using PlayerStats API
+        // Note: PlayerStats uses StatsEngine internally
+        
+        // Full heal first
         stats.FullHeal();
+        
+        // We need to use StatsEngine directly via the Engine property
+        var engine = stats.Engine;
+        if (engine != null)
+        {
+            // Set base stats (max values)
+            engine.SetBaseStats(
+                _currentPlayerData.maxHealth,
+                _currentPlayerData.maxMana,
+                _currentPlayerData.maxStamina,
+                engine.HealthRegen,
+                engine.ManaRegen,
+                engine.StaminaRegen
+            );
+            
+            // Apply current health (modify from full to loaded value)
+            float healthDiff = _currentPlayerData.currentHealth - engine.CurrentHealth;
+            if (healthDiff != 0)
+                engine.ModifyHealth(healthDiff);
+            
+            // Restore mana and stamina to loaded values
+            engine.RestoreMana(_currentPlayerData.currentMana);
+            engine.RestoreStamina(_currentPlayerData.currentStamina);
+        }
+        
+        Debug.Log($"[DatabaseManager] Applied player data: HP={_currentPlayerData.currentHealth}/{_currentPlayerData.maxHealth}, " +
+                  $"Mana={_currentPlayerData.currentMana}/{_currentPlayerData.maxMana}, " +
+                  $"Stamina={_currentPlayerData.currentStamina}/{_currentPlayerData.maxStamina}, " +
+                  $"Level={_currentPlayerData.level}");
     }
 
     /// <summary>
@@ -577,11 +650,12 @@ namespace Code.Lavos.DB
     #region Utility Methods
 
     /// <summary>
-    /// Check if a save file exists.
+    /// Check if a save file exists for the specified slot.
     /// </summary>
-    public bool HasSaveFile()
+    public bool HasSaveFile(int saveSlot = 1)
     {
-        return File.Exists(_databasePath);
+        string savePath = GetSavePath(saveSlot);
+        return File.Exists(savePath);
     }
 
     /// <summary>
@@ -606,7 +680,7 @@ namespace Code.Lavos.DB
         try
         {
             string dir = Path.GetDirectoryName(backupPath);
-            if (!Directory.Exists(dir))
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
@@ -623,13 +697,14 @@ namespace Code.Lavos.DB
     /// <summary>
     /// Get the last save timestamp.
     /// </summary>
-    public string GetLastSaveTimestamp()
+    public string GetLastSaveTimestamp(int saveSlot = 1)
     {
-        if (!HasSaveFile()) return "No save";
+        string savePath = GetSavePath(saveSlot);
+        if (!File.Exists(savePath)) return "No save";
 
         try
         {
-            string json = File.ReadAllText(_databasePath, System.Text.Encoding.UTF8);
+            string json = File.ReadAllText(savePath, System.Text.Encoding.UTF8);
             var wrapper = JsonUtility.FromJson<GameSaveDataWrapper>(json);
             return wrapper.data?.saveTimestamp ?? "Unknown";
         }
@@ -643,6 +718,16 @@ namespace Code.Lavos.DB
 }
 
 #region Data Classes
+
+/// <summary>
+/// Serializable key-value pair for game settings (replaces Dictionary for JSON serialization).
+/// </summary>
+[System.Serializable]
+public class StringPair
+{
+    public string key;
+    public string value;
+}
 
 /// <summary>
 /// Serializable player data record for database storage.

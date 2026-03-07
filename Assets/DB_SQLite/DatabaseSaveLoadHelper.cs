@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos;
 using Code.Lavos.Core;
+using Code.Lavos.Status;
 
 namespace Code.Lavos.DB
 {
@@ -156,6 +157,38 @@ namespace Code.Lavos.DB
             }
         }
 
+        // Gather and save status effects
+        PlayerStats playerStats = null;
+        if (player != null)
+        {
+            playerStats = player.GetComponent<PlayerStats>();
+        }
+        if (playerStats == null)
+        {
+            playerStats = FindFirstObjectByType<PlayerStats>();
+        }
+        if (playerStats != null)
+        {
+            // Use ActiveEffects property (IReadOnlyList<StatusEffectData>)
+            var effects = playerStats.ActiveEffects;
+            // Convert to List<StatusEffect> for DatabaseManager
+            var statusEffectList = new List<StatusEffect>();
+            foreach (var effectData in effects)
+            {
+                if (effectData != null)
+                {
+                    statusEffectList.Add(new StatusEffect
+                    {
+                        effectName = effectData.effectName,
+                        duration = effectData.duration,
+                        currentStacks = effectData.currentStacks,
+                        remainingTime = effectData.remainingTime
+                    });
+                }
+            }
+            DatabaseManager.Instance.SetStatusEffects(statusEffectList);
+        }
+
         // Step 4: Save to file
         yield return new WaitForEndOfFrame();
         SaveProgress = 0.7f;
@@ -260,6 +293,19 @@ namespace Code.Lavos.DB
         LoadProgress = 0.8f;
         OnLoadProgressChanged?.Invoke(LoadProgress);
 
+        if (inventory != null)
+        {
+            var loadedInventory = DatabaseManager.Instance.GetInventory();
+            DatabaseManager.Instance.ApplyInventoryData(inventory, loadedInventory);
+        }
+
+        // Apply status effects
+        var playerStats = player?.GetComponent<PlayerStats>() ?? FindFirstObjectByType<PlayerStats>();
+        if (playerStats != null)
+        {
+            DatabaseManager.Instance.ApplyStatusEffects(playerStats);
+        }
+
         // Note: Inventory application depends on your inventory system implementation
         // You may need to refresh the UI after loading
 
@@ -298,7 +344,7 @@ namespace Code.Lavos.DB
     /// </summary>
     public bool HasSave(int saveSlot)
     {
-        return DatabaseManager.Instance.HasSaveFile();
+        return DatabaseManager.Instance.HasSaveFile(saveSlot);
     }
 
     /// <summary>
