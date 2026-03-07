@@ -1,0 +1,1542 @@
+Chat 'ChatTitle(text="Find potential prob…" with Qwen Code, isCustom=true)' (c9a5594a-8995-48a5-a42d-841d97dbe735)
+Context:
+builtin_findproblems
+Messages: 146
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Find potential problems in 
+```C#
+private void SpawnCardinalWall(GameObject prefab, float x, float z, Direction8 dir, Transform parent)
+{
+    var (dx, dz) = Direction8Helper.ToOffset(dir);
+    // Calculate wall position (centered on cell edge)
+    float wallX = x + (dx > 0 ? _config.CellSize / 2 : (dx < 0 ? -_config.CellSize / 2 : 0));
+    float wallZ = z + (dz > 0 ? _config.CellSize / 2 : (dz < 0 ? -_config.CellSize / 2 : 0));
+    // Calculate rotation
+    float angle = dir switch
+    {
+        Direction8.N => 0f,
+        Direction8.E => 90f,
+        Direction8.S => 180f,
+        Direction8.W => 270f,
+        _ => 0f
+    };
+    Quaternion rotation = Quaternion.Euler(0f, angle, 0f);
+    // Instantiate (use PrefabUtility for proper prefab workflow)
+    GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
+                     Object.Instantiate(prefab, new Vector3(wallX, _config.WallHeight / 2, wallZ), rotation);
+    wall.name = $"Wall_{dir}_{x}_{z}";
+    wall.tag = "EditorOnly";
+    wall.layer = LayerMask.NameToLayer("Ignore Raycast");
+    wall.transform.SetParent(parent);
+}
+```
+
+Attachments:
+Attachment Name: MazePreviewEditor.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// MazePreviewEditor.cs
+using UnityEngine;
+using Code.Lavos.Core;
+namespace Code.Lavos.Editor
+{
+    
+    public class MazePreviewEditor : EditorWindow
+    {
+        << Some code inside `MazePreviewEditor.GenerateWalls()` >>
+                    {
+                        SpawnCardinalWall(cardinalPrefab, wx, wz, Direction8.N, _wallsRoot);
+                        cardinalCount++;
+                    }
+        << Some code inside `MazePreviewEditor.GenerateWalls()` >>
+                    {
+                        SpawnCardinalWall(cardinalPrefab, wx, wz, Direction8.E, _wallsRoot);
+                        cardinalCount++;
+                    }
+        << Some code inside `MazePreviewEditor.GenerateWalls()` >>
+                    {
+                        SpawnCardinalWall(cardinalPrefab, wx, wz, Direction8.S, _wallsRoot);
+                        cardinalCount++;
+                    }
+        << Some code inside `MazePreviewEditor.GenerateWalls()` >>
+                    {
+                        SpawnCardinalWall(cardinalPrefab, wx, wz, Direction8.W, _wallsRoot);
+                        cardinalCount++;
+                    }
+        /*START_USER_CODE*/private void SpawnCardinalWall(GameObject prefab, float x, float z, Direction8 dir, Transform parent)
+        {
+            var (dx, dz) = Direction8Helper.ToOffset(dir);
+
+            // Calculate wall position (centered on cell edge)
+            float wallX = x + (dx > 0 ? _config.CellSize / 2 : (dx < 0 ? -_config.CellSize / 2 : 0));
+            float wallZ = z + (dz > 0 ? _config.CellSize / 2 : (dz < 0 ? -_config.CellSize / 2 : 0));
+
+            // Calculate rotation
+            float angle = dir switch
+            {
+                Direction8.N => 0f,
+                Direction8.E => 90f,
+                Direction8.S => 180f,
+                Direction8.W => 270f,
+                _ => 0f
+            };
+
+            Quaternion rotation = Quaternion.Euler(0f, angle, 0f);
+
+            // Instantiate (use PrefabUtility for proper prefab workflow)
+            GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
+                             Object.Instantiate(prefab, new Vector3(wallX, _config.WallHeight / 2, wallZ), rotation);
+
+            wall.name = $"Wall_{dir}_{x}_{z}";
+            wall.tag = "EditorOnly";
+            wall.layer = LayerMask.NameToLayer("Ignore Raycast");
+            wall.transform.SetParent(parent);
+        }
+        /*END_USER_CODE*/
+
+    }
+}
+
+```
+
+Attachment Name: MazeData8.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// MazeData8.cs
+namespace Code.Lavos.Core
+{
+    // ─────────────────────────────────────────────────────────────
+    //  Direction8  —  8-axis enum
+    // ─────────────────────────────────────────────────────────────
+    public enum Direction8
+    {
+        N  = 0,
+        S  = 1,
+        E  = 2,
+        W  = 3,
+        NE = 4,
+        NW = 5,
+        SE = 6,
+        SW = 7,
+    }
+    // ─────────────────────────────────────────────────────────────
+    //  Direction8Helper
+    // ─────────────────────────────────────────────────────────────
+    public static class Direction8Helper
+    {
+        public static (int dx, int dz) ToOffset(Direction8 d) => d switch
+        {
+            Direction8.N  => ( 0,  1),
+            Direction8.S  => ( 0, -1),
+            Direction8.E  => ( 1,  0),
+            Direction8.W  => (-1,  0),
+            Direction8.NE => ( 1,  1),
+            Direction8.NW => (-1,  1),
+            Direction8.SE => ( 1, -1),
+            Direction8.SW => (-1, -1),
+            _             => ( 0,  0),
+        };
+
+    }
+}
+
+```
+
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+fixit
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+backup done !
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+```c#
+GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
+                 Object.Instantiate(prefab, position, rotation);
+```
+where is ambigues Object is there ?
+
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
+                             Object.Instantiate(prefab, position, rotation);
+Attachment Name: Errors in selection
+Attachments Kind: Visible
+Attachments Source: CurrentSelectionRetriever / SelectionProblemsChatAttachment
+Attachments Text:
+
+Ambiguous reference.
+Candidates are:
+    System.Object
+    UnityEngine.Object
+at: Object
+on the lines:
+                             Object.Instantiate(prefab, position, rotation);
+
+
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+okay
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
+                             Object.Instantiate(prefab, position, rotation);
+Attachment Name: Errors in selection
+Attachments Kind: Visible
+Attachments Source: CurrentSelectionRetriever / SelectionProblemsChatAttachment
+Attachments Text:
+
+Ambiguous reference.
+Candidates are:
+    System.Object
+    UnityEngine.Object
+at: Object
+on the lines:
+                             Object.Instantiate(prefab, position, rotation);
+
+
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+fixit for that file
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+Assets\Scripts\Editor\Maze\MazePreviewEditor.cs(720,30): error CS0104: 'Object' is an ambiguous reference between 'UnityEngine.Object' and 'object'
+
+Assets\Scripts\Editor\Maze\MazePreviewEditor.cs(809,22): error CS0104: 'Object' is an ambiguous reference between 'UnityEngine.Object' and 'object'
+
+Assets\Scripts\Editor\Maze\MazePreviewEditor.cs(868,17): error CS0104: 'Object' is an ambiguous reference between 'UnityEngine.Object' and 'object'
+
+
+
+
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+backuped !
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+how to ? now
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+where is docs ? put it onto manual
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+dont expect to run shell cmd on my computer ,, my property BetsyBoop :)
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+git naming please
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+shorten please
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+into .git exclude logs files...
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+if not mfade command that remove them all
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+PS D:\travaux_Unity\CodeDotLavos> git rm --cached -r **/*.log **/*.sysinfo Logs/     
+fatal: pathspec '**/*.log' did not match any files
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+PS D:\travaux_Unity\CodeDotLavos> git rm --cached -r **/*.log **/*.sysinfo Logs/     
+fatal: pathspec '**/*.log' did not match any files
+
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #33 ====
+User: 
+MissingComponentException: There is no 'MeshRenderer' attached to the "NormalRoomPrefab" game object, but a script is trying to access it.
+You probably need to add a MeshRenderer to the game object "NormalRoomPrefab". Or your script needs to check if the component is attached before using it.
+UnityEngine.Object+MarshalledUnityObject.TryThrowEditorNullExceptionObject (UnityEngine.Object unityObj, System.String parameterName) (at <b7840b1dfe7b4a73b466889f96810c49>:0)
+UnityEngine.Bindings.ThrowHelper.ThrowNullReferenceException (System.Object obj) (at <b7840b1dfe7b4a73b466889f96810c49>:0)
+UnityEngine.Renderer.GetSharedMaterial () (at <b7840b1dfe7b4a73b466889f96810c49>:0)
+UnityEngine.Renderer.get_sharedMaterial () (at <b7840b1dfe7b4a73b466889f96810c49>:0)
+Code.Lavos.Core.CompleteMazeBuilder.SpawnGround () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:255)
+Code.Lavos.Core.CompleteMazeBuilder.GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:130)
+Code.Lavos.Core.CompleteMazeBuilder.Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:93)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #34 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #35 ====
+User: 
+diagonals walls did not work properly
+
+kotlin.Unit
+
+==== AgentMessage #36 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #37 ====
+User: 
+there do not appear
+
+kotlin.Unit
+
+==== AgentMessage #38 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #39 ====
+User: 
+make me floor prefab 1 thickness that can fit cell grid size
+
+kotlin.Unit
+
+==== AgentMessage #40 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #41 ====
+User: 
+texture it as mat look like paved granit, can yoiu handle that?
+
+kotlin.Unit
+
+==== AgentMessage #42 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #43 ====
+User: 
+using 2Dpixelart factory we both was in uses as standalone and marked deprecated...
+
+kotlin.Unit
+
+==== AgentMessage #44 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #45 ====
+User: 
+compliancies ? etc . ? emojies.?
+
+kotlin.Unit
+
+==== AgentMessage #46 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #47 ====
+User: 
+no emojies no hardcoded ???
+
+kotlin.Unit
+
+==== AgentMessage #48 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #49 ====
+User: 
+bak
+
+kotlin.Unit
+
+==== AgentMessage #50 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #51 ====
+User: 
+never ask for it , tell me to do !
+
+kotlin.Unit
+
+==== AgentMessage #52 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #53 ====
+User: 
+bak
+
+kotlin.Unit
+
+==== AgentMessage #54 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #55 ====
+User: 
+backuped
+
+kotlin.Unit
+
+==== AgentMessage #56 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #57 ====
+User: 
+Assets\Scripts\Editor\Maze\FloorPrefabGenerator.cs(120,46): error CS1503: Argument 1: cannot convert from 'UnityEngine.GameObject' to 'string'
+
+
+
+kotlin.Unit
+
+==== AgentMessage #58 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #59 ====
+User: 
+backed
+
+kotlin.Unit
+
+==== AgentMessage #60 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #61 ====
+User: 
+Some objects were not cleaned up when closing the scene. (Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+LightEngine
+
+0x00007ff8067d221e (Unity) StackWalker::ShowCallstack
+0x00007ff808005279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff808005afe (Unity) Stacktrace::GetStacktrace
+0x00007ff806782c7f (Unity) DebugStringToFile
+0x00007ff806ea6c59 (Unity) ValidateNoSceneObjectsAreLoaded
+0x00007ff807c1d819 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007ff8078454cd (Unity) PlayerLoopController::ExitPlayMode
+0x00007ff807847199 (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff80784264c (Unity) Application::TickTimer
+0x00007ff807624e4c (Unity) MainMessageLoop
+0x00007ff80762c8e2 (Unity) UnityMain
+0x00007ff6a5d12f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #62 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #63 ====
+User: 
+is the floor made by cube or flat quad ?
+
+kotlin.Unit
+
+==== AgentMessage #64 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #65 ====
+User: 
+no i did not meant to do that !
+
+kotlin.Unit
+
+==== AgentMessage #66 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #67 ====
+User: 
+from clean new scene how to for made this maze work with diags. walls and all over snap togheter as algorythm tell us to do.
+
+kotlin.Unit
+
+==== AgentMessage #68 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #69 ====
+User: 
+[EventHandler] No instance found in scene!
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.EventHandler:get_Instance () (at Assets/Scripts/Core/01_CoreSystems/EventHandler.cs:60)
+Code.Lavos.Core.PlayerController:OnEnable () (at Assets/Scripts/Core/02_Player/PlayerController.cs:207)
+
+[MazeBuilder] JSON config not found, trying scene component...
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.CompleteMazeBuilder:LoadConfig () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:180)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:106)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:93)
+
+[MazeBuilder] playerPrefab not assigned - creating default
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.CompleteMazeBuilder:SpawnPlayer () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:432)
+Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:149)
+Code.Lavos.Core.CompleteMazeBuilder:Start () (at Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:93)
+
+[CameraFollow] No player found! Assign target manually.
+UnityEngine.Debug:LogWarning (object)
+Code.Lavos.Core.CameraFollow:Start () (at Assets/Scripts/Core/02_Player/CameraFollow.cs:132)
+
+Too many additional punctual lights shadows to look good, URP removed 416 shadow maps to make the others fit in the shadow atlas. To avoid this, increase shadow atlas size, remove some shadowed lights, replace soft shadows by hard shadows ; or replace point lights by spot lights
+UnityEngine.GUIUtility:ProcessEvent (int,intptr,bool&)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #70 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #71 ====
+User: 
+Some objects were not cleaned up when closing the scene. (Did you spawn new GameObjects from OnDestroy?)
+The following scene GameObjects were found:
+LightEngine
+
+0x00007ff8067d221e (Unity) StackWalker::ShowCallstack
+0x00007ff808005279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff808005afe (Unity) Stacktrace::GetStacktrace
+0x00007ff806782c7f (Unity) DebugStringToFile
+0x00007ff806ea6c59 (Unity) ValidateNoSceneObjectsAreLoaded
+0x00007ff807c1d819 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007ff8078454cd (Unity) PlayerLoopController::ExitPlayMode
+0x00007ff807847199 (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff80784264c (Unity) Application::TickTimer
+0x00007ff807624e4c (Unity) MainMessageLoop
+0x00007ff80762c8e2 (Unity) UnityMain
+0x00007ff6a5d12f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #72 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #73 ====
+User: 
+compute do math to snap walls to snap to each other while do collide.
+
+kotlin.Unit
+
+==== AgentMessage #74 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #75 ====
+User: 
+yes of course
+
+kotlin.Unit
+
+==== AgentMessage #76 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #77 ====
+User: 
+backuped
+
+kotlin.Unit
+
+==== AgentMessage #78 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #79 ====
+User: 
+name git as shortened
+
+kotlin.Unit
+
+==== AgentMessage #80 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #81 ====
+User: 
+rework .\git-auto.bat to fit .gitignore file
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+.\git-auto.bat
+
+
+kotlin.Unit
+
+==== AgentMessage #82 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #83 ====
+User: 
+to .git exclude all cmd shell or bat all cmd files please
+
+kotlin.Unit
+
+==== AgentMessage #84 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #85 ====
+User: 
+rework ./git-auto-bat 
+
+kotlin.Unit
+
+==== AgentMessage #86 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #87 ====
+User: 
+takhnks
+
+kotlin.Unit
+
+==== AgentMessage #88 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #89 ====
+User: 
+do deep scan project find issues , dont touch files, await for tasks
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                                                                                                   
+============================================                      
+
+
+kotlin.Unit
+
+==== AgentMessage #90 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #91 ====
+User: 
+re do deep scan please, don't touch any files at all !
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                                                                                                   
+============================================                      
+
+
+kotlin.Unit
+
+==== AgentMessage #92 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #93 ====
+User: 
+reminder :::////
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding en_US UTF-8 compliancies; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
+use conventioal C# unity uses for naming variables; /!\
+/!\ my computer my rules, no exec cmd shell allowed, only me can exec shell cmd. remember that !
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                                                                                                   
+============================================                      
+
+
+kotlin.Unit
+
+==== AgentMessage #94 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #95 ====
+User: 
+fix by prior to high, then please do so
+Attachments:
+Attachment Name: Console Selection
+Attachments Kind: Visible
+Attachments Source: Other / SelectionChatAttachment
+Attachments Text:
+                                                                                                                                                                                   
+============================================                      
+
+
+kotlin.Unit
+
+==== AgentMessage #96 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #97 ====
+User: 
+backuped
+
+kotlin.Unit
+
+==== AgentMessage #98 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #99 ====
+User: 
+update TODO.md under Assets/Docs/
+
+kotlin.Unit
+
+==== AgentMessage #100 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #101 ====
+User: 
+rework redo deep scan to fix issues as prior
+
+kotlin.Unit
+
+==== AgentMessage #102 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #103 ====
+User: 
+Assets\Scripts\Core\06_Maze\GameConfig8.cs(97,25): error CS0101: The namespace 'Code.Lavos.Core' already contains a definition for 'PlayerController'
+
+do fix issues as prior
+
+kotlin.Unit
+
+==== AgentMessage #104 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #105 ====
+User: 
+baking uped
+
+kotlin.Unit
+
+==== AgentMessage #106 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #107 ====
+User: 
+how to for now? i put an eventHandler to the scene , no ground just some script, put it the player as capsule. but now then what to do ?
+
+kotlin.Unit
+
+==== AgentMessage #108 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #109 ====
+User: 
+is generate maze works on fresh new scene?
+
+kotlin.Unit
+
+==== AgentMessage #110 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #111 ====
+User: 
+what about ground ? 
+
+kotlin.Unit
+
+==== AgentMessage #112 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #113 ====
+User: 
+i just drop throught the ground to neitherealm
+
+kotlin.Unit
+
+==== AgentMessage #114 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #115 ====
+User: 
+there is no ground on hierarchy only a texture apply on it (virtal grid)
+
+kotlin.Unit
+
+==== AgentMessage #116 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #117 ====
+User: 
+[GameConfig] No instance found in scene! Add GameConfig GameObject manually.
+0x00007ff8067d221e (Unity) StackWalker::ShowCallstack
+0x00007ff808005279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff808005afe (Unity) Stacktrace::GetStacktrace
+0x00007ff806782c7f (Unity) DebugStringToFile
+0x00007ff80663d2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x0000020fe4f78cae (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x0000020fe4f78ab3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x0000020fe4f7876b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x0000020fe4f77bee (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x0000020fe9911b7a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x0000020fe99119c3 (Mono JIT Code) Code.Lavos.Core.GameConfig:get_Instance () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/GameConfig.cs:54)
+0x0000020fe9910663 (Mono JIT Code) Code.Lavos.Core.LightPlacementEngine:Awake () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:122)
+0x000002103a86eaa8 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff82e376bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff82e2b8984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff82e2b8a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff807009764 (Unity) scripting_method_invoke
+0x00007ff807010623 (Unity) ScriptingInvocation::Invoke
+0x00007ff80701070e (Unity) ScriptingInvocation::InvokeChecked
+0x00007ff807047ec8 (Unity) SerializableManagedRef::CallMethod
+0x00007ff806f1b48b (Unity) MonoBehaviour::CallAwake
+0x00007ff806f19b66 (Unity) MonoBehaviour::AddToManager
+0x00007ff806f1a58f (Unity) MonoBehaviour::AwakeFromLoad
+0x00007ff80707a9d8 (Unity) AwakeFromLoadQueue::InvokePersistentManagerAwake
+0x00007ff80707f4fa (Unity) AwakeFromLoadQueue::PersistentManagerSingleQueueAwakeFromLoad
+0x00007ff80707f21d (Unity) AwakeFromLoadQueue::PersistentManagerAwakeFromLoad_NoChecks
+0x00007ff806fab2f0 (Unity) LoadSceneOperation::CompleteAwakeSequence
+0x00007ff806fabbdd (Unity) LoadSceneOperation::CompletePreloadManagerLoadSceneEditor
+0x00007ff806fac941 (Unity) LoadSceneOperation::IntegrateMainThread
+0x00007ff806faf87f (Unity) PreloadManager::UpdatePreloadingSingleStep
+0x00007ff806fb0068 (Unity) PreloadManager::WaitForAllAsyncOperationsToComplete
+0x00007ff807c1df11 (Unity) EditorSceneManager::RestoreSceneBackups
+0x00007ff807845254 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff80784717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff80784264c (Unity) Application::TickTimer
+0x00007ff807624e4c (Unity) MainMessageLoop
+0x00007ff80762c8e2 (Unity) UnityMain
+0x00007ff6a5d12f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+NullReferenceException: Object reference not set to an instance of an object
+Code.Lavos.Core.LightPlacementEngine.Awake () (at Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs:123)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #118 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #119 ====
+User: 
+it is not gameconfig8 ? instead?
+
+kotlin.Unit
+
+==== AgentMessage #120 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #121 ====
+User: 
+use GameConfig8 instead of standard one
+
+kotlin.Unit
+
+==== AgentMessage #122 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #123 ====
+User: 
+backing up
+
+kotlin.Unit
+
+==== AgentMessage #124 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #125 ====
+User: 
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(122,40): error CS0117: 'GameConfig8' does not contain a definition for 'Instance'
+
+
+
+kotlin.Unit
+
+==== AgentMessage #126 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #127 ====
+User: 
+go ahead
+
+kotlin.Unit
+
+==== AgentMessage #128 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #129 ====
+User: 
+reminder ! read the file attachment
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding en_US UTF-8 compliancies; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
+use conventioal C# unity uses for naming variables; /!\
+/!\ my computer my rules, no exec cmd shell allowed, only me can exec shell cmd. remember that !
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #130 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #131 ====
+User: 
+what's next ?
+
+kotlin.Unit
+
+==== AgentMessage #132 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #133 ====
+User: 
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(123,64): error CS1061: 'GameConfig8' does not contain a definition for 'torchPrefab' and no accessible extension method 'torchPrefab' accepting a first argument of type 'GameConfig8' could be found (are you missing a using directive or an assembly reference?)
+
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(125,102): error CS1061: 'GameConfig8' does not contain a definition for 'torchPrefab' and no accessible extension method 'torchPrefab' accepting a first argument of type 'GameConfig8' could be found (are you missing a using directive or an assembly reference?)
+
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(126,67): error CS1061: 'GameConfig8' does not contain a definition for 'torchPrefab' and no accessible extension method 'torchPrefab' accepting a first argument of type 'GameConfig8' could be found (are you missing a using directive or an assembly reference?)
+
+Assets\Scripts\Core\10_Resources\LightPlacementEngine.cs(135,100): error CS1061: 'GameConfig8' does not contain a definition for 'torchPrefab' and no accessible extension method 'torchPrefab' accepting a first argument of type 'GameConfig8' could be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #134 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #135 ====
+User: 
+backing my cookies ! done !
+
+kotlin.Unit
+
+==== AgentMessage #136 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #137 ====
+User: 
+the fact that the maze are compute seed+procedual for parallel coexistance ... am i stupid ?
+
+kotlin.Unit
+
+==== AgentMessage #138 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #139 ====
+User: 
+maze sharing systm is optimal for me
+
+kotlin.Unit
+
+==== AgentMessage #140 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #141 ====
+User: 
+put it on byte-to-byte engine, the seed manager already existe, no need duplicata
+
+kotlin.Unit
+
+==== AgentMessage #142 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #143 ====
+User: 
+maze share system cs file must be under utilities/ not there! name it ShareSystm.cs
+
+kotlin.Unit
+
+==== AgentMessage #144 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #145 ====
+User: 
+understand my meaning ?
+
+kotlin.Unit
+
+==== AgentMessage #146 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

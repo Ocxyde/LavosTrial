@@ -89,10 +89,4 @@ namespace Code.Lavos.Core
             return cfg;
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    //  PlayerController stub — keeps orchestrator compilable
-    //  if the real PlayerController lives in another assembly.
-    // ─────────────────────────────────────────────────────────────
-    public sealed class PlayerController : MonoBehaviour { }
 }

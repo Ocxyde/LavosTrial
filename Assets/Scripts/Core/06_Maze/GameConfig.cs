@@ -121,6 +121,9 @@ namespace Code.Lavos.Core
         [Header("Difficulty Scaling — 8 Axis")]
         public DifficultyScaler DifficultyCfg = new DifficultyScaler();
 
+        [Header("Share System")]
+        public string shareSalt = "LAVOS_SECRET_SALT_2026";  // Salt for maze code checksum
+
         // ── JSON deserialization proxy ────────────────────────────
         [Serializable]
         private struct JsonProxy
@@ -145,6 +148,9 @@ namespace Code.Lavos.Core
             public float diffExponent;
             public float diffSizeRamp;
             public float diffTorchMaxMult;
+
+            // Share system fields
+            public string shareSalt;
         }
 
         public static GameConfig FromJson(string json)
@@ -156,6 +162,7 @@ namespace Code.Lavos.Core
                 WallHeight        = p.wallHeight        > 0 ? p.wallHeight        : 4.0f,
                 PlayerEyeHeight   = p.playerEyeHeight   > 0 ? p.playerEyeHeight   : 1.7f,
                 PlayerSpawnOffset = p.playerSpawnOffset > 0 ? p.playerSpawnOffset : 0.5f,
+                shareSalt         = !string.IsNullOrEmpty(p.shareSalt) ? p.shareSalt : "LAVOS_SECRET_SALT_2026",
                 MazeCfg = new MazeConfig
                 {
                     BaseSize       = p.mazeBaseSize  > 0 ? p.mazeBaseSize  : 12,

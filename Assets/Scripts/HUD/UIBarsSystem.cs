@@ -205,7 +205,10 @@ namespace Code.Lavos.HUD
         void OnDestroy()
         {
             UnsubscribeFromEvents();
-            
+
+            // Stop all coroutines to prevent memory leaks
+            StopAllCoroutines();
+
             // Clean up effect icons
             if (_effectIcons != null)
             {

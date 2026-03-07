@@ -65,7 +65,8 @@ Thumbs.db
 desktop.ini
 
 # Unity specific excludes
-*.meta (optional - uncomment if you don't want to track meta files)
+# *..meta - Commented out: meta files are required for Unity
+# Override: Assets/Scripts/Core/06_Maze/*.meta is explicitly included
 ProjectSettings/*.asset
 ProjectSettings/*.unity
 ProjectSettings/*.prefab
@@ -107,7 +108,17 @@ ProjectSettings/*.prefab
 *.unity-6
 
 # Script files (PowerShell, Batch, CMD)
+# Excluded from git but can be forced added for project tools
 *.ps1
 *.bat
 *.cmd
 *.sh
+
+# ============================================================================
+#  EXPLICIT INCLUDES - Force track important files
+# ============================================================================
+# Override previous excludes for specific folders
+
+# Include all 06_Maze files (including .meta)
+!Assets/Scripts/Core/06_Maze/
+!Assets/Scripts/Core/06_Maze/**/*

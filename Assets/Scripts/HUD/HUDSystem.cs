@@ -177,7 +177,10 @@ namespace Code.Lavos.HUD
         private void OnDestroy()
         {
             UnsubscribeFromEvents();
-            
+
+            // Stop all coroutines to prevent memory leaks
+            StopAllCoroutines();
+
             // Clean up active effects
             if (_activeEffects != null)
             {
@@ -188,7 +191,7 @@ namespace Code.Lavos.HUD
                 }
                 _activeEffects.Clear();
             }
-            
+
             if (Instance == this)
                 Instance = null;
         }

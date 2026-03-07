@@ -168,8 +168,8 @@ namespace Code.Lavos.Core
             List<Vector2Int> unconnected = new List<Vector2Int>(points);
             unconnected.RemoveAt(0);
 
-            // Initialize random state for reproducibility
-            Random.InitState((int)seed);
+            // Use System.Random for reproducible randomness
+            System.Random rng = new System.Random((int)seed);
 
             int pathsCreated = 0;
             while (unconnected.Count > 0)
@@ -183,7 +183,7 @@ namespace Code.Lavos.Core
                 {
                     foreach (Vector2Int to in unconnected)
                     {
-                        float dist = GetRandomizedDistance(from, to);
+                        float dist = GetRandomizedDistance(from, to, rng);
                         if (dist < bestDistance)
                         {
                             bestDistance = dist;
@@ -307,18 +307,18 @@ namespace Code.Lavos.Core
                 baseCost = 0.5f;
             }
 
-            // Add randomness for procedural variation
-            float random = Random.value * randomness;
+            // Add randomness for procedural variation (use Unity Random - runtime OK)
+            float random = UnityEngine.Random.value * randomness;
             return baseCost + random;
         }
 
         /// <summary>
         /// Get randomized distance between two points.
         /// </summary>
-        private static float GetRandomizedDistance(Vector2Int a, Vector2Int b)
+        private static float GetRandomizedDistance(Vector2Int a, Vector2Int b, System.Random rng)
         {
             float baseDist = Vector2Int.Distance(a, b);
-            float random = Random.value * 0.5f; // 0.0 to 0.5
+            float random = (float)rng.NextDouble() * 0.5f; // 0.0 to 0.5
             return baseDist * (1.0f + random);
         }
 

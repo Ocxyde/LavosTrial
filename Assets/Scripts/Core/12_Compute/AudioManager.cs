@@ -182,6 +182,9 @@ namespace Code.Lavos.Core
         {
             _applicationIsQuitting = true;
 
+            // Stop all coroutines to prevent memory leaks
+            StopAllCoroutines();
+
             // Clean up audio sources
             foreach (var source in _sfxPool)
             {

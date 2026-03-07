@@ -1,2 +1,3 @@
 ## Qwen Added Memories
 - User works with Unity 6 (6000.3.7f1), uses Rider IDE, new Input System, and requires running backup.ps1 after any file changes. Files must use Unix LF line endings with UTF-8 encoding. Backup files are read-only.
+- User's project rules: No shell/cmd execution (user runs commands), run backup.ps1 after file changes, Unity 6 (6000.3.7f1) + Rider + New Input System, Unix LF + UTF-8 encoding, docs in Assets/Docs/*.md, tests in proper test folders, use relative paths, show diffs for changes, NO emojis in C# files, C# Unity naming conventions, GPL v3 license, plug-in-out system with core main file as central hub, remind about git usage. Codename: BetsyBoop.

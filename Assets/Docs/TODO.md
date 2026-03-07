@@ -1,9 +1,9 @@
 # TODO.md - Project Tasks & Priorities
 
 **Project:** CodeDotLavos (Unity 6000.3.7f1)
-**Last Updated:** 2026-03-06 (Pure Maze Rewrite)
+**Last Updated:** 2026-03-07 (Maze Sharing System + Critical Fixes)
 **License:** GPL-3.0
-**Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON** | ✅ **PURE MAZE (NO ROOMS)**
+**Status:** ✅ **0 COMPILATION ERRORS** | ✅ **PLUG-IN-OUT COMPLIANT** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM**
 
 ---
 
@@ -18,6 +18,79 @@ See [COPYING](../../COPYING) file for full license text.
 ---
 
 ## 🔴 **HIGH PRIORITY (CRITICAL)**
+
+### **✅ MAZE SHARING SYSTEM IMPLEMENTED**
+**Status:** ✅ **COMPLETED** (2026-03-07)
+**Impact:** HIGH - Players can share mazes via compact codes
+**Files Modified:**
+- `MazeShareSystem.cs` - NEW (sharing system core)
+- `MazeConsoleCommands.cs` - Added export/import/share commands
+- `TODO.md` - Updated with sharing documentation
+
+**Features:**
+```
+✅ Export maze to shareable code (LAVOS-seed-level-subSeed-checksum)
+✅ Import maze from code with validation
+✅ Copy to clipboard
+✅ QR code generation
+✅ Checksum validation (prevents typos)
+✅ Console commands: maze.export, maze.import, maze.share
+```
+
+**Code Format:**
+```
+LAVOS-1234567890-L5-S888-9A7B2C4D
+│      │          │   │    └─ Checksum
+│      │          │   └─ Sub-seed
+│      │          └─ Level
+│      └─ Seed
+└─ Game identifier
+```
+
+**Usage:**
+```csharp
+// Export
+string code = MazeShareSystem.ExportCode(seed: 12345, level: 5);
+
+// Import
+if (MazeShareSystem.ImportCode(code, out int seed, out int level, out int subSeed))
+{
+    GenerateMaze(seed, level);
+}
+
+// Console commands (press ~)
+maze.export         → Copy maze code to clipboard
+maze.import [code]  → Import and generate maze
+maze.share          → Share with QR code
+```
+
+**Documentation:**
+- `Assets/Docs/Maze_Sharing_System.md` - Complete user guide
+
+---
+
+### **✅ CRITICAL FIXES - MEMORY LEAKS & NULL REFERENCES**
+**Status:** ✅ **COMPLETED** (2026-03-07)
+**Impact:** CRITICAL - Prevents crashes and memory leaks
+**Files Modified:**
+- `UIBarsSystem.cs` - Event leak fixed + StopAllCoroutines()
+- `GameConfig.cs` - Null reference fix (return null)
+- `EventHandler.cs` - Null reference fix (return null)
+- `CameraFollow.cs` - Player reference cached
+- `HUDSystem.cs` - StopAllCoroutines() in OnDestroy
+- `AudioManager.cs` - StopAllCoroutines() in OnDestroy
+- `DialogEngine.cs` - StopAllCoroutines() in OnDestroy
+- `LightPlacementEngine.cs` - GameConfig8 compatibility + null checks
+- `GameConfig8.cs` - Duplicate class removed
+
+**Result:**
+- ✅ No memory leaks from event subscriptions
+- ✅ Proper null handling in singletons
+- ✅ Coroutine cleanup prevents memory leaks
+- ✅ Performance optimized (CameraFollow caching)
+- ✅ 8-axis maze compatibility
+
+---
 
 ### **✅ 1. PURE MAZE REWRITE COMPLETED**
 **Status:** ✅ **COMPLETED** (2026-03-06)

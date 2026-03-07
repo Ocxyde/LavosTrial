@@ -598,10 +598,31 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Set custom seed at runtime.
         /// Plug-in-out: Use for cheat codes or level passwords.
+        /// Also called by ShareSystm when importing maze codes.
         /// </summary>
+        /// <param name="seed">Custom seed string or maze code.</param>
         public void SetCustomSeed(string seed)
         {
+            if (string.IsNullOrEmpty(seed))
+            {
+                Debug.LogWarning("[SeedManager] SetCustomSeed called with empty seed");
+                return;
+            }
+
             customSeed = seed;
+            
+            // If seed looks like a maze code (LAVOS-xxx), extract the numeric seed
+            if (seed.StartsWith("LAVOS-"))
+            {
+                string[] parts = seed.Split('-');
+                if (parts.Length >= 2 && uint.TryParse(parts[1], out uint numericSeed))
+                {
+                    _currentComputeSeed = numericSeed;
+                    _computeSeedInitialized = true;
+                    Debug.Log($"[SeedManager] Compute seed set from maze code: {numericSeed}");
+                }
+            }
+            
             if (seedMode == SeedMode.Custom)
             {
                 GenerateSeed();

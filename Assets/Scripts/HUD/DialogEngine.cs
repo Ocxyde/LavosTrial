@@ -113,6 +113,9 @@ namespace Code.Lavos.HUD
 
         private void OnDestroy()
         {
+            // Stop all coroutines to prevent memory leaks
+            StopAllCoroutines();
+
             // Clean up dynamically created GameObjects
             if (_floatingTextParent != null)
                 Destroy(_floatingTextParent.gameObject);

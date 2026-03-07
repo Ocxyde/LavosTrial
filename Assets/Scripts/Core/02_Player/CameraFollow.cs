@@ -95,6 +95,7 @@ namespace Code.Lavos.Core
         private float _horizontalAngle = 0f;
         private float _verticalAngle = 10f;
         private Vector3 _targetPosition;
+        private GameObject _cachedPlayer; // Cached reference to avoid repeated Find calls
 
         #endregion
 
@@ -139,11 +140,32 @@ namespace Code.Lavos.Core
                 transform.position = target.position;
                 UpdateCameraPosition();
             }
+
+            // Cache player reference for LateUpdate (avoid repeated Find calls)
+            if (target != null)
+            {
+                _cachedPlayer = target.gameObject;
+            }
         }
 
         void LateUpdate()
         {
-            if (target == null) return;
+            // Check if cached player is still valid (not destroyed)
+            if (target == null || (_cachedPlayer != null && _cachedPlayer == null))
+            {
+                // Player was destroyed - try to find new target
+                var player = GameObject.FindGameObjectWithTag("Player");
+                if (player != null)
+                {
+                    target = player.transform;
+                    _cachedPlayer = player;
+                    Debug.Log("[CameraFollow] Found new player target");
+                }
+                else
+                {
+                    return; // No player to follow
+                }
+            }
 
             HandleMouseInput();
             UpdateCameraPosition();

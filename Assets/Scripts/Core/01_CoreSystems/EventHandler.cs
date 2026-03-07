@@ -152,6 +152,8 @@ namespace Code.Lavos.Core
 
         public event Action<int> OnMazeLevelChanged;
         public event Action OnMazeGenerated;  // Published when complete maze generation finishes
+        public event Action<string> OnMazeCodeExported;  // Published when maze code is exported
+        public event Action<string, uint, int> OnMazeCodeImported;  // Published when maze code is imported
 
         #endregion
 
@@ -420,6 +422,18 @@ namespace Code.Lavos.Core
         {
             OnMazeGenerated?.Invoke();
             if (debugEvents) Debug.Log($"[EventHandler] MazeGenerated: Complete maze generation finished");
+        }
+
+        public void InvokeMazeCodeExported(string code)
+        {
+            OnMazeCodeExported?.Invoke(code);
+            if (debugEvents) Debug.Log($"[EventHandler] MazeCodeExported: {code}");
+        }
+
+        public void InvokeMazeCodeImported(string code, uint seed, int level)
+        {
+            OnMazeCodeImported?.Invoke(code, seed, level);
+            if (debugEvents) Debug.Log($"[EventHandler] MazeCodeImported: {code} (Seed={seed}, Level={level})");
         }
 
         #endregion

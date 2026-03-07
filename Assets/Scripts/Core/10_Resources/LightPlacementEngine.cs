@@ -116,15 +116,15 @@ namespace Code.Lavos.Core
                 }
             }
 
-            // If still null, try to load from GameConfig
+            // Try to load from GameConfig (has prefab paths)
             if (torchPrefab == null)
             {
-                var cfg = GameConfig.Instance;
-                if (!string.IsNullOrEmpty(cfg.torchPrefab))
+                var cfg = FindFirstObjectByType<GameConfig>();
+                if (cfg != null && !string.IsNullOrEmpty(cfg.torchPrefab))
                 {
                     Debug.Log($"[LightPlacementEngine]  Loading torch prefab from GameConfig: {cfg.torchPrefab}");
                     torchPrefab = Resources.Load<GameObject>(cfg.torchPrefab.Replace("Assets/Resources/", "").Replace(".prefab", ""));
-                    
+
                     if (torchPrefab != null)
                     {
                         Debug.Log($"[LightPlacementEngine]  TorchPrefab loaded: {torchPrefab.name}");
