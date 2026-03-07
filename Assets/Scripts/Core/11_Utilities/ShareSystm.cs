@@ -218,10 +218,12 @@ namespace Code.Lavos.Core
 
             string data = $"{seed}:{level}:{salt}";
             byte[] bytes = Encoding.UTF8.GetBytes(data);
-            byte[] hash = MD5.HashData(bytes);
-
-            // Convert first 4 bytes to int
-            return BitConverter.ToInt32(hash, 0);
+            
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(bytes);
+                return BitConverter.ToInt32(hash, 0);
+            }
         }
 
         /// <summary>

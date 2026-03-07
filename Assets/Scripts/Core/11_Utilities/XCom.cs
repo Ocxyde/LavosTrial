@@ -236,7 +236,7 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
             if (builder != null)
             {
-                string code = ShareSystm.ExportCode(builder.CurrentSeed, builder.CurrentLevel);
+                string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
                 ShareSystm.CopyToClipboard(code);
 
                 Debug.Log("═══════════════════════════════════════");
@@ -295,7 +295,7 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
             if (builder != null)
             {
-                string code = ShareSystm.ExportCode(builder.CurrentSeed, builder.CurrentLevel);
+                string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
                 string qrUrl = ShareSystm.GenerateQRDataUrl(code);
 
                 Debug.Log("═══════════════════════════════════════");
