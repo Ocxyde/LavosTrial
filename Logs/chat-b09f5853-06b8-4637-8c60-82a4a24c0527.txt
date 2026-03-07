@@ -1,0 +1,342 @@
+Chat 'ChatTitle(text="review my whole pro…" with Qwen Code, isCustom=true)' (b09f5853-06b8-4637-8c60-82a4a24c0527)
+Context:
+
+Messages: 42
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+review my whole project please
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+prior the tasks 5 by 5 will you ?
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+review my project now
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+do it 5 step by 5
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+Assets\Scripts\Tests\StatsEngineTests.cs(336,43): error CS0311: The type 'Code.Lavos.Status.StatusEffectData' cannot be used as type parameter 'T' in the generic type or method 'ScriptableObject.CreateInstance<T>()'. There is no implicit reference conversion from 'Code.Lavos.Status.StatusEffectData' to 'UnityEngine.ScriptableObject'.
+
+Assets\Scripts\Tests\StatsEngineTests.cs(345,43): error CS0311: The type 'Code.Lavos.Status.StatusEffectData' cannot be used as type parameter 'T' in the generic type or method 'ScriptableObject.CreateInstance<T>()'. There is no implicit reference conversion from 'Code.Lavos.Status.StatusEffectData' to 'UnityEngine.ScriptableObject'.
+
+Assets\Scripts\Tests\MazeGeneratorTests.cs(111,24): error CS0122: 'MazeGenerator.seedString' is inaccessible due to its protection level
+
+Assets\Scripts\Tests\MazeGeneratorTests.cs(115,24): error CS0122: 'MazeGenerator.seedString' is inaccessible due to its protection level
+
+
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+proceed for the next step please
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+check for me the HUD is at point, i mean nothing move on it so i want you to render spended stats per percent max stats has , the more you spend the less you have so bars need level up color or diminish it slightly as 8bis colors without alpha can do.
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+nothing happen on my playGame
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+redo the same please 
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+contine pls
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+Assets\Scripts\HUD\DebugHUD.cs(121,14): error CS0111: Type 'DebugHUD' already defines a member called 'Update' with the same parameter types
+
+Assets\Scripts\HUD\UIBarsSystemInitializer.cs(24,34): error CS0246: The type or namespace name 'PlayerHealth' could not be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+Assets\Scripts\HUD\UIBarsSystem.cs(175,54): error CS0246: The type or namespace name 'PlayerHealth' could not be found (are you missing a using directive or an assembly reference?)
+
+Assets\Scripts\HUD\UIBarsSystem.cs(175,54): error CS0246: The type or namespace name 'PlayerHealth' could not be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+Assets\Scripts\HUD\DebugHUD.cs(82,58): error CS0246: The type or namespace name 'PlayerHealth' could not be found (are you missing a using directive or an assembly reference?)
+
+
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+Assets\Scripts\HUD\DebugHUD.cs(138,34): error CS0070: The event 'PlayerHealth.OnHealthChanged' can only appear on the left hand side of += or -= (except when used from within the type 'PlayerHealth')
+
+
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+you know what a tetrahedre or tetrahedras ?
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+I want the game to be as made by tetra.
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #33 ====
+User: 
+no not this, del that
+
+kotlin.Unit
+
+==== AgentMessage #34 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #35 ====
+User: 
+no i mean all polygon was made bye tetrahedron .. like it was with made with quixel
+
+kotlin.Unit
+
+==== AgentMessage #36 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #37 ====
+User: 
+where are you working at ? i mean wich dir?
+
+kotlin.Unit
+
+==== AgentMessage #38 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #39 ====
+User: 
+no i want it on same dir for project, but focus on 1 file for engine and all other plugins and out like they be called or not.
+so put some temporal folder this folder, this one used to be a garbage of tetrahedron procedurallity made. tetrahedron was made only once per level, and have many variants.
+
+kotlin.Unit
+
+==== AgentMessage #40 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #41 ====
+User: 
+what's next ?
+
+kotlin.Unit
+
+==== AgentMessage #42 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

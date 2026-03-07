@@ -574,6 +574,10 @@ namespace Code.Lavos.Editor
             GameObject cardinalPrefab = Resources.Load<GameObject>(wallPrefabPath);
             GameObject diagonalPrefab = Resources.Load<GameObject>(diagPrefabPath);
 
+            Debug.Log($"[MazePreview] Cardinal prefab: {(cardinalPrefab != null ? "loaded" : "NOT FOUND")} ({wallPrefabPath})");
+            Debug.Log($"[MazePreview] Diagonal prefab: {(diagonalPrefab != null ? "loaded" : "NOT FOUND")} ({diagPrefabPath})");
+            Debug.Log($"[MazePreview] DiagonalWalls config: {_config.MazeCfg.DiagonalWalls}");
+
             if (cardinalPrefab == null)
             {
                 Debug.LogError(
@@ -633,22 +637,26 @@ namespace Code.Lavos.Editor
                         {
                             if ((cell & CellFlags8.WallNE) != 0)
                             {
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, _wallsRoot);
+                                Debug.Log($"[MazePreview] Spawning NE wall at {x},{z}");
+                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, Direction8.NE, _wallsRoot);
                                 diagonalCount++;
                             }
                             if ((cell & CellFlags8.WallNW) != 0)
                             {
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, _wallsRoot);
+                                Debug.Log($"[MazePreview] Spawning NW wall at {x},{z}");
+                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, Direction8.NW, _wallsRoot);
                                 diagonalCount++;
                             }
                             if ((cell & CellFlags8.WallSE) != 0)
                             {
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, _wallsRoot);
+                                Debug.Log($"[MazePreview] Spawning SE wall at {x},{z}");
+                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, Direction8.SE, _wallsRoot);
                                 diagonalCount++;
                             }
                             if ((cell & CellFlags8.WallSW) != 0)
                             {
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, _wallsRoot);
+                                Debug.Log($"[MazePreview] Spawning SW wall at {x},{z}");
+                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, Direction8.SW, _wallsRoot);
                                 diagonalCount++;
                             }
                         }
@@ -670,6 +678,7 @@ namespace Code.Lavos.Editor
             }
 
             Debug.Log($"  Walls: {cardinalCount} cardinal, {diagonalCount} diagonal");
+            Debug.Log($"[MazePreview] Diagonal walls check - enabled: {_config.MazeCfg.DiagonalWalls}, prefab: {(diagonalPrefab != null ? "OK" : "MISSING")}");
         }
 
         private void SpawnCardinalWall(GameObject prefab, float x, float z, Direction8 dir, Transform parent)
@@ -706,11 +715,20 @@ namespace Code.Lavos.Editor
             wall.transform.SetParent(parent);
         }
 
-        private void SpawnDiagonalWall(GameObject prefab, float x, float z, float angle, Transform parent)
+        private void SpawnDiagonalWall(GameObject prefab, float x, float z, float angle, Direction8 dir, Transform parent)
         {
-            // Calculate position (center of cell for diagonal)
-            float wallX = x + _config.CellSize / 2;
-            float wallZ = z + _config.CellSize / 2;
+            // Calculate position (corner of cell for diagonal)
+            float h = _config.CellSize / 2;
+            Vector3 offset = dir switch
+            {
+                Direction8.NE => new Vector3(h, 0, h),
+                Direction8.NW => new Vector3(-h, 0, h),
+                Direction8.SE => new Vector3(h, 0, -h),
+                Direction8.SW => new Vector3(-h, 0, -h),
+                _ => Vector3.zero
+            };
+            float wallX = x + _config.CellSize / 2 + offset.x;
+            float wallZ = z + _config.CellSize / 2 + offset.z;
 
             // Rotation
             Quaternion rotation = Quaternion.Euler(0f, angle, 0f);
@@ -719,7 +737,9 @@ namespace Code.Lavos.Editor
             GameObject wall = PrefabUtility.InstantiatePrefab(prefab) as GameObject ??
                              UnityEngine.Object.Instantiate(prefab, new Vector3(wallX, _config.WallHeight / 2, wallZ), rotation);
 
-            wall.name = $"DiagWall_{angle:F0}_{x}_{z}";
+            if (wall == null) return;
+
+            wall.name = $"DiagWall_{dir}_{x}_{z}";
             wall.tag = "EditorOnly";
             wall.layer = LayerMask.NameToLayer("Ignore Raycast");
             wall.transform.SetParent(parent);

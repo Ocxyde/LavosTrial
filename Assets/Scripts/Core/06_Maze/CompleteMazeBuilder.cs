@@ -252,9 +252,13 @@ namespace Code.Lavos.Core
             var renderer = ground.GetComponent<MeshRenderer>();
             if (renderer != null && floorPrefab != null)
             {
-                var floorMat = floorPrefab.GetComponent<MeshRenderer>()?.sharedMaterial;
-                if (floorMat != null)
-                    renderer.sharedMaterial = floorMat;
+                var floorRenderer = floorPrefab.GetComponent<MeshRenderer>();
+                if (floorRenderer != null)
+                {
+                    var floorMat = floorRenderer.sharedMaterial;
+                    if (floorMat != null)
+                        renderer.sharedMaterial = floorMat;
+                }
             }
         }
 

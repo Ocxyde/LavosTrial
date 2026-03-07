@@ -1,0 +1,138 @@
+Chat 'ChatTitle(text="Find potential prob…" with Qwen Code, isCustom=true)' (bd3b52ad-14c7-41c8-a3d0-40f90e2a8e44)
+Context:
+builtin_findproblems
+Messages: 12
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Find potential problems in 
+```C#
+public static double EdgeLength(Vector3d a, Vector3d b)
+{
+    return (b - a).magnitude;
+}
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+here's my prompt my friendly BetsyBoop ! welcome back
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
+use conventioal C# unity uses for naming variables; /!\
+/!\ my computer my rules, no exec cmd shell allowed, only me can exec shell cmd. remember that !
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+fix all 13_geometry/
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+roger !
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+read carefully the chat logs on top of porject
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+yes do
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+

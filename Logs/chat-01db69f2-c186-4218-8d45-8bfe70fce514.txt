@@ -1,0 +1,857 @@
+Chat 'ChatTitle(text="Find potential prob…" with Qwen Code, isCustom=true)' (01db69f2-c186-4218-8d45-8bfe70fce514)
+Context:
+builtin_findproblems
+Messages: 48
+==================================================================================================================
+
+==== UserMessageImpl #1 ====
+User: 
+Find potential problems in 
+```C#
+private void CarveMazeWithDfs()
+{
+    bool use8Way = _currentLevel >= 3;
+    int[] dx = use8Way ? _directionsX8 : _directionsX4;
+    int[] dy = use8Way ? _directionsY8 : _directionsY4;
+    int numDirections = use8Way ? 8 : 4;
+    Debug.Log($"[GridMazeGenerator] Carving maze with {(use8Way ? "8-way" : "4-way")} DFS...");
+    // Start from west edge (spawn area)
+    int startX = 3;
+    int startY = _gridSize / 2;
+    // Track visited cells
+    bool[,] visited = new bool[_gridSize, _gridSize];
+    // Stack for backtracking
+    Stack<Vector2Int> stack = new Stack<Vector2Int>();
+    stack.Push(new Vector2Int(startX, startY));
+    visited[startX, startY] = true;
+    // Carve spawn chamber (3x3)
+    CarveChamberWithConnections(startX, startY, 3);
+    _spawnChamberCenter = new Vector2Int(startX, startY);
+    // Mark the entire spawn chamber as visited to prevent DFS from carving back into it
+    int halfSize = 1; // 3x3 chamber
+    for (int dx = -halfSize; dx <= halfSize; dx++)
+    {
+        for (int dy = -halfSize; dy <= halfSize; dy++)
+        {
+            visited[startX + dx, startY + dy] = true;
+        }
+    }
+    int carvedCells = 0;
+    int targetCells = (_gridSize * _gridSize) / 6; // Carve ~16% of grid
+    while (stack.Count > 0 && carvedCells < targetCells)
+    {
+        Vector2Int current = stack.Peek();
+        // Get unvisited neighbors (1 cell away for dense maze)
+        List<int> unvisitedDirections = new List<int>();
+        for (int i = 0; i < numDirections; i++)
+        {
+            int nx = current.x + dx[i];
+            int ny = current.y + dy[i];
+            if (IsValidMazeCell(nx, ny) && !visited[nx, ny])
+            {
+                // Check if it's a wall (can carve into it)
+                if (_grid[nx, ny] == GridMazeCell.Wall)
+                {
+                    unvisitedDirections.Add(i);
+                }
+            }
+        }
+        if (unvisitedDirections.Count > 0)
+        {
+            // Choose random direction
+            int dirIndex = unvisitedDirections[Random.Range(0, unvisitedDirections.Count)];
+            int nx = current.x + dx[dirIndex];
+            int ny = current.y + dy[dirIndex];
+            // Carve corridor
+            _grid[nx, ny] = GridMazeCell.Corridor;
+            visited[nx, ny] = true;
+            stack.Push(new Vector2Int(nx, ny));
+            carvedCells++;
+        }
+        else
+        {
+            // Backtrack
+            stack.Pop();
+        }
+    }
+    Debug.Log($"[GridMazeGenerator] Maze carved: {carvedCells} corridor cells");
+}
+#endregion
+#region Step 3: Expand Intersections to Chambers
+```
+
+Attachments:
+Attachment Name: GridMazeGenerator.cs
+Attachments Kind: Visible
+Attachments Source: Other / RelatedCodeChatAttachmentWithFile
+Attachments Text:
+
+```csharp
+// GridMazeGenerator.cs
+namespace Code.Lavos.Core
+{
+    
+    public class GridMazeGenerator
+    {
+        /*START_USER_CODE*/private void CarveMazeWithDfs()
+        {
+            bool use8Way = _currentLevel >= 3;
+            int[] dx = use8Way ? _directionsX8 : _directionsX4;
+            int[] dy = use8Way ? _directionsY8 : _directionsY4;
+            int numDirections = use8Way ? 8 : 4;
+
+            Debug.Log($"[GridMazeGenerator] Carving maze with {(use8Way ? "8-way" : "4-way")} DFS...");
+
+            // Start from west edge (spawn area)
+            int startX = 3;
+            int startY = _gridSize / 2;
+
+            // Track visited cells
+            bool[,] visited = new bool[_gridSize, _gridSize];
+
+            // Stack for backtracking
+            Stack<Vector2Int> stack = new Stack<Vector2Int>();
+            stack.Push(new Vector2Int(startX, startY));
+            visited[startX, startY] = true;
+
+            // Carve spawn chamber (3x3)
+            CarveChamberWithConnections(startX, startY, 3);
+            _spawnChamberCenter = new Vector2Int(startX, startY);
+
+            // Mark the entire spawn chamber as visited to prevent DFS from carving back into it
+            int halfSize = 1; // 3x3 chamber
+            for (int dx = -halfSize; dx <= halfSize; dx++)
+            {
+                for (int dy = -halfSize; dy <= halfSize; dy++)
+                {
+                    visited[startX + dx, startY + dy] = true;
+                }
+            }
+
+            int carvedCells = 0;
+            int targetCells = (_gridSize * _gridSize) / 6; // Carve ~16% of grid
+
+            while (stack.Count > 0 && carvedCells < targetCells)
+            {
+                Vector2Int current = stack.Peek();
+
+                // Get unvisited neighbors (1 cell away for dense maze)
+                List<int> unvisitedDirections = new List<int>();
+
+                for (int i = 0; i < numDirections; i++)
+                {
+                    int nx = current.x + dx[i];
+                    int ny = current.y + dy[i];
+
+                    if (IsValidMazeCell(nx, ny) && !visited[nx, ny])
+                    {
+                        // Check if it's a wall (can carve into it)
+                        if (_grid[nx, ny] == GridMazeCell.Wall)
+                        {
+                            unvisitedDirections.Add(i);
+                        }
+                    }
+                }
+
+                if (unvisitedDirections.Count > 0)
+                {
+                    // Choose random direction
+                    int dirIndex = unvisitedDirections[Random.Range(0, unvisitedDirections.Count)];
+                    int nx = current.x + dx[dirIndex];
+                    int ny = current.y + dy[dirIndex];
+
+                    // Carve corridor
+                    _grid[nx, ny] = GridMazeCell.Corridor;
+                    visited[nx, ny] = true;
+                    stack.Push(new Vector2Int(nx, ny));
+                    carvedCells++;
+                }
+                else
+                {
+                    // Backtrack
+                    stack.Pop();
+                }
+            }
+
+            Debug.Log($"[GridMazeGenerator] Maze carved: {carvedCells} corridor cells");
+        }
+        /*END_USER_CODE*/
+
+    }
+}
+
+```
+
+
+
+kotlin.Unit
+
+==== AgentMessage #2 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #3 ====
+User: 
+fix then
+
+kotlin.Unit
+
+==== AgentMessage #4 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #5 ====
+User: 
+remind you this file accompany you all along our travel throughthis game
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
+use conventioal C# unity uses for naming variables; /!\
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #6 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #7 ====
+User: 
+no i'll do all cmd exec run shell script, my computer my property you know that
+
+kotlin.Unit
+
+==== AgentMessage #8 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #9 ====
+User: 
+bakcup done! nothing to save;
+
+kotlin.Unit
+
+==== AgentMessage #10 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #11 ====
+User: 
+at level 20 same things happen 1 room no maze at all, where they are magically diseapear?
+
+kotlin.Unit
+
+==== AgentMessage #12 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #13 ====
+User: 
+fix that yes , please do 
+
+kotlin.Unit
+
+==== AgentMessage #14 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #15 ====
+User: 
+bakcuuped
+
+kotlin.Unit
+
+==== AgentMessage #16 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #17 ====
+User: 
+are you done with maze ? because nothing change at my eyes , take a look at logs while you can redo -deep scan of whole project issues
+
+kotlin.Unit
+
+==== AgentMessage #18 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #19 ====
+User: 
+backup done
+
+kotlin.Unit
+
+==== AgentMessage #20 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #21 ====
+User: 
+i saw same pblm, it's done nothing but a room not a maze , the pblm comes from another part of code in some files, that's why i ask you : deep scan project for issues ;
+
+kotlin.Unit
+
+==== AgentMessage #22 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #23 ====
+User: 
+do fix; then expand maze by 3 cells each level not 1 cell anymore they are more place to meet conveniences;
+
+kotlin.Unit
+
+==== AgentMessage #24 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #25 ====
+User: 
+also read my magic prompt.txt here well docs!
+Attachments:
+Attachment Name: prompt.txt
+Attachments Kind: Visible
+Attachments Source: User / FileChatAttachment
+Attachments Text:
+```plain text
+here's my holy saint order :p 
+
+
+first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
+Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
+don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+all files must be unix style with UTF-8 encoder
+Also always show me the diff from changing files.
+store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
+Never use to exec cmd on my computer its a private space work around please. or provide a script that i can run for you
+My system reside on a core main file cs. from that all pivot around like a plug-in-and-out if in need
+Scan so you can hierarchize my project, and see how it work, it's a simple plugs-in-and-out system, alls scripts work independantly but around core  main file, (central hub, main core files) all works around main core files.
+always saved *.md onto Assets/Docs/
+always remember plug-in-out system I hierarchy
+I my computer , dont exec cmd file w/o asking me todo so
+remind me for use of git for my repo.
+and dont forget the thing that test files goes in proper test folder ; remeber always use relativ path for folder and files
+Always use unity6 v 6000.3.7f1 for C# coding ; 
+compliance about C# unity 6 too, don't forget , use also conventionnal C# rules for naming var. , be keep in mind;
+I work under GPL v3 do so, this game meant to be release free with documentation as Manual.md .
+Reminder for yoou, never use EMOJI EVER NEVER inside CSharp files. NEVER EVER !
+use conventioal C# unity uses for naming variables; /!\
+/!\ my computer my rules, no exec cmd shell allowed, only me can exec shell cmd. remember that !
+ask me to exec cmd or script shell, and dont try to create folder, as you have to read/write only mode .. ask me to do the job instead, understand?
+BetsyBoop is your codename until now.
+happy coding with me BetsyBoop :) 
+```
+
+
+kotlin.Unit
+
+==== AgentMessage #26 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #27 ====
+User: 
+over capped maxMazeSize made it infinite ? ahaha just joking, overcapped that var please
+
+kotlin.Unit
+
+==== AgentMessage #28 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #29 ====
+User: 
+backuped !
+
+kotlin.Unit
+
+==== AgentMessage #30 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #31 ====
+User: 
+[CompleteMazeBuilder] Maze validation FAILED - 20 walkable cells unreachable!
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af4f3ed64e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af4f3ed453 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af4f3ed10b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af4f3ec58e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5152400a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af51523f13 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af5151f79b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:ValidateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:659)
+0x000001af515129cb (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:544)
+0x000001af5150d21b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af5150cda3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001af560b9408 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[CompleteMazeBuilder] Possible causes: isolated rooms, blocked corridors
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af4f3ed64e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af4f3ed453 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af4f3ed10b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af4f3ec58e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5152400a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af51523f13 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af5151f7e3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:ValidateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:660)
+0x000001af515129cb (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:544)
+0x000001af5150d21b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af5150cda3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001af560b9408 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[CompleteMazeBuilder] Maze validation FAILED - Regenerating...
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af4f3ed64e (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af4f3ed453 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af4f3ed10b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af4f3ec58e (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5152400a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af51523f13 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af51512a4b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:546)
+0x000001af5150d21b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af5150cda3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001af560b9408 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+at level 20 difficulties
+
+kotlin.Unit
+
+==== AgentMessage #32 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #33 ====
+User: 
+what about pathfiner gen. method for 8-way maze? 
+
+kotlin.Unit
+
+==== AgentMessage #34 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #35 ====
+User: 
+lesser chamber chance of creation, need more walls for a-maze-ing things
+
+kotlin.Unit
+
+==== AgentMessage #36 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #37 ====
+User: 
+back!
+
+kotlin.Unit
+
+==== AgentMessage #38 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #39 ====
+User: 
+is the swpn Room have exit/entrance ?
+
+kotlin.Unit
+
+==== AgentMessage #40 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #41 ====
+User: 
+no backupd for now, just tests , implement later on; just tests;
+
+kotlin.Unit
+
+==== AgentMessage #42 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #43 ====
+User: 
+i see , i see , i see, one entrance/exit but nothing behind no wall corridor maze , another chamber connected, nothing else than the spwnRoom and exit
+
+kotlin.Unit
+
+==== AgentMessage #44 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #45 ====
+User: 
+rework by prior the task to made a proper flow for maze, think wizely, with logic behind mind
+
+kotlin.Unit
+
+==== AgentMessage #46 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
+==== UserMessageImpl #47 ====
+User: 
+same issue, your math is right ? rework that;
+then do that fix : 
+[CompleteMazeBuilder] Maze validation FAILED - 20 walkable cells unreachable!
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af54ae63be (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af54ae61c3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af54ae5e7b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af54ae52fe (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5649bb7a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af5649ba83 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af5649739b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:ValidateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:659)
+0x000001af56489acb (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:544)
+0x000001af5648366b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af564831f3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001aeac154508 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[CompleteMazeBuilder] Possible causes: isolated rooms, blocked corridors
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af54ae63be (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af54ae61c3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af54ae5e7b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af54ae52fe (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5649bb7a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af5649ba83 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af564973e3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:ValidateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:660)
+0x000001af56489acb (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:544)
+0x000001af5648366b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af564831f3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001aeac154508 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+[CompleteMazeBuilder] Maze validation FAILED - Regenerating...
+0x00007ff807c7221e (Unity) StackWalker::ShowCallstack
+0x00007ff8094a5279 (Unity) PlatformStacktrace::GetStacktrace
+0x00007ff8094a5afe (Unity) Stacktrace::GetStacktrace
+0x00007ff807c22c7f (Unity) DebugStringToFile
+0x00007ff807add2d0 (Unity) DebugLogHandler_CUSTOM_Internal_Log
+0x000001af54ae63be (Mono JIT Code) (wrapper managed-to-native) UnityEngine.DebugLogHandler:Internal_Log_Injected (UnityEngine.LogType,UnityEngine.LogOption,UnityEngine.Bindings.ManagedSpanWrapper&,intptr)
+0x000001af54ae61c3 (Mono JIT Code) UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+0x000001af54ae5e7b (Mono JIT Code) UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+0x000001af54ae52fe (Mono JIT Code) UnityEngine.Logger:Log (UnityEngine.LogType,object)
+0x000001af5649bb7a (Mono JIT Code) UnityEngine.Debug:LogError (object)
+0x000001af5649ba83 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:LogError (string) (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:786)
+0x000001af56489b4b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateGrid () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:546)
+0x000001af5648366b (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:GenerateMaze () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:359)
+0x000001af564831f3 (Mono JIT Code) Code.Lavos.Core.CompleteMazeBuilder:Start () (at D:/travaux_Unity/CodeDotLavos/Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs:136)
+0x000001aeac154508 (Mono JIT Code) (wrapper runtime-invoke) object:runtime_invoke_void__this__ (object,intptr,intptr,intptr)
+0x00007ff8056d6bfe (mono-2.0-bdwgc) mono_jit_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/mini/mini-runtime.c:3445)
+0x00007ff805618984 (mono-2.0-bdwgc) do_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3068)
+0x00007ff805618a70 (mono-2.0-bdwgc) mono_runtime_invoke (at C:/build/output/Unity-Technologies/mono/mono/metadata/object.c:3115)
+0x00007ff8084a9764 (Unity) scripting_method_invoke
+0x00007ff8084b0623 (Unity) ScriptingInvocation::Invoke
+0x00007ff8083c19b7 (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083c1aaf (Unity) MonoBehaviour::InvokeMethodOrCoroutineChecked
+0x00007ff8083bc8b2 (Unity) MonoBehaviour::DelayedStartCall
+0x00007ff807f66b98 (Unity) DelayedCallManager::Update
+0x00007ff80837558b (Unity) `InitPlayerLoopCallbacks'::`2'::EarlyUpdateScriptRunDelayedStartupFrameRegistrator::Forward
+0x00007ff80835480f (Unity) ExecutePlayerLoop
+0x00007ff808354985 (Unity) ExecutePlayerLoop
+0x00007ff80835982f (Unity) PlayerLoop
+0x00007ff808ccf3ca (Unity) EditorPlayerLoop::Execute
+0x00007ff808ce64af (Unity) PlayerLoopController::InternalUpdateScene
+0x00007ff808ce5320 (Unity) PlayerLoopController::EnterPlayMode
+0x00007ff808ce717c (Unity) PlayerLoopController::SetIsPlaying
+0x00007ff808ce264c (Unity) Application::TickTimer
+0x00007ff808ac4e4c (Unity) MainMessageLoop
+0x00007ff808acc8e2 (Unity) UnityMain
+0x00007ff614442f2a (Unity) __scrt_common_main_seh
+0x00007ff8b8d1e8d7 (KERNEL32) BaseThreadInitThunk
+0x00007ff8baecc48c (ntdll) RtlUserThreadStart
+
+
+
+kotlin.Unit
+
+==== AgentMessage #48 ====
+Assistant: 
+
+
+Tool use list:
+
+
+kotlin.Unit
+
