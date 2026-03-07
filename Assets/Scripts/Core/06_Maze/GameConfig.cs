@@ -52,6 +52,7 @@ namespace Code.Lavos.Core
                     if (_instance == null)
                     {
                         Debug.LogError("[GameConfig] No instance found in scene! Add GameConfig GameObject manually.");
+                        return null;
                     }
                 }
                 return _instance;

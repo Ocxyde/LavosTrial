@@ -139,14 +139,8 @@ namespace Code.Lavos.HUD
             // Set initial values after a short delay to ensure everything is initialized
             Invoke(nameof(SetInitialValues), 0.2f);
 
-            // Subscribe to EventHandler for centralized event management
-            if (EventHandler.Instance != null)
-            {
-                EventHandler.Instance.OnPlayerHealthChanged += (current, max) => SetHealth(current, max, showFloatingText: true);
-                EventHandler.Instance.OnPlayerManaChanged += (current, max) => SetMana(current, max, showFloatingText: true);
-                EventHandler.Instance.OnPlayerStaminaChanged += (current, max) => SetStamina(current, max, showFloatingText: true);
-                Debug.Log("[UIBarsSystem] Subscribed to EventHandler");
-            }
+            // Note: Event subscription handled by SubscribeToEvents() using named methods
+            // This allows proper unsubscription in OnDestroy (no lambda memory leaks)
         }
         
         void SetInitialValues()

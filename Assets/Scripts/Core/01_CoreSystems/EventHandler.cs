@@ -57,8 +57,9 @@ namespace Code.Lavos.Core
                         // Only warn if actually playing (not in editor pause)
                         if (Application.isPlaying)
                         {
-                            Debug.LogWarning("[EventHandler] No instance found in scene!");
+                            Debug.LogWarning("[EventHandler] No instance found in scene! Add EventHandler GameObject manually.");
                         }
+                        return null;
                     }
                 }
                 return _instance;
