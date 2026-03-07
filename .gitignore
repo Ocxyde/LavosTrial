@@ -1,4 +1,4 @@
-﻿# Unity generated
+# Unity generated
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -50,3 +50,25 @@ Assets/_Recovery.meta
 # OS
 .DS_Store
 Thumbs.db
+
+# Added by git-cleanup-repo.ps1
+*.7z
+
+# Added by git-cleanup-repo.ps1
+Backup_Solution/
+
+# Added by git-cleanup-repo.ps1
+Backup_Deprecated_*/
+
+# Added by git-cleanup-repo.ps1
+maze_v0-*/
+
+# Added by git-cleanup-repo.ps1
+Builds_*/
+
+# Added by git-cleanup-repo.ps1
+*.unitypackage
+
+# PowerShell scripts and batch files (user-managed)
+*.ps1
+*.bat
