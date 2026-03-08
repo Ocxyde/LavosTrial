@@ -1,0 +1,247 @@
+// Copyright (C) 2026 Ocxyde
+//
+// This file is part of Code.Lavos.
+//
+// Code.Lavos is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Code.Lavos is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
+// DungeonMazeData.cs
+// Advanced maze data with trap, treasure, and difficulty metrics
+// Unity 6 compatible - UTF-8 encoding - Unix line endings
+
+using UnityEngine;
+
+namespace Code.Lavos.Core.Advanced
+{
+    /// <summary>
+    /// Advanced maze data structure extending MazeData8 with:
+    /// - Trap room tracking
+    /// - Treasure room tracking  
+    /// - Boss room locations
+    /// - Danger zones
+    /// - AI-computed difficulty metrics
+    /// - Path guarantee markers
+    /// </summary>
+    public sealed class DungeonMazeData
+    {
+        private ushort[,] _cells;
+        private int _width;
+        private int _height;
+        private int _seed;
+        private int _level;
+        private float _generationTimeMs;
+        private (int x, int z) _spawnCell;
+        private (int x, int z) _exitCell;
+        private int _spawnRoomRadius;
+        private int _exitRoomRadius;
+
+        // Advanced metrics
+        public float DifficultyFactor { get; set; }
+        public float AIAdaptiveFactor { get; set; }
+        public DungeonMazeConfig Config { get; set; }
+
+        public int Width => _width;
+        public int Height => _height;
+        public int Seed => _seed;
+        public int Level => _level;
+        public float GenerationTimeMs => _generationTimeMs;
+        public (int x, int z) SpawnCell => _spawnCell;
+        public (int x, int z) ExitCell => _exitCell;
+
+        public DungeonMazeData(int width, int height, int seed, int level)
+        {
+            _width = width;
+            _height = height;
+            _seed = seed;
+            _level = level;
+            _cells = new ushort[width, height];
+            _generationTimeMs = 0;
+            AIAdaptiveFactor = 1.0f;
+        }
+
+        public ushort GetCell(int x, int z)
+        {
+            if (!InBounds(x, z))
+                return 0;
+            return _cells[x, z];
+        }
+
+        public void SetCell(int x, int z, ushort value)
+        {
+            if (InBounds(x, z))
+                _cells[x, z] = value;
+        }
+
+        public bool HasWall(int x, int z, Direction8 dir)
+        {
+            var cell = GetCell(x, z);
+            var flag = Direction8Helper.ToWallFlag(dir);
+            return (cell & flag) != 0;
+        }
+
+        public void SetSpawn(int x, int z)
+        {
+            _spawnCell = (x, z);
+        }
+
+        public void SetExit(int x, int z)
+        {
+            _exitCell = (x, z);
+        }
+
+        public void SetSpawnRoom(int x, int z, int radius)
+        {
+            _spawnCell = (x, z);
+            _spawnRoomRadius = radius;
+        }
+
+        public void SetExitRoom(int x, int z, int radius)
+        {
+            _exitCell = (x, z);
+            _exitRoomRadius = radius;
+        }
+
+        public bool IsSpawnRoom(int x, int z)
+        {
+            int dx = x - _spawnCell.x;
+            int dz = z - _spawnCell.z;
+            return dx * dx + dz * dz <= _spawnRoomRadius * _spawnRoomRadius;
+        }
+
+        public bool IsExitRoom(int x, int z)
+        {
+            int dx = x - _exitCell.x;
+            int dz = z - _exitCell.z;
+            return dx * dx + dz * dz <= _exitRoomRadius * _exitRoomRadius;
+        }
+
+        public void MarkAsMainPath(int x, int z)
+        {
+            var cell = GetCell(x, z);
+            cell |= CellFlags8.IsMainPath;
+            SetCell(x, z, cell);
+        }
+
+        public bool InBounds(int x, int z)
+        {
+            return x >= 0 && x < _width && z >= 0 && z < _height;
+        }
+    }
+
+    /// <summary>
+    /// Cell flag bits for advanced maze state.
+    /// Extends standard 8-wall flags with room type and danger indicators.
+    /// </summary>
+    public static class CellFlags8
+    {
+        // Walls (bits 0-7) - Cardinal and Diagonal
+        public const ushort Wall_N = 0x0001;
+        public const ushort Wall_S = 0x0002;
+        public const ushort Wall_E = 0x0004;
+        public const ushort Wall_W = 0x0008;
+        public const ushort Wall_NE = 0x0010;
+        public const ushort Wall_NW = 0x0020;
+        public const ushort Wall_SE = 0x0040;
+        public const ushort Wall_SW = 0x0080;
+        public const ushort Wall_All = 0x00FF;
+
+        // Room Types (bits 8-12)
+        public const ushort IsRoom = 0x0100;
+        public const ushort IsHall = 0x0200;
+        public const ushort IsTrapRoom = 0x0400;
+        public const ushort IsTreasureRoom = 0x0800;
+        public const ushort IsBossRoom = 0x1000;
+
+        // Objects (bits 13-15)
+        public const ushort HasTorch = 0x2000;
+        public const ushort HasEnemy = 0x4000;
+        public const ushort HasChest = 0x8000;
+
+        // Advanced markers (would extend if needed)
+        public const ushort IsMainPath = 0x0001_0000;
+        public const ushort IsDanger = 0x0002_0000;
+    }
+
+    /// <summary>
+    /// 8-directional movement helper.
+    /// </summary>
+    public enum Direction8
+    {
+        N = 0,   // North (0, 1)
+        S = 1,   // South (0, -1)
+        E = 2,   // East (1, 0)
+        W = 3,   // West (-1, 0)
+        NE = 4,  // Northeast (1, 1)
+        NW = 5,  // Northwest (-1, 1)
+        SE = 6,  // Southeast (1, -1)
+        SW = 7,  // Southwest (-1, -1)
+    }
+
+    /// <summary>
+    /// Direction8 helper utilities.
+    /// </summary>
+    public static class Direction8Helper
+    {
+        public static (int dx, int dz) ToOffset(Direction8 dir)
+        {
+            return dir switch
+            {
+                Direction8.N => (0, 1),
+                Direction8.S => (0, -1),
+                Direction8.E => (1, 0),
+                Direction8.W => (-1, 0),
+                Direction8.NE => (1, 1),
+                Direction8.NW => (-1, 1),
+                Direction8.SE => (1, -1),
+                Direction8.SW => (-1, -1),
+                _ => (0, 0),
+            };
+        }
+
+        public static Direction8 Opposite(Direction8 dir)
+        {
+            return dir switch
+            {
+                Direction8.N => Direction8.S,
+                Direction8.S => Direction8.N,
+                Direction8.E => Direction8.W,
+                Direction8.W => Direction8.E,
+                Direction8.NE => Direction8.SW,
+                Direction8.NW => Direction8.SE,
+                Direction8.SE => Direction8.NW,
+                Direction8.SW => Direction8.NE,
+                _ => dir,
+            };
+        }
+
+        public static bool IsDiagonal(Direction8 dir)
+        {
+            return dir >= Direction8.NE;
+        }
+
+        public static ushort ToWallFlag(Direction8 dir)
+        {
+            return dir switch
+            {
+                Direction8.N => CellFlags8.Wall_N,
+                Direction8.S => CellFlags8.Wall_S,
+                Direction8.E => CellFlags8.Wall_E,
+                Direction8.W => CellFlags8.Wall_W,
+                Direction8.NE => CellFlags8.Wall_NE,
+                Direction8.NW => CellFlags8.Wall_NW,
+                Direction8.SE => CellFlags8.Wall_SE,
+                Direction8.SW => CellFlags8.Wall_SW,
+                _ => 0,
+            };
+        }
+    }
+}

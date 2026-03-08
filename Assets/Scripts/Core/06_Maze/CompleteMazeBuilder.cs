@@ -4,6 +4,7 @@
 // Encoding: UTF-8  |  Locale: en_US
 
 using UnityEngine;
+using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
@@ -28,16 +29,19 @@ namespace Code.Lavos.Core
     //  11.  Save           -> Binary .lvm  ->  Runtimes/Mazes/
     //  12.  Player         -> Spawn LAST
     // -------------------------------------------------------------------------
-    public sealed class CompleteMazeBuilder : MonoBehaviour
+    public sealed class CompleteMazeBuilder8 : MonoBehaviour
     {
         // Inspector
         [Header("Cardinal Prefabs")]
         [SerializeField] private GameObject wallPrefab;
         [SerializeField] private GameObject doorPrefab;
+        [SerializeField] private Material wallMaterial;
 
         [Header("Diagonal Prefabs")]
         [SerializeField] private GameObject wallDiagPrefab;
         [SerializeField] private GameObject wallCornerPrefab;
+        [SerializeField] private Material wallDiagMaterial;
+        [SerializeField] private Material wallCornerMaterial;
 
         [Header("Object Prefabs")]
         [SerializeField] private GameObject torchPrefab;
@@ -62,11 +66,17 @@ namespace Code.Lavos.Core
 
         // Runtime
         private MazeData8          _mazeData;
-        private GameConfig8        _config;
-        private GridMazeGenerator8 _generator;
+        private GameConfig         _config;
+        private DungeonMazeGenerator  _generator;
         private Transform          _wallsRoot;
         private Transform          _objectsRoot;
         private GameObject         _playerInstance;
+
+        // -------------------------------------------------------------------------
+        // Public Accessors (for other systems to access maze data)
+        // -------------------------------------------------------------------------
+        public MazeData8 MazeData => _mazeData;
+        public GameConfig Config => _config;
 
         // -------------------------------------------------------------------------
         // Unity lifecycle
@@ -84,33 +94,97 @@ namespace Code.Lavos.Core
         [ContextMenu("Generate Maze (8-axis)")]
         public void GenerateMaze()
         {
+            Debug.Log("[MazeBuilder8] === GENERATE MAZE STARTED ===");
             float t0 = Time.realtimeSinceStartup;
 
             // 1 - Config
+            Debug.Log("[MazeBuilder8] Step 1: Loading config...");
             LoadConfig();
+            Debug.Log($"[MazeBuilder8] Config loaded: CellSize={_config?.CellSize} WallHeight={_config?.WallHeight}");
 
             // 2+3 - Assets + Components
+            Debug.Log("[MazeBuilder8] Step 2+3: Validating assets...");
             ValidateAssets();
+            Debug.Log($"[MazeBuilder8] Assets validated: wallPrefab={(wallPrefab!=null?"OK":"NULL")}");
 
             // 4 - Cleanup
+            Debug.Log("[MazeBuilder8] Step 4: Cleaning up previous maze...");
             DestroyMazeObjects();
 
             // 5-7 - Data (cache first)
-            if (MazeBinaryStorage8.Exists(currentLevel, currentSeed))
+            // Try to load from cache using compat wrapper
+            bool foundInCache = false;
+            try
             {
-                Debug.Log($"[MazeBuilder8] Cache hit  L{currentLevel}  S{currentSeed}");
-                _mazeData = MazeBinaryStorage8.Load(currentLevel, currentSeed);
+                // Try compat wrapper first (with reflection fallback)
+                if (MazeBinaryStorage8Compat.Exists(currentLevel, currentSeed))
+                {
+                    Debug.Log($"[MazeBuilder8] Cache hit  L{currentLevel}  S{currentSeed}");
+                    _mazeData = MazeBinaryStorage8Compat.Load(currentLevel, currentSeed);
+                    foundInCache = (_mazeData != null);
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                _generator ??= new GridMazeGenerator8();
-                _mazeData   = _generator.Generate(currentSeed, currentLevel, _config.MazeCfg);
+                Debug.LogWarning($"[MazeBuilder8] Cache load failed, will regenerate: {ex.Message}");
             }
+
+            if (!foundInCache)
+            {
+                Debug.Log($"[MazeBuilder8] Cache miss  L{currentLevel}  S{currentSeed} - generating new maze");
+                _generator ??= new DungeonMazeGenerator();
+                
+                // Convert GameConfig to DungeonMazeConfig
+                var dungeonCfg = new DungeonMazeConfig
+                {
+                    BaseSize = _config.MazeCfg.BaseSize,
+                    MinSize = _config.MazeCfg.MinSize,
+                    MaxSize = _config.MazeCfg.MaxSize,
+                    CellSize = _config.CellSize,
+                    WallHeight = _config.WallHeight,
+                    SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                    ExitRoomSize = _config.MazeCfg.ExitRoomSize,
+                    TorchChance = _config.MazeCfg.TorchChance,
+                    ChestDensity = _config.MazeCfg.ChestDensity,
+                    EnemyDensity = _config.MazeCfg.EnemyDensity,
+                    AllowDiagonalWalls = _config.MazeCfg.DiagonalWalls,
+                    Difficulty = new DifficultyScalerConfig
+                    {
+                        BaseFactor = _config.DifficultyCfg.BaseFactor,
+                        FactorPerLevel = _config.DifficultyCfg.FactorPerLevel,
+                        MaxFactor = _config.DifficultyCfg.MaxFactor,
+                        SizeGrowthPerLevel = _config.DifficultyCfg.SizeGrowthPerLevel,
+                    },
+                };
+                
+                _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+            }
+
+            // Verify maze data
+            if (_mazeData == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: _mazeData is NULL after generation/load!");
+                return;
+            }
+
+            Debug.Log(
+                $"[MazeBuilder8] Maze data loaded: {_mazeData.Width}x{_mazeData.Height} " +
+                $"seed={_mazeData.Seed} level={_mazeData.Level}");
 
             currentDifficultyFactor = _mazeData.DifficultyFactor;
 
+            // Verify config before proceeding
+            if (_config == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: _config is NULL - cannot spawn maze objects!");
+                return;
+            }
+
             // 5 - Ground
             SpawnGround();
+
+            // Verify ground spawned
+            Debug.Log("[MazeBuilder8] Ground spawned, now spawning walls...");
 
             // 8 - Walls (cardinal + diagonal)
             SpawnAllWalls();
@@ -125,8 +199,18 @@ namespace Code.Lavos.Core
             SpawnObjects();
 
             // 11 - Binary save
-            if (!MazeBinaryStorage8.Exists(currentLevel, currentSeed))
-                MazeBinaryStorage8.Save(_mazeData);
+            try
+            {
+                if (!MazeBinaryStorage8Compat.Exists(currentLevel, currentSeed))
+                {
+                    MazeBinaryStorage8Compat.Save(_mazeData);
+                    Debug.Log($"[MazeBuilder8] Maze saved to cache L{currentLevel} S{currentSeed}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[MazeBuilder8] Cache save failed: {ex.Message}");
+            }
 
             // 12 - Player LAST
             SpawnPlayer();
@@ -142,9 +226,16 @@ namespace Code.Lavos.Core
         {
             currentLevel++;
             currentSeed = Random.Range(int.MinValue, int.MaxValue);
-            Debug.Log(
-                $"[MazeBuilder8] Level {currentLevel}  " +
-                $"expected factor={_config?.MazeCfg.Difficulty.Factor(currentLevel):F3}");
+            if (_config != null)
+            {
+                Debug.Log(
+                    $"[MazeBuilder8] Level {currentLevel}  " +
+                    $"expected factor={_config.MazeCfg.Difficulty.Factor(currentLevel):F3}");
+            }
+            else
+            {
+                Debug.Log($"[MazeBuilder8] Level {currentLevel}");
+            }
             GenerateMaze();
         }
 
@@ -153,11 +244,11 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         private void LoadConfig()
         {
-            var comp = FindFirstObjectByType<GameConfig8>();
+            var comp = FindFirstObjectByType<GameConfig>();
             if (comp != null) { _config = comp; return; }
 
             var json = Resources.Load<TextAsset>(configResourcePath);
-            _config = json != null ? GameConfig8.FromJson(json.text) : new GameConfig8();
+            _config = json != null ? GameConfig.FromJson(json.text) : new GameConfig();
 
             if (json == null)
                 Debug.LogWarning("[MazeBuilder8] Config not found -- using defaults.");
@@ -168,6 +259,7 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         private void ValidateAssets()
         {
+            // Load prefabs from Resources
             wallPrefab       ??= Resources.Load<GameObject>("Prefabs/WallPrefab");
             wallDiagPrefab   ??= Resources.Load<GameObject>("Prefabs/WallDiagPrefab");
             wallCornerPrefab ??= Resources.Load<GameObject>("Prefabs/WallCornerPrefab");
@@ -178,8 +270,18 @@ namespace Code.Lavos.Core
             floorPrefab      ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
             playerPrefab     ??= Resources.Load<GameObject>("Prefabs/PlayerPrefab");
 
+            // Load materials from GameConfig
+            var gameConfig = GameConfig.Instance;
+            if (gameConfig != null)
+            {
+                wallMaterial       ??= Resources.Load<Material>(gameConfig.wallMaterial);
+                wallDiagMaterial   ??= Resources.Load<Material>(gameConfig.wallMaterial);
+                wallCornerMaterial ??= Resources.Load<Material>(gameConfig.wallMaterial);
+            }
+
             if (wallPrefab   == null) Debug.LogError("[MazeBuilder8] wallPrefab missing!");
             if (playerPrefab == null) Debug.LogError("[MazeBuilder8] playerPrefab missing!");
+            if (wallMaterial == null) Debug.LogError("[MazeBuilder8] wallMaterial missing -- textures won't apply!");
 
             if (wallDiagPrefab == null)
             {
@@ -187,6 +289,12 @@ namespace Code.Lavos.Core
                 Debug.LogWarning("[MazeBuilder8] wallDiagPrefab not set -- reusing wallPrefab at 45 deg.");
             }
         }
+
+        // -------------------------------------------------------------------------
+        // Get wall thickness from config (no hardcoded values)
+        // -------------------------------------------------------------------------
+        private float WallThickness => _config?.WallThickness ?? 0.2f;
+        private float DiagonalWallThickness => _config?.DiagonalWallThickness ?? 0.5f;
 
         // -------------------------------------------------------------------------
         // 4 - Cleanup
@@ -202,7 +310,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        private static void DestroyContainer(ref Transform t, string containerName)
+        private void DestroyContainer(ref Transform t, string containerName)
         {
             if (t != null) { Destroy(t.gameObject); t = null; return; }
             var g = GameObject.Find(containerName);
@@ -215,12 +323,23 @@ namespace Code.Lavos.Core
         private void SpawnGround()
         {
             if (floorPrefab == null) return;
+            if (_mazeData == null || _config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnGround: _mazeData or _config is NULL!");
+                return;
+            }
 
             float sz = _mazeData.Width * _config.CellSize;
             var   go = Instantiate(
                 floorPrefab,
                 new Vector3(sz * 0.5f, 0f, sz * 0.5f),
                 Quaternion.identity);
+
+            if (go == null)
+            {
+                Debug.LogError("[MazeBuilder8] Failed to instantiate floor prefab!");
+                return;
+            }
 
             go.name                 = "MazeFloor8";
             go.transform.localScale = new Vector3(sz, 1f, sz);
@@ -250,41 +369,100 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         private void SpawnAllWalls()
         {
-            if (wallPrefab == null) return;
+            if (wallPrefab == null)
+            {
+                Debug.LogError("[MazeBuilder8] wallPrefab is NULL - cannot spawn walls!");
+                return;
+            }
+
+            if (_mazeData == null || _config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnAllWalls: _mazeData or _config is NULL!");
+                return;
+            }
 
             _wallsRoot = new GameObject("MazeWalls8").transform;
 
             float cs = _config.CellSize;
             float wh = _config.WallHeight;
 
+            int cardinalCount = 0;
+            int diagonalCount = 0;
+            int totalCells = _mazeData.Width * _mazeData.Height;
+            int cellsWithWalls = 0;
+
+            // First pass: count cells with walls
+            for (int z = 0; z < _mazeData.Height; z++)
+            for (int x = 0; x < _mazeData.Width;  x++)
+            {
+                var cell = _mazeData.GetCell(x, z);
+                if ((cell & CellFlags8.AllWalls) != CellFlags8.None)
+                    cellsWithWalls++;
+            }
+
+            Debug.Log(
+                $"[MazeBuilder8] Spawning walls for {_mazeData.Width}x{_mazeData.Height} maze " +
+                $"({totalCells} cells, {cellsWithWalls} with walls)");
+
+            // Second pass: spawn walls
             for (int z = 0; z < _mazeData.Height; z++)
             for (int x = 0; x < _mazeData.Width;  x++)
             {
                 var cell = _mazeData.GetCell(x, z);
 
-                // Cardinal - North + East always; South/West only on outer border
+                // Cardinal - spawn all walls based on cell flags (no border checks)
+                // Each cell is responsible for its own walls
                 if ((cell & CellFlags8.WallN) != 0)
+                {
                     SpawnCardinalWall(x, z, Direction8.N, cs, wh);
+                    cardinalCount++;
+                }
                 if ((cell & CellFlags8.WallE) != 0)
+                {
                     SpawnCardinalWall(x, z, Direction8.E, cs, wh);
-                if (z == 0 && (cell & CellFlags8.WallS) != 0)
+                    cardinalCount++;
+                }
+                if ((cell & CellFlags8.WallS) != 0)
+                {
                     SpawnCardinalWall(x, z, Direction8.S, cs, wh);
-                if (x == 0 && (cell & CellFlags8.WallW) != 0)
+                    cardinalCount++;
+                }
+                if ((cell & CellFlags8.WallW) != 0)
+                {
                     SpawnCardinalWall(x, z, Direction8.W, cs, wh);
+                    cardinalCount++;
+                }
 
-                // Diagonal (toggled by config)
+                // Diagonal (toggled by config) - spawn all based on cell flags
                 if (_config.MazeCfg.DiagonalWalls)
                 {
                     if ((cell & CellFlags8.WallNE) != 0)
+                    {
                         SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
+                        diagonalCount++;
+                    }
                     if ((cell & CellFlags8.WallNW) != 0)
+                    {
                         SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
-                    if (z == 0 && (cell & CellFlags8.WallSE) != 0)
+                        diagonalCount++;
+                    }
+                    if ((cell & CellFlags8.WallSE) != 0)
+                    {
                         SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
-                    if (x == 0 && (cell & CellFlags8.WallSW) != 0)
+                        diagonalCount++;
+                    }
+                    if ((cell & CellFlags8.WallSW) != 0)
+                    {
                         SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
+                        diagonalCount++;
+                    }
                 }
             }
+
+            Debug.Log(
+                $"[MazeBuilder8] Wall spawn complete: " +
+                $"{cardinalCount} cardinal + {diagonalCount} diagonal = " +
+                $"{cardinalCount + diagonalCount} total walls from {cellsWithWalls}/{totalCells} cells");
         }
 
         // -------------------------------------------------------------------------
@@ -297,6 +475,7 @@ namespace Code.Lavos.Core
         //
         // If pivot is at mesh center, shift up by wh * 0.5 so the wall
         // stands on the floor instead of sinking into it.
+        // Scale: X = length along wall, Y = height, Z = thickness (from config)
         // -------------------------------------------------------------------------
         private void SpawnCardinalWall(int cx, int cz, Direction8 dir, float cs, float wh)
         {
@@ -314,9 +493,24 @@ namespace Code.Lavos.Core
                 : Quaternion.identity;
 
             var wall = Instantiate(wallPrefab, edgePos, rot, _wallsRoot);
+            if (wall == null)
+            {
+                Debug.LogError($"[MazeBuilder8] Failed to instantiate cardinal wall at {edgePos}");
+                return;
+            }
 
-            // Scale: X = length along wall, Y = height, Z = thickness
-            wall.transform.localScale = new Vector3(cs, wh, 0.2f);
+            // Scale: X = length along wall, Y = height, Z = thickness (from config)
+            wall.transform.localScale = new Vector3(cs, wh, WallThickness);
+
+            // Apply material if assigned
+            if (wallMaterial != null)
+            {
+                var renderer = wall.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    renderer.material = wallMaterial;
+                }
+            }
 
             // If the prefab pivot is at mesh center, offset Y so wall sits on floor
             if (wallPivotIsAtMeshCenter)
@@ -336,12 +530,11 @@ namespace Code.Lavos.Core
         //   NW -> (-h, 0, +h)  rot -45 deg Y
         //   SE -> (+h, 0, -h)  rot -45 deg Y
         //   SW -> (-h, 0, -h)  rot +45 deg Y
-        // Scale X = cellSize * sqrt(2)
+        // Scale: X = cellSize * sqrt(2), Y = height, Z = thickness (from config)
         // -------------------------------------------------------------------------
         private void SpawnDiagonalWall(int cx, int cz, Direction8 dir, float cs, float wh)
         {
             float h      = cs * 0.5f;
-            float diagX  = cs * 1.414f;   // cellSize * sqrt(2)
 
             Vector3 offset;
             float   rotY;
@@ -368,7 +561,25 @@ namespace Code.Lavos.Core
                 Quaternion.Euler(0f, rotY, 0f),
                 _wallsRoot);
 
-            wall.transform.localScale = new Vector3(diagX, wh, 0.2f);
+            if (wall == null)
+            {
+                Debug.LogError($"[MazeBuilder8] Failed to instantiate diagonal wall at {cornerPos}");
+                return;
+            }
+
+            // Scale: X = cellSize * sqrt(2), Y = height, Z = thickness (from config)
+            float diagLength = cs * Mathf.Sqrt(2f);
+            wall.transform.localScale = new Vector3(diagLength, wh, DiagonalWallThickness);
+
+            // Apply diagonal material if assigned
+            if (wallDiagMaterial != null)
+            {
+                var renderer = wall.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    renderer.material = wallDiagMaterial;
+                }
+            }
 
             if (wallPivotIsAtMeshCenter)
             {
@@ -392,6 +603,11 @@ namespace Code.Lavos.Core
         private void SpawnDoors()
         {
             if (doorPrefab == null) return;
+            if (_mazeData == null || _config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnDoors: _mazeData or _config is NULL!");
+                return;
+            }
 
             SpawnDoorOnAccessWall(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, "Door_Entry");
             SpawnDoorOnAccessWall(_mazeData.ExitCell.x,  _mazeData.ExitCell.z,  "Door_Exit");
@@ -400,6 +616,11 @@ namespace Code.Lavos.Core
         private void SpawnDoorOnAccessWall(int cx, int cz, string doorName)
         {
             if (doorPrefab == null) return;
+            if (_config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnDoorOnAccessWall: _config is NULL!");
+                return;
+            }
 
             float cs = _config.CellSize;
             float wh = _config.WallHeight;
@@ -432,8 +653,14 @@ namespace Code.Lavos.Core
                     wallEdgePos,
                     Quaternion.Euler(0f, rotY, 0f));
 
+                if (door == null)
+                {
+                    Debug.LogError($"[MazeBuilder8] Failed to instantiate door at {wallEdgePos}");
+                    continue;
+                }
+
                 door.name                 = doorName;
-                door.transform.localScale = new Vector3(cs, wh, 0.2f);
+                door.transform.localScale = new Vector3(cs, wh, WallThickness);
 
                 // Same pivot fix as walls
                 if (wallPivotIsAtMeshCenter)
@@ -453,6 +680,11 @@ namespace Code.Lavos.Core
         private void SpawnTorches()
         {
             if (torchPrefab == null) return;
+            if (_mazeData == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnTorches: _mazeData is NULL!");
+                return;
+            }
 
             EnsureObjectsRoot();
 
@@ -465,6 +697,12 @@ namespace Code.Lavos.Core
         // Chests + Enemies
         private void SpawnObjects()
         {
+            if (_mazeData == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnObjects: _mazeData is NULL!");
+                return;
+            }
+
             EnsureObjectsRoot();
 
             for (int z = 0; z < _mazeData.Height; z++)
@@ -489,10 +727,13 @@ namespace Code.Lavos.Core
             if (existing != null)
             {
                 _playerInstance = existing.gameObject;
-                _playerInstance.transform.position = CellCenter(
-                    _mazeData.SpawnCell.x,
-                    _mazeData.SpawnCell.z,
-                    _config.PlayerEyeHeight);
+                if (_mazeData != null && _config != null)
+                {
+                    _playerInstance.transform.position = CellCenter(
+                        _mazeData.SpawnCell.x,
+                        _mazeData.SpawnCell.z,
+                        _config.PlayerEyeHeight);
+                }
                 return;
             }
 
@@ -502,12 +743,23 @@ namespace Code.Lavos.Core
                 return;
             }
 
+            if (_mazeData == null || _config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnPlayer: _mazeData or _config is NULL!");
+                return;
+            }
+
             var pos = CellCenter(
                 _mazeData.SpawnCell.x,
                 _mazeData.SpawnCell.z,
                 _config.PlayerEyeHeight);
 
             _playerInstance      = Instantiate(playerPrefab, pos, Quaternion.identity);
+            if (_playerInstance == null)
+            {
+                Debug.LogError("[MazeBuilder8] Failed to instantiate player prefab!");
+                return;
+            }
             _playerInstance.name = "Player";
 
             Debug.Log($"[MazeBuilder8] Player spawned at {pos}");
@@ -520,7 +772,7 @@ namespace Code.Lavos.Core
         // World-space center of cell (cx, cz) at height y
         private Vector3 CellCenter(int cx, int cz, float y = 0f)
         {
-            float cs = _config.CellSize;
+            float cs = _config?.CellSize ?? 1f;
             return new Vector3(cx * cs + cs * 0.5f, y, cz * cs + cs * 0.5f);
         }
 
@@ -531,8 +783,15 @@ namespace Code.Lavos.Core
             string     objName,
             Transform  parent = null)
         {
+            if (prefab == null)
+            {
+                Debug.LogError($"[MazeBuilder8] PlaceAtCell: prefab is NULL for {objName}!");
+                return;
+            }
+
             var go  = Instantiate(prefab, CellCenter(cx, cz), Quaternion.identity, parent);
-            go.name = objName;
+            if (go != null)
+                go.name = objName;
         }
 
         private void EnsureObjectsRoot()
@@ -559,13 +818,13 @@ namespace Code.Lavos.Core
         {
             get
             {
-                var cfg = GameConfig.Instance;
-                return cfg.DifficultyCfg.MazeSize(
+                var cfg = _config ?? GameConfig.Instance;
+                return cfg?.DifficultyCfg.MazeSize(
                     currentLevel,
                     cfg.MazeCfg.BaseSize,
                     cfg.MazeCfg.MinSize,
                     cfg.MazeCfg.MaxSize
-                );
+                ) ?? cfg.MazeCfg.BaseSize;
             }
         }
     }
