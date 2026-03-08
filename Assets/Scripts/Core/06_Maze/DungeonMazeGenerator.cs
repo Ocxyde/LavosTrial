@@ -41,7 +41,7 @@ namespace Code.Lavos.Core.Advanced
         // ─────────────────────────────────────────────────────────────
         // INTERNAL STATE
         // ─────────────────────────────────────────────────────────────
-        private DungeonMazeData _mazeData;
+        private MazeData8 _mazeData;
         private System.Random _rng;
         private bool[,] _visited;
         private List<(int x, int z)> _deadEnds;
@@ -72,7 +72,7 @@ namespace Code.Lavos.Core.Advanced
         /// 12. Place torches, chests, enemies based on difficulty
         /// 13. Guarantee A* path from spawn to exit
         /// </summary>
-        public DungeonMazeData Generate(int seed, int level, DungeonMazeConfig cfg)
+        public MazeData8 Generate(int seed, int level, DungeonMazeConfig cfg)
         {
             ValidateConfig(cfg);
             
@@ -80,7 +80,7 @@ namespace Code.Lavos.Core.Advanced
             int size = scaler.MazeSize(level, cfg.BaseSize, cfg.MinSize, cfg.MaxSize);
 
             _rng = new System.Random(seed);
-            _mazeData = new DungeonMazeData(size, size, seed, level)
+            _mazeData = new MazeData8(size, size, seed, level)
             {
                 DifficultyFactor = scaler.Factor(level),
                 Config = cfg,
@@ -219,28 +219,34 @@ namespace Code.Lavos.Core.Advanced
 
         private void CarvePassageToNeighbor(int cx, int cz, int nx, int nz, Direction8 dir)
         {
+            // Validate bounds first
+            if (!_mazeData.InBounds(cx, cz) || !_mazeData.InBounds(nx, nz))
+                return;
+
             var curCell = _mazeData.GetCell(cx, cz);
             var neiCell = _mazeData.GetCell(nx, nz);
 
             // Remove wall from current cell in direction of neighbor
-            ushort wallFlag = Direction8Helper.ToWallFlag(dir);
-            curCell &= (ushort)~wallFlag;
+            uint wallFlag = Direction8Helper.ToWallFlag(dir);
+            curCell &= ~wallFlag;
 
             // Remove opposite wall from neighbor
             Direction8 oppositeDir = Direction8Helper.Opposite(dir);
-            ushort oppositeWallFlag = Direction8Helper.ToWallFlag(oppositeDir);
-            neiCell &= (ushort)~oppositeWallFlag;
+            uint oppositeWallFlag = Direction8Helper.ToWallFlag(oppositeDir);
+            neiCell &= ~oppositeWallFlag;
 
             // For diagonal passages, also clear intermediate cell
             if (Direction8Helper.IsDiagonal(dir))
             {
                 var (dx, dz) = Direction8Helper.ToOffset(dir);
-                int intermediateX = cx + dx / 2;
-                int intermediateZ = cz + dz / 2;
+                // FIX: Use Sign to get proper intermediate position (+1 or -1, never 0)
+                int intermediateX = cx + Math.Sign(dx);
+                int intermediateZ = cz + Math.Sign(dz);
                 if (_mazeData.InBounds(intermediateX, intermediateZ))
                 {
                     var intermediateCell = _mazeData.GetCell(intermediateX, intermediateZ);
-                    intermediateCell = 0; // Clear all walls from intermediate
+                    // FIX: Clear only the walls that block this passage, preserve flags
+                    intermediateCell &= ~(wallFlag | oppositeWallFlag);
                     _mazeData.SetCell(intermediateX, intermediateZ, intermediateCell);
                 }
             }
