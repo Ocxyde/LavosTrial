@@ -29,6 +29,12 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using Code.Lavos.Core.Advanced;
+
+// Type aliases for Advanced namespace types
+using MazeData8 = Advanced.MazeData8;
+using CellFlags8 = Advanced.CellFlags8;
+using Direction8 = Advanced.Direction8;
 
 namespace Code.Lavos.Core
 {

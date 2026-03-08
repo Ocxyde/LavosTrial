@@ -8,6 +8,11 @@ using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
+    // Type alias for Advanced namespace MazeData8
+    using MazeData8 = Advanced.MazeData8;
+    using CellFlags8 = Advanced.CellFlags8;
+    using Direction8 = Advanced.Direction8;
+
     // -------------------------------------------------------------------------
     // CompleteMazeBuilder8 - 8-axis maze orchestrator
     //
@@ -396,7 +401,7 @@ namespace Code.Lavos.Core
             for (int x = 0; x < _mazeData.Width;  x++)
             {
                 var cell = _mazeData.GetCell(x, z);
-                if ((cell & CellFlags8.AllWalls) != CellFlags8.None)
+                if ((cell & CellFlags8.Wall_All) != 0)
                     cellsWithWalls++;
             }
 
@@ -412,22 +417,22 @@ namespace Code.Lavos.Core
 
                 // Cardinal - spawn all walls based on cell flags (no border checks)
                 // Each cell is responsible for its own walls
-                if ((cell & CellFlags8.WallN) != 0)
+                if ((cell & CellFlags8.Wall_N) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.N, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.WallE) != 0)
+                if ((cell & CellFlags8.Wall_E) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.E, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.WallS) != 0)
+                if ((cell & CellFlags8.Wall_S) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.S, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.WallW) != 0)
+                if ((cell & CellFlags8.Wall_W) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.W, cs, wh);
                     cardinalCount++;
@@ -436,22 +441,22 @@ namespace Code.Lavos.Core
                 // Diagonal (toggled by config) - spawn all based on cell flags
                 if (_config.MazeCfg.DiagonalWalls)
                 {
-                    if ((cell & CellFlags8.WallNE) != 0)
+                    if ((cell & CellFlags8.Wall_NE) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.WallNW) != 0)
+                    if ((cell & CellFlags8.Wall_NW) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.WallSE) != 0)
+                    if ((cell & CellFlags8.Wall_SE) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.WallSW) != 0)
+                    if ((cell & CellFlags8.Wall_SW) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
                         diagonalCount++;

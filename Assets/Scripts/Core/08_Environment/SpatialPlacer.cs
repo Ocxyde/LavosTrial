@@ -46,9 +46,9 @@ namespace Code.Lavos.Core
         [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
-        
-        [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
-        [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
+
+        [Tooltip("Auto-finds CompleteMazeBuilder8 in scene")]
+        [SerializeField] private CompleteMazeBuilder8 completeMazeBuilder;
         
         [Tooltip("Auto-finds LightPlacementEngine for binary storage")]
         [SerializeField] private LightPlacementEngine lightPlacementEngine;
@@ -120,9 +120,9 @@ namespace Code.Lavos.Core
 
         private void FindComponents()
         {
-            // GridMazeGenerator is created by CompleteMazeBuilder
+            // CompleteMazeBuilder8 creates and owns the maze data
             if (completeMazeBuilder == null)
-                completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+                completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             
             if (lightPlacementEngine == null)
                 lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
