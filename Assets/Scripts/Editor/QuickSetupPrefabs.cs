@@ -71,7 +71,7 @@ namespace Code.Lavos.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // Auto-assign prefabs to CompleteMazeBuilder if it exists in scene
+            // Auto-assign prefabs to CompleteMazeBuilder8 if it exists in scene
             AutoAssignPrefabsToBuilder();
 
             Debug.Log("═══════════════════════════════════════════");
@@ -80,22 +80,22 @@ namespace Code.Lavos.Editor
             Debug.Log("");
             Debug.Log(" Prefabs created in: Assets/Resources/Prefabs/");
             Debug.Log(" Materials created in: Assets/Resources/Materials/");
-            Debug.Log(" Prefabs auto-assigned to CompleteMazeBuilder");
+            Debug.Log(" Prefabs auto-assigned to CompleteMazeBuilder8");
             Debug.Log("");
             Debug.Log("  Now test: Press Ctrl+Alt+G to generate maze");
             Debug.Log("============================================");
         }
 
         /// <summary>
-        /// Auto-assign created prefabs to CompleteMazeBuilder in scene.
+        /// Auto-assign created prefabs to CompleteMazeBuilder8 in scene.
         /// </summary>
         private static void AutoAssignPrefabsToBuilder()
         {
-            var builder = Object.FindFirstObjectByType<Code.Lavos.Core.CompleteMazeBuilder>();
+            var builder = Object.FindFirstObjectByType<Code.Lavos.Core.CompleteMazeBuilder8>();
 
             if (builder == null)
             {
-                Debug.Log("  No CompleteMazeBuilder in scene - prefabs not auto-assigned");
+                Debug.Log("  No CompleteMazeBuilder8 in scene - prefabs not auto-assigned");
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace Code.Lavos.Editor
             }
 
             serializedObject.ApplyModifiedProperties();
-            Debug.Log(" All prefabs auto-assigned to CompleteMazeBuilder");
+            Debug.Log(" All prefabs auto-assigned to CompleteMazeBuilder8");
         }
 
         private static void CreateWallPrefab(string folder)

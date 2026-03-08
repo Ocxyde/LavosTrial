@@ -25,15 +25,15 @@ namespace Code.Lavos.Core.Advanced
     /// <summary>
     /// Advanced maze data structure extending MazeData8 with:
     /// - Trap room tracking
-    /// - Treasure room tracking  
+    /// - Treasure room tracking
     /// - Boss room locations
     /// - Danger zones
     /// - AI-computed difficulty metrics
     /// - Path guarantee markers
     /// </summary>
-    public sealed class DungeonMazeData
+    public class DungeonMazeData
     {
-        private ushort[,] _cells;
+        private uint[,] _cells;
         private int _width;
         private int _height;
         private int _seed;
@@ -53,7 +53,7 @@ namespace Code.Lavos.Core.Advanced
         public int Height => _height;
         public int Seed => _seed;
         public int Level => _level;
-        public float GenerationTimeMs => _generationTimeMs;
+        public float GenerationTimeMs { get => _generationTimeMs; set => _generationTimeMs = value; }
         public (int x, int z) SpawnCell => _spawnCell;
         public (int x, int z) ExitCell => _exitCell;
 
@@ -63,19 +63,19 @@ namespace Code.Lavos.Core.Advanced
             _height = height;
             _seed = seed;
             _level = level;
-            _cells = new ushort[width, height];
+            _cells = new uint[width, height];
             _generationTimeMs = 0;
             AIAdaptiveFactor = 1.0f;
         }
 
-        public ushort GetCell(int x, int z)
+        public uint GetCell(int x, int z)
         {
             if (!InBounds(x, z))
                 return 0;
             return _cells[x, z];
         }
 
-        public void SetCell(int x, int z, ushort value)
+        public void SetCell(int x, int z, uint value)
         {
             if (InBounds(x, z))
                 _cells[x, z] = value;
@@ -140,35 +140,36 @@ namespace Code.Lavos.Core.Advanced
     /// <summary>
     /// Cell flag bits for advanced maze state.
     /// Extends standard 8-wall flags with room type and danger indicators.
+    /// Uses uint (32-bit) to support extended flags.
     /// </summary>
     public static class CellFlags8
     {
         // Walls (bits 0-7) - Cardinal and Diagonal
-        public const ushort Wall_N = 0x0001;
-        public const ushort Wall_S = 0x0002;
-        public const ushort Wall_E = 0x0004;
-        public const ushort Wall_W = 0x0008;
-        public const ushort Wall_NE = 0x0010;
-        public const ushort Wall_NW = 0x0020;
-        public const ushort Wall_SE = 0x0040;
-        public const ushort Wall_SW = 0x0080;
-        public const ushort Wall_All = 0x00FF;
+        public const uint Wall_N = 0x0001;
+        public const uint Wall_S = 0x0002;
+        public const uint Wall_E = 0x0004;
+        public const uint Wall_W = 0x0008;
+        public const uint Wall_NE = 0x0010;
+        public const uint Wall_NW = 0x0020;
+        public const uint Wall_SE = 0x0040;
+        public const uint Wall_SW = 0x0080;
+        public const uint Wall_All = 0x00FF;
 
         // Room Types (bits 8-12)
-        public const ushort IsRoom = 0x0100;
-        public const ushort IsHall = 0x0200;
-        public const ushort IsTrapRoom = 0x0400;
-        public const ushort IsTreasureRoom = 0x0800;
-        public const ushort IsBossRoom = 0x1000;
+        public const uint IsRoom = 0x0100;
+        public const uint IsHall = 0x0200;
+        public const uint IsTrapRoom = 0x0400;
+        public const uint IsTreasureRoom = 0x0800;
+        public const uint IsBossRoom = 0x1000;
 
         // Objects (bits 13-15)
-        public const ushort HasTorch = 0x2000;
-        public const ushort HasEnemy = 0x4000;
-        public const ushort HasChest = 0x8000;
+        public const uint HasTorch = 0x2000;
+        public const uint HasEnemy = 0x4000;
+        public const uint HasChest = 0x8000;
 
-        // Advanced markers (would extend if needed)
-        public const ushort IsMainPath = 0x0001_0000;
-        public const ushort IsDanger = 0x0002_0000;
+        // Advanced markers (bits 16-17)
+        public const uint IsMainPath = 0x0001_0000;
+        public const uint IsDanger = 0x0002_0000;
     }
 
     /// <summary>
@@ -228,7 +229,7 @@ namespace Code.Lavos.Core.Advanced
             return dir >= Direction8.NE;
         }
 
-        public static ushort ToWallFlag(Direction8 dir)
+        public static uint ToWallFlag(Direction8 dir)
         {
             return dir switch
             {

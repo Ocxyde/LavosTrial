@@ -147,9 +147,23 @@ namespace Code.Lavos.Core
         // ─────────────────────────────────────────────────────────
         private static void FillAllWalls(MazeData8 d)
         {
-            for (int x = 0; x < d.Width;  x++)
-            for (int z = 0; z < d.Height; z++)
-                d.SetCell(x, z, CellFlags8.AllWalls);
+            if (d == null) throw new ArgumentNullException(nameof(d));
+    
+            uint wallMask = (uint)CellFlags8.AllWalls;
+    
+            for (int x = 0; x < d.Width; x++)
+            {
+                for (int z = 0; z < d.Height; z++)
+                {
+                    var existing = d.GetCell(x, z);
+                    CellFlags8 newValue = existing | (CellFlags8)wallMask;
+            
+                    if (newValue != (CellFlags8)existing)
+                    {
+                        d.SetCell(x, z, newValue);
+                    }
+                }
+            }
         }
 
         // ─────────────────────────────────────────────────────────
@@ -371,6 +385,7 @@ namespace Code.Lavos.Core
     [Serializable]
     public sealed class MazeConfig
     {
+        public const int ExitRoomSize = 1;
         public int   BaseSize       = 12;
         public int   MinSize        = 12;
         public int   MaxSize        = 51;

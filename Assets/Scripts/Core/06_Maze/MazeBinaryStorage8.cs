@@ -183,7 +183,9 @@ namespace Code.Lavos.Core
                 for (int x = 0; x < width;  x++)
                 {
                     ushort cell = br.ReadUInt16();
-                    data.SetCell(x, z, (CellFlags8)cell);
+                    data.SetCell(x,
+                        z,
+                        (CellFlags8)cell);
                     checksum ^=  (uint)( cell       & 0xFF);
                     checksum ^= ((uint)((cell >> 8) & 0xFF)) << 8;
                 }

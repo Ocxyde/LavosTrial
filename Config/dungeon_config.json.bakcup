@@ -1,0 +1,50 @@
+{
+    "BaseSize": 21,
+    "MinSize": 15,
+    "MaxSize": 51,
+    "CellSize": 6.0,
+    "WallHeight": 3.0,
+    "SpawnRoomSize": 2,
+    "ExitRoomSize": 2,
+    "ChamberExpansionRadius": 1,
+    "TrapDensity": 0.25,
+    "TrapTypes": [
+        "spikes",
+        "lava",
+        "darkness",
+        "poison"
+    ],
+    "TreasureDensity": 0.15000000596046449,
+    "TreasureValueRange": {
+        "x": 100,
+        "y": 500
+    },
+    "CorridorWindingFactor": 0.30000001192092898,
+    "DeadEndExpansionChance": 0.6000000238418579,
+    "CrossroadExpansionChance": 0.800000011920929,
+    "TorchChance": 0.25,
+    "EnemyDensity": 0.029999999329447748,
+    "ChestDensity": 0.05000000074505806,
+    "BossRoomCount": 1,
+    "Difficulty": {
+        "BaseFactor": 1.0,
+        "FactorPerLevel": 0.15000000596046449,
+        "MaxFactor": 5.0,
+        "SizeGrowthPerLevel": 2
+    },
+    "AISettings": {
+        "EnableAdaptivity": true,
+        "MinAdaptiveFactor": 0.699999988079071,
+        "MaxAdaptiveFactor": 1.7999999523162842,
+        "PathLengthWeight": 0.30000001192092898,
+        "TrapDensityWeight": 0.25,
+        "TreasureDensityWeight": 0.20000000298023225,
+        "MazeComplexityWeight": 0.25,
+        "LearnFromPlayerPerformance": true,
+        "PerformanceHistoryLength": 5
+    },
+    "MultiEntranceEnabled": true,
+    "MultiExitEnabled": false,
+    "AllowDiagonalWalls": true,
+    "GuaranteedPathRequired": true
+}

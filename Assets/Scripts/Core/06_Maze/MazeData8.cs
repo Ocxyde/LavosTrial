@@ -4,6 +4,7 @@
 // Encoding: UTF-8  |  Locale: en_US
 
 using System;
+using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
@@ -134,17 +135,21 @@ namespace Code.Lavos.Core
     }
 
     // -------------------------------------------------------------------------
-    // MazeData8 - immutable snapshot of a generated maze
+    // MazeData8 - mutable data container for generated maze
+    // Note: Core dimensions (Width, Height, Seed, Level) are immutable,
+    //       but difficulty factors and config can be set post-construction
     // -------------------------------------------------------------------------
     public sealed class MazeData8
     {
         // Metadata
-        public int   Width            { get; }
-        public int   Height           { get; }
-        public int   Seed             { get; }
-        public int   Level            { get; }
-        public long  Timestamp        { get; }
-        public float DifficultyFactor { get; internal set; }
+        public int                 Width            { get; }
+        public int                 Height           { get; }
+        public int                 Seed             { get; }
+        public int                 Level            { get; }
+        public long                Timestamp        { get; }
+        public float               DifficultyFactor { get; internal set; }
+        public DungeonMazeConfig   Config           { get; internal set; }
+        public float               AIAdaptiveFactor { get; internal set; }
 
         // Entry / Exit
         public (int x, int z) SpawnCell { get; private set; }
@@ -185,6 +190,50 @@ namespace Code.Lavos.Core
         {
             ExitCell = (x, z);
             AddFlag(x, z, CellFlags8.IsExit);
+        }
+
+        public void SetSpawnRoom(int x, int z, int radius)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                for (int dz = -radius; dz <= radius; dz++)
+                {
+                    int nx = x + dx;
+                    int nz = z + dz;
+                    if (InBounds(nx, nz))
+                    {
+                        AddFlag(nx, nz, CellFlags8.SpawnRoom);
+                    }
+                }
+            }
+        }
+
+        public void SetExitRoom(int x, int z, int radius)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            {
+                for (int dz = -radius; dz <= radius; dz++)
+                {
+                    int nx = x + dx;
+                    int nz = z + dz;
+                    if (InBounds(nx, nz))
+                    {
+                        AddFlag(nx, nz, CellFlags8.IsExit);
+                    }
+                }
+            }
+        }
+
+        public bool IsSpawnRoom(int x, int z)
+            => (_cells[x, z] & CellFlags8.SpawnRoom) != 0;
+
+        public bool IsExitRoom(int x, int z)
+            => (_cells[x, z] & CellFlags8.IsExit) != 0;
+
+        public void MarkAsMainPath(int x, int z)
+        {
+            // Marker for main path - using IsRoom flag as proxy
+            AddFlag(x, z, CellFlags8.IsRoom);
         }
 
         // -------------------------------------------------------------------------

@@ -63,7 +63,7 @@ namespace Code.Lavos.Core
         [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds DoorHolePlacer in scene")]
         [SerializeField] private DoorHolePlacer holePlacer;
-        
+
         [Tooltip("Auto-finds GridMazeGenerator in scene")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 

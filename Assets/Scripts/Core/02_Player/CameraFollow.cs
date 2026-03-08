@@ -223,9 +223,16 @@ namespace Code.Lavos.Core
 
         private void LookAtTarget()
         {
-            Vector3 lookTarget = target.position + Vector3.up * 0.5f; // Look at upper body
+            if (target == null) return;
+
+            Vector3 lookTarget = target.position + Vector3.up * 0.5f;
+            Vector3 direction = lookTarget - transform.position;
+            
+            // Avoid normalizing zero vector (causes Unity assertion error)
+            if (direction.sqrMagnitude < 0.0001f) return;
+            
             Quaternion targetRotation = Quaternion.LookRotation(
-                (lookTarget - transform.position).normalized,
+                direction.normalized,
                 Vector3.up
             );
 

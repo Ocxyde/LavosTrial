@@ -51,6 +51,13 @@ namespace Code.Lavos.Editor
             // Load config FIRST - all paths from here
             var config = GameConfig.Instance;
 
+            if (config == null)
+            {
+                Debug.LogError("[Setup] GameConfig not found in scene! Please create a GameConfig GameObject first.");
+                EditorUtility.DisplayDialog("Error", "GameConfig not found in scene!\n\nPlease add a GameConfig GameObject to your scene before running this setup tool.", "OK");
+                return;
+            }
+
             Debug.Log($"[Setup]  Config loaded from Config/GameConfig-default.json");
             Debug.Log($"[Setup]    Wall Prefab: {config.wallPrefab}");
             Debug.Log($"[Setup]    Door Prefab: {config.doorPrefab}");
@@ -81,7 +88,7 @@ namespace Code.Lavos.Editor
             // Find or create components and ASSIGN from config
             EnsureTorchPool(config);
             EnsureLightPlacementEngine();
-            EnsureCompleteMazeBuilder(config);
+            EnsureCompleteMazeBuilder8(config);
 
             Debug.Log("═══════════════════════════════════════════");
             Debug.Log("  SETUP COMPLETE!");
@@ -267,15 +274,15 @@ namespace Code.Lavos.Editor
             }
         }
 
-        private static void EnsureCompleteMazeBuilder(GameConfig config)
+        private static void EnsureCompleteMazeBuilder8(GameConfig config)
         {
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
-            
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
+
             if (mazeBuilder == null)
             {
                 GameObject go = new GameObject("MazeBuilder");
-                mazeBuilder = go.AddComponent<CompleteMazeBuilder>();
-                Debug.Log("[Setup]  Created CompleteMazeBuilder component");
+                mazeBuilder = go.AddComponent<CompleteMazeBuilder8>();
+                Debug.Log("[Setup]  Created CompleteMazeBuilder8 component");
             }
 
             // Assign all prefabs and materials from config
@@ -289,7 +296,7 @@ namespace Code.Lavos.Editor
             AssignField(serializedObject, "groundTexture", config.groundTexture, typeof(Texture2D));
 
             serializedObject.ApplyModifiedProperties();
-            Debug.Log("[Setup]   Assigned all prefabs/materials to CompleteMazeBuilder from config");
+            Debug.Log("[Setup]   Assigned all prefabs/materials to CompleteMazeBuilder8 from config");
         }
 
         private static void AssignField(SerializedObject obj, string fieldName, string configPath, System.Type type)

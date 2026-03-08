@@ -96,11 +96,11 @@ namespace Code.Lavos.Editor
             }
         }
 
-        [MenuItem("GameObject/CompleteMazeBuilder/Preview Maze in Editor", false, 10)]
+        [MenuItem("GameObject/CompleteMazeBuilder8/Preview Maze in Editor", false, 10)]
         public static void PreviewFromSelection()
         {
-            // Plug-in-Out: Find existing CompleteMazeBuilder
-            var mazeBuilder = Selection.activeGameObject?.GetComponent<CompleteMazeBuilder>();
+            // Plug-in-Out: Find existing CompleteMazeBuilder8
+            var mazeBuilder = Selection.activeGameObject?.GetComponent<CompleteMazeBuilder8>();
 
             if (mazeBuilder != null)
             {
@@ -109,18 +109,18 @@ namespace Code.Lavos.Editor
             else
             {
                 EditorUtility.DisplayDialog(
-                    "No CompleteMazeBuilder Selected",
-                    "Please select a GameObject with CompleteMazeBuilder component.\n\n" +
+                    "No CompleteMazeBuilder8 Selected",
+                    "Please select a GameObject with CompleteMazeBuilder8 component.\n\n" +
                     "Tip: Use Tools → Maze → Preview Maze (1-Click Render) instead.",
                     "OK"
                 );
             }
         }
 
-        [MenuItem("GameObject/CompleteMazeBuilder/Preview Maze in Editor", true)]
+        [MenuItem("GameObject/CompleteMazeBuilder8/Preview Maze in Editor", true)]
         public static bool ValidatePreviewFromSelection()
         {
-            return Selection.activeGameObject?.GetComponent<CompleteMazeBuilder>() != null;
+            return Selection.activeGameObject?.GetComponent<CompleteMazeBuilder8>() != null;
         }
 
         // ───────────────────────────────────────────────────────────────────
@@ -484,7 +484,7 @@ namespace Code.Lavos.Editor
             );
         }
 
-        private static void GeneratePreviewForBuilder(CompleteMazeBuilder builder)
+        private static void GeneratePreviewForBuilder(CompleteMazeBuilder8 builder)
         {
             if (_window == null)
             {

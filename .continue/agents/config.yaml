@@ -1,0 +1,51 @@
+﻿models:
+  - title: Qwen 2.5 0.5B Instruct
+    provider: ollama
+    model: qwen2.5:0.5b
+    apiBase: http://10.2.0.2:8080
+
+embeddings:
+  provider: ollama
+  model: nomic-embed-text
+  apiBase: http://10.2.0.2:8080
+
+tabAutocomplete:
+  model:
+    title: Qwen 2.5 0.5B Instruct
+    provider: ollama
+    model: qwen2.5:0.5b
+    apiBase: http://10.2.0.2:8080
+  # Disable for specific file types if needed
+  # disableInFiles: ["*.md", "*.txt"]
+
+# Context providers - how Continue reads your project
+context:
+  - provider: code
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+  - provider: problems
+  - provider: folder
+  - provider: codebase
+
+# System instructions for Unity/C# context
+systemMessage: |
+  You are a Unity development assistant.
+  - Project uses Unity 6 (6000.3.7f1)
+  - Uses New Input System
+  - C# coding conventions
+  - Unix LF line endings, UTF-8 encoding
+  - GPL v3 license
+  - Plugin architecture with core main file
+
+# Optional: Custom rules
+rules:
+  - name: Unity Best Practices
+    description: Follow Unity conventions
+    patterns:
+      - "*.cs"
+    rule: |
+      - Use PascalCase for public members
+      - Use camelCase for private fields
+      - Always use [SerializeField] for serialized private fields
+      - Use async/await for coroutines when possible

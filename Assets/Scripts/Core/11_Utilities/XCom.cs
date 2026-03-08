@@ -185,11 +185,11 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Command: maze.generate
         /// Generate a new maze procedurally.
-        /// Plug-in-out: Finds CompleteMazeBuilder, never creates.
+        /// Plug-in-out: Finds CompleteMazeBuilder8, never creates.
         /// </summary>
         private static void GenerateMaze(string[] args)
         {
-            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
                 Debug.Log($"{PREFIX} Generating maze...");
@@ -197,18 +197,18 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogError($"{PREFIX} CompleteMazeBuilder not found in scene");
+                Debug.LogError($"{PREFIX} CompleteMazeBuilder8 not found in scene");
             }
         }
 
         /// <summary>
         /// Command: maze.status
         /// Show current maze information.
-        /// Plug-in-out: Finds CompleteMazeBuilder, never creates.
+        /// Plug-in-out: Finds CompleteMazeBuilder8, never creates.
         /// </summary>
         private static void ShowStatus(string[] args)
         {
-            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
                 var cfg = GameConfig.Instance;
@@ -229,18 +229,18 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogError($"{PREFIX} CompleteMazeBuilder not found in scene");
+                Debug.LogError($"{PREFIX} CompleteMazeBuilder8 not found in scene");
             }
         }
 
         /// <summary>
         /// Command: maze.export
         /// Export current maze to shareable code and copy to clipboard.
-        /// Plug-in-out: Finds CompleteMazeBuilder, never creates.
+        /// Plug-in-out: Finds CompleteMazeBuilder8, never creates.
         /// </summary>
         private static void ExportMaze(string[] args)
         {
-            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
                 string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
@@ -255,7 +255,7 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogError($"{PREFIX} CompleteMazeBuilder not found in scene");
+                Debug.LogError($"{PREFIX} CompleteMazeBuilder8 not found in scene");
             }
         }
 
@@ -295,11 +295,11 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Command: maze.share
         /// Share current maze (export code + generate QR URL).
-        /// Plug-in-out: Finds CompleteMazeBuilder, never creates.
+        /// Plug-in-out: Finds CompleteMazeBuilder8, never creates.
         /// </summary>
         private static void ShareMaze(string[] args)
         {
-            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
                 string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
@@ -317,7 +317,7 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.LogError($"{PREFIX} CompleteMazeBuilder not found in scene");
+                Debug.LogError($"{PREFIX} CompleteMazeBuilder8 not found in scene");
             }
         }
 

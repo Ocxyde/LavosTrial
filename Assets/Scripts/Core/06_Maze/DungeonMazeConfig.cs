@@ -19,13 +19,13 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 
 using UnityEngine;
-using Newtonsoft.Json;
 
 namespace Code.Lavos.Core.Advanced
 {
     /// <summary>
     /// Configuration for advanced dungeon maze generation.
     /// Can be loaded from JSON or set programmatically.
+    /// Uses Unity's JsonUtility for serialization (no external dependencies).
     /// </summary>
     [System.Serializable]
     public class DungeonMazeConfig
@@ -33,101 +33,77 @@ namespace Code.Lavos.Core.Advanced
         // ─────────────────────────────────────────────────────────────
         // Core Maze Parameters
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("baseSize")]
         public int BaseSize = 21;
 
-        [JsonProperty("minSize")]
         public int MinSize = 15;
 
-        [JsonProperty("maxSize")]
         public int MaxSize = 51;
 
-        [JsonProperty("cellSize")]
         public float CellSize = 6.0f;
 
-        [JsonProperty("wallHeight")]
         public float WallHeight = 3.0f;
 
         // ─────────────────────────────────────────────────────────────
         // Room Configuration
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("spawnRoomSize")]
         public int SpawnRoomSize = 2;
 
-        [JsonProperty("exitRoomSize")]
         public int ExitRoomSize = 2;
 
-        [JsonProperty("chamberExpansionRadius")]
         public int ChamberExpansionRadius = 1;
 
         // ─────────────────────────────────────────────────────────────
         // Danger & Treasure Parameters
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("trapDensity")]
         public float TrapDensity = 0.25f;
 
-        [JsonProperty("trapTypes")]
         public string[] TrapTypes = { "spikes", "lava", "darkness", "poison" };
 
-        [JsonProperty("treasureDensity")]
         public float TreasureDensity = 0.15f;
 
-        [JsonProperty("treasureValueRange")]
         public Vector2Int TreasureValueRange = new Vector2Int(100, 500);
 
         // ─────────────────────────────────────────────────────────────
         // Corridor & Complexity
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("corridorWindingFactor")]
         public float CorridorWindingFactor = 0.3f;
 
-        [JsonProperty("deadEndExpansionChance")]
         public float DeadEndExpansionChance = 0.6f;
 
-        [JsonProperty("crossroadExpansionChance")]
         public float CrossroadExpansionChance = 0.8f;
 
         // ─────────────────────────────────────────────────────────────
         // Object Placement
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("torchChance")]
         public float TorchChance = 0.25f;
 
-        [JsonProperty("enemyDensity")]
         public float EnemyDensity = 0.03f;
 
-        [JsonProperty("chestDensity")]
         public float ChestDensity = 0.05f;
 
-        [JsonProperty("bossRoomCount")]
         public int BossRoomCount = 1;
 
         // ─────────────────────────────────────────────────────────────
         // Difficulty Scaling
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("difficulty")]
         public DifficultyScalerConfig Difficulty = new DifficultyScalerConfig();
 
         // ─────────────────────────────────────────────────────────────
         // AI Settings
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("aiSettings")]
         public AIAdaptiveSettings AISettings = new AIAdaptiveSettings();
 
         // ─────────────────────────────────────────────────────────────
         // Advanced Features
         // ─────────────────────────────────────────────────────────────
-        [JsonProperty("multiEntranceEnabled")]
         public bool MultiEntranceEnabled = true;
 
-        [JsonProperty("multiExitEnabled")]
         public bool MultiExitEnabled = false;
 
-        [JsonProperty("allowDiagonalWalls")]
         public bool AllowDiagonalWalls = true;
 
-        [JsonProperty("guaranteedPathRequired")]
         public bool GuaranteedPathRequired = true;
+        public int BaseWallPenalty { get; }
 
         // ─────────────────────────────────────────────────────────────
         // Validation & Utilities
@@ -154,8 +130,8 @@ namespace Code.Lavos.Core.Advanced
         {
             try
             {
-                var config = JsonConvert.DeserializeObject<DungeonMazeConfig>(jsonText);
-                if (config.IsValid())
+                var config = JsonUtility.FromJson<DungeonMazeConfig>(jsonText);
+                if (config != null && config.IsValid())
                 {
                     return config;
                 }
@@ -174,7 +150,7 @@ namespace Code.Lavos.Core.Advanced
 
         public string ToJson()
         {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
+            return JsonUtility.ToJson(this, prettyPrint: true);
         }
     }
 
@@ -184,16 +160,12 @@ namespace Code.Lavos.Core.Advanced
     [System.Serializable]
     public class DifficultyScalerConfig
     {
-        [JsonProperty("baseFactor")]
         public float BaseFactor = 1.0f;
 
-        [JsonProperty("factorPerLevel")]
         public float FactorPerLevel = 0.15f;
 
-        [JsonProperty("maxFactor")]
         public float MaxFactor = 5.0f;
 
-        [JsonProperty("sizeGrowthPerLevel")]
         public int SizeGrowthPerLevel = 2;
 
         public float Factor(int level)
@@ -220,31 +192,22 @@ namespace Code.Lavos.Core.Advanced
     [System.Serializable]
     public class AIAdaptiveSettings
     {
-        [JsonProperty("enableAdaptivity")]
         public bool EnableAdaptivity = true;
 
-        [JsonProperty("minAdaptiveFactor")]
         public float MinAdaptiveFactor = 0.7f;
 
-        [JsonProperty("maxAdaptiveFactor")]
         public float MaxAdaptiveFactor = 1.8f;
 
-        [JsonProperty("pathLengthWeight")]
         public float PathLengthWeight = 0.3f;
 
-        [JsonProperty("trapDensityWeight")]
         public float TrapDensityWeight = 0.25f;
 
-        [JsonProperty("treasureDensityWeight")]
         public float TreasureDensityWeight = 0.2f;
 
-        [JsonProperty("mazeComplexityWeight")]
         public float MazeComplexityWeight = 0.25f;
 
-        [JsonProperty("learnFromPlayerPerformance")]
         public bool LearnFromPlayerPerformance = true;
 
-        [JsonProperty("performanceHistoryLength")]
         public int PerformanceHistoryLength = 5;
     }
 }

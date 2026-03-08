@@ -30,11 +30,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
 
-// Type aliases for Advanced namespace types
-using MazeData8 = Advanced.MazeData8;
-using CellFlags8 = Advanced.CellFlags8;
-using Direction8 = Advanced.Direction8;
-
 namespace Code.Lavos.Core
 {
     /// <summary>
@@ -64,10 +59,10 @@ namespace Code.Lavos.Core
         [SerializeField] private bool autoLoadFromResources = true;
 
         [Header(" Component References (Plug-in-Out)")]
-        [Tooltip("Auto-finds CompleteMazeBuilder in scene")]
-        [SerializeField] private CompleteMazeBuilder completeMazeBuilder;
-        
-        [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder")]
+        [Tooltip("Auto-finds CompleteMazeBuilder8 in scene")]
+        [SerializeField] private CompleteMazeBuilder8 completeMazeBuilder;
+
+        [Tooltip("GridMazeGenerator is accessed via CompleteMazeBuilder8")]
         [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
         [Header(" Debug")]
@@ -112,9 +107,9 @@ namespace Code.Lavos.Core
         /// </summary>
         private void FindComponents()
         {
-            // GridMazeGenerator is created by CompleteMazeBuilder
+            // GridMazeGenerator is created by CompleteMazeBuilder8
             if (completeMazeBuilder == null)
-                completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+                completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
         }
 
         #endregion

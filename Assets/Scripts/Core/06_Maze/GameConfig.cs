@@ -107,9 +107,14 @@ namespace Code.Lavos.Core
         public string groundTexture => "Textures/floor_texture.png";
         public string wallTexture => "Textures/wall_texture.png";
 
+        // Wall thickness (for scaling - no hardcoded values in CompleteMazeBuilder)
+        public float defaultWallThickness => 0.2f;
+        public float defaultDiagonalWallThickness => 0.5f;
+
         [Header("Maze Geometry")]
         public float CellSize          = 6.0f;
         public float WallHeight        = 4.0f;
+        public float WallThickness     = 0.2f;
 
         [Header("Player")]
         public float PlayerEyeHeight   = 1.7f;

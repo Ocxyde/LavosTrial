@@ -5,6 +5,7 @@
 
 using System;
 using UnityEngine;
+using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
@@ -26,7 +27,7 @@ namespace Code.Lavos.Core
     //
     //  At level 0   : factor = 1.00   (baseline)
     //  At half way  : factor ≈ 1.75   (exponent 2.0)
-    //  At MaxLevel  : factor = 3.00   (always)
+    //  At MaxLevel  : factor = MaxFactor (always)
     //
     //  Scaled outputs (consumed by GridMazeGenerator8):
     //    MazeSize      = BaseSize + (int)(level × SizeRamp × factor)
@@ -103,16 +104,18 @@ namespace Code.Lavos.Core
         // ── Debug / display ───────────────────────────────────────
 
         /// <summary>Human-readable snapshot of all scaled values at a given level.</summary>
-        public string Describe(int level, MazeConfig8 cfg)
+        public string Describe(int level, DungeonMazeConfig cfg)
         {
-            float f = Factor(level);
-            return
-                $"Level {level}  |  factor={f:F3}  |  " +
-                $"size={MazeSize(level, cfg.BaseSize, cfg.MinSize, cfg.MaxSize)}  |  " +
-                $"enemies={EnemyDensity(cfg.EnemyDensity, level):P1}  |  " +
-                $"chests={ChestDensity(cfg.ChestDensity, level):P1}  |  " +
-                $"torches={TorchChance(cfg.TorchChance, level):P1}  |  " +
-                $"wallPenalty={WallCrossPenalty(cfg.BaseWallPenalty, level)}";
+            if (cfg == null) throw new ArgumentNullException(nameof(cfg));
+
+            float f         = Factor(level);
+            int   size      = MazeSize(level, cfg.BaseSize, cfg.MinSize, cfg.MaxSize);
+            float enemies   = EnemyDensity(cfg.EnemyDensity, level);
+            float chests    = ChestDensity(cfg.ChestDensity, level);
+            float torches   = TorchChance(cfg.TorchChance, level);
+            int   wallPenalty = WallCrossPenalty(cfg.BaseWallPenalty, level);
+
+            return $"Level {level}  |  factor={f:F3}  |  size={size}  |  enemies={enemies:P1}  |  chests={chests:P1}  |  torches={torches:P1}  |  wallPenalty={wallPenalty}";
         }
     }
 }

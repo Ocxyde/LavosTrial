@@ -1,0 +1,275 @@
+﻿# CompleteMazeBuilder.cs - Bug Fixes Summary
+# Date: 2026-03-08
+# Author: BetsyBoop
+
+## CRITICAL FIXES
+
+### 1. Null reference before SpawnGround (line ~176)
+ADDED: Config null check before calling SpawnGround()
+```csharp
+// Verify config before proceeding
+if (_config == null)
+{
+    Debug.LogError("[MazeBuilder8] CRITICAL: _config is NULL - cannot spawn maze objects!");
+    return;
+}
+```
+
+### 2. SpawnDoors null check (line ~570)
+ADDED: Null guards for _mazeData and _config
+```csharp
+private void SpawnDoors()
+{
+    if (doorPrefab == null) return;
+    if (_mazeData == null || _config == null)
+    {
+        Debug.LogError("[MazeBuilder8] SpawnDoors: _mazeData or _config is NULL!");
+        return;
+    }
+    // ...
+}
+```
+
+### 3. DestroyContainer static fix (line ~314)
+CHANGED: Removed 'static' modifier
+```csharp
+// BEFORE: private static void DestroyContainer(...)
+// AFTER:  private void DestroyContainer(...)
+```
+
+## HIGH PRIORITY FIXES
+
+### 4. Diagonal wall scale (line ~554)
+CHANGED: From hardcoded 1f to proper calculation
+```csharp
+// BEFORE: wall.transform.localScale = new Vector3(1f, wh, DiagonalWallThickness);
+// AFTER:
+float diagLength = cs * Mathf.Sqrt(2f);
+wall.transform.localScale = new Vector3(diagLength, wh, DiagonalWallThickness);
+```
+
+### 5. Door thickness magic number (line ~643)
+CHANGED: From 0.2f to WallThickness property
+```csharp
+// BEFORE: door.transform.localScale = new Vector3(cs, wh, 0.2f);
+// AFTER:  door.transform.localScale = new Vector3(cs, wh, WallThickness);
+```
+
+### 6. Debug log cellsWithWalls always 0 (line ~377)
+CHANGED: Split into two passes - count first, then log
+```csharp
+// First pass: count cells with walls
+for (int z = 0; z < _mazeData.Height; z++)
+for (int x = 0; x < _mazeData.Width; x++)
+{
+    var cell = _mazeData.GetCell(x, z);
+    if ((cell & CellFlags8.AllWalls) != CellFlags8.None)
+        cellsWithWalls++;
+}
+
+Debug.Log(...); // Now shows correct count
+
+// Second pass: spawn walls
+for (int z = 0; z < _mazeData.Height; z++)
+for (int x = 0; x < _mazeData.Width; x++)
+{
+    // ... spawn logic
+}
+```
+
+### 7. Duplicate material loading (LoadConfig)
+REMOVED: Redundant material loading from LoadConfig()
+```csharp
+// REMOVED:
+// var gameConfig = GameConfig.Instance;
+// if (gameConfig != null)
+// {
+//     wallMaterial ??= Resources.Load<Material>(gameConfig.wallMaterial);
+// }
+```
+
+## MEDIUM PRIORITY FIXES
+
+### 8. NextLevel null warning (line ~228)
+ADDED: Null check before accessing _config
+```csharp
+if (_config != null)
+{
+    Debug.Log($"[MazeBuilder8] Level {currentLevel}  " +
+              $"expected factor={_config.MazeCfg.Difficulty.Factor(currentLevel):F3}");
+}
+else
+{
+    Debug.Log($"[MazeBuilder8] Level {currentLevel}");
+}
+```
+
+### 9. MazeSize uses Instance (line ~765)
+CHANGED: Use _config with fallback
+```csharp
+// BEFORE: var cfg = GameConfig.Instance;
+// AFTER:  var cfg = _config ?? GameConfig.Instance;
+```
+
+### 10. Null checks after Instantiate calls
+ADDED: Null validation for all Instantiate calls
+
+SpawnCardinalWall (line ~479):
+```csharp
+var wall = Instantiate(wallPrefab, edgePos, rot, _wallsRoot);
+if (wall == null)
+{
+    Debug.LogError($"[MazeBuilder8] Failed to instantiate cardinal wall at {edgePos}");
+    return;
+}
+```
+
+SpawnDiagonalWall (line ~547):
+```csharp
+var wall = Instantiate(wallDiagPrefab, cornerPos, Quaternion.Euler(0f, rotY, 0f), _wallsRoot);
+if (wall == null)
+{
+    Debug.LogError($"[MazeBuilder8] Failed to instantiate diagonal wall at {cornerPos}");
+    return;
+}
+```
+
+SpawnDoorOnAccessWall (line ~634):
+```csharp
+var door = Instantiate(doorPrefab, wallEdgePos, Quaternion.Euler(0f, rotY, 0f));
+if (door == null)
+{
+    Debug.LogError($"[MazeBuilder8] Failed to instantiate door at {wallEdgePos}");
+    continue;
+}
+```
+
+SpawnGround (line ~338):
+```csharp
+var go = Instantiate(floorPrefab, new Vector3(sz * 0.5f, 0f, sz * 0.5f), Quaternion.identity);
+if (go == null)
+{
+    Debug.LogError("[MazeBuilder8] Failed to instantiate floor prefab!");
+    return;
+}
+```
+
+SpawnPlayer (line ~735):
+```csharp
+_playerInstance = Instantiate(playerPrefab, pos, Quaternion.identity);
+if (_playerInstance == null)
+{
+    Debug.LogError("[MazeBuilder8] Failed to instantiate player prefab!");
+    return;
+}
+```
+
+## LOW PRIORITY / CODE QUALITY
+
+### 11. SpawnGround null check (line ~324)
+ADDED: Null guards for _mazeData and _config
+```csharp
+if (_mazeData == null || _config == null)
+{
+    Debug.LogError("[MazeBuilder8] SpawnGround: _mazeData or _config is NULL!");
+    return;
+}
+```
+
+### 12. SpawnPlayer existing player null guard (line ~708)
+ADDED: Null check before positioning existing player
+```csharp
+if (existing != null)
+{
+    _playerInstance = existing.gameObject;
+    if (_mazeData != null && _config != null)
+    {
+        _playerInstance.transform.position = CellCenter(...);
+    }
+    return;
+}
+```
+
+### 13. SpawnTorches null check (line ~672)
+ADDED: _mazeData null guard
+```csharp
+if (_mazeData == null)
+{
+    Debug.LogError("[MazeBuilder8] SpawnTorches: _mazeData is NULL!");
+    return;
+}
+```
+
+### 14. SpawnObjects null check (line ~686)
+ADDED: _mazeData null guard
+```csharp
+if (_mazeData == null)
+{
+    Debug.LogError("[MazeBuilder8] SpawnObjects: _mazeData is NULL!");
+    return;
+}
+```
+
+### 15. PlaceAtCell null check (line ~775)
+ADDED: Prefab null validation
+```csharp
+if (prefab == null)
+{
+    Debug.LogError($"[MazeBuilder8] PlaceAtCell: prefab is NULL for {objName}!");
+    return;
+}
+
+var go = Instantiate(prefab, CellCenter(cx, cz), Quaternion.identity, parent);
+if (go != null)
+    go.name = objName;
+```
+
+### 16. CellCenter null guard (line ~764)
+CHANGED: Safe null-coalescing for _config
+```csharp
+// BEFORE: float cs = _config.CellSize;
+// AFTER:  float cs = _config?.CellSize ?? 1f;
+```
+
+### 17. SpawnAllWalls null check (line ~378)
+ADDED: Null guards for _mazeData and _config
+```csharp
+if (_mazeData == null || _config == null)
+{
+    Debug.LogError("[MazeBuilder8] SpawnAllWalls: _mazeData or _config is NULL!");
+    return;
+}
+```
+
+### 18. SpawnDoorOnAccessWall null check (line ~619)
+ADDED: _config null guard
+```csharp
+if (_config == null)
+{
+    Debug.LogError("[MazeBuilder8] SpawnDoorOnAccessWall: _config is NULL!");
+    return;
+}
+```
+
+---
+## COMPLIANCE CHECKLIST
+
+[X] No emojis in C# code
+[X] UTF-8 encoding with Unix LF line endings
+[X] C# Unity naming conventions (private fields with underscore prefix)
+[X] GPL v3 license header present
+[X] No shell/cmd execution
+[X] Plug-in-out system respected (FindFirstObjectByType, never AddComponent)
+[X] Unity 6 (6000.3.7f1) compatible
+[ ] backup.ps1 to be run by user
+[ ] Git commit recommended
+
+## FILES MODIFIED
+
+- Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs
+
+## NEXT STEPS
+
+1. User should run: backup.ps1
+2. User should commit changes to git
+3. Build in Unity 6 / Rider to verify no compilation errors

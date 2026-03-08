@@ -8,11 +8,6 @@ using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
-    // Type alias for Advanced namespace MazeData8
-    using MazeData8 = Advanced.MazeData8;
-    using CellFlags8 = Advanced.CellFlags8;
-    using Direction8 = Advanced.Direction8;
-
     // -------------------------------------------------------------------------
     // CompleteMazeBuilder8 - 8-axis maze orchestrator
     //
@@ -70,7 +65,7 @@ namespace Code.Lavos.Core
         [SerializeField] private float currentDifficultyFactor;
 
         // Runtime
-        private MazeData8          _mazeData;
+        private DungeonMazeData    _mazeData;
         private GameConfig         _config;
         private DungeonMazeGenerator  _generator;
         private Transform          _wallsRoot;
@@ -80,7 +75,7 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         // Public Accessors (for other systems to access maze data)
         // -------------------------------------------------------------------------
-        public MazeData8 MazeData => _mazeData;
+        public DungeonMazeData MazeData => _mazeData;
         public GameConfig Config => _config;
 
         // -------------------------------------------------------------------------
@@ -95,6 +90,16 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         // PUBLIC API
         // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// Set the level number and seed before calling GenerateMaze().
+        /// </summary>
+        public void SetLevelAndSeed(int level, int seed)
+        {
+            currentLevel = level;
+            currentSeed = seed;
+            Debug.Log($"[MazeBuilder8] Level and seed set: L{level} S{seed}");
+        }
 
         [ContextMenu("Generate Maze (8-axis)")]
         public void GenerateMaze()
@@ -148,20 +153,20 @@ namespace Code.Lavos.Core
                     CellSize = _config.CellSize,
                     WallHeight = _config.WallHeight,
                     SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
-                    ExitRoomSize = _config.MazeCfg.ExitRoomSize,
+                    ExitRoomSize = MazeConfig.ExitRoomSize,  // const from MazeConfig
                     TorchChance = _config.MazeCfg.TorchChance,
                     ChestDensity = _config.MazeCfg.ChestDensity,
                     EnemyDensity = _config.MazeCfg.EnemyDensity,
                     AllowDiagonalWalls = _config.MazeCfg.DiagonalWalls,
                     Difficulty = new DifficultyScalerConfig
                     {
-                        BaseFactor = _config.DifficultyCfg.BaseFactor,
-                        FactorPerLevel = _config.DifficultyCfg.FactorPerLevel,
+                        BaseFactor = 1.0f,  // Default base factor
+                        FactorPerLevel = 0.15f,  // Default per-level increase
                         MaxFactor = _config.DifficultyCfg.MaxFactor,
-                        SizeGrowthPerLevel = _config.DifficultyCfg.SizeGrowthPerLevel,
+                        SizeGrowthPerLevel = 2,  // Default growth per level
                     },
                 };
-                
+
                 _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
             }
 
@@ -235,7 +240,7 @@ namespace Code.Lavos.Core
             {
                 Debug.Log(
                     $"[MazeBuilder8] Level {currentLevel}  " +
-                    $"expected factor={_config.MazeCfg.Difficulty.Factor(currentLevel):F3}");
+                    $"expected factor={_config.DifficultyCfg.Factor(currentLevel):F3}");
             }
             else
             {
@@ -299,7 +304,7 @@ namespace Code.Lavos.Core
         // Get wall thickness from config (no hardcoded values)
         // -------------------------------------------------------------------------
         private float WallThickness => _config?.WallThickness ?? 0.2f;
-        private float DiagonalWallThickness => _config?.DiagonalWallThickness ?? 0.5f;
+        private float DiagonalWallThickness => _config?.defaultDiagonalWallThickness ?? 0.5f;
 
         // -------------------------------------------------------------------------
         // 4 - Cleanup
@@ -401,7 +406,7 @@ namespace Code.Lavos.Core
             for (int x = 0; x < _mazeData.Width;  x++)
             {
                 var cell = _mazeData.GetCell(x, z);
-                if ((cell & CellFlags8.Wall_All) != 0)
+                if ((cell & Advanced.CellFlags8.Wall_All) != 0)
                     cellsWithWalls++;
             }
 
@@ -417,22 +422,22 @@ namespace Code.Lavos.Core
 
                 // Cardinal - spawn all walls based on cell flags (no border checks)
                 // Each cell is responsible for its own walls
-                if ((cell & CellFlags8.Wall_N) != 0)
+                if ((cell & Advanced.CellFlags8.Wall_N) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.N, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.Wall_E) != 0)
+                if ((cell & Advanced.CellFlags8.Wall_E) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.E, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.Wall_S) != 0)
+                if ((cell & Advanced.CellFlags8.Wall_S) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.S, cs, wh);
                     cardinalCount++;
                 }
-                if ((cell & CellFlags8.Wall_W) != 0)
+                if ((cell & Advanced.CellFlags8.Wall_W) != 0)
                 {
                     SpawnCardinalWall(x, z, Direction8.W, cs, wh);
                     cardinalCount++;
@@ -441,22 +446,22 @@ namespace Code.Lavos.Core
                 // Diagonal (toggled by config) - spawn all based on cell flags
                 if (_config.MazeCfg.DiagonalWalls)
                 {
-                    if ((cell & CellFlags8.Wall_NE) != 0)
+                    if ((cell & Advanced.CellFlags8.Wall_NE) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.Wall_NW) != 0)
+                    if ((cell & Advanced.CellFlags8.Wall_NW) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.Wall_SE) != 0)
+                    if ((cell & Advanced.CellFlags8.Wall_SE) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
                         diagonalCount++;
                     }
-                    if ((cell & CellFlags8.Wall_SW) != 0)
+                    if ((cell & Advanced.CellFlags8.Wall_SW) != 0)
                     {
                         SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
                         diagonalCount++;
@@ -631,14 +636,14 @@ namespace Code.Lavos.Core
             float wh = _config.WallHeight;
 
             // Scan cardinal directions only - doors never on diagonals
-            Direction8[] cardinals = { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+            Advanced.Direction8[] cardinals = { Advanced.Direction8.N, Advanced.Direction8.S, Advanced.Direction8.E, Advanced.Direction8.W };
 
             foreach (var dir in cardinals)
             {
                 // Skip if wall is present (door requires an open passage)
                 if (_mazeData.HasWall(cx, cz, dir)) continue;
 
-                var (dx, dz) = Direction8Helper.ToOffset(dir);
+                var (dx, dz) = Advanced.Direction8Helper.ToOffset(dir);
                 int nx = cx + dx;
                 int nz = cz + dz;
                 if (!_mazeData.InBounds(nx, nz)) continue;
@@ -651,7 +656,7 @@ namespace Code.Lavos.Core
                 );
 
                 // Door faces the corridor: N/S doors rotate 0 deg, E/W doors rotate 90 deg
-                float rotY = (dir == Direction8.E || dir == Direction8.W) ? 90f : 0f;
+                float rotY = (dir == Advanced.Direction8.E || dir == Advanced.Direction8.W) ? 90f : 0f;
 
                 var door = Instantiate(
                     doorPrefab,
@@ -695,7 +700,7 @@ namespace Code.Lavos.Core
 
             for (int z = 0; z < _mazeData.Height; z++)
             for (int x = 0; x < _mazeData.Width;  x++)
-                if ((_mazeData.GetCell(x, z) & CellFlags8.HasTorch) != 0)
+                if ((_mazeData.GetCell(x, z) & Advanced.CellFlags8.HasTorch) != 0)
                     PlaceAtCell(x, z, torchPrefab, $"Torch_{x}_{z}", _objectsRoot);
         }
 
@@ -715,10 +720,10 @@ namespace Code.Lavos.Core
             {
                 var cell = _mazeData.GetCell(x, z);
 
-                if ((cell & CellFlags8.HasChest) != 0 && chestPrefab != null)
+                if ((cell & Advanced.CellFlags8.HasChest) != 0 && chestPrefab != null)
                     PlaceAtCell(x, z, chestPrefab, $"Chest_{x}_{z}", _objectsRoot);
 
-                if ((cell & CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
+                if ((cell & Advanced.CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
                     PlaceAtCell(x, z, enemyPrefab, $"Enemy_{x}_{z}", _objectsRoot);
             }
         }
@@ -810,10 +815,10 @@ namespace Code.Lavos.Core
             => $"Level {currentLevel} | {_mazeData?.Width}x{_mazeData?.Height} | " +
                $"Seed {currentSeed} | factor={currentDifficultyFactor:F3} | {lastGenMs:F2}ms";
 
-        public MazeData8 CurrentMazeData         => _mazeData;
-        public int       CurrentLevel            => currentLevel;
-        public int       CurrentSeed             => currentSeed;
-        public float     CurrentDifficultyFactor => currentDifficultyFactor;
+        public DungeonMazeData CurrentMazeData   => _mazeData;
+        public int             CurrentLevel      => currentLevel;
+        public int             CurrentSeed       => currentSeed;
+        public float           CurrentDifficultyFactor => currentDifficultyFactor;
 
         /// <summary>
         /// Current maze grid size (calculated from level and GameConfig).

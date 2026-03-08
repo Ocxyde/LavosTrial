@@ -183,6 +183,7 @@ namespace Code.Lavos.Core
         public event Action<string, string> OnDialogRequested;
         public event Action<string> OnNotificationRequested;
         public event Action<string> OnWindowRequested;
+        public event Action<string> OnHintRequested;
 
         #endregion
 
@@ -380,6 +381,12 @@ namespace Code.Lavos.Core
             if (debugEvents) Debug.Log($"[EventHandler] ItemStacked: {item.itemName} x{newSize}");
         }
 
+        public void InvokeItemPickup(string itemName, int quantity)
+        {
+            // Simplified item pickup notification without ItemData
+            if (debugEvents) Debug.Log($"[EventHandler] ItemPickup: {itemName} x{quantity}");
+        }
+
         #endregion
 
         #region Game Event Invokers
@@ -559,6 +566,12 @@ namespace Code.Lavos.Core
         {
             OnWindowRequested?.Invoke(windowType);
             if (debugEvents) Debug.Log($"[EventHandler] WindowRequested: {windowType}");
+        }
+
+        public void InvokeShowHint(string hint)
+        {
+            OnHintRequested?.Invoke(hint);
+            if (debugEvents) Debug.Log($"[EventHandler] ShowHint: {hint}");
         }
 
         #endregion

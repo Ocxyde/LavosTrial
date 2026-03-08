@@ -59,11 +59,11 @@ namespace Code.Lavos.Editor
             Debug.Log($"    Wall Height: {config.defaultWallHeight}m");
 
             // Find maze builder (plug-in-out: find only!)
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
 
             if (mazeBuilder == null)
             {
-                Debug.LogError("[MazeBuilderEditor]  CompleteMazeBuilder not found after setup!");
+                Debug.LogError("[MazeBuilderEditor]  CompleteMazeBuilder8 not found after setup!");
                 return;
             }
 
@@ -87,7 +87,7 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Maze/Next Level (Harder)")]
         public static void NextLevel()
         {
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder != null)
             {
                 mazeBuilder.NextLevel();
@@ -95,7 +95,7 @@ namespace Code.Lavos.Editor
             }
             else
             {
-                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder! Run: Tools → Generate Maze");
+                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder8! Run: Tools → Generate Maze");
             }
         }
 
@@ -125,11 +125,11 @@ namespace Code.Lavos.Editor
 
         private static void SetLevel(int level)
         {
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder != null)
             {
                 // Use reflection to set currentLevel field
-                var field = typeof(CompleteMazeBuilder).GetField("currentLevel", 
+                var field = typeof(CompleteMazeBuilder8).GetField("currentLevel",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (field != null)
                 {
@@ -139,7 +139,7 @@ namespace Code.Lavos.Editor
             }
             else
             {
-                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder found!");
+                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder8 found!");
             }
         }
 
@@ -192,17 +192,17 @@ namespace Code.Lavos.Editor
         private static void EnsureMazeBuilder()
         {
             // FIND first (plug-in-out!)
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
 
             if (mazeBuilder != null)
             {
-                Debug.Log("   CompleteMazeBuilder: Found existing");
+                Debug.Log("   CompleteMazeBuilder8: Found existing");
 
                 // Ensure required components exist (find first!)
                 EnsureComponent<SpatialPlacer>(mazeBuilder.gameObject);
                 EnsureComponent<LightPlacementEngine>(mazeBuilder.gameObject);
                 EnsureComponent<TorchPool>(mazeBuilder.gameObject);
-                // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder directly
+                // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder8 directly
 
                 // Auto-assign references
                 AutoAssignReferences(mazeBuilder);
@@ -210,19 +210,19 @@ namespace Code.Lavos.Editor
             }
 
             // CREATE only if missing (editor tool convenience)
-            Debug.Log("   CompleteMazeBuilder: Not found - creating...");
+            Debug.Log("   CompleteMazeBuilder8: Not found - creating...");
 
             GameObject mazeGO = new GameObject("MazeBuilder");
-            mazeBuilder = mazeGO.AddComponent<CompleteMazeBuilder>();
+            mazeBuilder = mazeGO.AddComponent<CompleteMazeBuilder8>();
 
             mazeGO.AddComponent<SpatialPlacer>();
             mazeGO.AddComponent<LightPlacementEngine>();
             mazeGO.AddComponent<TorchPool>();
-            // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder directly
+            // MazeRenderer removed - wall rendering handled by CompleteMazeBuilder8 directly
 
             AutoAssignReferences(mazeBuilder);
 
-            Debug.Log("   Created CompleteMazeBuilder with required components");
+            Debug.Log("   Created CompleteMazeBuilder8 with required components");
         }
 
         private static void EnsureEventHandler()
@@ -303,7 +303,7 @@ namespace Code.Lavos.Editor
         /// Auto-assign component references via SerializedObject.
         /// Also fills prefabs and materials from GameConfig defaults.
         /// </summary>
-        private static void AutoAssignReferences(CompleteMazeBuilder mazeBuilder)
+        private static void AutoAssignReferences(CompleteMazeBuilder8 mazeBuilder)
         {
             var serializedObject = new SerializedObject(mazeBuilder);
 
@@ -547,10 +547,10 @@ namespace Code.Lavos.Editor
             GUILayout.Space(10);
 
             // Display current level
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder != null)
             {
-                var field = typeof(CompleteMazeBuilder).GetField("currentLevel", 
+                var field = typeof(CompleteMazeBuilder8).GetField("currentLevel",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (field != null)
                 {

@@ -74,8 +74,9 @@ namespace Code.Lavos.Core.Advanced
         /// </summary>
         public DungeonMazeData Generate(int seed, int level, DungeonMazeConfig cfg)
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             ValidateConfig(cfg);
-            
+
             var scaler = cfg.Difficulty;
             int size = scaler.MazeSize(level, cfg.BaseSize, cfg.MinSize, cfg.MaxSize);
 
@@ -131,9 +132,21 @@ namespace Code.Lavos.Core.Advanced
             Debug.Log($"[DungeonGen] Phase 7: Winding corridors carved");
 
             // === PHASE 8: AI Difficulty Calculation ===
-            _aiDifficulty.AnalyzeMaze(_mazeData, _trapRooms.Count, _treasureRooms.Count);
-            _mazeData.AIAdaptiveFactor = _aiDifficulty.ComputedDifficultyMultiplier;
+            if (_aiDifficulty == null || _mazeData == null)
+            {
+                Debug.LogWarning("[DungeonGen] Phase 8: AI difficulty system not initialized, using default");
+                _mazeData.AIAdaptiveFactor = 1.0f;
+            }
+            else
+            {
+                int trapCount = _trapRooms.Count;
+                int treasureCount = _treasureRooms.Count;
+                _aiDifficulty.AnalyzeMaze(_mazeData, trapCount, treasureCount);
+                _mazeData.AIAdaptiveFactor = _aiDifficulty.ComputedDifficultyMultiplier;
+            }
+#if UNITY_EDITOR
             Debug.Log($"[DungeonGen] Phase 8: AI difficulty = {_mazeData.AIAdaptiveFactor:F2}");
+#endif
 
             // === PHASE 9: Guaranteed Path ===
             EnsurePathToExit();
@@ -145,6 +158,8 @@ namespace Code.Lavos.Core.Advanced
             PlaceChests(cfg.ChestDensity);
             Debug.Log($"[DungeonGen] Phase 10: Objects placed");
 
+            stopwatch.Stop();
+            _mazeData.GenerationTimeMs = stopwatch.ElapsedMilliseconds;
             Debug.Log($"[DungeonGen] COMPLETE - Generation took {_mazeData.GenerationTimeMs:F1}ms");
             return _mazeData;
         }

@@ -126,12 +126,12 @@ namespace Code.Lavos.Core
                 Awake();
             }
 
-            // Check if CompleteMazeBuilder exists - if yes, it will spawn the player
-            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder>();
+            // Check if CompleteMazeBuilder8 exists - if yes, it will spawn the player
+            var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder != null)
             {
-                Debug.Log("[PlayerSetup] CompleteMazeBuilder found - skipping player positioning (maze builder will spawn)");
-                // Don't position player here - CompleteMazeBuilder will do it after maze generation
+                Debug.Log("[PlayerSetup] CompleteMazeBuilder8 found - skipping player positioning (maze builder will spawn)");
+                // Don't position player here - CompleteMazeBuilder8 will do it after maze generation
             }
             else
             {
@@ -254,17 +254,24 @@ namespace Code.Lavos.Core
         {
             if (_useMazeSpawnPoint)
             {
-                // Try to get spawn point from CompleteMazeBuilder
-                var mazeBuilder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
-                if (mazeBuilder != null)
+                // Try to get spawn point from CompleteMazeBuilder8
+                var mazeBuilder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
+                if (mazeBuilder != null && mazeBuilder.MazeData != null)
                 {
-                    transform.position = _startPosition;
+                    // Use maze spawn point from MazeData8
+                    float cellSize = 6f;  // Default, should come from config
+                    var spawn = mazeBuilder.MazeData.SpawnCell;
+                    transform.position = new Vector3(
+                        spawn.x * cellSize + cellSize / 2f,
+                        1.5f,  // Eye height
+                        spawn.z * cellSize + cellSize / 2f
+                    );
                     Debug.Log("[PlayerSetup] Using maze spawn point");
                 }
                 else
                 {
                     transform.position = _startPosition;
-                    Debug.Log("[PlayerSetup] No CompleteMazeBuilder - using start position");
+                    Debug.Log("[PlayerSetup] No CompleteMazeBuilder8 - using start position");
                 }
             }
             else

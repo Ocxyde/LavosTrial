@@ -55,16 +55,16 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Export current maze to shareable code.
-        /// Plug-in-out: Finds CompleteMazeBuilder, never creates.
+        /// Plug-in-out: Finds CompleteMazeBuilder8, never creates.
         /// </summary>
         /// <returns>Shareable maze code, or empty string if not found.</returns>
         public static string ExportMaze()
         {
-            // Plug-in-out: Find CompleteMazeBuilder, never create
-            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+            // Plug-in-out: Find CompleteMazeBuilder8, never create
+            var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder == null)
             {
-                Debug.LogWarning("[ShareSystm] CompleteMazeBuilder not found in scene");
+                Debug.LogWarning("[ShareSystm] CompleteMazeBuilder8 not found in scene");
                 return string.Empty;
             }
 
@@ -120,8 +120,8 @@ namespace Code.Lavos.Core
                 // Publish via EventHandler for subscribers
                 EventHandler.Instance?.InvokeMazeCodeImported(code, seed, level);
 
-                // Plug-in-out: Find CompleteMazeBuilder, never create
-                var builder = Object.FindFirstObjectByType<CompleteMazeBuilder>();
+                // Plug-in-out: Find CompleteMazeBuilder8, never create
+                var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
                 if (builder != null)
                 {
                     Debug.Log($"[ShareSystm] Ready to generate: Seed={seed}, Level={level}");
@@ -129,7 +129,7 @@ namespace Code.Lavos.Core
                 }
                 else
                 {
-                    Debug.LogWarning("[ShareSystm] CompleteMazeBuilder not found - cannot regenerate");
+                    Debug.LogWarning("[ShareSystm] CompleteMazeBuilder8 not found - cannot regenerate");
                 }
             }
 
@@ -338,14 +338,14 @@ namespace Code.Lavos.Core
     /// Extension methods for CompleteMazeBuilder sharing features.
     /// Plug-in-out compliant extensions.
     /// </summary>
-    public static class CompleteMazeBuilderSharingExtensions
+    public static class CompleteMazeBuilder8SharingExtensions
     {
         /// <summary>
         /// Export current maze to shareable code.
         /// </summary>
-        /// <param name="builder">CompleteMazeBuilder instance.</param>
+        /// <param name="builder">CompleteMazeBuilder8 instance.</param>
         /// <returns>Shareable maze code.</returns>
-        public static string ExportMazeCode(this CompleteMazeBuilder builder)
+        public static string ExportMazeCode(this CompleteMazeBuilder8 builder)
         {
             return ShareSystm.ExportMaze();
         }
@@ -353,10 +353,10 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Import maze from code and regenerate.
         /// </summary>
-        /// <param name="builder">CompleteMazeBuilder instance.</param>
+        /// <param name="builder">CompleteMazeBuilder8 instance.</param>
         /// <param name="code">Shareable maze code.</param>
         /// <returns>True if valid and regenerated, false otherwise.</returns>
-        public static bool ImportMazeCode(this CompleteMazeBuilder builder, string code)
+        public static bool ImportMazeCode(this CompleteMazeBuilder8 builder, string code)
         {
             return ShareSystm.ImportMaze(code);
         }
@@ -364,8 +364,8 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Copy current maze code to clipboard.
         /// </summary>
-        /// <param name="builder">CompleteMazeBuilder instance.</param>
-        public static void CopyMazeCodeToClipboard(this CompleteMazeBuilder builder)
+        /// <param name="builder">CompleteMazeBuilder8 instance.</param>
+        public static void CopyMazeCodeToClipboard(this CompleteMazeBuilder8 builder)
         {
             string code = ShareSystm.ExportMaze();
             if (!string.IsNullOrEmpty(code))

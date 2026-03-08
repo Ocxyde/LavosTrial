@@ -1,0 +1,14 @@
+﻿{
+  "models": [
+    {
+      "title": "Qwen 2.5 Local",
+      "provider": "ollama",
+      "model": "qwen2.5:0.5b"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Qwen 2.5 Local",
+    "provider": "ollama",
+    "model": "qwen2.5:0.5b"
+  }
+}
