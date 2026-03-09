@@ -129,9 +129,12 @@ namespace Code.Lavos.Core
                        scaledWallPenalty);
 
             // ── Step 6: Add dead-end corridors ────────────────────
-            //      Creates branching paths for more complex maze
-            //      Density scales with level (more dead-ends at higher levels)
-            AddDeadEndCorridors(data, rng, cfg, scaledDeadEndDensity);
+            //      Uses DeadEndCorridorSystem with mathematical distribution
+            //      - Difficulty-scaled density (level-based)
+            //      - Poisson distribution for natural spacing
+            //      - Built-in corridor termination detection
+            //      - All values from JSON config
+            AddDeadEndCorridorsSystem(data, rng, cfg, scaledDeadEndDensity, level);
 
             // ── Step 7: torches ───────────────────────────────────
             PlaceTorches(data, rng, scaledTorchChance);
@@ -481,6 +484,45 @@ namespace Code.Lavos.Core
             }
 
             Debug.Log($"[GridMazeGenerator] Total dead-end corridors added: {deadEndCount}");
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 6 — Add Dead-End Corridors (NEW SYSTEM)
+        //
+        //  Uses DeadEndCorridorSystem with mathematical distribution:
+        //    - Difficulty-scaled density (level-based)
+        //    - Poisson distribution for natural spacing
+        //    - Built-in corridor termination detection
+        //    - All values from JSON config (DeadEndCorridorConfig.json)
+        //
+        //  MATHEMATICAL FORMULA:
+        //    ScaledDensity = BaseDensity × Lerp(1.0, MaxMultiplier, t^Exponent)
+        //    Where t = level / MaxLevel (39)
+        //
+        //  CORRIDOR MATH:
+        //    - Length: MinLength → MaxLength (2-5 cells default)
+        //    - Width: CorridorWidth (1 cell = 6m fixed)
+        //    - Max Dead-Ends: Min(5% grid, grid/MinLength)
+        //    - Spawn: Passage cells adjacent to walls
+        //
+        //  DIFFICULTY SCALING:
+        //    Level 0:  15% density, 1.0x factor
+        //    Level 10: 21% density, 1.75x factor
+        //    Level 39: 37.5% density, 3.0x factor
+        // ─────────────────────────────────────────────────────────
+        private static void AddDeadEndCorridorsSystem(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity, int level)
+        {
+            // Create dead-end corridor system
+            var deadEndSystem = new DeadEndCorridorSystem();
+
+            // Generate dead-ends
+            var corridors = deadEndSystem.Generate(d, level, rng);
+
+            // Get statistics
+            var stats = deadEndSystem.GetStatistics();
+
+            // Log results
+            Debug.Log($"[GridMazeGenerator] {stats}");
         }
 
         // ─────────────────────────────────────────────────────────

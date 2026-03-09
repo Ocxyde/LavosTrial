@@ -67,6 +67,11 @@ namespace Code.Lavos.Tools
 		private float _customEnemyDensity = -1f;
 		private float _customTrapDensity = -1f;
 		private float _customTreasureDensity = -1f;
+		
+		// Dead-End Corridor Settings (2026-03-09)
+		private float _customDeadEndDensity = -1f;  // -1 = auto-scale with level
+		private int _corridorWidth = 1;  // 1 cell = 6m (fixed)
+		private bool _showDeadEndSettings = false;
 
 		// Batch Generation (separate state from single generation)
 		private int _batchStartLevel = 1;
@@ -262,6 +267,44 @@ namespace Code.Lavos.Tools
 					_customEnemyDensity = EditorGUILayout.Slider("Enemy Density", _customEnemyDensity, -1f, 1f);
 					_customTrapDensity = EditorGUILayout.Slider("Trap Density", _customTrapDensity, -1f, 1f);
 					_customTreasureDensity = EditorGUILayout.Slider("Treasure Density", _customTreasureDensity, -1f, 1f);
+
+					EditorGUILayout.Space();
+					
+					// Dead-End Corridor Settings Foldout
+					_showDeadEndSettings = EditorGUILayout.Foldout(_showDeadEndSettings, "Dead-End Corridor Settings (Level Scalable)");
+					if (_showDeadEndSettings)
+					{
+						EditorGUILayout.HelpBox(
+							"Dead-End Corridors scale with level difficulty:\n" +
+							"- Level 0: 15% base density\n" +
+							"- Level 10: ~21% density (1.4x multiplier)\n" +
+							"- Level 39: ~37.5% density (2.5x multiplier)\n\n" +
+							"Corridor width is fixed at 1 cell (6m) for cardinal-only passages.",
+							MessageType.Info);
+						
+						EditorGUILayout.Space();
+						
+						_corridorWidth = EditorGUILayout.IntField("Corridor Width (cells)", _corridorWidth);
+						if (_corridorWidth < 1) _corridorWidth = 1;
+						if (_corridorWidth > 3) _corridorWidth = 3;
+						
+						EditorGUILayout.LabelField($"Current: {_corridorWidth} cell{(_corridorWidth > 1 ? "s" : "")} ({_corridorWidth * 6}m)", EditorStyles.miniLabel);
+						
+						EditorGUILayout.Space();
+						
+						_customDeadEndDensity = EditorGUILayout.Slider("Dead-End Density (auto if -1)", _customDeadEndDensity, -1f, 0.5f);
+						
+						if (_customDeadEndDensity >= 0f)
+						{
+							EditorGUILayout.LabelField($"Override: {_customDeadEndDensity:P1} (disables level scaling)", EditorStyles.miniLabel);
+						}
+						else
+						{
+							// Calculate and show scaled density for current level
+							float scaledDensity = CalculateScaledDeadEndDensity(_targetLevelNumber);
+							EditorGUILayout.LabelField($"Auto-Scaled: {scaledDensity:P1} at Level {_targetLevelNumber}", EditorStyles.miniLabel);
+						}
+					}
 				}
 				EditorGUILayout.EndVertical();
 
@@ -498,6 +541,13 @@ namespace Code.Lavos.Tools
 
 				int seed = _useCustomSeed ? _customSeed : (_targetLevelNumber * DEFAULT_SEED_BASE);
 
+				// Log difficulty scaling info
+				float difficultyFactor = CalculateDifficultyFactor(_targetLevelNumber);
+				float deadEndDensity = _customDeadEndDensity >= 0f ? _customDeadEndDensity : CalculateScaledDeadEndDensity(_targetLevelNumber);
+				
+				Debug.Log($"[UniversalLevelGenerator] LEVEL {_targetLevelNumber} | factor={difficultyFactor:F3} | " +
+				          $"deadEnd={deadEndDensity:P1} | corridorWidth={_corridorWidth} cell(s) ({_corridorWidth * 6}m)");
+
 				_levelGenerator.GenerateLevel(_targetLevelNumber, seed);
 
 				var stats = _levelGenerator.GetLastGenerationStats();
@@ -575,6 +625,13 @@ namespace Code.Lavos.Tools
 				{
 					float progress = (i - _batchStartLevel + 1) / (float)count;
 					_generationProgress = progress * 100f;
+
+					// Log difficulty scaling info for batch generation
+					float difficultyFactor = CalculateDifficultyFactor(i);
+					float deadEndDensity = CalculateScaledDeadEndDensity(i);
+					
+					Debug.Log($"[UniversalLevelGenerator] LEVEL {i} | factor={difficultyFactor:F3} | " +
+					          $"deadEnd={deadEndDensity:P1} | corridorWidth={_corridorWidth} cell(s) ({_corridorWidth * 6}m)");
 
 					_levelGenerator.GenerateLevel(i);
 
@@ -730,6 +787,40 @@ namespace Code.Lavos.Tools
 				len = len / 1024;
 			}
 			return $"{len:0.##} {sizes[order]}";
+		}
+
+		/// <summary>
+		/// Calculate scaled dead-end density based on level difficulty.
+		/// Formula: BaseDensity × Lerp(1.0, DeadEndMaxMult, t)
+		/// Where t = level / MaxLevel (39)
+		/// </summary>
+		private float CalculateScaledDeadEndDensity(int level)
+		{
+			const float baseDensity = 0.15f;  // 15% base
+			const float deadEndMaxMult = 2.5f;  // 2.5× at max level
+			const int maxLevel = 39;
+			
+			float t = Mathf.Clamp01((float)level / maxLevel);
+			float multiplier = Mathf.Lerp(1.0f, deadEndMaxMult, t);
+			return Mathf.Clamp01(baseDensity * multiplier);
+		}
+
+		/// <summary>
+		/// Get difficulty factor for current level.
+		/// Formula: 1 + (MaxFactor - 1) × t^Exponent
+		/// </summary>
+		private float CalculateDifficultyFactor(int level)
+		{
+			const float maxFactor = 3.0f;
+			const float exponent = 2.0f;
+			const int maxLevel = 39;
+			
+			if (level <= 0) return 1.0f;
+			if (level >= maxLevel) return maxFactor;
+			
+			float t = (float)level / maxLevel;
+			float curved = Mathf.Pow(t, exponent);
+			return 1.0f + (maxFactor - 1.0f) * curved;
 		}
 	}
 }

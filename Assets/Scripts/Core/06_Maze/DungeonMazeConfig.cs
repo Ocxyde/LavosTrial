@@ -68,6 +68,8 @@ namespace Code.Lavos.Core.Advanced
         // ─────────────────────────────────────────────────────────────
         public float CorridorWindingFactor = 0.3f;
 
+        public int CorridorWidth = 1;
+
         public float DeadEndExpansionChance = 0.6f;
 
         public float CrossroadExpansionChance = 0.8f;
@@ -80,6 +82,8 @@ namespace Code.Lavos.Core.Advanced
         public float EnemyDensity = 0.03f;
 
         public float ChestDensity = 0.05f;
+
+        public float DeadEndDensity = 0.15f;
 
         public int BossRoomCount = 1;
 

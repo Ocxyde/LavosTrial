@@ -1,0 +1,16 @@
+﻿{
+    "baseDensity": 0.15,
+    "maxMultiplier": 2.5,
+    "maxLevel": 39,
+    "exponent": 2.0,
+    "minLength": 2,
+    "maxLength": 5,
+    "corridorWidth": 1,
+    "chestChanceAtEnd": 0.5,
+    "enemyChanceAtEnd": 0.3,
+    "trapChanceAtEnd": 0.1,
+    "maxGridPercentage": 0.05,
+    "allowBranching": false,
+    "preferOuterWalls": false,
+    "useMathematicalDistribution": true
+}

@@ -1,5 +1,5 @@
-{
-    "baseSize": 21,
+﻿{
+    "baseSize": 22,
     "minSize": 15,
     "maxSize": 51,
     "cellSize": 6.0,
@@ -16,7 +16,7 @@
     "chestDensity": 0.05,
     "deadEndDensity": 0.15,
     "bossRoomCount": 1,
-    "allowDiagonalWalls": true,
+    "allowDiagonalWalls": false,
     "guaranteedPathRequired": true,
     "difficulty": {
         "baseFactor": 1.0,
