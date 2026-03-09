@@ -93,11 +93,12 @@ namespace Code.Lavos.Core
             float scaledChestDensity = scaler.ChestDensity(cfg.ChestDensity, level);
             float scaledEnemyDensity = scaler.EnemyDensity(cfg.EnemyDensity, level);
             int scaledWallPenalty = scaler.WallCrossPenalty(cfg.BaseWallPenalty, level);
+            float scaledDeadEndDensity = scaler.DeadEndDensity(cfg.DeadEndDensity, level);
 
             Debug.Log($"[GridMazeGenerator] LEVEL {level} | factor={difficultyFactor:F3} | " +
                       $"size={size}×{size} | torch={scaledTorchChance:P1} | " +
                       $"chest={scaledChestDensity:P1} | enemy={scaledEnemyDensity:P1} | " +
-                      $"wallPenalty={scaledWallPenalty}");
+                      $"deadEnd={scaledDeadEndDensity:P1} | wallPenalty={scaledWallPenalty}");
 
             var rng  = new System.Random(seed);
             var data = new MazeData8(size, size, seed, level);
@@ -129,7 +130,8 @@ namespace Code.Lavos.Core
 
             // ── Step 6: Add dead-end corridors ────────────────────
             //      Creates branching paths for more complex maze
-            AddDeadEndCorridors(data, rng, cfg);
+            //      Density scales with level (more dead-ends at higher levels)
+            AddDeadEndCorridors(data, rng, cfg, scaledDeadEndDensity);
 
             // ── Step 7: torches ───────────────────────────────────
             PlaceTorches(data, rng, scaledTorchChance);
@@ -368,8 +370,15 @@ namespace Code.Lavos.Core
         //    - Intersections have 2-4 possible directions
         //    - Player must choose correct path
         //    - Dead-ends contain rewards or enemies
+        //
+        //  DEAD-END DENSITY SCALING:
+        //    - Base density from MazeConfig.DeadEndDensity
+        //    - Scaled by DifficultyScaler.DeadEndDensity()
+        //    - Level 0: ~15% base chance (increased from 30% spawn rate)
+        //    - Level 39: ~37.5% (2.5× multiplier at max level)
+        //    - More dead-ends = more complex maze, more choices
         // ─────────────────────────────────────────────────────────
-        private static void AddDeadEndCorridors(MazeData8 d, System.Random rng, MazeConfig cfg)
+        private static void AddDeadEndCorridors(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity)
         {
             int deadEndCount = 0;
             int maxDeadEnds = d.Width * d.Height / 20;  // Max 5% of grid
@@ -395,13 +404,15 @@ namespace Code.Lavos.Core
             // Shuffle passage cells for random distribution
             Shuffle(passageCells.ToArray(), rng);
 
-            // Try to create dead-end corridors
+            // Try to create dead-end corridors using scaled density
+            // Higher levels = higher density = more attempts
             foreach (var (px, pz) in passageCells)
             {
                 if (deadEndCount >= maxDeadEnds) break;
 
-                // 30% chance to try creating a dead-end from this cell
-                if (rng.NextDouble() > 0.30f) continue;
+                // Use scaled dead-end density for spawn chance
+                // Level 0: ~15% chance, Level 39: ~37.5% chance
+                if (rng.NextDouble() > scaledDeadEndDensity) continue;
 
                 // Try 4 cardinal directions
                 var dirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
@@ -529,18 +540,23 @@ namespace Code.Lavos.Core
     //  UPDATED 2026-03-09:
     //  - DiagonalWalls removed (cardinal-only passages)
     //  - Dead-end corridors auto-generated
+    //
+    //  UPDATED 2026-03-09 (Dead-End Scaling):
+    //  - DeadEndDensity added (base chance for dead-end corridors)
+    //  - Scales with level difficulty (more dead-ends at higher levels)
     // ─────────────────────────────────────────────────────────────
     [Serializable]
     public sealed class MazeConfig
     {
         public const int ExitRoomSize = 1;
-        public int   BaseSize       = 12;
-        public int   MinSize        = 12;
-        public int   MaxSize        = 51;
-        public int   SpawnRoomSize  = 5;
-        public float TorchChance    = 0.30f;
-        public float ChestDensity   = 0.03f;
-        public float EnemyDensity   = 0.05f;
+        public int   BaseSize        = 12;
+        public int   MinSize         = 12;
+        public int   MaxSize         = 51;
+        public int   SpawnRoomSize   = 5;
+        public float TorchChance     = 0.30f;
+        public float ChestDensity    = 0.03f;
+        public float EnemyDensity    = 0.05f;
+        public float DeadEndDensity  = 0.15f;  // Base chance for dead-end corridor spawn (15%)
         // DiagonalWalls removed 2026-03-09 - cardinal-only passages
 
         // A* pathfinding

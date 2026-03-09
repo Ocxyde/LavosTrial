@@ -30,11 +30,12 @@ namespace Code.Lavos.Core
     //  At MaxLevel  : factor = MaxFactor (always)
     //
     //  Scaled outputs (consumed by GridMazeGenerator8):
-    //    MazeSize      = BaseSize + (int)(level × SizeRamp × factor)
-    //    EnemyDensity  = BaseEnemyDensity  × factor
-    //    ChestDensity  = BaseChestDensity  × (1 / factor)  ← rarer at high level
-    //    TorchChance   = BaseTorchChance   × Lerp(1, TorchMaxMult, t)
-    //    WallPenalty   = BaseWallPenalty   × factor        ← A* harder paths
+    //    MazeSize        = BaseSize + (int)(level × SizeRamp × factor)
+    //    EnemyDensity    = BaseEnemyDensity    × factor
+    //    ChestDensity    = BaseChestDensity    × (1 / factor)  ← rarer at high level
+    //    TorchChance     = BaseTorchChance     × Lerp(1, TorchMaxMult, t)
+    //    WallPenalty     = BaseWallPenalty     × factor        ← A* harder paths
+    //    DeadEndDensity  = BaseDeadEndDensity  × Lerp(1, DeadEndMaxMult, t)
     // ─────────────────────────────────────────────────────────────
     [Serializable]
     public sealed class DifficultyScaler
@@ -45,6 +46,7 @@ namespace Code.Lavos.Core
         public float Exponent        = 2.0f;   // power-curve shaping
         public float SizeRamp        = 1.0f;   // extra size growth multiplier
         public float TorchMaxMult    = 1.5f;   // torch cap at max level
+        public float DeadEndMaxMult  = 2.5f;   // dead-end density multiplier at max level
 
         // ── Core factor ───────────────────────────────────────────
 
@@ -101,6 +103,18 @@ namespace Code.Lavos.Core
         public int WallCrossPenalty(int basePenalty, int level)
             => Mathf.RoundToInt(basePenalty * Factor(level));
 
+        /// <summary>
+        /// Dead-end corridor density — increases with level.
+        /// Higher levels get more dead-end corridors for complexity.
+        /// Scales from base density → base × DeadEndMaxMult at max level.
+        /// </summary>
+        public float DeadEndDensity(float baseDensity, int level)
+        {
+            float t = NormalizedT(level);
+            float mult = Mathf.Lerp(1.0f, DeadEndMaxMult, t);
+            return Mathf.Clamp01(baseDensity * mult);
+        }
+
         // ── Debug / display ───────────────────────────────────────
 
         /// <summary>Human-readable snapshot of all scaled values at a given level.</summary>
@@ -114,8 +128,9 @@ namespace Code.Lavos.Core
             float chests    = ChestDensity(cfg.ChestDensity, level);
             float torches   = TorchChance(cfg.TorchChance, level);
             int   wallPenalty = WallCrossPenalty(cfg.BaseWallPenalty, level);
+            float deadEnds  = DeadEndDensity(cfg.DeadEndDensity, level);
 
-            return $"Level {level}  |  factor={f:F3}  |  size={size}  |  enemies={enemies:P1}  |  chests={chests:P1}  |  torches={torches:P1}  |  wallPenalty={wallPenalty}";
+            return $"Level {level}  |  factor={f:F3}  |  size={size}  |  enemies={enemies:P1}  |  chests={chests:P1}  |  torches={torches:P1}  |  wallPenalty={wallPenalty}  |  deadEnds={deadEnds:P1}";
         }
     }
 }

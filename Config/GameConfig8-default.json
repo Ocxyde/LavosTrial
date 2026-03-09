@@ -13,6 +13,7 @@
     "torchChance": 0.25,
     "enemyDensity": 0.03,
     "chestDensity": 0.05,
+    "deadEndDensity": 0.15,
     "bossRoomCount": 1,
     "allowDiagonalWalls": true,
     "guaranteedPathRequired": true,
@@ -20,7 +21,8 @@
         "baseFactor": 1.0,
         "factorPerLevel": 0.15,
         "maxFactor": 5.0,
-        "sizeGrowthPerLevel": 2
+        "sizeGrowthPerLevel": 2,
+        "deadEndMaxMult": 2.5
     },
     "aiSettings": {
         "enableAdaptivity": true,
