@@ -6,50 +6,40 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
-namespace Code.Lavos.Core.Procedural
+namespace Code.Lavos.Core
 {
 	/// <summary>
-	/// Manages level data persistence using DatabaseManager.
+	/// Manages level data persistence.
 	/// Handles save/load operations for procedurally generated levels.
 	/// Data is stored in JSON format for cross-platform compatibility.
 	/// </summary>
-	public sealed class LevelDatabaseManager : MonoBehaviour
+	public sealed partial class LevelDatabaseManager : MonoBehaviour
 	{
-		private const string LEVELS_STORAGE_SUBPATH = "Levels";
 		private const string LEVEL_FILE_EXTENSION = ".level.json";
+		private const string LOG_TAG = "[LevelDBManager]";
 
 		private static readonly object _lock = new object();
 		private static LevelDatabaseManager _instance;
-
 		public static LevelDatabaseManager Instance
 		{
 			get
 			{
-				if (_instance == null)
+				lock (_lock)
 				{
-					lock (_lock)
+					if (_instance == null)
 					{
-						if (_instance == null)
+						_instance = FindFirstObjectByType<LevelDatabaseManager>();
+						if (_instance == null && Application.isPlaying)
 						{
-							_instance = FindObjectOfType<LevelDatabaseManager>();
-							if (_instance == null)
-							{
-								var go = new GameObject("LevelDatabaseManager");
-								_instance = go.AddComponent<LevelDatabaseManager>();
-#if !UNITY_EDITOR
-								DontDestroyOnLoad(go);
-#endif
-							}
+							var go = new GameObject("LevelDatabaseManager");
+							_instance = go.AddComponent<LevelDatabaseManager>();
+							DontDestroyOnLoad(go);
 						}
 					}
+					return _instance;
 				}
-				return _instance;
 			}
 		}
 
@@ -69,35 +59,32 @@ namespace Code.Lavos.Core.Procedural
 			}
 
 			_instance = this;
-#if !UNITY_EDITOR
 			DontDestroyOnLoad(gameObject);
-#endif
 
 			EnsureStorageDirectoryExists();
 		}
 
-		private void OnDestroy()
+		private void OnDisable()
 		{
 			OnLevelSaved = null;
 			OnLevelLoaded = null;
 			OnDatabaseLog = null;
 		}
 
-		// ReSharper disable Unity.PerformanceAnalysis
 		/// <summary>
 		/// Save a level to database and disk storage.
 		/// </summary>
 		public void SaveLevel(LevelData levelData, bool saveToDisk = true)
 		{
+			if (levelData == null)
+			{
+				Log("ERROR: Cannot save null LevelData");
+				throw new ArgumentNullException(nameof(levelData));
+			}
+
 			try
 			{
-				if (levelData == null)
-				{
-					Log("ERROR: Cannot save null LevelData");
-					return;
-				}
-
-				Log($"Saving Level {levelData.LevelNumber} to database...");
+				Log($"Saving Level {levelData.LevelNumber} to storage...");
 
 				// Save to in-memory cache
 				_loadedLevels[levelData.LevelNumber] = levelData;
@@ -111,7 +98,7 @@ namespace Code.Lavos.Core.Procedural
 				OnLevelSaved?.Invoke(levelData.LevelNumber);
 				Log($"Level {levelData.LevelNumber} saved successfully");
 			}
-			catch (System.Exception ex)
+			catch (Exception ex)
 			{
 				Log($"ERROR saving level: {ex.Message}");
 				Debug.LogError(ex);
@@ -119,7 +106,7 @@ namespace Code.Lavos.Core.Procedural
 		}
 
 		/// <summary>
-		/// Load a level from database or disk.
+		/// Load a level from disk or cache.
 		/// </summary>
 		public LevelData LoadLevel(int levelNumber)
 		{
@@ -147,7 +134,7 @@ namespace Code.Lavos.Core.Procedural
 				Log($"Level {levelNumber} not found");
 				return null;
 			}
-			catch (System.Exception ex)
+			catch (Exception ex)
 			{
 				Log($"ERROR loading level: {ex.Message}");
 				Debug.LogError(ex);
@@ -176,7 +163,7 @@ namespace Code.Lavos.Core.Procedural
 			{
 				try
 				{
-					var json = File.ReadAllText(file, Encoding.UTF8);
+					var json = File.ReadAllText(file);
 					var levelData = JsonUtility.FromJson<LevelData>(json);
 					if (levelData != null)
 					{
@@ -184,7 +171,7 @@ namespace Code.Lavos.Core.Procedural
 						_loadedLevels[levelData.LevelNumber] = levelData;
 					}
 				}
-				catch (System.Exception ex)
+				catch (Exception ex)
 				{
 					Log($"Error loading {file}: {ex.Message}");
 				}
@@ -204,7 +191,7 @@ namespace Code.Lavos.Core.Procedural
 				_levelStats[levelNumber] = stats;
 				Log($"Saved stats for Level {levelNumber}");
 			}
-			catch (System.Exception ex)
+			catch (Exception ex)
 			{
 				Log($"ERROR saving stats: {ex.Message}");
 			}
@@ -215,8 +202,15 @@ namespace Code.Lavos.Core.Procedural
 		/// </summary>
 		public LevelGenerationStats GetLevelStats(int levelNumber)
 		{
-			_levelStats.TryGetValue(levelNumber, out var stats);
-			return stats;
+			return _levelStats.TryGetValue(levelNumber, out var stats) ? stats : null;
+		}
+
+		/// <summary>
+		/// Try to retrieve level statistics.
+		/// </summary>
+		public bool TryGetLevelStats(int levelNumber, out LevelGenerationStats stats)
+		{
+			return _levelStats.TryGetValue(levelNumber, out stats);
 		}
 
 		/// <summary>
@@ -224,10 +218,10 @@ namespace Code.Lavos.Core.Procedural
 		/// </summary>
 		public bool IsLevelCached(int levelNumber)
 		{
-			if (levelNumber < 0) return false;
 			return _loadedLevels.ContainsKey(levelNumber);
 		}
 
+		// ReSharper disable Unity.PerformanceAnalysis
 		/// <summary>
 		/// Delete a level from storage.
 		/// </summary>
@@ -251,7 +245,7 @@ namespace Code.Lavos.Core.Procedural
 
 				Log($"Level {levelNumber} deleted");
 			}
-			catch (System.Exception ex)
+			catch (Exception ex)
 			{
 				Log($"ERROR deleting level: {ex.Message}");
 			}
@@ -285,11 +279,19 @@ namespace Code.Lavos.Core.Procedural
 
 		private void SaveLevelToDisk(LevelData levelData)
 		{
-			EnsureStorageDirectoryExists();
-			var filePath = GetLevelFilePath(levelData.LevelNumber);
-			var json = JsonUtility.ToJson(levelData, true);
-			File.WriteAllText(filePath, json, Encoding.UTF8);
-			Log($"Level {levelData.LevelNumber} saved to {filePath}");
+			try
+			{
+				EnsureStorageDirectoryExists();
+				var filePath = GetLevelFilePath(levelData.LevelNumber);
+				var json = JsonUtility.ToJson(levelData, true);
+				File.WriteAllText(filePath, json);
+				Log($"Saved level {levelData.LevelNumber} to {filePath}");
+			}
+			catch (Exception ex)
+			{
+				Log($"ERROR saving to disk: {ex.Message}");
+				Debug.LogError($"Failed to save level {levelData.LevelNumber} to disk: {ex}");
+			}
 		}
 
 		private LevelData LoadLevelFromDisk(int levelNumber)
@@ -302,12 +304,18 @@ namespace Code.Lavos.Core.Procedural
 
 			try
 			{
-				var json = File.ReadAllText(filePath, Encoding.UTF8);
-				return JsonUtility.FromJson<LevelData>(json);
+				var json = File.ReadAllText(filePath);
+				var levelData = JsonUtility.FromJson<LevelData>(json);
+				if (levelData == null)
+				{
+					Log($"ERROR: Failed to deserialize {filePath} - JSON was invalid or empty");
+				}
+				return levelData;
 			}
-			catch (System.Exception ex)
+			catch (Exception ex)
 			{
-				Log($"Error loading from disk: {ex.Message}");
+				Log($"ERROR loading from disk ({filePath}): {ex.Message}");
+				Debug.LogError($"Failed to load level {levelNumber} from {filePath}: {ex}");
 				return null;
 			}
 		}
@@ -320,7 +328,8 @@ namespace Code.Lavos.Core.Procedural
 
 		private string GetStorageDirectory()
 		{
-			var path = Path.Combine(Application.persistentDataPath, "StreamingAssets", LEVELS_STORAGE_SUBPATH);
+			// Use persistentDataPath for runtime saves (not StreamingAssets which is read-only)
+			var path = Path.Combine(Application.persistentDataPath, "Levels");
 			return path;
 		}
 

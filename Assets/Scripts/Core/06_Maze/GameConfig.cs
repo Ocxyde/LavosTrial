@@ -51,7 +51,11 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<GameConfig>();
                     if (_instance == null)
                     {
-                        Debug.LogError("[GameConfig] No instance found in scene! Add GameConfig GameObject manually.");
+                        // Only log error in play mode - editor tools may call this without GameConfig in scene
+                        if (Application.isPlaying)
+                        {
+                            Debug.LogError("[GameConfig] No instance found in scene! Add GameConfig GameObject manually.");
+                        }
                         return null;
                     }
                 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2026 Ocxyde
+﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -24,7 +24,7 @@
 // - Reusable across scenes - independent plugin module
 // - EDITOR ONLY: Uses AssetDatabase (not available in builds)
 //
-// Location: Assets/Scripts/Core/09_Art/
+// Location: Assets/Scripts/Editor/
 
 using UnityEngine;
 using System.IO;

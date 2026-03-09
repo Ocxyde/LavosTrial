@@ -12,13 +12,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Code.Lavos.Core;
 using Code.Lavos.Core.Advanced;
-using Code.Lavos.Core.Procedural;
 
-namespace Code.Lavos.Tools.Procedural
+namespace Code.Lavos.Tools
 {
 	/// <summary>
 	/// Universal Level Generator Editor Tool
-	/// 
+	///
 	/// Complete system for procedurally generating dungeons with:
 	/// - Exponential difficulty scaling
 	/// - Seed-based deterministic generation
@@ -26,12 +25,22 @@ namespace Code.Lavos.Tools.Procedural
 	/// - RAM/Disk storage management
 	/// - Real-time progress tracking
 	/// - Comprehensive statistics
-	/// 
+	///
 	/// Usage: Tools > Level Generator > Procedural Level Builder
 	/// </summary>
 	public sealed class UniversalLevelGeneratorTool : EditorWindow
 	{
 		private const int DEFAULT_SEED_BASE = 20260308;
+		
+		// UI Layout Constants
+		private const float LABEL_WIDTH = 120f;
+		private const float BUTTON_HEIGHT_LARGE = 60f;
+		private const float BUTTON_HEIGHT_MEDIUM = 50f;
+		private const float BUTTON_HEIGHT_SMALL = 30f;
+		private const float BUTTON_HEIGHT_TINY = 25f;
+		private const float STATUS_BAR_HEIGHT = 60f;
+		private const int MAX_LOG_MESSAGES = 100;
+		private const int RECENT_LOG_COUNT = 5;
 
 		// UI State
 		private Vector2 _scrollPosition = Vector2.zero;
@@ -58,10 +67,11 @@ namespace Code.Lavos.Tools.Procedural
 		private float _customTrapDensity = -1f;
 		private float _customTreasureDensity = -1f;
 
-		// Batch Generation
+		// Batch Generation (separate state from single generation)
 		private int _batchStartLevel = 1;
 		private int _batchEndLevel = 5;
-		private bool _generateBatch = false;
+		private bool _batchSaveToDisk = true;
+		private bool _batchSaveToDatabase = true;
 
 		// Status & Logging
 		private string _statusMessage = "Ready";
@@ -75,6 +85,10 @@ namespace Code.Lavos.Tools.Procedural
 		private LevelDatabaseManager _databaseManager;
 		private List<LevelData> _cachedLevels = new List<LevelData>();
 		private LevelGenerationStats _lastStats;
+		
+		// Event handlers stored for proper unsubscription
+		private Action<string> _onGenerationLogHandler;
+		private Action<int, float> _onGenerationProgressHandler;
 
 		[MenuItem("Tools/Level Generator/Procedural Level Builder")]
 		public static void ShowWindow()
@@ -87,6 +101,19 @@ namespace Code.Lavos.Tools.Procedural
 		{
 			FindOrCreateManagers();
 			LoadCachedLevels();
+		}
+
+		private void OnDisable()
+		{
+			// Unsubscribe from events to prevent memory leaks
+			if (_levelGenerator != null)
+			{
+				_levelGenerator.OnGenerationLog -= _onGenerationLogHandler;
+				_levelGenerator.OnGenerationProgress -= _onGenerationProgressHandler;
+			}
+			
+			// Clear progress bar if still showing
+			EditorUtility.ClearProgressBar();
 		}
 
 		private void OnGUI()
@@ -157,7 +184,7 @@ namespace Code.Lavos.Tools.Procedural
 				// Level Number
 				EditorGUILayout.BeginHorizontal();
 				{
-					GUILayout.Label("Level Number:", GUILayout.Width(120));
+					GUILayout.Label("Level Number:", GUILayout.Width(LABEL_WIDTH));
 					_targetLevelNumber = EditorGUILayout.IntSlider(_targetLevelNumber, 1, 50);
 				}
 				EditorGUILayout.EndHorizontal();
@@ -165,7 +192,7 @@ namespace Code.Lavos.Tools.Procedural
 				// Difficulty Multiplier
 				EditorGUILayout.BeginHorizontal();
 				{
-					GUILayout.Label("Difficulty Mult:", GUILayout.Width(120));
+					GUILayout.Label("Difficulty Mult:", GUILayout.Width(LABEL_WIDTH));
 					_difficultyMultiplier = EditorGUILayout.Slider(_difficultyMultiplier, 0.5f, 2.5f);
 				}
 				EditorGUILayout.EndHorizontal();
@@ -177,7 +204,7 @@ namespace Code.Lavos.Tools.Procedural
 				{
 					EditorGUILayout.BeginHorizontal();
 					{
-						GUILayout.Label("Seed:", GUILayout.Width(120));
+						GUILayout.Label("Seed:", GUILayout.Width(LABEL_WIDTH));
 						_customSeed = EditorGUILayout.IntField(_customSeed);
 
 						if (GUILayout.Button("Random", GUILayout.Width(80)))
@@ -230,7 +257,7 @@ namespace Code.Lavos.Tools.Procedural
 			var prevColor = GUI.backgroundColor;
 			GUI.backgroundColor = Color.green;
 
-			if (GUILayout.Button("GENERATE LEVEL", GUILayout.Height(60)))
+			if (GUILayout.Button("GENERATE LEVEL", GUILayout.Height(BUTTON_HEIGHT_LARGE)))
 			{
 				GenerateSingleLevel();
 			}
@@ -240,12 +267,12 @@ namespace Code.Lavos.Tools.Procedural
 			// Quick Actions
 			EditorGUILayout.BeginHorizontal();
 			{
-				if (GUILayout.Button("Load from Storage", GUILayout.Height(30)))
+				if (GUILayout.Button("Load from Storage", GUILayout.Height(BUTTON_HEIGHT_SMALL)))
 				{
 					LoadLevelFromStorage();
 				}
 
-				if (GUILayout.Button("Clear Scene", GUILayout.Height(30)))
+				if (GUILayout.Button("Clear Scene", GUILayout.Height(BUTTON_HEIGHT_SMALL)))
 				{
 					ClearGeneratedLevel();
 				}
@@ -268,7 +295,7 @@ namespace Code.Lavos.Tools.Procedural
 			{
 				EditorGUILayout.BeginHorizontal();
 				{
-					GUILayout.Label("Start Level:", GUILayout.Width(120));
+					GUILayout.Label("Start Level:", GUILayout.Width(LABEL_WIDTH));
 					_batchStartLevel = EditorGUILayout.IntField(_batchStartLevel, GUILayout.Width(60));
 
 					GUILayout.Label("End Level:", GUILayout.Width(100));
@@ -281,8 +308,8 @@ namespace Code.Lavos.Tools.Procedural
 					$"From Level {_batchStartLevel} to Level {_batchEndLevel}",
 					MessageType.Info);
 
-				_saveToDisk = EditorGUILayout.Toggle("Save All to Disk", _saveToDisk);
-				_saveToDatabase = EditorGUILayout.Toggle("Save All to Database", _saveToDatabase);
+				_batchSaveToDisk = EditorGUILayout.Toggle("Save All to Disk", _batchSaveToDisk);
+				_batchSaveToDatabase = EditorGUILayout.Toggle("Save All to Database", _batchSaveToDatabase);
 			}
 			EditorGUILayout.EndVertical();
 
@@ -291,7 +318,7 @@ namespace Code.Lavos.Tools.Procedural
 			var prevColor = GUI.backgroundColor;
 			GUI.backgroundColor = new Color(1f, 0.7f, 0f);
 
-			if (GUILayout.Button("GENERATE BATCH", GUILayout.Height(50)))
+			if (GUILayout.Button("GENERATE BATCH", GUILayout.Height(BUTTON_HEIGHT_MEDIUM)))
 			{
 				GenerateBatchLevels();
 			}
@@ -302,6 +329,13 @@ namespace Code.Lavos.Tools.Procedural
 		private void DrawStorageManagerTab()
 		{
 			GUILayout.Label("Storage & Database Management", EditorStyles.boldLabel);
+			
+			// Validate manager
+			if (_databaseManager == null)
+			{
+				EditorGUILayout.HelpBox("Database manager not initialized", MessageType.Error);
+				return;
+			}
 
 			EditorGUILayout.BeginVertical("box");
 			{
@@ -312,12 +346,12 @@ namespace Code.Lavos.Tools.Procedural
 
 				EditorGUILayout.Space();
 
-				if (GUILayout.Button("Refresh Storage", GUILayout.Height(25)))
+				if (GUILayout.Button("Refresh Storage", GUILayout.Height(BUTTON_HEIGHT_TINY)))
 				{
 					LoadCachedLevels();
 				}
 
-				if (GUILayout.Button("Open Storage Folder", GUILayout.Height(25)))
+				if (GUILayout.Button("Open Storage Folder", GUILayout.Height(BUTTON_HEIGHT_TINY)))
 				{
 					var storageDir = Application.persistentDataPath;
 					EditorUtility.RevealInFinder(storageDir);
@@ -404,7 +438,7 @@ namespace Code.Lavos.Tools.Procedural
 
 			var prevColor = GUI.color;
 			GUI.color = _statusColor;
-			EditorGUILayout.TextArea(_statusMessage, GUILayout.Height(60));
+			EditorGUILayout.TextArea(_statusMessage, GUILayout.Height(STATUS_BAR_HEIGHT));
 			GUI.color = prevColor;
 
 			if (_logMessages.Count > 0)
@@ -412,10 +446,11 @@ namespace Code.Lavos.Tools.Procedural
 				EditorGUILayout.LabelField("Recent Messages:");
 				EditorGUILayout.BeginVertical("box");
 				{
-					var recentLogs = _logMessages.TakeLast(5);
-					foreach (var log in recentLogs)
+					// Optimized: avoid LINQ allocation by iterating directly
+					int startIndex = Mathf.Max(0, _logMessages.Count - RECENT_LOG_COUNT);
+					for (int i = startIndex; i < _logMessages.Count; i++)
 					{
-						EditorGUILayout.LabelField(log, EditorStyles.miniLabel);
+						EditorGUILayout.LabelField(_logMessages[i], EditorStyles.miniLabel);
 					}
 				}
 				EditorGUILayout.EndVertical();
@@ -427,6 +462,13 @@ namespace Code.Lavos.Tools.Procedural
 			if (_isGenerating)
 			{
 				SetStatus("Already generating, please wait", Color.yellow);
+				return;
+			}
+			
+			// Validate managers are available
+			if (_levelGenerator == null || _databaseManager == null)
+			{
+				SetStatus("ERROR: Managers not initialized", Color.red);
 				return;
 			}
 
@@ -478,11 +520,31 @@ namespace Code.Lavos.Tools.Procedural
 				SetStatus("Already generating, please wait", Color.yellow);
 				return;
 			}
+			
+			// Validate managers are available
+			if (_levelGenerator == null || _databaseManager == null)
+			{
+				SetStatus("ERROR: Managers not initialized", Color.red);
+				return;
+			}
 
 			int count = _batchEndLevel - _batchStartLevel + 1;
 			if (count <= 0)
 			{
 				SetStatus("Invalid level range", Color.red);
+				return;
+			}
+			
+			// Validate level range
+			if (_batchStartLevel < 1 || _batchEndLevel < 1)
+			{
+				SetStatus("ERROR: Level numbers must be positive", Color.red);
+				return;
+			}
+			
+			if (_batchEndLevel < _batchStartLevel)
+			{
+				SetStatus("ERROR: End level must be >= start level", Color.red);
 				return;
 			}
 
@@ -494,18 +556,19 @@ namespace Code.Lavos.Tools.Procedural
 
 				for (int i = _batchStartLevel; i <= _batchEndLevel; i++)
 				{
-					_generationProgress = ((i - _batchStartLevel) / (float)count) * 100f;
+					float progress = (i - _batchStartLevel + 1) / (float)count;
+					_generationProgress = progress * 100f;
 
 					_levelGenerator.GenerateLevel(i);
 
 					var levelData = _levelGenerator.GetCurrentLevelData();
-					if (levelData != null && (_saveToDisk || _saveToDatabase))
+					if (levelData != null && (_batchSaveToDisk || _batchSaveToDatabase))
 					{
-						_databaseManager.SaveLevel(levelData, _saveToDisk);
+						_databaseManager.SaveLevel(levelData, _batchSaveToDisk);
 					}
 
-					EditorUtility.DisplayProgressBar("Batch Generation", 
-						$"Level {i}/{_batchEndLevel}", _generationProgress / 100f);
+					EditorUtility.DisplayProgressBar("Batch Generation",
+						$"Level {i}/{_batchEndLevel}", progress);
 				}
 
 				EditorUtility.ClearProgressBar();
@@ -548,6 +611,18 @@ namespace Code.Lavos.Tools.Procedural
 
 		private void InstantiateLevel(LevelData levelData)
 		{
+			if (levelData == null)
+			{
+				SetStatus("ERROR: Invalid level data", Color.red);
+				return;
+			}
+			
+			if (_levelGenerator == null)
+			{
+				SetStatus("ERROR: Level generator not initialized", Color.red);
+				return;
+			}
+			
 			SetStatus($"Instantiating Level {levelData.LevelNumber} from storage...", Color.yellow);
 
 			try
@@ -558,15 +633,17 @@ namespace Code.Lavos.Tools.Procedural
 			catch (Exception ex)
 			{
 				SetStatus($"ERROR: {ex.Message}", Color.red);
+				Debug.LogError(ex);
 			}
 		}
 
 		private void ClearGeneratedLevel()
 		{
-			var mazeBuilder = FindObjectOfType<CompleteMazeBuilder8>();
+			var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
 			if (mazeBuilder != null)
 			{
-				DestroyImmediate(mazeBuilder.gameObject);
+				Undo.DestroyObjectImmediate(mazeBuilder.gameObject);
+				Undo.SetCurrentGroupName("Clear Generated Level");
 				SetStatus("Scene cleared", Color.green);
 			}
 		}
@@ -575,16 +652,33 @@ namespace Code.Lavos.Tools.Procedural
 		{
 			_levelGenerator = ProceduralLevelGenerator.Instance;
 			_databaseManager = LevelDatabaseManager.Instance;
-
-			_levelGenerator.OnGenerationLog += msg =>
+			
+			// Validate singletons are available
+			if (_levelGenerator == null)
 			{
-				AddLog(msg);
-			};
-
-			_levelGenerator.OnGenerationProgress += (step, progress) =>
+				Debug.LogError("[UniversalLevelGeneratorTool] ProceduralLevelGenerator instance not found!");
+				return;
+			}
+			
+			if (_databaseManager == null)
 			{
-				_generationProgress = progress * 100f;
+				Debug.LogError("[UniversalLevelGeneratorTool] LevelDatabaseManager instance not found!");
+				return;
+			}
+			
+			// Store handlers for proper unsubscription
+			_onGenerationLogHandler = msg => AddLog(msg);
+			_onGenerationProgressHandler = (step, progress) =>
+			{
+				// Thread-safe update via EditorApplication.update
+				EditorApplication.delayCall += () =>
+				{
+					_generationProgress = progress * 100f;
+				};
 			};
+			
+			_levelGenerator.OnGenerationLog += _onGenerationLogHandler;
+			_levelGenerator.OnGenerationProgress += _onGenerationProgressHandler;
 		}
 
 		private void LoadCachedLevels()
@@ -602,7 +696,7 @@ namespace Code.Lavos.Tools.Procedural
 		private void AddLog(string message)
 		{
 			_logMessages.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-			if (_logMessages.Count > 100)
+			if (_logMessages.Count > MAX_LOG_MESSAGES)
 			{
 				_logMessages.RemoveAt(0);
 			}

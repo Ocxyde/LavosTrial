@@ -111,6 +111,14 @@ namespace Code.Lavos.Core
             Debug.Log("[MazeBuilder8] Step 1: Loading config...");
             LoadConfig();
             Debug.Log($"[MazeBuilder8] Config loaded: CellSize={_config?.CellSize} WallHeight={_config?.WallHeight}");
+            
+            // CRITICAL: Validate config before proceeding
+            if (_config == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: _config is NULL - cannot generate maze!");
+                Debug.LogError("[MazeBuilder8] Ensure GameConfig component exists in scene or Resources folder");
+                return;
+            }
 
             // 2+3 - Assets + Components
             Debug.Log("[MazeBuilder8] Step 2+3: Validating assets...");
@@ -262,6 +270,13 @@ namespace Code.Lavos.Core
 
             if (json == null)
                 Debug.LogWarning("[MazeBuilder8] Config not found -- using defaults.");
+            
+            if (_config == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: Failed to load or create GameConfig!");
+                enabled = false;
+                return;
+            }
         }
 
         // -------------------------------------------------------------------------
@@ -280,18 +295,29 @@ namespace Code.Lavos.Core
             floorPrefab      ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
             playerPrefab     ??= Resources.Load<GameObject>("Prefabs/PlayerPrefab");
 
-            // Load materials from GameConfig
-            var gameConfig = GameConfig.Instance;
-            if (gameConfig != null)
+            // Load materials - try GameConfig first, fallback to Resources
+            Material loadedWallMaterial = null;
+            
+            // Try to get material path from GameConfig (only in play mode)
+            if (Application.isPlaying)
             {
-                wallMaterial       ??= Resources.Load<Material>(gameConfig.wallMaterial);
-                wallDiagMaterial   ??= Resources.Load<Material>(gameConfig.wallMaterial);
-                wallCornerMaterial ??= Resources.Load<Material>(gameConfig.wallMaterial);
+                var gameConfig = GameConfig.Instance;
+                if (gameConfig != null)
+                {
+                    loadedWallMaterial = Resources.Load<Material>(gameConfig.wallMaterial);
+                }
             }
+            
+            // Fallback: try direct load from Resources
+            loadedWallMaterial ??= Resources.Load<Material>("Materials/WallMaterial");
+            
+            wallMaterial       ??= loadedWallMaterial;
+            wallDiagMaterial   ??= loadedWallMaterial;
+            wallCornerMaterial ??= loadedWallMaterial;
 
-            if (wallPrefab   == null) Debug.LogError("[MazeBuilder8] wallPrefab missing!");
-            if (playerPrefab == null) Debug.LogError("[MazeBuilder8] playerPrefab missing!");
-            if (wallMaterial == null) Debug.LogError("[MazeBuilder8] wallMaterial missing -- textures won't apply!");
+            if (wallPrefab   == null) Debug.LogError("[MazeBuilder8] wallPrefab missing! Cannot generate maze walls.");
+            if (playerPrefab == null) Debug.LogWarning("[MazeBuilder8] playerPrefab not assigned - player spawning disabled. Assign prefab or use Tools > Create Player.");
+            if (wallMaterial == null) Debug.LogWarning("[MazeBuilder8] wallMaterial not assigned - walls will use default material. Assign material or run Tools > Quick Setup Prefabs.");
 
             if (wallDiagPrefab == null)
             {
@@ -315,16 +341,33 @@ namespace Code.Lavos.Core
             DestroyContainer(ref _objectsRoot, "MazeObjects8");
             if (_playerInstance != null)
             {
-                Destroy(_playerInstance);
+                if (Application.isPlaying)
+                    Destroy(_playerInstance);
+                else
+                    DestroyImmediate(_playerInstance);
                 _playerInstance = null;
             }
         }
 
         private void DestroyContainer(ref Transform t, string containerName)
         {
-            if (t != null) { Destroy(t.gameObject); t = null; return; }
+            if (t != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(t.gameObject);
+                else
+                    DestroyImmediate(t.gameObject);
+                t = null;
+                return;
+            }
             var g = GameObject.Find(containerName);
-            if (g != null) Destroy(g);
+            if (g != null)
+            {
+                if (Application.isPlaying)
+                    Destroy(g);
+                else
+                    DestroyImmediate(g);
+            }
         }
 
         // -------------------------------------------------------------------------

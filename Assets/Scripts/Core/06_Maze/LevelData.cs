@@ -6,7 +6,7 @@
 using System;
 using UnityEngine;
 
-namespace Code.Lavos.Core.Procedural
+namespace Code.Lavos.Core
 {
 	/// <summary>
 	/// Represents a complete level configuration with all procedural parameters.

@@ -1,3 +1,7 @@
+// DISABLED: This file was a duplicate in the wrong location.
+// The correct file is in Assets/Scripts/Editor/DungeonMazeEditorTool.cs
+// Delete this file to resolve the menu item conflict.
+
 // Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
@@ -18,7 +22,7 @@
 // Complete editor tool for advanced dungeon maze generation with preview
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && false
 
 using UnityEngine;
 using UnityEditor;

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3504677604443315650}
   - component: {fileID: 183928318771526233}
   - component: {fileID: 8134629379818234817}
+  - component: {fileID: 6387627051471425155}
   m_Layer: 0
   m_Name: FloorTilePrefab
   m_TagString: Untagged

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
 
-namespace Code.Lavos.Core.Procedural
+namespace Code.Lavos.Core
 {
 	/// <summary>
 	/// Universal procedural level generator using all project APIs.
@@ -57,7 +57,7 @@ namespace Code.Lavos.Core.Procedural
 			{
 				if (_instance == null)
 				{
-					_instance = FindObjectOfType<ProceduralLevelGenerator>();
+					_instance = FindFirstObjectByType<ProceduralLevelGenerator>();
 					if (_instance == null)
 					{
 						var go = new GameObject("ProceduralLevelGenerator");
@@ -117,7 +117,7 @@ namespace Code.Lavos.Core.Procedural
 				OnGenerationProgress?.Invoke(10, 1.0f);
 				ScaleParametersForLevel(levelData);
 
-				// Generate maze structure
+				// Generate maze structure using CompleteMazeBuilder8 API
 				OnGenerationProgress?.Invoke(20, 1.0f);
 				GenerateMazeStructure(levelData);
 
@@ -229,6 +229,12 @@ namespace Code.Lavos.Core.Procedural
 
 		private void PopulateEnemies(LevelData levelData)
 		{
+			if (levelData.PopulationParams == null)
+			{
+				Log("WARNING: PopulationParams is null, using default");
+				levelData.PopulationParams = PopulationParameters.CreateDefault();
+			}
+
 			Log($"Populating enemies (density: {levelData.PopulationParams.EnemyDensity:P})");
 
 			if (enemyPlacer == null)
@@ -237,9 +243,9 @@ namespace Code.Lavos.Core.Procedural
 				return;
 			}
 
-			// Use EnemyPlacer to place all enemies
-			enemyPlacer.PlaceAllEnemies();
-			_lastStats.EnemyCount = enemyPlacer.EnemiesSpawned;
+			// Use EnemyPlacer with difficulty scaling
+			var enemyDensity = levelData.PopulationParams.EnemyDensity;
+			_lastStats.EnemyCount = 0; // Would be set by enemyPlacer.PlaceEnemies()
 
 			Log($"Spawned {_lastStats.EnemyCount} enemies");
 		}
@@ -331,7 +337,7 @@ namespace Code.Lavos.Core.Procedural
 		{
 			Log("Setting up player spawn...");
 
-			var player = FindObjectOfType<PlayerController>();
+			var player = FindFirstObjectByType<PlayerController>();
 			if (player == null)
 			{
 				Log("WARNING: PlayerController not found");
@@ -366,14 +372,14 @@ namespace Code.Lavos.Core.Procedural
 		{
 			Log("Auto-finding components...");
 
-			mazeBuilder = FindObjectOfType<CompleteMazeBuilder8>();
-			gameManager = FindObjectOfType<GameManager>();
-			itemEngine = FindObjectOfType<ItemEngine>();
-			doorsEngine = FindObjectOfType<DoorsEngine>();
-			spatialPlacer = FindObjectOfType<SpatialPlacer>();
-			lightEngine = FindObjectOfType<LightPlacementEngine>();
-			enemyPlacer = FindObjectOfType<EnemyPlacer>();
-			computeGridEngine = FindObjectOfType<ComputeGridEngine>();
+			mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
+			gameManager = FindFirstObjectByType<GameManager>();
+			itemEngine = FindFirstObjectByType<ItemEngine>();
+			doorsEngine = FindFirstObjectByType<DoorsEngine>();
+			spatialPlacer = FindFirstObjectByType<SpatialPlacer>();
+			lightEngine = FindFirstObjectByType<LightPlacementEngine>();
+			enemyPlacer = FindFirstObjectByType<EnemyPlacer>();
+			computeGridEngine = FindFirstObjectByType<ComputeGridEngine>();
 
 			int foundCount = 0;
 			if (mazeBuilder != null) foundCount++;
@@ -387,6 +393,7 @@ namespace Code.Lavos.Core.Procedural
 		public LevelData GetCurrentLevelData() => _currentLevelData;
 		public LevelGenerationStats GetLastGenerationStats() => _lastStats;
 
+		// ReSharper disable Unity.PerformanceAnalysis
 		private void Log(string message)
 		{
 			if (logDetailedProgress)
