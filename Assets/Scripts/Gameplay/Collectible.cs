@@ -24,6 +24,7 @@
 //  3. Add Collider with "Is Trigger" enabled
 //  4. Select type in Inspector
 
+using Code.Lavos.Core;
 using UnityEngine;
 using Code.Lavos.HUD;
 using Code.Lavos.Status;
@@ -75,6 +76,7 @@ namespace Code.Lavos.Gameplay
 
     private void Collect(GameObject player)
     {
+        
         var stats = player.GetComponent<PlayerStats>();
 
         switch (type)

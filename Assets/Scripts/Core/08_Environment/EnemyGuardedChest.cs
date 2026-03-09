@@ -83,9 +83,9 @@ namespace Code.Lavos.Core
             ? (_isOpened ? "Déjà ouvert" : "Ouvrir le coffre")
             : "Défaite le gardien d'abord !";
 
-        public bool CanInteract(PlayerController player) => true;
+        bool IInteractable.CanInteract(MonoBehaviour player) => true;
 
-        public void OnInteract(PlayerController player)
+        void IInteractable.OnInteract(MonoBehaviour player)
         {
             if (_isOpened) return;
 
@@ -101,12 +101,12 @@ namespace Code.Lavos.Core
             OpenChest(player.gameObject);
         }
 
-        public void OnHighlightEnter(PlayerController player)
+        void IInteractable.OnHighlightEnter(MonoBehaviour player)
         {
             // Optional: Highlight effect when player looks at chest
         }
 
-        public void OnHighlightExit(PlayerController player)
+        void IInteractable.OnHighlightExit(MonoBehaviour player)
         {
             // Optional: Remove highlight effect
         }

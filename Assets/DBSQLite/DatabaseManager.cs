@@ -27,6 +27,7 @@ using UnityEngine;
 using Code.Lavos;
 using Code.Lavos.Status;
 using Code.Lavos.Core;
+using Code.Lavos.Player;
 
 #if UNITY_EDITOR
 using UnityEditor;

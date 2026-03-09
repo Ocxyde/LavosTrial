@@ -150,7 +150,6 @@ namespace Code.Lavos.Core
             if (!foundInCache)
             {
                 Debug.Log($"[MazeBuilder8] Cache miss  L{currentLevel}  S{currentSeed} - generating new maze");
-                _generator ??= new DungeonMazeGenerator();
                 
                 // Convert GameConfig to DungeonMazeConfig
                 var dungeonCfg = new DungeonMazeConfig
@@ -161,21 +160,31 @@ namespace Code.Lavos.Core
                     CellSize = _config.CellSize,
                     WallHeight = _config.WallHeight,
                     SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
-                    ExitRoomSize = MazeConfig.ExitRoomSize,  // const from MazeConfig
+                    ExitRoomSize = MazeConfig.ExitRoomSize,
                     TorchChance = _config.MazeCfg.TorchChance,
                     ChestDensity = _config.MazeCfg.ChestDensity,
                     EnemyDensity = _config.MazeCfg.EnemyDensity,
                     AllowDiagonalWalls = _config.MazeCfg.DiagonalWalls,
                     Difficulty = new DifficultyScalerConfig
                     {
-                        BaseFactor = 1.0f,  // Default base factor
-                        FactorPerLevel = 0.15f,  // Default per-level increase
+                        BaseFactor = 1.0f,
+                        FactorPerLevel = 0.15f,
                         MaxFactor = _config.DifficultyCfg.MaxFactor,
-                        SizeGrowthPerLevel = 2,  // Default growth per level
+                        SizeGrowthPerLevel = 2,
                     },
                 };
 
-                _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+                // Use PassageFirst generator if enabled, otherwise use DFS
+                if (dungeonCfg.UsePassageFirst)
+                {
+                    var passageGenerator = new PassageFirstMazeGenerator();
+                    _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                }
+                else
+                {
+                    _generator ??= new DungeonMazeGenerator();
+                    _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+                }
             }
 
             // Verify maze data
@@ -399,18 +408,18 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // 8 - Wall spawning (cardinal + diagonal)
+        // SpawnAllWalls
         //
-        // WALL PIVOT FIX:
-        //   The wall position is computed as the bottom-center of the wall edge
-        //   (y = 0 at floor level).
+        // BOUNDARY-BASED WALL SPAWNING (NO OVERLAPPING WALLS):
+        // 
+        // PROBLEM SOLVED: Previous approach spawned walls from EVERY cell,
+        // causing duplicate walls at shared edges (overlapping geometry).
         //
-        //   If wallPivotIsAtMeshCenter = true (default Unity primitive cube),
-        //   we offset Y by +wh * 0.5f after instantiation so the wall sits
-        //   correctly on the floor rather than sinking halfway into it.
-        //
-        //   If wallPivotIsAtMeshCenter = false (custom prefab with pivot at base),
-        //   no Y offset is applied.
+        // SOLUTION: Only spawn walls on BOUNDARIES:
+        // 1. For each WALKABLE cell (corridor/floor)
+        // 2. Check each neighbor direction
+        // 3. Spawn wall ONLY if neighbor is NOT walkable OR is maze edge
+        // 4. Result: Clean walls with no overlaps!
         //
         // Cardinal wall position = center of the edge shared by cell (cx,cz)
         //   in direction dir, at y = 0.
@@ -442,72 +451,72 @@ namespace Code.Lavos.Core
             int cardinalCount = 0;
             int diagonalCount = 0;
             int totalCells = _mazeData.Width * _mazeData.Height;
-            int cellsWithWalls = 0;
-
-            // First pass: count cells with walls
-            for (int z = 0; z < _mazeData.Height; z++)
-            for (int x = 0; x < _mazeData.Width;  x++)
-            {
-                var cell = _mazeData.GetCell(x, z);
-                if ((cell & Advanced.CellFlags8.Wall_All) != 0)
-                    cellsWithWalls++;
-            }
+            int boundaryWalls = 0;
+            int internalWalls = 0;
 
             Debug.Log(
                 $"[MazeBuilder8] Spawning walls for {_mazeData.Width}x{_mazeData.Height} maze " +
-                $"({totalCells} cells, {cellsWithWalls} with walls)");
+                $"({totalCells} cells) using BOUNDARY method (no overlaps)");
 
-            // Second pass: spawn walls
+            // Spawn walls ONLY on boundaries between walkable and non-walkable cells
             for (int z = 0; z < _mazeData.Height; z++)
-            for (int x = 0; x < _mazeData.Width;  x++)
+            for (int x = 0; x < _mazeData.Width; x++)
             {
                 var cell = _mazeData.GetCell(x, z);
+                bool isWalkable = IsCellWalkable(cell);
 
-                // Cardinal - spawn all walls based on cell flags (no border checks)
-                // Each cell is responsible for its own walls
-                if ((cell & Advanced.CellFlags8.Wall_N) != 0)
+                // Only process walkable cells (corridors, spawn, exit)
+                if (isWalkable)
                 {
-                    SpawnCardinalWall(x, z, Direction8.N, cs, wh);
-                    cardinalCount++;
-                }
-                if ((cell & Advanced.CellFlags8.Wall_E) != 0)
-                {
-                    SpawnCardinalWall(x, z, Direction8.E, cs, wh);
-                    cardinalCount++;
-                }
-                if ((cell & Advanced.CellFlags8.Wall_S) != 0)
-                {
-                    SpawnCardinalWall(x, z, Direction8.S, cs, wh);
-                    cardinalCount++;
-                }
-                if ((cell & Advanced.CellFlags8.Wall_W) != 0)
-                {
-                    SpawnCardinalWall(x, z, Direction8.W, cs, wh);
-                    cardinalCount++;
-                }
+                    // Check each direction: spawn wall if neighbor is NOT walkable or is boundary
+                    if (ShouldSpawnWall(x, z, Direction8.N, out bool isBoundary))
+                    {
+                        SpawnCardinalWall(x, z, Direction8.N, cs, wh);
+                        cardinalCount++;
+                        if (isBoundary) boundaryWalls++; else internalWalls++;
+                    }
+                    if (ShouldSpawnWall(x, z, Direction8.E, out isBoundary))
+                    {
+                        SpawnCardinalWall(x, z, Direction8.E, cs, wh);
+                        cardinalCount++;
+                        if (isBoundary) boundaryWalls++; else internalWalls++;
+                    }
+                    if (ShouldSpawnWall(x, z, Direction8.S, out isBoundary))
+                    {
+                        SpawnCardinalWall(x, z, Direction8.S, cs, wh);
+                        cardinalCount++;
+                        if (isBoundary) boundaryWalls++; else internalWalls++;
+                    }
+                    if (ShouldSpawnWall(x, z, Direction8.W, out isBoundary))
+                    {
+                        SpawnCardinalWall(x, z, Direction8.W, cs, wh);
+                        cardinalCount++;
+                        if (isBoundary) boundaryWalls++; else internalWalls++;
+                    }
 
-                // Diagonal (toggled by config) - spawn all based on cell flags
-                if (_config.MazeCfg.DiagonalWalls)
-                {
-                    if ((cell & Advanced.CellFlags8.Wall_NE) != 0)
+                    // Diagonal walls (if enabled)
+                    if (_config.MazeCfg.DiagonalWalls)
                     {
-                        SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
-                        diagonalCount++;
-                    }
-                    if ((cell & Advanced.CellFlags8.Wall_NW) != 0)
-                    {
-                        SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
-                        diagonalCount++;
-                    }
-                    if ((cell & Advanced.CellFlags8.Wall_SE) != 0)
-                    {
-                        SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
-                        diagonalCount++;
-                    }
-                    if ((cell & Advanced.CellFlags8.Wall_SW) != 0)
-                    {
-                        SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
-                        diagonalCount++;
+                        if (ShouldSpawnWall(x, z, Direction8.NE, out isBoundary))
+                        {
+                            SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
+                            diagonalCount++;
+                        }
+                        if (ShouldSpawnWall(x, z, Direction8.NW, out isBoundary))
+                        {
+                            SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
+                            diagonalCount++;
+                        }
+                        if (ShouldSpawnWall(x, z, Direction8.SE, out isBoundary))
+                        {
+                            SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
+                            diagonalCount++;
+                        }
+                        if (ShouldSpawnWall(x, z, Direction8.SW, out isBoundary))
+                        {
+                            SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
+                            diagonalCount++;
+                        }
                     }
                 }
             }
@@ -515,7 +524,54 @@ namespace Code.Lavos.Core
             Debug.Log(
                 $"[MazeBuilder8] Wall spawn complete: " +
                 $"{cardinalCount} cardinal + {diagonalCount} diagonal = " +
-                $"{cardinalCount + diagonalCount} total walls from {cellsWithWalls}/{totalCells} cells");
+                $"{cardinalCount + diagonalCount} total walls " +
+                $"(perimeter: {boundaryWalls}, interior: {internalWalls})");
+        }
+
+        /// <summary>
+        /// Check if a cell is walkable (no wall flags set).
+        /// A cell with Wall_All = 0 is walkable (corridor/floor space).
+        /// </summary>
+        private bool IsCellWalkable(uint cellFlags)
+        {
+            return (cellFlags & Advanced.CellFlags8.Wall_All) == 0;
+        }
+
+        /// <summary>
+        /// Determine if a wall should be spawned in the given direction.
+        /// 
+        /// A wall is spawned if:
+        /// 1. The neighbor is out of bounds (maze perimeter wall), OR
+        /// 2. The neighbor is NOT walkable (has wall flags = blocked cell)
+        ///
+        /// Parameters:
+        /// - cx, cz: Current cell coordinates
+        /// - dir: Direction to check
+        /// - isBoundary: Output true if wall is at maze perimeter edge
+        ///
+        /// Returns: true if wall should be spawned
+        /// </summary>
+        private bool ShouldSpawnWall(int cx, int cz, Direction8 dir, out bool isBoundary)
+        {
+            var (dx, dz) = Direction8Helper.ToOffset(dir);
+            int nx = cx + dx;
+            int nz = cz + dz;
+
+            isBoundary = false;
+
+            // Check if neighbor is out of bounds (maze perimeter wall)
+            if (nx < 0 || nx >= _mazeData.Width || nz < 0 || nz >= _mazeData.Height)
+            {
+                isBoundary = true;
+                return true; // Spawn wall at maze boundary
+            }
+
+            // Check if neighbor is NOT walkable (has walls = blocked)
+            var neighborCell = _mazeData.GetCell(nx, nz);
+            bool neighborIsWalkable = IsCellWalkable(neighborCell);
+
+            // Spawn wall if neighbor is blocked (not walkable)
+            return !neighborIsWalkable;
         }
 
         // -------------------------------------------------------------------------

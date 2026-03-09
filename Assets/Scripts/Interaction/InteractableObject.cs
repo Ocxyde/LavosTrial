@@ -21,6 +21,7 @@
 // Part of the Interaction system - implements IInteractable
 
 using UnityEngine;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Interaction
 {
@@ -33,18 +34,18 @@ namespace Code.Lavos.Interaction
 
         public virtual string InteractionPrompt => interactionPrompt;
 
-        public virtual bool CanInteract(PlayerController player)
+        public virtual bool CanInteract(MonoBehaviour player)
         {
             return canInteract && player != null;
         }
 
-        public abstract void OnInteract(PlayerController player);
+        public abstract void OnInteract(MonoBehaviour player);
 
-        public virtual void OnHighlightEnter(PlayerController player)
+        public virtual void OnHighlightEnter(MonoBehaviour player)
         {
         }
 
-        public virtual void OnHighlightExit(PlayerController player)
+        public virtual void OnHighlightExit(MonoBehaviour player)
         {
         }
 

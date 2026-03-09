@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos;
 using Code.Lavos.Core;
+using Code.Lavos.Player;
 using Code.Lavos.Status;
 
 namespace Code.Lavos.DB

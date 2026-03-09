@@ -20,6 +20,7 @@
 //
 // Part of the Ressources system - flame animation
 
+using Code.Lavos.Core;
 using UnityEngine;
 
 namespace Code.Lavos.Ressources

@@ -35,6 +35,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using Code.Lavos.Core;
+using Code.Lavos.Ressources;
 
 namespace Code.Lavos.Editor
 {

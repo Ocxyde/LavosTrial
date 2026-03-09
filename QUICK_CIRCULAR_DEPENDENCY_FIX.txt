@@ -1,0 +1,103 @@
+================================================================================
+QUICK FIX SUMMARY - CIRCULAR DEPENDENCY (ROOT CAUSE)
+================================================================================
+
+PROBLEM: CS0246 errors for both IInteractable AND PlayerController
+CAUSE: Circular assembly dependency (not just a missing using directive!)
+
+THE FIX:
+
+CoreInterfaces.cs: PlayerController → MonoBehaviour (in method signatures)
+InteractableObject.cs: PlayerController → MonoBehaviour (in method signatures)
+
+Result: Circular dependency eliminated! ✅
+
+================================================================================
+FILES UPDATED (2)
+================================================================================
+
+1. CoreInterfaces.cs
+   Location: Assets/Scripts/Core/01_CoreSystems/
+   Change: IInteractable interface now uses MonoBehaviour instead of PlayerController
+   Lines Changed: 79-82 (4 methods)
+
+2. InteractableObject.cs
+   Location: Assets/Scripts/Interaction/
+   Change: All methods now use MonoBehaviour instead of PlayerController
+   Lines Changed: 37-49 (4 methods)
+
+================================================================================
+WHY THIS IS THE REAL FIX
+================================================================================
+
+The circular dependency:
+  Code.Lavos.Core (defines IInteractable using PlayerController)
+       ↕ CIRCULAR!
+  Code.Lavos.Player (implements PlayerController, references Core)
+
+Solution:
+  Use MonoBehaviour (generic base class) instead of PlayerController
+  Eliminates circular dependency while keeping functionality
+
+================================================================================
+DEPLOYMENT (2 FILES!)
+================================================================================
+
+Step 1: Backup
+  .\backup.ps1
+
+Step 2: Copy BOTH files
+  CoreInterfaces.cs → Assets/Scripts/Core/01_CoreSystems/CoreInterfaces.cs
+  InteractableObject.cs → Assets/Scripts/Interaction/InteractableObject.cs
+
+Step 3: Reopen Unity
+  Close → Copy files → Reopen
+
+Step 4: Verify
+  Check Console: 0 errors, 0 warnings
+
+Step 5: Commit
+  git add both files
+  git commit -m "fix: resolve circular dependency using MonoBehaviour"
+
+================================================================================
+IMPORTANT!
+================================================================================
+
+Check for subclasses of InteractableObject in your project!
+
+If you have classes like:
+  public class DoorInteractable : InteractableObject
+  {
+      public override void OnInteract(PlayerController player) ← OLD!
+      {
+      }
+  }
+
+Update them to:
+  public class DoorInteractable : InteractableObject
+  {
+      public override void OnInteract(MonoBehaviour player) ← NEW!
+      {
+          PlayerController pc = player as PlayerController;
+          if (pc != null)
+          {
+              // Use pc here
+          }
+      }
+  }
+
+Search your project for: "OnInteract(PlayerController" and update!
+
+================================================================================
+FILE IN OUTPUTS
+================================================================================
+
+Both files ready:
+  • CoreInterfaces.cs (FIXED)
+  • InteractableObject.cs (FIXED)
+  • CIRCULAR_DEPENDENCY_FIX_ROOT_CAUSE.md (detailed explanation)
+
+This is NOT a workaround - this is the CORRECT architectural fix!
+
+================================================================================

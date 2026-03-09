@@ -96,39 +96,75 @@ namespace Code.Lavos.Core.Advanced
             Debug.Log($"[DungeonGen] Level {level} | Size {size}x{size} | " +
                       $"Difficulty {_mazeData.DifficultyFactor:F2} | Seed {seed}");
 
-            // === PHASE 1: Core Maze Structure ===
+            // === PHASE 1: SOLID BLOCK ===
             FillAllWalls();
-            Debug.Log($"[DungeonGen] Phase 1: All walls filled ({size * size} cells)");
+            Debug.Log($"[DungeonGen] Phase 1: All walls filled ({size}x{size} cells) - SOLID BLOCK");
 
-            // === PHASE 2: Main Passages (8-axis DFS) ===
-            CarvePassages8(1, 1);
-            Debug.Log($"[DungeonGen] Phase 2: DFS complete");
+            // === PHASE 2: CARVE ENTRANCE/EXIT ROOMS (4x4) WITH DOORS ===
+            int roomSize = 4;  // 4x4 rooms - compact but functional
+            CarveEntranceRoomWithDoor(1, 1, roomSize);
+            CarveExitRoomWithDoor(size - 1 - roomSize, size - 1 - roomSize, roomSize);
+            Debug.Log($"[DungeonGen] Phase 2: Rooms carved ({roomSize}x{roomSize}) with unlocked doors");
 
-            // === PHASE 3: Spawn & Exit Rooms ===
-            CarveSpawnRoom(1, 1, cfg.SpawnRoomSize);
-            _mazeData.SetSpawn(1, 1);
-            
-            CarveExitRoom(size - 2, size - 2, cfg.ExitRoomSize);
-            _mazeData.SetExit(size - 2, size - 2);
-            Debug.Log($"[DungeonGen] Phase 3: Spawn at (1,1) | Exit at ({size-2},{size-2})");
+            // === PHASE 3: DFS MAZE CARVING (respects rooms) ===
+            CarveMazeDFS(1 + roomSize, 1 + (roomSize / 2));  // Start from entrance room edge
+            Debug.Log($"[DungeonGen] Phase 3: DFS maze carving complete");
+
+            // === PHASE 4: A* PATH GUARANTEE - CARVE MAZE-LIKE PATH ===
+            bool pathExists = EnsurePathAStar();
+            if (!pathExists)
+            {
+                Debug.LogWarning("[DungeonGen] DFS did not create path - A* will carve maze-like connection");
+            }
+            else
+            {
+                Debug.Log("[DungeonGen] Phase 4: A* validated path exists (entrance → exit)");
+            }
 
             // === PHASE 4: Chamber Expansion ===
-            IdentifyDeadEndsAndCrossroads();
-            ExpandChambers(cfg.ChamberExpansionRadius);
-            Debug.Log($"[DungeonGen] Phase 4: {_deadEnds.Count} dead-ends | " +
-                      $"{_crossroads.Count} crossroads");
+            // Skip chamber expansion for mazes < 25x25 to preserve walls
+            // Chamber expansion clears too many walls in small/medium mazes
+            if (_mazeData.Width >= 25 && _mazeData.Height >= 25)
+            {
+                IdentifyDeadEndsAndCrossroads();
+                ExpandChambers(cfg.ChamberExpansionRadius);
+                Debug.Log($"[DungeonGen] Phase 4: {_deadEnds.Count} dead-ends | " +
+                          $"{_crossroads.Count} crossroads (chambers expanded)");
+            }
+            else
+            {
+                Debug.Log($"[DungeonGen] Phase 4: Skipped chamber expansion for maze ({_mazeData.Width}x{_mazeData.Height})");
+            }
 
             // === PHASE 5: Trap Room Placement ===
             PlaceTrapRooms(cfg.TrapDensity);
             Debug.Log($"[DungeonGen] Phase 5: {_trapRooms.Count} trap rooms placed");
 
             // === PHASE 6: Treasure Chamber Placement ===
-            PlaceTreasureRooms(cfg.TreasureDensity);
-            Debug.Log($"[DungeonGen] Phase 6: {_treasureRooms.Count} treasure rooms placed");
+            // Skip treasure room clearing for mazes < 25x25 to preserve walls
+            if (_mazeData.Width >= 25 && _mazeData.Height >= 25)
+            {
+                PlaceTreasureRooms(cfg.TreasureDensity);
+                Debug.Log($"[DungeonGen] Phase 6: {_treasureRooms.Count} treasure rooms placed");
+            }
+            else
+            {
+                // Just mark treasure rooms without clearing walls
+                PlaceTreasureRoomsNoClear(cfg.TreasureDensity);
+                Debug.Log($"[DungeonGen] Phase 6: {_treasureRooms.Count} treasure rooms marked (no clearing)");
+            }
 
             // === PHASE 7: Winding Corridors ===
-            CarveLabyrinthinePaths(cfg.CorridorWindingFactor);
-            Debug.Log($"[DungeonGen] Phase 7: Winding corridors carved");
+            // Skip winding corridors for mazes < 25x25 to preserve walls
+            if (_mazeData.Width >= 25 && _mazeData.Height >= 25)
+            {
+                CarveLabyrinthinePaths(cfg.CorridorWindingFactor);
+                Debug.Log($"[DungeonGen] Phase 7: Winding corridors carved");
+            }
+            else
+            {
+                Debug.Log($"[DungeonGen] Phase 7: Skipped winding corridors for maze ({_mazeData.Width}x{_mazeData.Height})");
+            }
 
             // === PHASE 8: AI Difficulty Calculation ===
             _aiDifficulty.AnalyzeMaze(_mazeData, _trapRooms.Count, _treasureRooms.Count);
@@ -177,7 +213,12 @@ namespace Code.Lavos.Core.Advanced
             stack.Push((startX, startZ));
             _visited[startX, startZ] = true;
 
-            while (stack.Count > 0)
+            // DFS carves passages through the maze
+            // We visit most cells to ensure connectivity, but preserve some walls
+            int maxCellsToVisit = Mathf.RoundToInt(_mazeData.Width * _mazeData.Height * 0.85f);
+            int cellsVisited = 0;
+
+            while (stack.Count > 0 && cellsVisited < maxCellsToVisit)
             {
                 var (cx, cz) = stack.Peek();
                 var unvisited = GetUnvisitedNeighbors8(cx, cz);
@@ -192,8 +233,11 @@ namespace Code.Lavos.Core.Advanced
                     CarvePassageToNeighbor(cx, cz, nx, nz, dir);
                     _visited[nx, nz] = true;
                     stack.Push((nx, nz));
+                    cellsVisited++;
                 }
             }
+
+            Debug.Log($"[DungeonGen] DFS carved {cellsVisited}/{maxCellsToVisit} cells ({cellsVisited * 100 / (_mazeData.Width * _mazeData.Height)}% of maze)");
         }
 
         private List<(int nx, int nz, Direction8 dir)> GetUnvisitedNeighbors8(int x, int z)
@@ -205,8 +249,9 @@ namespace Code.Lavos.Core.Advanced
             foreach (var dir in allDirections)
             {
                 var (dx, dz) = Direction8Helper.ToOffset(dir);
-                int nx = x + dx;
-                int nz = z + dz;
+                // Move 2 steps to carve passages with walls between them
+                int nx = x + dx * 2;
+                int nz = z + dz * 2;
 
                 if (_mazeData.InBounds(nx, nz) && !_visited[nx, nz])
                 {
@@ -231,22 +276,39 @@ namespace Code.Lavos.Core.Advanced
             uint oppositeWallFlag = Direction8Helper.ToWallFlag(oppositeDir);
             neiCell &= ~oppositeWallFlag;
 
-            // For diagonal passages, also clear intermediate cell
+            // For diagonal passages, also clear the intermediate cell (the corner)
+            // But DON'T clear all walls - just remove the corner walls to create a smooth passage
             if (Direction8Helper.IsDiagonal(dir))
             {
                 var (dx, dz) = Direction8Helper.ToOffset(dir);
-                int intermediateX = cx + dx / 2;
-                int intermediateZ = cz + dz / 2;
+                // Intermediate cell is 1 step in the direction
+                int intermediateX = cx + dx;
+                int intermediateZ = cz + dz;
                 if (_mazeData.InBounds(intermediateX, intermediateZ))
                 {
                     var intermediateCell = _mazeData.GetCell(intermediateX, intermediateZ);
-                    intermediateCell = 0; // Clear all walls from intermediate
+                    // Remove the two cardinal walls that face the current and neighbor cells
+                    // This creates a diagonal passage corner without completely clearing the cell
+                    var cardinalWall1 = Direction8Helper.ToWallFlag(GetCardinalDirection(dx, 0));
+                    var cardinalWall2 = Direction8Helper.ToWallFlag(GetCardinalDirection(0, dz));
+                    intermediateCell &= ~cardinalWall1;
+                    intermediateCell &= ~cardinalWall2;
                     _mazeData.SetCell(intermediateX, intermediateZ, intermediateCell);
                 }
             }
 
             _mazeData.SetCell(cx, cz, curCell);
             _mazeData.SetCell(nx, nz, neiCell);
+        }
+
+        // Helper to get cardinal direction from offset
+        private static Direction8 GetCardinalDirection(int dx, int dz)
+        {
+            if (dx > 0) return Direction8.E;
+            if (dx < 0) return Direction8.W;
+            if (dz > 0) return Direction8.N;
+            if (dz < 0) return Direction8.S;
+            return Direction8.N; // Default
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -272,10 +334,486 @@ namespace Code.Lavos.Core.Advanced
                 {
                     if (_mazeData.InBounds(x, z))
                     {
+                        // Clear all walls to create open room space
                         _mazeData.SetCell(x, z, 0);
                     }
                 }
             }
+        }
+
+        // Connect a room to the main maze by carving a passage from its edge
+        private void ConnectRoomToMaze(int roomCenterX, int roomCenterZ, int radius)
+        {
+            // Try to carve passages in all 4 cardinal directions from room edge
+            var directions = new (int dx, int dz, Direction8 dir)[]
+            {
+                (0, 1, Direction8.N),   // North
+                (0, -1, Direction8.S),  // South
+                (1, 0, Direction8.E),   // East
+                (-1, 0, Direction8.W),  // West
+            };
+
+            foreach (var (dx, dz, dir) in directions)
+            {
+                // Start from room edge
+                int startX = roomCenterX + dx * (radius + 1);
+                int startZ = roomCenterZ + dz * (radius + 1);
+
+                // Carve a passage until we hit an already-carved cell
+                for (int i = 0; i < 5; i++)
+                {
+                    int cx = startX + dx * i;
+                    int cz = startZ + dz * i;
+
+                    if (!_mazeData.InBounds(cx, cz))
+                        break;
+
+                    var cell = _mazeData.GetCell(cx, cz);
+
+                    // If cell already has passages (some walls removed), stop here
+                    if ((cell & CellFlags8.Wall_All) != CellFlags8.Wall_All)
+                        break;
+
+                    // Clear passage through this cell completely
+                    _mazeData.SetCell(cx, cz, 0);
+                    ClearWallsAroundCell(cx, cz);
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // NEW: ENTRANCE/EXIT ROOMS WITH DOORS (4x4)
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Carve a 4x4 entrance room with an unlocked door to the maze.
+        /// Player can easily enter/exit through this door.
+        /// </summary>
+        private void CarveEntranceRoomWithDoor(int roomX, int roomZ, int roomSize)
+        {
+            // Step 1: Clear 4x4 area (make walkable)
+            for (int x = roomX; x < roomX + roomSize; x++)
+            for (int z = roomZ; z < roomZ + roomSize; z++)
+            {
+                if (_mazeData.InBounds(x, z))
+                {
+                    _mazeData.SetCell(x, z, 0);  // Clear all walls
+                    _mazeData.MarkAsSpawnRoom(x, z);  // Mark as spawn room cell
+                }
+            }
+
+            // Step 2: Carve doorway on East edge of room (connects to maze)
+            int doorX = roomX + roomSize;  // East edge
+            int doorZ = roomZ + (roomSize / 2);  // Center of room
+            if (_mazeData.InBounds(doorX, doorZ))
+            {
+                _mazeData.SetCell(doorX, doorZ, 0);  // Clear wall at door position
+            }
+
+            // Step 3: Mark door position in maze data (for CompleteMazeBuilder to spawn door)
+            // Door faces East (from room into maze)
+            Debug.Log($"[DungeonGen] Entrance room: {roomSize}x{roomSize} at ({roomX},{roomZ}) with door at ({doorX},{doorZ})");
+
+            // Set spawn point in center of entrance room
+            int spawnX = roomX + (roomSize / 2);
+            int spawnZ = roomZ + (roomSize / 2);
+            _mazeData.SetSpawn(spawnX, spawnZ);
+        }
+
+        /// <summary>
+        /// Carve a 4x4 exit room with an unlocked door to the maze.
+        /// Player can easily exit through this door.
+        /// </summary>
+        private void CarveExitRoomWithDoor(int roomX, int roomZ, int roomSize)
+        {
+            // Step 1: Clear 4x4 area (make walkable)
+            for (int x = roomX; x < roomX + roomSize; x++)
+            for (int z = roomZ; z < roomZ + roomSize; z++)
+            {
+                if (_mazeData.InBounds(x, z))
+                {
+                    _mazeData.SetCell(x, z, 0);  // Clear all walls
+                    _mazeData.MarkAsExitRoom(x, z);  // Mark as exit room cell
+                }
+            }
+
+            // Step 2: Carve doorway on West edge of room (connects to maze)
+            int doorX = roomX - 1;  // West edge
+            int doorZ = roomZ + (roomSize / 2);  // Center of room
+            if (_mazeData.InBounds(doorX, doorZ))
+            {
+                _mazeData.SetCell(doorX, doorZ, 0);  // Clear wall at door position
+            }
+
+            // Set exit point in center of exit room
+            int exitX = roomX + (roomSize / 2);
+            int exitZ = roomZ + (roomSize / 2);
+            _mazeData.SetExit(exitX, exitZ);
+
+            Debug.Log($"[DungeonGen] Exit room: {roomSize}x{roomSize} at ({roomX},{roomZ}) with door at ({doorX},{doorZ})");
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // PHASE 3: DFS MAZE CARVING (creates winding passages)
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// DFS maze carving that creates winding passages through solid block.
+        /// Uses 8-direction carving for more organic maze structure.
+        /// Respects entrance/exit rooms - won't carve into them.
+        /// </summary>
+        private void CarveMazeDFS(int startX, int startZ)
+        {
+            var stack = new Stack<(int x, int z)>();
+            var visited = new bool[_mazeData.Width, _mazeData.Height];
+
+            stack.Push((startX, startZ));
+            visited[startX, startZ] = true;
+
+            int cellsCarved = 0;
+            // Carve 60-75% of maze to leave some walls intact for structure
+            int maxCells = Mathf.RoundToInt(_mazeData.Width * _mazeData.Height * 0.65f);
+
+            while (stack.Count > 0 && cellsCarved < maxCells)
+            {
+                var (cx, cz) = stack.Peek();
+                var neighbors = GetUnvisitedNeighborsDFS(cx, cz, visited);
+
+                if (neighbors.Count == 0)
+                {
+                    stack.Pop();
+                }
+                else
+                {
+                    var (nx, nz, dir) = neighbors[_rng.Next(neighbors.Count)];
+                    CarvePassageDFS(cx, cz, nx, nz, dir);
+                    visited[nx, nz] = true;
+                    stack.Push((nx, nz));
+                    cellsCarved++;
+                }
+            }
+
+            Debug.Log($"[DungeonGen] DFS carved {cellsCarved} cells ({cellsCarved * 100 / (_mazeData.Width * _mazeData.Height)}% of maze)");
+        }
+        
+        private List<(int x, int z, Direction8 dir)> GetUnvisitedNeighborsDFS(int x, int z, bool[,] visited)
+        {
+            var neighbors = new List<(int, int, Direction8)>();
+            
+            // 8 directions for more interesting maze
+            Direction8[] directions = {
+                Direction8.N, Direction8.S, Direction8.E, Direction8.W,
+                Direction8.NE, Direction8.NW, Direction8.SE, Direction8.SW
+            };
+            
+            foreach (var dir in directions)
+            {
+                var (dx, dz) = Direction8Helper.ToOffset(dir);
+                // Move 2 cells for DFS (creates walls between passages)
+                int nx = x + dx * 2;
+                int nz = z + dz * 2;
+                
+                if (_mazeData.InBounds(nx, nz) && !visited[nx, nz])
+                {
+                    // Don't carve into entrance/exit rooms
+                    if (!_mazeData.IsSpawnRoom(nx, nz) && !_mazeData.IsExitRoom(nx, nz))
+                    {
+                        neighbors.Add((nx, nz, dir));
+                    }
+                }
+            }
+            
+            return neighbors;
+        }
+        
+        private void CarvePassageDFS(int cx, int cz, int nx, int nz, Direction8 dir)
+        {
+            var (dx, dz) = Direction8Helper.ToOffset(dir);
+            
+            // Clear walls from current cell
+            var curCell = _mazeData.GetCell(cx, cz);
+            curCell &= ~Direction8Helper.ToWallFlag(dir);
+            _mazeData.SetCell(cx, cz, curCell);
+            
+            // Clear walls from neighbor cell (opposite direction)
+            var neiCell = _mazeData.GetCell(nx, nz);
+            neiCell &= ~Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir));
+            _mazeData.SetCell(nx, nz, neiCell);
+            
+            // For diagonal passages, clear intermediate cell
+            if (Direction8Helper.IsDiagonal(dir))
+            {
+                int ix = cx + dx;
+                int iz = cz + dz;
+                if (_mazeData.InBounds(ix, iz))
+                {
+                    var intCell = _mazeData.GetCell(ix, iz);
+                    intCell &= ~Direction8Helper.ToWallFlag(GetCardinalDir(dx, 0));
+                    intCell &= ~Direction8Helper.ToWallFlag(GetCardinalDir(0, dz));
+                    _mazeData.SetCell(ix, iz, intCell);
+                }
+            }
+        }
+        
+        private static Direction8 GetCardinalDir(int dx, int dz)
+        {
+            if (dx > 0) return Direction8.E;
+            if (dx < 0) return Direction8.W;
+            if (dz > 0) return Direction8.N;
+            if (dz < 0) return Direction8.S;
+            return Direction8.N;
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // PHASE 4: A* PATH GUARANTEE (carves maze-like paths)
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Use A* to find path from entrance to exit.
+        /// If path exists, carve it wider. If no path exists, carve a winding maze path.
+        /// Returns true if path already existed, false if we had to carve.
+        /// </summary>
+        private bool EnsurePathAStar()
+        {
+            var spawn = _mazeData.SpawnCell;
+            var exit = _mazeData.ExitCell;
+
+            // Run A* pathfinding through existing carved areas
+            var path = FindPathAStar(spawn.x, spawn.z, exit.x, exit.z);
+
+            if (path != null && path.Count > 0)
+            {
+                // Path exists - carve it wider for better walkability
+                CarvePathWider(path);
+                Debug.Log($"[DungeonGen] A*: Path found with {path.Count} cells - carved wider");
+                return true;
+            }
+
+            // No path exists - carve a new winding maze path
+            Debug.Log("[DungeonGen] A*: No path found - carving winding maze path");
+            CarveMinimumConnection(spawn.x, spawn.z, exit.x, exit.z);
+            return false;
+        }
+
+        /// <summary>
+        /// Carve an existing path wider by clearing adjacent walls.
+        /// </summary>
+        private void CarvePathWider(List<(int x, int z)> path)
+        {
+            foreach (var (x, z) in path)
+            {
+                if (_mazeData.InBounds(x, z))
+                {
+                    var cell = _mazeData.GetCell(x, z);
+                    cell &= ~CellFlags8.Wall_All;
+                    _mazeData.SetCell(x, z, cell);
+                }
+            }
+        }
+        
+        private List<(int x, int z)> FindPathAStar(int startX, int startZ, int goalX, int goalZ)
+        {
+            var openSet = new List<(int x, int z, int g, int h)>();
+            var closedSet = new HashSet<(int, int)>();
+            var cameFrom = new Dictionary<(int, int), (int, int)>();
+            
+            openSet.Add((startX, startZ, 0, ManhattanDistance(startX, startZ, goalX, goalZ)));
+            
+            while (openSet.Count > 0)
+            {
+                // Get node with lowest f = g + h
+                openSet.Sort((a, b) => (a.g + a.h).CompareTo(b.g + b.h));
+                var current = openSet[0];
+                openSet.RemoveAt(0);
+                closedSet.Add((current.x, current.z));
+                
+                // Check if reached goal
+                if (current.x == goalX && current.z == goalZ)
+                {
+                    // Reconstruct path
+                    return ReconstructPath(cameFrom, (goalX, goalZ));
+                }
+                
+                // Check neighbors (4 cardinal directions)
+                var neighbors = new[] {
+                    (current.x + 1, current.z), (current.x - 1, current.z),
+                    (current.x, current.z + 1), (current.x, current.z - 1)
+                };
+                
+                foreach (var (nx, nz) in neighbors)
+                {
+                    if (!_mazeData.InBounds(nx, nz) || closedSet.Contains((nx, nz)))
+                        continue;
+                    
+                    int newG = current.g + 10; // Cost to move
+                    
+                    var existing = openSet.Find(n => n.x == nx && n.z == nz);
+                    if (existing.x == 0)
+                    {
+                        // New node
+                        int h = ManhattanDistance(nx, nz, goalX, goalZ);
+                        openSet.Add((nx, nz, newG, h));
+                        cameFrom[(nx, nz)] = (current.x, current.z);
+                    }
+                    else if (newG < existing.g)
+                    {
+                        // Better path found
+                        int idx = openSet.IndexOf(existing);
+                        openSet[idx] = (nx, nz, newG, existing.h);
+                        cameFrom[(nx, nz)] = (current.x, current.z);
+                    }
+                }
+            }
+            
+            return null; // No path found
+        }
+        
+        private int ManhattanDistance(int x1, int z1, int x2, int z2)
+        {
+            return Mathf.Abs(x2 - x1) + Mathf.Abs(z2 - z1);
+        }
+        
+        private List<(int x, int z)> ReconstructPath(
+            Dictionary<(int, int), (int, int)> cameFrom, 
+            (int x, int z) current)
+        {
+            var path = new List<(int, int)>();
+            while (cameFrom.ContainsKey(current))
+            {
+                path.Add(current);
+                current = cameFrom[current];
+            }
+            path.Reverse();
+            return path;
+        }
+        
+        /// <summary>
+        /// Carve a maze-like path from start to goal using A* waypoints.
+        /// Creates winding corridors with turns and dead-ends, not a straight line.
+        /// </summary>
+        private void CarveMinimumConnection(int startX, int startZ, int goalX, int goalZ)
+        {
+            // Validate start position
+            if (!_mazeData.InBounds(startX, startZ))
+            {
+                Debug.LogError($"[DungeonGen] CarveMazePath: Start position ({startX}, {startZ}) out of bounds");
+                return;
+            }
+
+            // Use A* to find the path
+            var path = FindPathAStar(startX, startZ, goalX, goalZ);
+            
+            if (path == null || path.Count == 0)
+            {
+                // Fallback: carve a winding path manually with random detours
+                CarveWindingPath(startX, startZ, goalX, goalZ);
+                return;
+            }
+
+            // Carve the A* path with some widening for variety
+            foreach (var (x, z) in path)
+            {
+                if (_mazeData.InBounds(x, z))
+                {
+                    var cell = _mazeData.GetCell(x, z);
+                    cell &= ~CellFlags8.Wall_All;
+                    _mazeData.SetCell(x, z, cell);
+                }
+            }
+
+            Debug.Log($"[DungeonGen] A*: Maze path carved with {path.Count} cells");
+        }
+
+        /// <summary>
+        /// Carve a winding path with random detours and turns when A* fails.
+        /// Creates a more interesting maze-like corridor.
+        /// </summary>
+        private void CarveWindingPath(int startX, int startZ, int goalX, int goalZ)
+        {
+            int x = startX;
+            int z = startZ;
+            int cellsCarved = 0;
+            int maxIterations = Mathf.Abs(goalX - startX) + Mathf.Abs(goalZ - startZ) + 10;
+            int iterations = 0;
+
+            // Add random detours to make the path more maze-like
+            while ((x != goalX || z != goalZ) && iterations < maxIterations)
+            {
+                iterations++;
+                
+                // 30% chance to take a detour (perpendicular move)
+                if (_rng.NextDouble() < 0.3f && cellsCarved > 2)
+                {
+                    // Try to move perpendicular to main direction
+                    int detourDx = 0, detourDz = 0;
+                    if (x != goalX)
+                    {
+                        // Moving horizontally, detour vertically
+                        detourDz = _rng.Next(0, 2) == 0 ? 1 : -1;
+                    }
+                    else
+                    {
+                        // Moving vertically, detour horizontally
+                        detourDx = _rng.Next(0, 2) == 0 ? 1 : -1;
+                    }
+
+                    int nextX = x + detourDx;
+                    int nextZ = z + detourDz;
+
+                    if (_mazeData.InBounds(nextX, nextZ))
+                    {
+                        x = nextX;
+                        z = nextZ;
+                        CarvePathCell(x, z);
+                        cellsCarved++;
+                        continue;
+                    }
+                }
+
+                // Move toward goal
+                if (x != goalX)
+                {
+                    int nextX = x + (goalX > x ? 1 : -1);
+                    if (_mazeData.InBounds(nextX, z))
+                    {
+                        x = nextX;
+                        CarvePathCell(x, z);
+                        cellsCarved++;
+                    }
+                    else
+                    {
+                        break; // Blocked
+                    }
+                }
+                else if (z != goalZ)
+                {
+                    int nextZ = z + (goalZ > z ? 1 : -1);
+                    if (_mazeData.InBounds(x, nextZ))
+                    {
+                        z = nextZ;
+                        CarvePathCell(x, z);
+                        cellsCarved++;
+                    }
+                    else
+                    {
+                        break; // Blocked
+                    }
+                }
+            }
+
+            Debug.Log($"[DungeonGen] Winding path carved: {cellsCarved} cells");
+        }
+
+        /// <summary>
+        /// Carve a single cell in the path, clearing walls and ensuring connectivity.
+        /// </summary>
+        private void CarvePathCell(int x, int z)
+        {
+            if (!_mazeData.InBounds(x, z)) return;
+
+            var cell = _mazeData.GetCell(x, z);
+            cell &= ~CellFlags8.Wall_All;
+            _mazeData.SetCell(x, z, cell);
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -384,13 +922,41 @@ namespace Code.Lavos.Core.Advanced
                     ClearRoomAround(tx, tz, 1);
                     var cell = _mazeData.GetCell(tx, tz);
                     cell |= CellFlags8.IsTreasureRoom;
-                    
+
                     // Place guardian enemy
                     if (_rng.NextDouble() < 0.7f)
                     {
                         cell |= CellFlags8.HasEnemy;
                     }
-                    
+
+                    _mazeData.SetCell(tx, tz, cell);
+                    _treasureRooms.Add((tx, tz));
+                }
+            }
+        }
+
+        // Variant that marks treasure rooms without clearing walls
+        private void PlaceTreasureRoomsNoClear(float density)
+        {
+            int targetCount = Mathf.Max(1, Mathf.RoundToInt(_deadEnds.Count * density));
+
+            for (int i = 0; i < targetCount && _deadEnds.Count > 0; i++)
+            {
+                int idx = _rng.Next(_deadEnds.Count);
+                var (tx, tz) = _deadEnds[idx];
+                _deadEnds.RemoveAt(idx);
+
+                if (!_mazeData.IsSpawnRoom(tx, tz) && !_mazeData.IsExitRoom(tx, tz))
+                {
+                    var cell = _mazeData.GetCell(tx, tz);
+                    cell |= CellFlags8.IsTreasureRoom;
+
+                    // Place guardian enemy
+                    if (_rng.NextDouble() < 0.7f)
+                    {
+                        cell |= CellFlags8.HasEnemy;
+                    }
+
                     _mazeData.SetCell(tx, tz, cell);
                     _treasureRooms.Add((tx, tz));
                 }
@@ -435,9 +1001,10 @@ namespace Code.Lavos.Core.Advanced
         // ─────────────────────────────────────────────────────────────
         // PHASE 9: Guarantee Path to Exit
         // ─────────────────────────────────────────────────────────────
+        // ReSharper disable Unity.PerformanceAnalysis
         private void EnsurePathToExit()
         {
-            // Simple A* guarantee
+            // Try to find existing path
             var path = FindPathToExit();
             if (path != null)
             {
@@ -445,6 +1012,110 @@ namespace Code.Lavos.Core.Advanced
                 {
                     _mazeData.MarkAsMainPath(x, z);
                 }
+                Debug.Log($"[DungeonGen] EnsurePathToExit: Found existing path with {path.Count} cells");
+            }
+            else
+            {
+                // No path exists - carve one from exit back towards spawn
+                Debug.Log("[DungeonGen] EnsurePathToExit: No path found, carving guaranteed path...");
+                CarveGuaranteedPathToExit();
+            }
+        }
+
+        private void CarveGuaranteedPathToExit()
+        {
+            // Start from exit and carve towards spawn using simple greedy algorithm
+            var spawn = _mazeData.SpawnCell;
+            var exit = _mazeData.ExitCell;
+            
+            int cx = exit.x;
+            int cz = exit.z;
+            int pathLength = 0;
+
+            // Clear exit room edge first
+            _mazeData.SetCell(cx, cz, 0);
+            ClearWallsAroundCell(cx, cz);
+
+            while (cx != spawn.x || cz != spawn.z)
+            {
+                // Move towards spawn
+                if (cx < spawn.x)
+                {
+                    // Move east - clear this cell completely
+                    cx++;
+                    _mazeData.SetCell(cx, cz, 0);
+                    ClearWallsAroundCell(cx, cz);
+                    pathLength++;
+                }
+                else if (cx > spawn.x)
+                {
+                    // Move west - clear this cell completely
+                    cx--;
+                    _mazeData.SetCell(cx, cz, 0);
+                    ClearWallsAroundCell(cx, cz);
+                    pathLength++;
+                }
+                else if (cz < spawn.z)
+                {
+                    // Move north - clear this cell completely
+                    cz++;
+                    _mazeData.SetCell(cx, cz, 0);
+                    ClearWallsAroundCell(cx, cz);
+                    pathLength++;
+                }
+                else if (cz > spawn.z)
+                {
+                    // Move south - clear this cell completely
+                    cz--;
+                    _mazeData.SetCell(cx, cz, 0);
+                    ClearWallsAroundCell(cx, cz);
+                    pathLength++;
+                }
+            }
+            
+            // Clear spawn room edge
+            _mazeData.SetCell(spawn.x, spawn.z, 0);
+            ClearWallsAroundCell(spawn.x, spawn.z);
+            
+            Debug.Log($"[DungeonGen] Carved guaranteed path: {pathLength} cells from exit to spawn");
+        }
+
+        // Clear all wall flags from a cell and its 4 cardinal neighbors
+        // This ensures no walls block the path
+        private void ClearWallsAroundCell(int x, int z)
+        {
+            // Clear walls on this cell pointing outward
+            var cell = _mazeData.GetCell(x, z);
+            cell &= ~CellFlags8.Wall_N;
+            cell &= ~CellFlags8.Wall_S;
+            cell &= ~CellFlags8.Wall_E;
+            cell &= ~CellFlags8.Wall_W;
+            _mazeData.SetCell(x, z, cell);
+
+            // Clear walls on neighbors pointing into this cell
+            if (_mazeData.InBounds(x, z + 1))
+            {
+                var north = _mazeData.GetCell(x, z + 1);
+                north &= ~CellFlags8.Wall_S;
+                _mazeData.SetCell(x, z + 1, north);
+            }
+            if (_mazeData.InBounds(x, z - 1))
+            {
+                var south = _mazeData.GetCell(x, z - 1);
+                south &= ~CellFlags8.Wall_N;
+                _mazeData.SetCell(x, z - 1, south);
+            }
+            if (_mazeData.InBounds(x + 1, z))
+            {
+                var east = _mazeData.GetCell(x + 1, z);
+                east &= ~CellFlags8.Wall_W;
+                _mazeData.SetCell(x + 1, z, east);
+            }
+            if (_mazeData.InBounds(x - 1, z))
+            {
+                var west = _mazeData.GetCell(x - 1, z);
+                west &= ~CellFlags8.Wall_E;
+                _mazeData.SetCell(x - 1, z, west);
             }
         }
 
@@ -556,10 +1227,10 @@ namespace Code.Lavos.Core.Advanced
         {
             if (cfg == null)
                 throw new ArgumentNullException(nameof(cfg));
-            
+
             if (cfg.TrapDensity < 0 || cfg.TrapDensity > 1)
                 throw new ArgumentException("TrapDensity must be 0-1");
-            
+
             if (cfg.TreasureDensity < 0 || cfg.TreasureDensity > 1)
                 throw new ArgumentException("TreasureDensity must be 0-1");
         }

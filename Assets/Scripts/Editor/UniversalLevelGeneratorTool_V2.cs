@@ -63,6 +63,7 @@ namespace Code.Lavos.Tools
 		private bool _enableBossRoom = false;
 		private bool _enableEnvironmentalHazards = false;
 		private bool _enableStatusEffects = false;
+		private bool _usePassageFirst = false;  // Passage-first generation toggle
 		private float _customEnemyDensity = -1f;
 		private float _customTrapDensity = -1f;
 		private float _customTreasureDensity = -1f;
@@ -235,9 +236,19 @@ namespace Code.Lavos.Tools
 				{
 					_enableDiagonalWalls = EditorGUILayout.Toggle("Enable Diagonal Walls", _enableDiagonalWalls);
 					_enableBossRoom = EditorGUILayout.Toggle("Enable Boss Room", _enableBossRoom);
-					_enableEnvironmentalHazards = EditorGUILayout.Toggle("Environmental Hazards", 
+					_enableEnvironmentalHazards = EditorGUILayout.Toggle("Environmental Hazards",
 						_enableEnvironmentalHazards);
 					_enableStatusEffects = EditorGUILayout.Toggle("Status Effects", _enableStatusEffects);
+					
+					EditorGUILayout.Space();
+					_usePassageFirst = EditorGUILayout.Toggle("Passage-First Mode", _usePassageFirst);
+					if (_usePassageFirst)
+					{
+						EditorGUILayout.HelpBox(
+							"Passage-First creates a clear path from Entrance (A) to Exit (B) first,\n" +
+							"then adds walls around it. Guarantees walkable maze!",
+							MessageType.Info);
+					}
 
 					EditorGUILayout.Space();
 					GUILayout.Label("Custom Densities (leave -1 for auto):");

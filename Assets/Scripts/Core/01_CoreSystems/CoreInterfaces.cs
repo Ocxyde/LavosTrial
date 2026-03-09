@@ -21,6 +21,7 @@
 // Core defines interfaces, plugins (Player, Inventory, etc.) implement them
 
 using Code.Lavos.Status;
+using UnityEngine;
 
 namespace Code.Lavos.Core
 {
@@ -75,10 +76,10 @@ namespace Code.Lavos.Core
     public interface IInteractable
     {
         string InteractionPrompt { get; }
-        bool CanInteract(PlayerController player);
-        void OnInteract(PlayerController player);
-        void OnHighlightEnter(PlayerController player);
-        void OnHighlightExit(PlayerController player);
+        bool CanInteract(MonoBehaviour player);
+        void OnInteract(MonoBehaviour player);
+        void OnHighlightEnter(MonoBehaviour player);
+        void OnHighlightExit(MonoBehaviour player);
     }
 
     /// <summary>

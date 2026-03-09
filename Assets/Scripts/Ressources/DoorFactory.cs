@@ -25,6 +25,7 @@
 // DO NOT USE THIS FILE - Kept for reference only
 
 using System.Collections.Generic;
+using Code.Lavos.Core;
 using UnityEngine;
 
 #pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)

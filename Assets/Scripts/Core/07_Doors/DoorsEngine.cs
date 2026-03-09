@@ -458,7 +458,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// IInteractable: Check if player can interact.
         /// </summary>
-        public new bool CanInteract(PlayerController player)
+        bool IInteractable.CanInteract(MonoBehaviour player)
         {
             if (player == null) return false;
 
@@ -470,9 +470,9 @@ namespace Code.Lavos.Core
         /// <summary>
         /// IInteractable: Interact with door (E key).
         /// </summary>
-        public new void OnInteract(PlayerController player)
+        void IInteractable.OnInteract(MonoBehaviour player)
         {
-            if (!CanInteract(player)) return;
+            if (!((IInteractable)this).CanInteract(player)) return;
 
             // Call base Interact with player GameObject
             Interact(player.gameObject);
@@ -481,7 +481,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// IInteractable: Show highlight when player looks at door.
         /// </summary>
-        public void OnHighlightEnter(PlayerController player)
+        void IInteractable.OnHighlightEnter(MonoBehaviour player)
         {
             // Could add visual highlight effect here
             Debug.Log($"[DoorsEngine] Highlight enter: {InteractionPrompt}");
@@ -490,7 +490,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// IInteractable: Hide highlight when player looks away.
         /// </summary>
-        public void OnHighlightExit(PlayerController player)
+        void IInteractable.OnHighlightExit(MonoBehaviour player)
         {
             // Could remove visual highlight effect here
         }

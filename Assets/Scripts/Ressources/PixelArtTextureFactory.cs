@@ -19,6 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Location: Assets/Scripts/Ressources/
 
+using Code.Lavos.Core;
 using UnityEngine;
 
 namespace Code.Lavos.Ressources

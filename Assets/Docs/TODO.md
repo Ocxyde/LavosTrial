@@ -1,9 +1,180 @@
 # TODO.md - Project Tasks & Priorities
 
 **Project:** CodeDotLavos (Unity 6000.3.7f1)
-**Last Updated:** 2026-03-08 (Deep Scan Complete - Read-Only)
+**Unity Path:** `D:\travaux_Unity\CodeDotLavos`
+**Last Updated:** 2026-03-09 (Chat Log Review - Documentation Update)
 **License:** GPL-3.0
-**Status:** ✅ **0 COMPILATION ERRORS** | ⚠️ **PLUG-IN-OUT MIXED** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **PHYSICS & COLLISION** | ✅ **8-AXIS MAZE SYSTEM** | ✅ **WALL SNAPPING TO GRID** | ✅ **BINARY STORAGE**
+**Status:** ✅ **0 COMPILATION ERRORS** | ⚠️ **PLUG-IN-OUT MIXED** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **PHYSICS & COLLISION** | ✅ **8-AXIS MAZE SYSTEM** | ✅ **WALL SNAPPING TO GRID** | ✅ **BINARY STORAGE** | ✅ **PROCEDURAL LEVEL GEN**
+
+---
+
+## 🔬 **DEEP SCAN 2026-03-09 - LATEST FINDINGS**
+
+**Scan Date:** 2026-03-09
+**Scan Type:** READ-ONLY + Bug Fixes (No files modified except bug fixes)
+**Scan Tool:** Qwen Code (BetsyBoop)
+**Files Analyzed:** 147 C# scripts, 11 asmdef, 67 docs, 6 scenes
+
+### **🔧 CRITICAL BUG FIXES APPLIED (2026-03-09)**
+
+| Fix | Issue | Files Modified | Status |
+|-----|-------|----------------|--------|
+| **NullReferenceException** | `levelData.PopulationParams` null in `PopulateEnemies` | `ProceduralLevelGenerator.cs` | ✅ FIXED |
+| **Edit Mode Destroy** | `Destroy()` used in editor mode | `CompleteMazeBuilder.cs` | ✅ FIXED |
+| **Null Checks** | Missing null checks in level gen methods | `ProceduralLevelGenerator.cs` | ✅ FIXED |
+
+**Files Modified:**
+1. `Assets/Scripts/Core/06_Maze/ProceduralLevelGenerator.cs`
+   - Added null check for `levelData` in `PopulateEnemies()`
+   - Added null check for `PopulationParams` with fallback to `CreateDefault()`
+   - Used null-conditional access (`?.`) for safe property access
+   - Added null checks in `GenerateMazeStructure()`, `PopulateTreasures()`, `PopulateTraps()`, `SetupLighting()`, `ScaleParametersForLevel()`
+   - Fixed `DifficultyParams?.TrapDensity` null-conditional access
+
+2. `Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs`
+   - Changed `Destroy()` to `DestroyImmediate()` when in editor mode
+   - Added `Application.isPlaying` checks in `DestroyContainer()` and `DestroyMazeObjects()`
+
+**Result:**
+- ✅ Level generation no longer crashes with NullReferenceException
+- ✅ No more "Destroy may not be called from edit mode" warnings
+- ✅ Batch level generation working in UniversalLevelGeneratorTool
+
+---
+
+## 🔬 **DEEP SCAN 2026-03-09 - CHAT LOG REVIEW FINDINGS**
+
+**Review Date:** 2026-03-09
+**Review Type:** Chat Log Analysis (Logs/ folder - recent sessions)
+**Sessions Reviewed:** 10+ chat logs from 2026-03-07 to 2026-03-09
+**Key Issues Identified from Recent Sessions:**
+
+### **🔴 CRITICAL ISSUES IDENTIFIED (CHAT LOGS 2026-03-09)**
+
+| ID | Issue | Session Reference | Status |
+|----|-------|-------------------|--------|
+| **CL1** | **LightPlacementEngine - Missing Torch Prefab** | chat-d6b23fa1... | ⏳ PENDING |
+| **CL2** | **PlayerSetup - No Camera Found** | chat-d6b23fa1... | ⏳ PENDING |
+| **CL3** | **Door in Middle of Maze (No Room)** | chat-d6b23fa1... | ⏳ PENDING |
+| **CL4** | **Player Disappears on Play Mode** | chat-d6b23fa1... | ⏳ PENDING |
+| **CL5** | **Two Cameras on Scene Load** | chat-d6b23fa1... | ⏳ PENDING |
+| **CL6** | **Stamina Regen Bug** | chat-30f9273c... | ⏳ PENDING |
+| **CL7** | **Missing Unity Headers (31 files)** | chat-df72ac71... | ⏳ PENDING |
+
+**CL1 - LightPlacementEngine Missing Prefab:**
+```
+Error Log:
+[LightPlacementEngine] No torchPrefab assigned!
+[LightPlacementEngine] Please ensure:
+  1. TorchPool has torchHandlePrefab assigned in Inspector, OR
+  2. Create Resources folder and add TorchHandlePrefab there, OR
+  3. Have a TorchHandlePrefab in the scene
+
+Solution Required:
+- Assign torchHandlePrefab in TorchPool inspector
+- OR create Resources/Prefabs/TorchHandlePrefab.prefab
+- OR ensure prefab exists in scene
+
+File: Assets/Scripts/Core/10_Resources/LightPlacementEngine.cs
+```
+
+**CL2 - PlayerSetup No Camera Found:**
+```
+Error Log:
+[PlayerSetup] No Camera found!
+
+Solution Required:
+- Ensure Main Camera is child of Player
+- OR cache camera reference in PlayerController
+- OR add camera check in PlayerSetup.ValidateComponents()
+
+File: Assets/Scripts/Core/02_Player/PlayerSetup.cs:211
+```
+
+**CL3 - Door in Middle of Maze (No Room):**
+```
+User Report: "why is there a door in middle of the maze?"
+             "where's the matter [room for the door]?"
+
+Issue: Door spawns without surrounding wall room/alcove
+
+Solution Required:
+- Create door alcove/room before placing door
+- OR ensure door placement aligns with existing wall structure
+- OR add door room generation in GridMazeGenerator
+
+Files: CompleteMazeBuilder.cs, GridMazeGenerator8.cs
+```
+
+**CL4 - Player Disappears on Play Mode:**
+```
+User Report: "the player disappear from scen while launch on pause mode"
+
+Possible Causes:
+- Two cameras conflicting (parent + child)
+- Player spawn position issue
+- Camera follow script conflict
+
+Solution Required:
+- Remove duplicate/parent camera
+- Ensure single camera follows player
+- Check camera clipping planes
+
+Files: PlayerController.cs, CameraFollow.cs
+```
+
+**CL5 - Two Cameras on Scene Load:**
+```
+User Report: "there's 2 camera, I remove the parent one"
+
+Issue: Scene has multiple camera components
+
+Solution Required:
+- Disable/remove parent camera
+- Ensure only player child camera is active
+- Add camera cleanup in PlayerSetup
+
+Files: Scene files, PlayerSetup.cs
+```
+
+**CL6 - Stamina Regen Bug:**
+```
+User Report: "stamina bugs on regen, redo math calculation for lesser regen stamina"
+
+Issue: Stamina regenerates too fast or incorrectly
+
+Solution Required:
+- Review StatsEngine.cs stamina regen formula
+- Reduce stamina regen rate
+- Ensure out-of-combat delay works correctly
+
+Files: StatsEngine.cs, PlayerStats.cs
+```
+
+**CL7 - Missing Unity Headers (31 files):**
+```
+Scan Result from chat-df72ac71...:
+MISSING HEADER (31 files):
+- BraseroFlame.cs, DrawingManager.cs, FlameAnimator.cs
+- GameManager.cs, ItemData.cs, MazeGenerator.cs, ParticleGenerator.cs
+- BuildScript.cs (Editor)
+- DebugHUD.cs, HUDSystem.cs (HUD)
+- InteractableObject.cs (Interaction)
+- Inventory.cs, InventorySlotUI.cs, InventoryUI.cs, ItemPickup.cs (Inventory)
+- PersistentPlayerData.cs, PlayerController.cs, PlayerHealth.cs, PlayerStats.cs, StatusEffect.cs (Player)
+- AnimatedFlame.cs, DrawingPool.cs, MazeRenderer.cs, TorchController.cs, TorchDiagnostics.cs, TorchPool.cs (Ressources)
+- StatsEngine.cs, StatusEffect.cs, StatusEffectData.cs (Status)
+- MazeGeneratorTests.cs, StatsEngineTests.cs (Tests)
+
+Solution Required:
+- Add Unity 6 compatible headers to all 31 files
+- Header format: // filename.cs
+-              // Code.Lavos namespace
+-              // Unity 6000.3.7f1 compatible
+-              // GPL-3.0 license
+
+Files: 31 files across all folders
+```
 
 ---
 

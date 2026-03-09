@@ -24,6 +24,7 @@
 // - Cached for performance
 
 using System.Collections.Generic;
+using Code.Lavos.Core;
 using UnityEngine;
 
 namespace Code.Lavos.Ressources

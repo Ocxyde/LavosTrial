@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Status;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Player
 {

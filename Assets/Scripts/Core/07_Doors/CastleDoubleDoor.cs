@@ -85,9 +85,9 @@ namespace Code.Lavos.Core
         // ── IInteractable Implementation ─────────────────────────────────
         public string InteractionPrompt => _isOpen ? "Fermer" : "Ouvrir";
 
-        public bool CanInteract(PlayerController player) => true;
+        bool IInteractable.CanInteract(MonoBehaviour player) => true;
 
-        public void OnInteract(PlayerController player)
+        void IInteractable.OnInteract(MonoBehaviour player)
         {
             if (_isOpen)
             {
@@ -112,12 +112,12 @@ namespace Code.Lavos.Core
             Open();
         }
 
-        public void OnHighlightEnter(PlayerController player)
+        void IInteractable.OnHighlightEnter(MonoBehaviour player)
         {
             // Optional: Highlight effect when player looks at door
         }
 
-        public void OnHighlightExit(PlayerController player)
+        void IInteractable.OnHighlightExit(MonoBehaviour player)
         {
             // Optional: Remove highlight effect
         }

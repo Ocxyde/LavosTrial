@@ -4,7 +4,42 @@
 **Architecture:** Plug-in-Out
 **Config:** JSON-driven (no hardcoded values)
 **License:** GPL-3.0
-**Status:** ✅ **Pure Maze with Exit Corridor** | ✅ **Walls Snap to Grid**
+**Status:** ✅ **Pure Maze with Exit Corridor** | ✅ **Walls Snap to Grid** | ✅ **PROCEDURAL LEVEL GEN** | ✅ **NULL REF FIXES**
+
+---
+
+## 📋 **LATEST UPDATES - 2026-03-09**
+
+### **🔧 CRITICAL BUG FIXES APPLIED**
+
+| Fix | Issue | Status |
+|-----|-------|--------|
+| **NullReferenceException** | `levelData.PopulationParams` null in `PopulateEnemies` | ✅ FIXED |
+| **Edit Mode Destroy** | `Destroy()` used in editor mode | ✅ FIXED |
+| **Null Checks** | Missing null checks in level gen methods | ✅ FIXED |
+
+**Files Modified:**
+- `ProceduralLevelGenerator.cs` - Null checks + null-conditional access
+- `CompleteMazeBuilder.cs` - `DestroyImmediate()` for editor mode
+
+**Result:**
+- ✅ Level generation no longer crashes with NullReferenceException
+- ✅ No more "Destroy may not be called from edit mode" warnings
+- ✅ Batch level generation working in UniversalLevelGeneratorTool
+
+### **⏳ KNOWN ISSUES (FROM CHAT LOGS 2026-03-09)**
+
+| ID | Issue | Priority |
+|----|-------|----------|
+| **CL1** | LightPlacementEngine - Missing Torch Prefab | 🔴 CRITICAL |
+| **CL2** | PlayerSetup - No Camera Found | 🔴 CRITICAL |
+| **CL3** | Door in Middle of Maze (No Room) | 🔴 CRITICAL |
+| **CL4** | Player Disappears on Play Mode | 🔴 CRITICAL |
+| **CL5** | Two Cameras on Scene Load | 🔴 CRITICAL |
+| **CL6** | Stamina Regen Bug | 🟡 MEDIUM |
+| **CL7** | Missing Unity Headers (31 files) | 🟡 MEDIUM |
+
+**See:** `Assets/Docs/TODO.md` for detailed issue descriptions and solutions.
 
 ---
 

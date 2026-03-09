@@ -20,6 +20,7 @@
 // Uses PixelArtTextureFactory patterns for consistency
 // Location: Assets/Scripts/Ressources/
 
+using Code.Lavos.Core;
 using UnityEngine;
 
 namespace Code.Lavos.Ressources

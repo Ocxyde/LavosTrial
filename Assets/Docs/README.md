@@ -5,8 +5,42 @@
 **Input System:** New Input System
 **Coding Standard:** Unity 6 (C# en_US UTF-8)
 **License:** GPL-3.0
-**Last Updated:** 2026-03-09
+**Last Updated:** 2026-03-09 (Chat Log Review Complete)
 **Codename:** BetsyBoop
+
+---
+
+## 📋 **LATEST SESSION - 2026-03-09 CHAT LOG REVIEW**
+
+**Review Date:** 2026-03-09
+**Review Type:** Chat Log Analysis (Logs/ folder - recent sessions)
+**Sessions Reviewed:** 10+ chat logs from 2026-03-07 to 2026-03-09
+
+### **🔧 CRITICAL BUG FIXES APPLIED (2026-03-09)**
+
+| Fix | Issue | Status |
+|-----|-------|--------|
+| **NullReferenceException** | `levelData.PopulationParams` null in `PopulateEnemies` | ✅ FIXED |
+| **Edit Mode Destroy** | `Destroy()` used in editor mode | ✅ FIXED |
+| **Null Checks** | Missing null checks in level gen methods | ✅ FIXED |
+
+**Files Modified:**
+- `ProceduralLevelGenerator.cs` - Null checks + null-conditional access
+- `CompleteMazeBuilder.cs` - `DestroyImmediate()` for editor mode
+
+### **🔴 ISSUES IDENTIFIED FROM CHAT LOGS**
+
+| ID | Issue | Priority | Status |
+|----|-------|----------|--------|
+| **CL1** | LightPlacementEngine - Missing Torch Prefab | 🔴 CRITICAL | ⏳ PENDING |
+| **CL2** | PlayerSetup - No Camera Found | 🔴 CRITICAL | ⏳ PENDING |
+| **CL3** | Door in Middle of Maze (No Room) | 🔴 CRITICAL | ⏳ PENDING |
+| **CL4** | Player Disappears on Play Mode | 🔴 CRITICAL | ⏳ PENDING |
+| **CL5** | Two Cameras on Scene Load | 🔴 CRITICAL | ⏳ PENDING |
+| **CL6** | Stamina Regen Bug | 🟡 MEDIUM | ⏳ PENDING |
+| **CL7** | Missing Unity Headers (31 files) | 🟡 MEDIUM | ⏳ PENDING |
+
+**See:** [TODO.md](TODO.md) for detailed issue descriptions and solutions.
 
 ---
 
@@ -326,6 +360,14 @@ Located in project root:
 - ✅ Fixed `Destroy()` in edit mode → now uses `DestroyImmediate()` for editor
 - ✅ Added comprehensive null checks across all level generation methods
 - ✅ Fixed edit mode warnings in `CompleteMazeBuilder.DestroyContainer`
+
+### Known Issues (From Chat Logs 2026-03-09)
+- ⏳ LightPlacementEngine needs torch prefab assignment
+- ⏳ PlayerSetup camera reference issue
+- ⏳ Door placement needs room/alcove
+- ⏳ Player disappearance on play mode (dual camera conflict)
+- ⏳ Stamina regen rate needs adjustment
+- ⏳ 31 files missing Unity headers
 
 ---
 

@@ -103,6 +103,12 @@ namespace Code.Lavos.Core.Advanced
         public bool AllowDiagonalWalls = true;
 
         public bool GuaranteedPathRequired = true;
+
+        // Passage-First Generation (alternative to DFS)
+        // If true, creates clear passage from entrance to exit first,
+        // then adds walls around it. Guarantees walkable path.
+        public bool UsePassageFirst = false;
+
         public int BaseWallPenalty { get; }
 
         // ─────────────────────────────────────────────────────────────

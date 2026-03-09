@@ -131,6 +131,34 @@ namespace Code.Lavos.Core.Advanced
             SetCell(x, z, cell);
         }
 
+        public void MarkAsSpawnRoom(int x, int z)
+        {
+            if (!InBounds(x, z)) return;
+            var cell = GetCell(x, z);
+            cell |= CellFlags8.SpawnRoom;
+            SetCell(x, z, cell);
+        }
+
+        public bool IsSpawnRoomCell(int x, int z)
+        {
+            if (!InBounds(x, z)) return false;
+            return (GetCell(x, z) & CellFlags8.SpawnRoom) != 0;
+        }
+
+        public void MarkAsExitRoom(int x, int z)
+        {
+            if (!InBounds(x, z)) return;
+            var cell = GetCell(x, z);
+            cell |= CellFlags8.IsExit;
+            SetCell(x, z, cell);
+        }
+
+        public bool IsExitRoomCell(int x, int z)
+        {
+            if (!InBounds(x, z)) return false;
+            return (GetCell(x, z) & CellFlags8.IsExit) != 0;
+        }
+
         public bool InBounds(int x, int z)
         {
             return x >= 0 && x < _width && z >= 0 && z < _height;
@@ -155,21 +183,23 @@ namespace Code.Lavos.Core.Advanced
         public const uint Wall_SW = 0x0080;
         public const uint Wall_All = 0x00FF;
 
-        // Room Types (bits 8-12)
+        // Room Types (bits 8-13)
         public const uint IsRoom = 0x0100;
         public const uint IsHall = 0x0200;
         public const uint IsTrapRoom = 0x0400;
         public const uint IsTreasureRoom = 0x0800;
         public const uint IsBossRoom = 0x1000;
+        public const uint SpawnRoom = 0x02000;  // Part of spawn room area (bit 13)
+        public const uint IsExit = 0x04000;     // Exit room marker (bit 14)
 
-        // Objects (bits 13-15)
-        public const uint HasTorch = 0x2000;
-        public const uint HasEnemy = 0x4000;
-        public const uint HasChest = 0x8000;
+        // Objects (bits 15-17)
+        public const uint HasTorch = 0x08000;   // Bit 15
+        public const uint HasEnemy = 0x10000;   // Bit 16
+        public const uint HasChest = 0x20000;   // Bit 17
 
-        // Advanced markers (bits 16-17)
-        public const uint IsMainPath = 0x0001_0000;
-        public const uint IsDanger = 0x0002_0000;
+        // Advanced markers (bits 18-19)
+        public const uint IsMainPath = 0x0004_0000;  // Bit 18
+        public const uint IsDanger = 0x0008_0000;    // Bit 19
     }
 
     /// <summary>
