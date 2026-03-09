@@ -16,6 +16,7 @@
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // GridMazeGenerator.cs
 // 8-axis maze generation with DFS + A* pathfinding
+// UPDATED 2026-03-09: Cardinal-only passages, guaranteed paths, dead-end corridors
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 
 using System;
@@ -27,27 +28,31 @@ namespace Code.Lavos.Core
     // ─────────────────────────────────────────────────────────────
     //  GridMazeGenerator
     //
-    //  Generates a procedural maze on an 8-axis grid.
+    //  Generates a procedural maze on a 4-axis (cardinal) grid.
     //
     //  Algorithm:
-    //    1. Fill all cells — all 8 walls set (ushort = 0x00FF)
-    //    2. Recursive Backtracker (DFS) — shuffled over 8 axes
-    //       Diagonal step: dx=±2, dz=±2  (intermediate cell cleared)
+    //    1. Fill all cells — all 4 walls set (ushort = 0x000F)
+    //    2. Recursive Backtracker (DFS) — 4 cardinal directions only
     //       Cardinal step: dx=±2 OR dz=±2 (standard wall removal)
+    //       NO diagonal passages - ensures clear wall alignment
     //    3. Carve guaranteed 5×5 spawn room at (1,1)
     //    4. Place exit at (W-2, H-2)
-    //    5. A* from spawn → exit  (diagonal cost = 14, cardinal = 10)
-    //    6. Torch placement  (30% of wall-adjacent, non-spawn cells)
-    //    7. Chest + enemy placement on open interior cells
+    //    5. A* from spawn → exit (cardinal only, cost = 10)
+    //       Guarantees passage even if DFS fails
+    //    6. Add dead-end corridors (branching from main path)
+    //    7. Torch placement  (30% of wall-adjacent, non-spawn cells)
+    //    8. Chest + enemy placement on open interior cells
     //
-    //  Diagonal passages share the same DFS logic — the intermediate
-    //  cell at (cx+dx/2, cz+dz/2) is cleared of all walls so the
-    //  visual corridor is unambiguous.
+    //  Key Changes (2026-03-09):
+    //  - Removed diagonal wall carving from DFS
+    //  - Guaranteed A* path ensures passage
+    //  - Dead-end corridors add complexity
+    //  - Corridor choices at intersections
     //
     //  Usage:
     //      var gen  = new GridMazeGenerator();
     //      var data = gen.Generate(seed: 42, level: 0, cfg: mazeCfg);
-    //      
+    //
     //  Backward compatibility:
     //      - GridSize returns data.Width
     //      - GetCell(x,z) returns data.GetCell(x,z)
@@ -103,9 +108,10 @@ namespace Code.Lavos.Core
             // ── Step 1: fill all walls ────────────────────────────
             FillAllWalls(data);
 
-            // ── Step 2: DFS over 8 axes ───────────────────────────
+            // ── Step 2: DFS over 4 cardinal axes ONLY ─────────────
+            //      No diagonal passages - ensures clean wall alignment
             var visited = new bool[size, size];
-            CarvePassages8(data, rng, visited, 1, 1);
+            CarvePassagesCardinal(data, rng, visited, 1, 1);
 
             // ── Step 3: spawn room ────────────────────────────────
             CarveSpawnRoom(data, 1, 1, cfg.SpawnRoomSize);
@@ -114,20 +120,29 @@ namespace Code.Lavos.Core
             // ── Step 4: exit ──────────────────────────────────────
             data.SetExit(size - 2, size - 2);
 
-            // ── Step 5: A* guaranteed path ────────────────────────
-            EnsurePath(data,
+            // ── Step 5: A* guaranteed path (cardinal only) ────────
+            //      Ensures passage even if DFS creates isolated sections
+            EnsurePathCardinal(data,
                        data.SpawnCell.x, data.SpawnCell.z,
                        data.ExitCell.x,  data.ExitCell.z,
-                       scaledWallPenalty);  // Use scaled wall penalty
+                       scaledWallPenalty);
 
-            // ── Step 6: torches ───────────────────────────────────
+            // ── Step 6: Add dead-end corridors ────────────────────
+            //      Creates branching paths for more complex maze
+            AddDeadEndCorridors(data, rng, cfg);
+
+            // ── Step 7: torches ───────────────────────────────────
             PlaceTorches(data, rng, scaledTorchChance);
 
-            // ── Step 7: chests + enemies ──────────────────────────
+            // ── Step 8: chests + enemies ──────────────────────────
             PlaceObjects(data, rng, scaledChestDensity, scaledEnemyDensity);
 
             // Store for backward compatibility accessors
             _generatedData = data;
+
+            Debug.Log($"[GridMazeGenerator] Maze generated: {size}x{size}, " +
+                      $"spawn=({data.SpawnCell.x},{data.SpawnCell.z}), " +
+                      $"exit=({data.ExitCell.x},{data.ExitCell.z})");
 
             return data;
         }
@@ -167,46 +182,53 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
-        //  Step 2 — Recursive Backtracker (DFS), 8 directions
+        //  Step 2 — Recursive Backtracker (DFS), 4 CARDINAL directions ONLY
         //
-        //  For cardinal directions:
+        //  Cardinal directions only (N, S, E, W):
         //    step = 2 cells along one axis
-        //    intermediate wall cell = (cx+dx, cz+dz)
+        //    wall cell between = (cx+dx, cz) or (cx, cz+dz)
+        //    Wall is cleared between current and next cell
         //
-        //  For diagonal directions:
-        //    step = 2 cells along both axes  (cx+2, cz+2) etc.
-        //    intermediate cell = (cx+dx, cz+dz) — the shared corner
-        //    We clear all walls on the intermediate cell so no
-        //    invisible collision blocks diagonal traversal.
+        //  NO DIAGONAL PASSAGES:
+        //    - Diagonals removed to ensure clean wall alignment
+        //    - All corridors are straight (N-S or E-W)
+        //    - Walls snap perfectly to grid boundaries
         // ─────────────────────────────────────────────────────────
-        private static void CarvePassages8(MazeData8 d, System.Random rng,
+        private static void CarvePassagesCardinal(MazeData8 d, System.Random rng,
                                             bool[,] visited, int cx, int cz)
         {
             visited[cx, cz] = true;
 
-            // Shuffle all 8 directions
-            var dirs = (Direction8[])Direction8Helper.All.Clone();
+            // Shuffle 4 cardinal directions only (N, S, E, W)
+            var dirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
             Shuffle(dirs, rng);
 
             foreach (var dir in dirs)
             {
                 var (dx, dz) = Direction8Helper.ToOffset(dir);
 
-                // Destination cell — 2 steps away
+                // Destination cell — 2 steps away (cardinal only)
                 int nx = cx + dx * 2;
                 int nz = cz + dz * 2;
 
                 if (!d.InBounds(nx, nz) || visited[nx, nz]) continue;
 
-                // ── Remove walls on both ends ─────────────────────
+                // ── Remove wall between current and next ──────────
+                // Clear wall flag in current cell (facing direction)
                 d.ClearFlag(cx, cz, Direction8Helper.ToWallFlag(dir));
+                // Clear opposite wall flag in next cell
                 d.ClearFlag(nx, nz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
 
-                // ── Clear the intermediate cell ───────────────────
-                int wx = cx + dx, wz = cz + dz;
-                d.SetCell(wx, wz, CellFlags8.None);
+                // ── Clear the wall cell between ───────────────────
+                // The cell between current and next becomes a passage
+                int wallX = cx + dx, wallZ = cz + dz;
+                if (d.InBounds(wallX, wallZ))
+                {
+                    d.SetCell(wallX, wallZ, CellFlags8.None);
+                }
 
-                CarvePassages8(d, rng, visited, nx, nz);
+                // Recurse into next cell
+                CarvePassagesCardinal(d, rng, visited, nx, nz);
             }
         }
 
@@ -225,14 +247,18 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
-        //  Step 5 — A* guaranteed path (8-directional movement)
+        //  Step 5 — A* guaranteed path (CARDINAL 4-directional movement)
         //
-        //  Cost model (standard diagonal A*):
+        //  Cost model (cardinal A* only):
         //    Cardinal move   = 10
-        //    Diagonal move   = 14  (approx √2 × 10)
         //    Crossing a wall = +wallPenalty (from DifficultyScaler)
+        //
+        //  GUARANTEES PASSAGE:
+        //    - If DFS creates isolated sections, A* carves a path
+        //    - Ensures player can always reach exit
+        //    - Only cardinal movements (no diagonals)
         // ─────────────────────────────────────────────────────────
-        private static void EnsurePath(MazeData8 d,
+        private static void EnsurePathCardinal(MazeData8 d,
                                         int sx, int sz, int ex, int ez,
                                         int wallPenalty = 100)
         {
@@ -240,7 +266,7 @@ namespace Code.Lavos.Core
             var open   = new List<Node>();
             var closed = new HashSet<int>();   // packed key = z*Width + x
 
-            open.Add(new Node { X = sx, Z = sz, G = 0, H = Heuristic8(sx, sz, ex, ez) });
+            open.Add(new Node { X = sx, Z = sz, G = 0, H = HeuristicCardinal(sx, sz, ex, ez) });
 
             while (open.Count > 0)
             {
@@ -258,9 +284,10 @@ namespace Code.Lavos.Core
                     var node = current;
                     while (node.Parent != null)
                     {
-                        CarveStep(d, node.Parent.X, node.Parent.Z, node.X, node.Z);
+                        CarveStepCardinal(d, node.Parent.X, node.Parent.Z, node.X, node.Z);
                         node = node.Parent;
                     }
+                    Debug.Log("[GridMazeGenerator] A*: Guaranteed path carved successfully");
                     return;
                 }
 
@@ -268,8 +295,9 @@ namespace Code.Lavos.Core
                 if (closed.Contains(key)) continue;
                 closed.Add(key);
 
-                // Expand all 8 neighbours
-                foreach (var dir in Direction8Helper.All)
+                // Expand 4 cardinal neighbours only (N, S, E, W)
+                var cardinalDirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+                foreach (var dir in cardinalDirs)
                 {
                     var (dx, dz) = Direction8Helper.ToOffset(dir);
                     int nx = current.X + dx;
@@ -278,8 +306,8 @@ namespace Code.Lavos.Core
                     if (!d.InBounds(nx, nz)) continue;
                     if (closed.Contains(nz * d.Width + nx)) continue;
 
-                    // Movement cost
-                    int moveCost = Direction8Helper.IsDiagonal(dir) ? 14 : 10;
+                    // Movement cost (cardinal only = 10)
+                    int moveCost = 10;
                     // Wall crossing penalty (scaled by difficulty)
                     int penalty = d.HasWall(current.X, current.Z, dir) ? wallPenalty : 0;
                     int g = current.G + moveCost + penalty;
@@ -289,47 +317,163 @@ namespace Code.Lavos.Core
                         X      = nx,
                         Z      = nz,
                         G      = g,
-                        H      = Heuristic8(nx, nz, ex, ez),
+                        H      = HeuristicCardinal(nx, nz, ex, ez),
                         Parent = current,
                     });
                 }
             }
+
+            Debug.LogWarning("[GridMazeGenerator] A*: Could not find path - maze may have isolated sections");
         }
 
-        // Chebyshev heuristic — correct for 8-directional movement
-        private static int Heuristic8(int ax, int az, int bx, int bz)
+        // Manhattan heuristic — correct for 4-directional (cardinal) movement
+        private static int HeuristicCardinal(int ax, int az, int bx, int bz)
         {
             int dx = Math.Abs(ax - bx);
             int dz = Math.Abs(az - bz);
-            // Chebyshev × 10 (matches movement cost scale)
-            return 10 * Math.Max(dx, dz);
+            // Manhattan × 10 (matches movement cost scale)
+            return 10 * (dx + dz);
         }
 
-        private static void CarveStep(MazeData8 d, int fx, int fz, int tx, int tz)
+        private static void CarveStepCardinal(MazeData8 d, int fx, int fz, int tx, int tz)
         {
             int ddx = tx - fx;
             int ddz = tz - fz;
 
-            // Map delta → Direction8
+            // Map delta → Direction8 (cardinal only)
             Direction8 dir = (Math.Sign(ddx), Math.Sign(ddz)) switch
             {
                 ( 0,  1) => Direction8.N,
                 ( 0, -1) => Direction8.S,
                 ( 1,  0) => Direction8.E,
                 (-1,  0) => Direction8.W,
-                ( 1,  1) => Direction8.NE,
-                (-1,  1) => Direction8.NW,
-                ( 1, -1) => Direction8.SE,
-                (-1, -1) => Direction8.SW,
-                _ => Direction8.N
+                _ => Direction8.N  // Default (should not happen for cardinal)
             };
 
+            // Clear wall between from and to cells
             d.ClearFlag(fx, fz, Direction8Helper.ToWallFlag(dir));
             d.ClearFlag(tx, tz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
         }
 
         // ─────────────────────────────────────────────────────────
-        //  Step 6 — Torch placement
+        //  Step 6 — Add Dead-End Corridors
+        //
+        //  Creates branching paths from existing corridors:
+        //    1. Find all passage cells (no walls, not spawn, not exit)
+        //    2. For each passage cell, try to extend in random direction
+        //    3. Create dead-end corridor of random length (2-5 cells)
+        //    4. Chance to add chest/enemy at dead-end
+        //
+        //  CORRIDOR CHOICES:
+        //    - Intersections have 2-4 possible directions
+        //    - Player must choose correct path
+        //    - Dead-ends contain rewards or enemies
+        // ─────────────────────────────────────────────────────────
+        private static void AddDeadEndCorridors(MazeData8 d, System.Random rng, MazeConfig cfg)
+        {
+            int deadEndCount = 0;
+            int maxDeadEnds = d.Width * d.Height / 20;  // Max 5% of grid
+
+            // Find all passage cells (walkable, not spawn, not exit)
+            var passageCells = new List<(int x, int z)>();
+            for (int x = 0; x < d.Width; x++)
+            {
+                for (int z = 0; z < d.Height; z++)
+                {
+                    var cell = d.GetCell(x, z);
+                    bool isPassage = (cell & CellFlags8.AllWalls) == CellFlags8.None;
+                    bool isSpawn = (cell & CellFlags8.SpawnRoom) != CellFlags8.None;
+                    bool isExit = (cell & CellFlags8.IsExit) != CellFlags8.None;
+
+                    if (isPassage && !isSpawn && !isExit)
+                    {
+                        passageCells.Add((x, z));
+                    }
+                }
+            }
+
+            // Shuffle passage cells for random distribution
+            Shuffle(passageCells.ToArray(), rng);
+
+            // Try to create dead-end corridors
+            foreach (var (px, pz) in passageCells)
+            {
+                if (deadEndCount >= maxDeadEnds) break;
+
+                // 30% chance to try creating a dead-end from this cell
+                if (rng.NextDouble() > 0.30f) continue;
+
+                // Try 4 cardinal directions
+                var dirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+                Shuffle(dirs, rng);
+
+                foreach (var dir in dirs)
+                {
+                    var (dx, dz) = Direction8Helper.ToOffset(dir);
+
+                    // Check if we can extend in this direction (wall exists)
+                    int nextX = px + dx;
+                    int nextZ = pz + dz;
+
+                    if (!d.InBounds(nextX, nextZ)) continue;
+
+                    var nextCell = d.GetCell(nextX, nextZ);
+                    bool isWall = (nextCell & CellFlags8.AllWalls) == CellFlags8.AllWalls;
+
+                    if (!isWall) continue;
+
+                    // Carve dead-end corridor (2-5 cells long)
+                    int corridorLength = rng.Next(2, 6);
+                    int carvedLength = 0;
+
+                    int currX = px, currZ = pz;
+                    for (int i = 0; i < corridorLength; i++)
+                    {
+                        int carveX = currX + dx * (i + 1);
+                        int carveZ = currZ + dz * (i + 1);
+
+                        if (!d.InBounds(carveX, carveZ)) break;
+
+                        var carveCell = d.GetCell(carveX, carveZ);
+                        if ((carveCell & CellFlags8.AllWalls) == CellFlags8.None)
+                        {
+                            // Hit existing passage, stop
+                            break;
+                        }
+
+                        // Clear this cell (make it a passage)
+                        d.SetCell(carveX, carveZ, CellFlags8.None);
+                        carvedLength++;
+                        currX = carveX;
+                        currZ = carveZ;
+                    }
+
+                    if (carvedLength >= 2)
+                    {
+                        // Successfully created dead-end corridor
+                        deadEndCount++;
+
+                        // 50% chance to add chest at end
+                        if (rng.NextDouble() < 0.5f)
+                        {
+                            d.AddFlag(currX, currZ, CellFlags8.HasChest);
+                        }
+                        // 30% chance to add enemy at end (if no chest)
+                        else if (rng.NextDouble() < 0.3f)
+                        {
+                            d.AddFlag(currX, currZ, CellFlags8.HasEnemy);
+                        }
+
+                        Debug.Log($"[GridMazeGenerator] Dead-end corridor #{deadEndCount} carved at ({currX},{currZ}), length={carvedLength}");
+                    }
+                }
+            }
+
+            Debug.Log($"[GridMazeGenerator] Total dead-end corridors added: {deadEndCount}");
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 7 — Torch placement
         // ─────────────────────────────────────────────────────────
         private static void PlaceTorches(MazeData8 d, System.Random rng, float chance)
         {
@@ -346,7 +490,7 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
-        //  Step 7 — Chest + enemy placement
+        //  Step 8 — Chest + enemy placement
         // ─────────────────────────────────────────────────────────
         private static void PlaceObjects(MazeData8 d, System.Random rng,
                                           float chestDensity, float enemyDensity)
@@ -381,6 +525,10 @@ namespace Code.Lavos.Core
 
     // ─────────────────────────────────────────────────────────────
     //  MazeConfig  —  all values loaded from JSON, no hardcodes
+    //
+    //  UPDATED 2026-03-09:
+    //  - DiagonalWalls removed (cardinal-only passages)
+    //  - Dead-end corridors auto-generated
     // ─────────────────────────────────────────────────────────────
     [Serializable]
     public sealed class MazeConfig
@@ -393,8 +541,8 @@ namespace Code.Lavos.Core
         public float TorchChance    = 0.30f;
         public float ChestDensity   = 0.03f;
         public float EnemyDensity   = 0.05f;
-        public bool  DiagonalWalls  = true;   // toggle diagonal wall rendering
-        
+        // DiagonalWalls removed 2026-03-09 - cardinal-only passages
+
         // A* pathfinding
         public int BaseWallPenalty = 100;  // penalty for crossing a wall
     }

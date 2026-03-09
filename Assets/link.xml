@@ -1,0 +1,6 @@
+﻿<linker>
+    <!-- Preserve fields accessed via reflection in PrefabLoaderFix -->
+    <assembly fullname="Assembly-CSharp">
+        <type fullname="Code.Lavos.Core.CompleteMazeBuilder8" preserve="fields"/>
+    </assembly>
+</linker>

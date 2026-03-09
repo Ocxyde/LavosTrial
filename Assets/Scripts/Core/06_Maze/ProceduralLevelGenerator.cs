@@ -38,6 +38,12 @@ namespace Code.Lavos.Core
 		[SerializeField] private EnemyPlacer enemyPlacer;
 		[SerializeField] private ComputeGridEngine computeGridEngine;
 
+		[Header("Corridor Decorations")]
+		[SerializeField] private GameObject pillarPrefab;
+		[SerializeField] private GameObject archPrefab;
+		[SerializeField] private GameObject nicheStatuePrefab;
+		[SerializeField] private bool autoInstantiateDecorations = true;
+
 		[Header("Configuration")]
 		[SerializeField] private bool autoFindComponents = true;
 		[SerializeField] private bool logDetailedProgress = true;
@@ -241,6 +247,73 @@ namespace Code.Lavos.Core
 			mazeBuilder.GenerateMaze();
 
 			Log("Maze structure generated");
+
+			// Instantiate corridor decorations if enabled
+			if (autoInstantiateDecorations)
+			{
+				InstantiateCorridorDecorations(levelData);
+			}
+		}
+
+		/// <summary>
+		/// Instantiate corridor decorations (pillars, arches, niches) from maze data.
+		/// Reads decoration flags from DungeonMazeData and places prefabs.
+		/// </summary>
+		private void InstantiateCorridorDecorations(LevelData levelData)
+		{
+			Log("Instantiating corridor decorations...");
+
+			if (mazeBuilder == null || mazeBuilder.MazeData == null)
+			{
+				Log("WARNING: Cannot instantiate decorations - maze data not available");
+				return;
+			}
+
+			var mazeData = mazeBuilder.MazeData;
+			int decorCount = 0;
+
+			// Iterate through all cells and place decorations based on flags
+			for (int x = 0; x < mazeData.Width; x++)
+			{
+				for (int z = 0; z < mazeData.Height; z++)
+				{
+					uint cell = mazeData.GetCell(x, z);
+					Vector3 position = new Vector3(x * mazeData.Config.CellSize, 0f, z * mazeData.Config.CellSize);
+
+					// Place pillars
+					if ((cell & (uint)CellFlags8.HasPillar) != 0 && pillarPrefab != null)
+					{
+						var pillar = Instantiate(pillarPrefab, position, Quaternion.identity);
+						pillar.transform.SetParent(mazeBuilder.transform, true);
+						decorCount++;
+						Log($"  Pillar placed at ({x}, {z})");
+					}
+
+					// Place arches (marked with HasTorch in wall context)
+					if ((cell & (uint)CellFlags8.HasTorch) != 0 && archPrefab != null)
+					{
+						// Check if this is a wall cell (arch context)
+						if ((cell & (uint)CellFlags8.AllWalls) != 0)
+						{
+							var arch = Instantiate(archPrefab, position, Quaternion.identity);
+							arch.transform.SetParent(mazeBuilder.transform, true);
+							decorCount++;
+							Log($"  Arch placed at ({x}, {z})");
+						}
+					}
+
+					// Place niche statues
+					if ((cell & (uint)CellFlags8.HasNiche) != 0 && nicheStatuePrefab != null)
+					{
+						var niche = Instantiate(nicheStatuePrefab, position, Quaternion.identity);
+						niche.transform.SetParent(mazeBuilder.transform, true);
+						decorCount++;
+						Log($"  Niche statue placed at ({x}, {z})");
+					}
+				}
+			}
+
+			Log($"Corridor decorations complete: {decorCount} objects placed");
 		}
 
 		private void PopulateEnemies(LevelData levelData)

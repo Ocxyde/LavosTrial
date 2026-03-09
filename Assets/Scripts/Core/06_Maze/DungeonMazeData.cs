@@ -197,6 +197,10 @@ namespace Code.Lavos.Core.Advanced
         public const uint HasEnemy = 0x10000;   // Bit 16
         public const uint HasChest = 0x20000;   // Bit 17
 
+        // Decoration (bits 20-21)
+        public const uint HasPillar = 0x0010_0000;  // Bit 20
+        public const uint HasNiche = 0x0020_0000;   // Bit 21
+
         // Advanced markers (bits 18-19)
         public const uint IsMainPath = 0x0004_0000;  // Bit 18
         public const uint IsDanger = 0x0008_0000;    // Bit 19

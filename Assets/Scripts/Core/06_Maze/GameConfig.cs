@@ -134,6 +134,7 @@ namespace Code.Lavos.Core
         public string shareSalt = "LAVOS_SECRET_SALT_2026";  // Salt for maze code checksum
 
         // ── JSON deserialization proxy ────────────────────────────
+#pragma warning disable CS0649  // Fields assigned via JsonUtility.FromJson
         [Serializable]
         private struct JsonProxy
         {
@@ -142,13 +143,12 @@ namespace Code.Lavos.Core
             public float playerEyeHeight;
             public float playerSpawnOffset;
             public int   mazeBaseSize;
-            public int   mazeMinSize;
             public int   mazeMaxSize;
             public int   spawnRoomSize;
             public float torchChance;
             public float chestDensity;
             public float enemyDensity;
-            public bool  diagonalWalls;
+            // diagonalWalls removed 2026-03-09 - cardinal-only passages
             public int   baseWallPenalty;
 
             // DifficultyScaler fields
@@ -161,6 +161,7 @@ namespace Code.Lavos.Core
             // Share system fields
             public string shareSalt;
         }
+#pragma warning restore CS0649
 
         public static GameConfig FromJson(string json)
         {
@@ -175,13 +176,12 @@ namespace Code.Lavos.Core
                 MazeCfg = new MazeConfig
                 {
                     BaseSize       = p.mazeBaseSize  > 0 ? p.mazeBaseSize  : 12,
-                    MinSize        = p.mazeMinSize   > 0 ? p.mazeMinSize   : 12,
+                    MinSize        = 12, // mazeMinSize removed - use default
                     MaxSize        = p.mazeMaxSize   > 0 ? p.mazeMaxSize   : 51,
                     SpawnRoomSize  = p.spawnRoomSize > 0 ? p.spawnRoomSize : 5,
                     TorchChance    = p.torchChance   > 0 ? p.torchChance   : 0.30f,
                     ChestDensity   = p.chestDensity  > 0 ? p.chestDensity  : 0.03f,
                     EnemyDensity   = p.enemyDensity  > 0 ? p.enemyDensity  : 0.05f,
-                    DiagonalWalls  = p.diagonalWalls,
                     BaseWallPenalty = p.baseWallPenalty > 0 ? p.baseWallPenalty : 100,
                 },
                 DifficultyCfg = new DifficultyScaler

@@ -22,7 +22,7 @@
 // - Finds components (never creates)
 // - All values loaded from JSON config
 // - No hardcoded values
-// - Works with DoorHolePlacer and GridMazeGenerator
+// - Works with DoorHolePlacer
 //
 // LOCATION: Assets/Scripts/Core/07_Doors/
 
@@ -63,9 +63,6 @@ namespace Code.Lavos.Core
         [Header(" Component References (Plug-in-Out)")]
         [Tooltip("Auto-finds DoorHolePlacer in scene")]
         [SerializeField] private DoorHolePlacer holePlacer;
-
-        [Tooltip("Auto-finds GridMazeGenerator in scene")]
-        [SerializeField] private GridMazeGenerator gridMazeGenerator;
 
         #endregion
 
@@ -109,8 +106,6 @@ namespace Code.Lavos.Core
         {
             if (holePlacer == null)
                 holePlacer = FindFirstObjectByType<DoorHolePlacer>();
-
-            // GridMazeGenerator is created by CompleteMazeBuilder
         }
 
         #endregion

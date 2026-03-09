@@ -239,14 +239,20 @@ namespace Code.Lavos.Tools
 					_enableEnvironmentalHazards = EditorGUILayout.Toggle("Environmental Hazards",
 						_enableEnvironmentalHazards);
 					_enableStatusEffects = EditorGUILayout.Toggle("Status Effects", _enableStatusEffects);
-					
+
 					EditorGUILayout.Space();
+					
+					// Passage-First Mode with Advanced Corridor System
 					_usePassageFirst = EditorGUILayout.Toggle("Passage-First Mode", _usePassageFirst);
 					if (_usePassageFirst)
 					{
 						EditorGUILayout.HelpBox(
 							"Passage-First creates a clear path from Entrance (A) to Exit (B) first,\n" +
-							"then adds walls around it. Guarantees walkable maze!",
+							"then adds walls around it. Guarantees walkable maze!\n\n" +
+							"NEW: Advanced corridor system with:\n" +
+							"- Width variations (1-3 cells)\n" +
+							"- Landmarks (plazas, junctions, gates)\n" +
+							"- Decorations (pillars, arches, niches)",
 							MessageType.Info);
 					}
 

@@ -30,8 +30,7 @@
 //   Tools → Maze → Preview Maze (1-Click Render)
 //   OR: Select CompleteMazeBuilder → Right-click → "Preview Maze in Editor"
 //
-// NOTE: This is an EDITOR TOOL only. Runtime code remains plug-in-out compliant.
-
+// NOTE: This is an EDITOR TOOL only. Runtime code remains plug-in-o
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
@@ -576,7 +575,7 @@ namespace Code.Lavos.Editor
 
             Debug.Log($"[MazePreview] Cardinal prefab: {(cardinalPrefab != null ? "loaded" : "NOT FOUND")} ({wallPrefabPath})");
             Debug.Log($"[MazePreview] Diagonal prefab: {(diagonalPrefab != null ? "loaded" : "NOT FOUND")} ({diagPrefabPath})");
-            Debug.Log($"[MazePreview] DiagonalWalls config: {_config.MazeCfg.DiagonalWalls}");
+            Debug.Log($"[MazePreview] DiagonalWalls config: false (removed 2026-03-09 - cardinal-only passages)");
 
             if (cardinalPrefab == null)
             {
@@ -630,55 +629,13 @@ namespace Code.Lavos.Editor
                         cardinalCount++;
                     }
 
-                    // Diagonal walls (if enabled in config)
-                    if (_config.MazeCfg.DiagonalWalls)
-                    {
-                        if (diagonalPrefab != null)
-                        {
-                            if ((cell & CellFlags8.WallNE) != 0)
-                            {
-                                Debug.Log($"[MazePreview] Spawning NE wall at {x},{z}");
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, Direction8.NE, _wallsRoot);
-                                diagonalCount++;
-                            }
-                            if ((cell & CellFlags8.WallNW) != 0)
-                            {
-                                Debug.Log($"[MazePreview] Spawning NW wall at {x},{z}");
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, Direction8.NW, _wallsRoot);
-                                diagonalCount++;
-                            }
-                            if ((cell & CellFlags8.WallSE) != 0)
-                            {
-                                Debug.Log($"[MazePreview] Spawning SE wall at {x},{z}");
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, -45f, Direction8.SE, _wallsRoot);
-                                diagonalCount++;
-                            }
-                            if ((cell & CellFlags8.WallSW) != 0)
-                            {
-                                Debug.Log($"[MazePreview] Spawning SW wall at {x},{z}");
-                                SpawnDiagonalWall(diagonalPrefab, wx, wz, 45f, Direction8.SW, _wallsRoot);
-                                diagonalCount++;
-                            }
-                        }
-                        else
-                        {
-                            // Diagonal walls enabled but prefab missing - log warning once
-                            if (x == 0 && z == 0)
-                            {
-                                Debug.LogWarning(
-                                    "[MazePreview] Diagonal walls enabled but prefab not found: " +
-                                    "Prefabs/DiagonalWallPrefab.prefab\n" +
-                                    "Use Tools → Generate Diagonal Walls & Corners to create it.\n" +
-                                    "Diagonal walls will be skipped."
-                                );
-                            }
-                        }
-                    }
+                    // Diagonal walls removed 2026-03-09 - cardinal-only passages
+                    // diagonalCount remains 0
                 }
             }
 
             Debug.Log($"  Walls: {cardinalCount} cardinal, {diagonalCount} diagonal");
-            Debug.Log($"[MazePreview] Diagonal walls check - enabled: {_config.MazeCfg.DiagonalWalls}, prefab: {(diagonalPrefab != null ? "OK" : "MISSING")}");
+            Debug.Log($"[MazePreview] Diagonal walls check - enabled: false (removed 2026-03-09), prefab: {(diagonalPrefab != null ? "OK" : "MISSING")}");
         }
 
         private void SpawnCardinalWall(GameObject prefab, float x, float z, Direction8 dir, Transform parent)

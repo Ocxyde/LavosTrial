@@ -12,7 +12,7 @@ namespace Code.Lavos.Core
     // CellFlags8 - packed into 1 ushort (2 bytes) per cell
     //
     // Low byte  (bits 0-7)  : wall presence per axis
-    // High byte (bits 8-13) : object / room metadata
+    // High byte (bits 8-15) : object / room / decoration metadata
     //
     // Bit map:
     //    0  WallN       North wall
@@ -28,8 +28,10 @@ namespace Code.Lavos.Core
     //   10  HasEnemy    Enemy placed here
     //   11  HasTorch    Torch on this cell
     //   12  IsExit      Exit cell marker
-    //   13  IsRoom      Room cell (dead-end or crossroads, carved by CarveRooms)
-    //   14-15           (reserved)
+    //   13  IsRoom      Room cell (dead-end or crossroads)
+    //   14  HasPillar   Pillar decoration (at landmarks/gates)
+    //   15  HasNiche    Wall niche/alcove (for statues, treasures)
+    //   16  HasArch     Arch decoration (corridor transitions)
     // -------------------------------------------------------------------------
     [Flags]
     public enum CellFlags8 : ushort
@@ -54,13 +56,18 @@ namespace Code.Lavos.Core
         HasEnemy  = 1 << 10,  // 0x0400
         HasTorch  = 1 << 11,  // 0x0800
         IsExit    = 1 << 12,  // 0x1000
-        IsRoom    = 1 << 13,  // 0x2000  - carved room (dead-end / crossroads)
+        IsRoom    = 1 << 13,  // 0x2000
+        HasPillar = 1 << 14,  // 0x4000  - pillar decoration
+        HasNiche  = 1 << 15,  // 0x8000  - wall niche/alcove
+
+        // Extended flags (requires ushort expansion - stored in metadata)
+        // HasArch is stored in WallMetadata instead (bit 0 of flags)
 
         // Composite masks
         AllCardinal = WallN | WallS | WallE | WallW,
         AllDiagonal = WallNE | WallNW | WallSE | WallSW,
         AllWalls    = AllCardinal | AllDiagonal,
-        AllObjects  = SpawnRoom | HasChest | HasEnemy | HasTorch | IsExit | IsRoom,
+        AllObjects  = SpawnRoom | HasChest | HasEnemy | HasTorch | IsExit | IsRoom | HasPillar | HasNiche,
     }
 
     // -------------------------------------------------------------------------

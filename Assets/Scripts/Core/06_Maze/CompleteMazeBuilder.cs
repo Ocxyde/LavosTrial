@@ -164,7 +164,7 @@ namespace Code.Lavos.Core
                     TorchChance = _config.MazeCfg.TorchChance,
                     ChestDensity = _config.MazeCfg.ChestDensity,
                     EnemyDensity = _config.MazeCfg.EnemyDensity,
-                    AllowDiagonalWalls = _config.MazeCfg.DiagonalWalls,
+                    AllowDiagonalWalls = false, // DiagonalWalls removed 2026-03-09 - cardinal-only passages
                     Difficulty = new DifficultyScalerConfig
                     {
                         BaseFactor = 1.0f,
@@ -494,30 +494,8 @@ namespace Code.Lavos.Core
                         if (isBoundary) boundaryWalls++; else internalWalls++;
                     }
 
-                    // Diagonal walls (if enabled)
-                    if (_config.MazeCfg.DiagonalWalls)
-                    {
-                        if (ShouldSpawnWall(x, z, Direction8.NE, out isBoundary))
-                        {
-                            SpawnDiagonalWall(x, z, Direction8.NE, cs, wh);
-                            diagonalCount++;
-                        }
-                        if (ShouldSpawnWall(x, z, Direction8.NW, out isBoundary))
-                        {
-                            SpawnDiagonalWall(x, z, Direction8.NW, cs, wh);
-                            diagonalCount++;
-                        }
-                        if (ShouldSpawnWall(x, z, Direction8.SE, out isBoundary))
-                        {
-                            SpawnDiagonalWall(x, z, Direction8.SE, cs, wh);
-                            diagonalCount++;
-                        }
-                        if (ShouldSpawnWall(x, z, Direction8.SW, out isBoundary))
-                        {
-                            SpawnDiagonalWall(x, z, Direction8.SW, cs, wh);
-                            diagonalCount++;
-                        }
-                    }
+                    // Diagonal walls removed 2026-03-09 - cardinal-only passages
+                    // diagonalCount remains 0
                 }
             }
 
