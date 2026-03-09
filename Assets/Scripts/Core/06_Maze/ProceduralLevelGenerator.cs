@@ -109,9 +109,20 @@ namespace Code.Lavos.Core
 					levelData.Seed = customSeed;
 				}
 
+				// Initialize stats early (needed by population methods)
+				_lastStats = new LevelGenerationStats
+				{
+					LevelNumber = levelNumber,
+					Seed = levelData.Seed,
+					GenerationTimeMs = 0f,
+					DifficultyFactor = 0f,
+					GeneratedAt = DateTime.Now
+				};
+
 				// Calculate difficulty factor (exponential)
 				levelData.DifficultyFactor = LevelDifficultyScaler.CalculateDifficultyFactor(levelNumber);
 				Log($"Difficulty Factor: {levelData.DifficultyFactor:F2}");
+				_lastStats.DifficultyFactor = levelData.DifficultyFactor;
 
 				// Scale parameters
 				OnGenerationProgress?.Invoke(10, 1.0f);
@@ -148,15 +159,8 @@ namespace Code.Lavos.Core
 				OnGenerationProgress?.Invoke(90, 1.0f);
 				SetupPlayer(levelData);
 
-				// Calculate statistics
-				_lastStats = new LevelGenerationStats
-				{
-					LevelNumber = levelNumber,
-					Seed = levelData.Seed,
-					GenerationTimeMs = (float)(DateTime.Now - startTime).TotalMilliseconds,
-					DifficultyFactor = levelData.DifficultyFactor,
-					GeneratedAt = DateTime.Now
-				};
+				// Update final statistics
+				_lastStats.GenerationTimeMs = (float)(DateTime.Now - startTime).TotalMilliseconds;
 
 				levelData.IsGenerated = true;
 				levelData.LastGeneratedAt = DateTime.Now;
