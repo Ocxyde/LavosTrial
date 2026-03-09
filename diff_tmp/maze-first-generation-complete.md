@@ -1,4 +1,4 @@
-﻿# Maze-First Generation - Complete Rewrite (Option A)
+# Maze-First Generation - Complete Rewrite (Option A)
 
 **Date:** 2026-03-06
 **Decision:** Option A - Complete Rewrite
@@ -270,7 +270,6 @@ Confusion: High (⭐⭐⭐⭐⭐⭐⭐/10)
 ---
 
 **Generated:** 2026-03-06
-**Author:** Ocxyde
 **Implementation:** BetsyBoop
 **Status:** ✅ COMPLETE REWRITE DONE!
 

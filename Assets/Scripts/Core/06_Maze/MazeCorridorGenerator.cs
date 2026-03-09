@@ -14,6 +14,21 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [DEPRECATED - 2026-03-09]
+// This file is LEGACY and should be archived or removed.
+// 
+// REPLACED BY: DeadEndCorridorSystem.cs (Mathematical dead-end corridor generation)
+// REASON: Old corridor system uses GridMazeCell enum (legacy data structure)
+//         instead of MazeData8 (current 2-byte cell flags system).
+//
+// This file is NOT integrated with the current maze generation pipeline.
+// Use DeadEndCorridorSystem.cs for cardinal-only dead-end corridor generation.
+//
+// DO NOT USE in new code. Migrate to DeadEndCorridorSystem.cs instead.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // MazeCorridorGenerator.cs
 // OPTIMAL CORRIDOR GENERATION - Uses PathFinder A* algorithm
 // Unity 6 compatible - UTF-8 encoding - Unix line endings

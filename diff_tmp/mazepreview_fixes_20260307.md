@@ -1,6 +1,5 @@
-﻿# MazePreviewEditor.cs - Issue Fixes - 2026-03-07
+# MazePreviewEditor.cs - Issue Fixes - 2026-03-07
 
-**Author:** BetsyBoop
 **Date:** 2026-03-07
 **Type:** Compliance and bug fixes
 

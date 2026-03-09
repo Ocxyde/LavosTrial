@@ -1,4 +1,4 @@
-﻿# Grid Maze Fix - Proper Wall Snapping
+# Grid Maze Fix - Proper Wall Snapping
 
 **Date:** 2026-03-06
 **Status:** ✅ COMPLETE
@@ -313,7 +313,6 @@ git commit -m "fix: Grid maze math - walls snap to cell boundaries
 This fixes wall snapping - walls now align perfectly
 with corridor edges!
 
-Co-authored-by: BetsyBoop"
 ```
 
 ---

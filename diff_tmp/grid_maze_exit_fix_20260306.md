@@ -1,4 +1,4 @@
-﻿# Grid Maze Fix - Spawn Exit & South Wall Exit Corridor
+# Grid Maze Fix - Spawn Exit & South Wall Exit Corridor
 
 **Date:** 2026-03-06
 **Status:** ✅ COMPLETE
@@ -369,7 +369,6 @@ RESULT:
 ✅ Walls snap perfectly to grid boundaries
 ✅ Pure maze (no rooms), single spawn point cell
 
-Co-authored-by: BetsyBoop"
 ```
 
 ### **2. Git Push:**

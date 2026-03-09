@@ -1,6 +1,5 @@
-﻿# Advanced Corridor System Documentation
+# Advanced Corridor System Documentation
 **Date:** 2026-03-09  
-**Author:** Ocxyde  
 **License:** GPL v3  
 **Project:** CodeDotLavos (BetsyBoop)
 

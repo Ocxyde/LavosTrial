@@ -1,4 +1,4 @@
-﻿# MazeBuilderEditor - Auto-Assign Prefabs From Config
+# MazeBuilderEditor - Auto-Assign Prefabs From Config
 
 **Date:** 2026-03-06
 **Issue:** Empty prefab slots, no diagonal walls visible
@@ -228,7 +228,6 @@ Result: Proper textures, diagonal walls at level 3+!
 ---
 
 **Generated:** 2026-03-06
-**Author:** Ocxyde
 **Status:** ✅ AUTO-ASSIGN COMPLETE!
 
 ---

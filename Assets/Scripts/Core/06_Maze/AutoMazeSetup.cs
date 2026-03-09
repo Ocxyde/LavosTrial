@@ -3,7 +3,6 @@
 // ================================================================================
 // File: Assets/Scripts/Core/06_Maze/AutoMazeSetup.cs
 // Purpose: Automatically validates and fixes maze generation setup
-// Author: BetsyBoop
 // Date: 2026-03-08
 // Encoding: UTF-8 | Line Endings: Unix LF
 // ================================================================================

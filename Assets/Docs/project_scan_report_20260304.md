@@ -1,4 +1,4 @@
-﻿# Project Scan Report - PeuImporte
+# Project Scan Report - PeuImporte
 **Scan Date:** 2026-03-04
 **Unity Version:** 6000.3.7f1 (URP Standard)
 **IDE:** Rider
@@ -381,7 +381,6 @@ Files:
 
 Result: Test files part of Core assembly (clearer architecture)
 
-Co-authored-by: Qwen Code
 ```
 
 ---

@@ -1,6 +1,5 @@
 # FIX - Corridor / Door / Wall Pivot
 > Date: 2026-03-07
-> Author: BetsyBoop / CodeDotLavos
 > Files changed: MazeData8.cs, GridMazeGenerator8.cs, CompleteMazeBuilder8.cs
 > Diffs stored in: diff_tmp/
 

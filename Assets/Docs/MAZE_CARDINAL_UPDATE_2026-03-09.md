@@ -1,7 +1,6 @@
-﻿# Maze System Update - Cardinal-Only Passages (2026-03-09)
+# Maze System Update - Cardinal-Only Passages (2026-03-09)
 
 **Date:** 2026-03-09  
-**Author:** Ocxyde  
 **Status:** ✅ IMPLEMENTED  
 **Unity Version:** 6000.3.7f1  
 

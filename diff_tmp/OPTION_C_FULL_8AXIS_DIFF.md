@@ -1,4 +1,4 @@
-﻿# DIFF: Option C - Full 8-Axis Replacement
+# DIFF: Option C - Full 8-Axis Replacement
 
 **Date:** 2026-03-06
 **Status:** ⏳ PENDING (User Request - Option 3)
@@ -476,7 +476,6 @@ New features:
 
 WARNING: Wall rendering needs update for 8-axis!
 
-Co-authored-by: BetsyBoop"
 ```
 
 ---

@@ -1,6 +1,5 @@
-﻿# Maze Preview Editor - Compliant One-Click Renderer - 2026-03-07
+# Maze Preview Editor - Compliant One-Click Renderer - 2026-03-07
 
-**Author:** BetsyBoop
 **Date:** 2026-03-07
 **Feature:** Complete maze preview generator - Plug-in-Out compliant, JSON-driven
 

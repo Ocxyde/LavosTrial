@@ -1,8 +1,7 @@
-﻿# Maze System - Complete Refactoring Summary
+# Maze System - Complete Refactoring Summary
 
 **Date:** 2026-03-06
 **Session:** Option C - Full Refactor + Improvements
-**Author:** Ocxyde & BetsyBoop
 **Unity Version:** 6000.3.7f1
 
 ---

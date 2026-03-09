@@ -1,4 +1,4 @@
-﻿# CompleteMazeBuilder - Complete Rewrite
+# CompleteMazeBuilder - Complete Rewrite
 
 **Date:** 2026-03-06  
 **File:** `Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs`  
@@ -351,7 +351,6 @@ git commit -m "refactor: Complete rewrite - 100% plug-in-out compliant, ZERO war
 - Proper EventHandler integration
 - ZERO compilation warnings/errors
 
-Co-authored-by: Qwen Code"
 ```
 
 ---

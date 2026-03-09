@@ -1,6 +1,5 @@
-﻿# Maze Preview Editor - One-Click Maze Renderer - 2026-03-07
+# Maze Preview Editor - One-Click Maze Renderer - 2026-03-07
 
-**Author:** BetsyBoop
 **Date:** 2026-03-07
 **Feature:** Complete maze preview generator in Unity Editor (no Play mode!)
 

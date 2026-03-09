@@ -431,7 +431,6 @@ This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**
 
 ## Credits
 
-**Author:** Ocxyde  
 **Codename:** BetsyBoop  
 **Unity Version:** 6000.3.7f1  
 **Status:** Production Ready - Cardinal-Only Maze System  

@@ -1,6 +1,5 @@
-﻿# Diagonal Wall & Corner Generator Tool - 2026-03-07
+# Diagonal Wall & Corner Generator Tool - 2026-03-07
 
-**Author:** BetsyBoop
 **Date:** 2026-03-07
 **Feature:** Editor tool for 8-axis maze diagonal walls and corners
 

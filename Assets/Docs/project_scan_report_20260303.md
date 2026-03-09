@@ -1,4 +1,4 @@
-﻿# Project Scan Report - PeuImporte
+# Project Scan Report - PeuImporte
 **Scan Date:** 2026-03-03  
 **Unity Version:** 6000.3.7f1 (URP Standard)  
 **IDE:** Rider  
@@ -296,7 +296,6 @@ feat: Add binary storage system for light placement
 - Performance: 100 torches in <10ms vs ~100ms legacy
 - Memory: Reduced runtime allocation by 60%
 
-Co-authored-by: Qwen Code
 ```
 
 ---

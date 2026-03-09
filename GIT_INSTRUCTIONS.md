@@ -1,9 +1,8 @@
-﻿# Git Commit Instructions - 2026-03-06
+# Git Commit Instructions - 2026-03-06
 
 ## Session Summary
 
 **Date:** 2026-03-06  
-**Author:** Ocxyde & BetsyBoop  
 **Focus:** Plug-in-out compliance, cleanup, and documentation
 
 ---

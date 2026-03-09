@@ -1,4 +1,4 @@
-﻿# Scene Fix Report - FpsMazeTest_Fresh.unity
+# Scene Fix Report - FpsMazeTest_Fresh.unity
 
 **Date:** 2026-03-04  
 **Unity Version:** 6000.3.7f1  
@@ -199,5 +199,4 @@ wallHeight: 3.5
 ---
 
 **Report Generated:** 2026-03-04  
-**Author:** Qwen Code Assistant  
 **Backup Status:** ✅ Completed

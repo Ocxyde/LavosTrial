@@ -3,6 +3,22 @@
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 | Locale: en_US
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [DEPRECATED - 2026-03-09]
+// This file is LEGACY and should be archived or removed.
+// 
+// REPLACED BY: GridMazeGenerator.cs (Cardinal-only DFS + A* algorithm)
+// REASON: 8-axis system replaced with cardinal-only (4-direction) passages
+//         for cleaner wall alignment and better maze structure.
+//
+// This file uses 8-direction DFS which creates diagonal passages that cause:
+// - Wall alignment issues (diagonal gaps)
+// - Complex collision detection
+// - Inconsistent corridor geometry
+//
+// DO NOT USE in new code. Migrate to GridMazeGenerator.cs instead.
+// ─────────────────────────────────────────────────────────────────────────────
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +26,8 @@ using System.Linq;
 namespace Code.Lavos.Core.Advanced
 {
     /// <summary>
+    /// [DEPRECATED] Use GridMazeGenerator.cs instead
+    /// 
     /// MazeMathEngine_8Axis - Pure mathematics for 8-axis procedural maze generation
     /// Generates mazes from Start A to Exit B with random corridors and dead-ends
     /// All calculations are grid-based (x, z) coordinates

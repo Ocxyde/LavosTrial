@@ -1,4 +1,4 @@
-﻿# Maze System Rework - Pure Maze (No Rooms)
+# Maze System Rework - Pure Maze (No Rooms)
 
 **Date:** 2026-03-06
 **Status:** ✅ COMPLETE
@@ -239,7 +239,6 @@ git commit -m "refactor: Remove room system, pure maze with spawnpoint cell only
 - Maze structure: Pure corridors, no open rooms
 - Tighter gameplay, better performance
 
-Co-authored-by: BetsyBoop"
 ```
 
 ---

@@ -1,4 +1,4 @@
-﻿# GIT COMMIT MESSAGE - Byte-by-Byte Grid Maze System
+# GIT COMMIT MESSAGE - Byte-by-Byte Grid Maze System
 
 **Date:** 2026-03-06
 **Session:** Byte-by-Byte Grid Implementation
@@ -64,7 +64,6 @@ FILES CREATED:
 
 STATUS: Tested, no errors, ready for production
 
-Co-authored-by: Qwen Code
 ```
 
 ---
@@ -95,7 +94,6 @@ FIXED:
 FILES: 6 modified, 3 created
 STATUS: ✅ Tested, no errors
 
-Co-authored-by: Qwen Code
 ```
 
 ---

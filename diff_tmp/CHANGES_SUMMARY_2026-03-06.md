@@ -1,4 +1,4 @@
-﻿# CHANGES SUMMARY - Verbosity System & Bug Fixes
+# CHANGES SUMMARY - Verbosity System & Bug Fixes
 
 **Date:** 2026-03-06
 **Session:** JSON Verbosity System Implementation
@@ -273,7 +273,6 @@ FILES:
 
 STATUS: Backup complete, diffs generated, ready for testing
 
-Co-authored-by: Qwen Code
 ```
 
 ---

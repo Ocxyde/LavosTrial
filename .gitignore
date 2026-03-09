@@ -73,6 +73,10 @@ Builds_*/
 *.ps1
 *.bat
 
+# ZIP archives (root and all subfolders)
+*.zip
+*.zip.meta
+
 # Backup folders (all variants)
 Backup/
 Backup_*/

@@ -1,6 +1,5 @@
-﻿# Core Maze System Fixes - 2026-03-07
+# Core Maze System Fixes - 2026-03-07
 
-**Author:** BetsyBoop
 **Date:** 2026-03-07
 **Issue:** Critical bugs in 8-axis maze engine
 
@@ -451,7 +450,6 @@ IMPACT:
 - All config values from JSON (no hardcoded values)
 - Consistent architecture (JSON-first approach)
 
-Co-authored-by: BetsyBoop
 ```
 
 ---

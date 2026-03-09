@@ -1,4 +1,4 @@
-﻿# PATCH: maze_v0-6-8_ushort_2byte_saves Integration
+# PATCH: maze_v0-6-8_ushort_2byte_saves Integration
 
 **Date:** 2026-03-06
 **Status:** ⏳ PENDING REVIEW
@@ -210,7 +210,6 @@ git commit -m "docs: Archive maze v0-6-8 8-axis system reference
 - Kept for future reference (A* pathfinding, binary format)
 - Current system: pure maze, exit corridor, wall snapping
 
-Co-authored-by: BetsyBoop"
 ```
 
 ### **If Option B (Merge Features):**

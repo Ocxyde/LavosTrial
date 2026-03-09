@@ -1,7 +1,6 @@
-﻿# Project Tasks - Change History
+# Project Tasks - Change History
 
 **Project:** CodeDotLavos (Unity 6000.3.7f1)
-**Author:** Ocxyde
 **License:** GPL-3.0
 
 ---
@@ -125,7 +124,6 @@
 ---
 
 **Last Updated:** 2026-03-06
-**Author:** Ocxyde
 
 ---
 

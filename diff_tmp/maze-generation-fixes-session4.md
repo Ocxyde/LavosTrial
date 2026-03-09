@@ -1,4 +1,4 @@
-﻿# Maze Generation Fixes - Session 4
+# Maze Generation Fixes - Session 4
 
 **Date:** 2026-03-06
 **Issues:** No diagonal walls, player spawns in void, no spawn room
@@ -249,7 +249,6 @@ Level 11+:
 ---
 
 **Generated:** 2026-03-06
-**Author:** Ocxyde
 **Status:** ✅ MAZE STRUCTURE FIXED!
 
 ---

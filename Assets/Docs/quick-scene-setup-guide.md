@@ -1,4 +1,4 @@
-﻿# Quick Scene Setup Guide
+# Quick Scene Setup Guide
 
 **Date:** 2026-03-04  
 **Unity Version:** 6000.3.7f1  
@@ -262,7 +262,6 @@ Darkness Falloff: 15m
 ---
 
 **Generated:** 2026-03-04  
-**Author:** Qwen Code Assistant  
 **Status:** ✅ Ready to Use  
 
 ---

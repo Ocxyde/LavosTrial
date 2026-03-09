@@ -1,4 +1,4 @@
-﻿# CompleteMazeBuilder - Wall Spawning Fix
+# CompleteMazeBuilder - Wall Spawning Fix
 
 **Date:** 2026-03-06
 **File:** `Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs`
@@ -197,7 +197,6 @@ FILES: 1 modified (CompleteMazeBuilder.cs)
 LINES: ~60 changed
 STATUS: ✅ Fixed - ready for testing
 
-Co-authored-by: Ocxxyde
 ```
 
 ---
