@@ -512,17 +512,29 @@ namespace Code.Lavos.Core
         // ─────────────────────────────────────────────────────────
         private static void AddDeadEndCorridorsSystem(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity, int level)
         {
-            // Create dead-end corridor system
+            // Create dead-end corridor system with config
             var deadEndSystem = new DeadEndCorridorSystem();
+            
+            // Create config that uses the scaled density from MazeConfig
+            var config = DeadEndCorridorSystem.CreateDefaultConfig();
+            config.BaseDensity = scaledDeadEndDensity;  // Use already-scaled density
+            
+            Debug.Log($"[GridMazeGenerator] Dead-End Config: BaseDensity={scaledDeadEndDensity:P1}, Level={level}");
 
-            // Generate dead-ends
-            var corridors = deadEndSystem.Generate(d, level, rng);
+            // Generate dead-ends with config
+            var corridors = deadEndSystem.Generate(d, level, rng, config);
 
             // Get statistics
             var stats = deadEndSystem.GetStatistics();
 
             // Log results
             Debug.Log($"[GridMazeGenerator] {stats}");
+            
+            // Warn if no dead-ends generated
+            if (stats.TotalCount == 0)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] No dead-ends generated at Level {level}! Check spawn points and density.");
+            }
         }
 
         // ─────────────────────────────────────────────────────────

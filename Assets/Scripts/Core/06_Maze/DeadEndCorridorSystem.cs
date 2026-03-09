@@ -198,11 +198,11 @@ namespace Code.Lavos.Core
             _generatedCorridors = new List<DeadEndCorridor>();
             TotalCells = 0;
 
-            // Calculate scaled density for this level
-            float scaledDensity = CalculateScaledDensity(level);
+            // Use BaseDensity directly (already scaled by caller if needed)
+            float spawnDensity = _config.BaseDensity;
             int maxDeadEnds = CalculateMaxDeadEnds(mazeData);
 
-            Debug.Log($"[DeadEndSystem] LEVEL {level} | Scaled Density: {scaledDensity:P1} | Max Dead-Ends: {maxDeadEnds}");
+            Debug.Log($"[DeadEndSystem] LEVEL {level} | Spawn Density: {spawnDensity:P1} | Max Dead-Ends: {maxDeadEnds}");
 
             // Find all valid spawn points (passage cells adjacent to walls)
             var spawnPoints = FindValidSpawnPoints();
@@ -211,15 +211,8 @@ namespace Code.Lavos.Core
             // Shuffle for random distribution
             Shuffle(spawnPoints);
 
-            // Generate dead-ends using mathematical distribution
-            if (_config.UseMathematicalDistribution)
-            {
-                GenerateWithPoissonDistribution(spawnPoints, scaledDensity, maxDeadEnds);
-            }
-            else
-            {
-                GenerateWithUniformDistribution(spawnPoints, scaledDensity, maxDeadEnds);
-            }
+            // Generate dead-ends using uniform distribution (more reliable)
+            GenerateWithUniformDistribution(spawnPoints, spawnDensity, maxDeadEnds);
 
             Debug.Log($"[DeadEndSystem] Generated {TotalCount} dead-end corridors, {TotalCells} total cells");
 
