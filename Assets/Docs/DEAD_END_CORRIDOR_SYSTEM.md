@@ -159,24 +159,36 @@ Else (10%):
 
 ```json
 {
-    "baseDensity": 0.15,
-    "maxMultiplier": 2.5,
+    "baseDensity": 0.85,
+    "maxMultiplier": 1.0,
     "maxLevel": 39,
-    "exponent": 2.0,
-    "minLength": 2,
-    "maxLength": 5,
+    "exponent": 1.0,
+    "minLength": 3,
+    "maxLength": 8,
     "corridorWidth": 1,
-    "chestChanceAtEnd": 0.5,
-    "enemyChanceAtEnd": 0.3,
-    "trapChanceAtEnd": 0.1,
-    "maxGridPercentage": 0.05,
-    "allowBranching": false,
+    "chestChanceAtEnd": 0.4,
+    "enemyChanceAtEnd": 0.4,
+    "trapChanceAtEnd": 0.05,
+    "maxGridPercentage": 0.35,
+    "allowBranching": true,
     "preferOuterWalls": false,
-    "useMathematicalDistribution": true
+    "useMathematicalDistribution": false
 }
 ```
 
-### Parameter Reference
+### FILLED MAZE CONFIGURATION (Default)
+
+This configuration creates a **dense maze with many corridors filling the entire space**:
+
+| Parameter | Value | Effect |
+|-----------|-------|--------|
+| `baseDensity` | 0.85 (85%) | 85% of spawn points create corridors |
+| `maxGridPercentage` | 0.35 (35%) | Up to 35% of grid becomes dead-ends |
+| `minLength` | 3 | Minimum 3 cells long |
+| `maxLength` | 8 | Maximum 8 cells long |
+| `allowBranching` | true | Multiple corridors per spawn point |
+
+**Result:** Maze is filled with branching corridors, not just one main path!
 
 | Parameter | Type | Range | Default | Description |
 |-----------|------|-------|---------|-------------|

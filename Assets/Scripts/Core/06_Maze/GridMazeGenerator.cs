@@ -490,7 +490,7 @@ namespace Code.Lavos.Core
         //  Step 6 — Add Dead-End Corridors (NEW SYSTEM)
         //
         //  Uses DeadEndCorridorSystem with mathematical distribution:
-        //    - Difficulty-scaled density (level-based)
+        //    - Difficulty-scaled density (level-based, power curve)
         //    - Poisson distribution for natural spacing
         //    - Built-in corridor termination detection
         //    - All values from JSON config (DeadEndCorridorConfig.json)
@@ -500,28 +500,29 @@ namespace Code.Lavos.Core
         //    Where t = level / MaxLevel (39)
         //
         //  CORRIDOR MATH:
-        //    - Length: MinLength → MaxLength (2-5 cells default)
+        //    - Length: MinLength → MaxLength (2-6 cells default)
         //    - Width: CorridorWidth (1 cell = 6m fixed)
-        //    - Max Dead-Ends: Min(5% grid, grid/MinLength)
+        //    - Max Dead-Ends: Min(8% grid, grid/MinLength)
         //    - Spawn: Passage cells adjacent to walls
         //
-        //  DIFFICULTY SCALING:
-        //    Level 0:  15% density, 1.0x factor
-        //    Level 10: 21% density, 1.75x factor
-        //    Level 39: 37.5% density, 3.0x factor
+        //  DIFFICULTY SCALING (Power Curve):
+        //    Level 0:  30% base density, 1.0x multiplier
+        //    Level 12: 34.3% density, 1.14x multiplier
+        //    Level 39: 75% density, 2.5x multiplier
         // ─────────────────────────────────────────────────────────
         private static void AddDeadEndCorridorsSystem(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity, int level)
         {
-            // Create dead-end corridor system with config
+            // Create dead-end corridor system with default config from JSON
+            // Config.BaseDensity = 0.30 (30%) - NOT the scaled value from DifficultyScaler
             var deadEndSystem = new DeadEndCorridorSystem();
-            
-            // Create config that uses the scaled density from MazeConfig
             var config = DeadEndCorridorSystem.CreateDefaultConfig();
-            config.BaseDensity = scaledDeadEndDensity;  // Use already-scaled density
             
-            Debug.Log($"[GridMazeGenerator] Dead-End Config: BaseDensity={scaledDeadEndDensity:P1}, Level={level}");
+            // Let DeadEndCorridorSystem handle its own scaling with power curve
+            // This gives us 30% base → 34.3% at level 12 → 75% at level 39
+            Debug.Log($"[GridMazeGenerator] Dead-End Config: BaseDensity={config.BaseDensity:P1} (from JSON), Level={level}");
+            Debug.Log($"[GridMazeGenerator] Expected scaled density at L{level}: {deadEndSystem.CalculateScaledDensity(level):P1}");
 
-            // Generate dead-ends with config
+            // Generate dead-ends (system applies its own power curve scaling)
             var corridors = deadEndSystem.Generate(d, level, rng, config);
 
             // Get statistics

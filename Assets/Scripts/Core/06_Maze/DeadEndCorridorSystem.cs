@@ -164,20 +164,20 @@ namespace Code.Lavos.Core
         {
             return new DeadEndCorridorConfig
             {
-                BaseDensity = 0.15f,
-                MaxMultiplier = 2.5f,
-                MaxLevel = 39,
-                Exponent = 2.0f,
-                MinLength = 2,
-                MaxLength = 5,
-                CorridorWidth = 1,
-                ChestChanceAtEnd = 0.5f,
-                EnemyChanceAtEnd = 0.3f,
-                TrapChanceAtEnd = 0.1f,
-                MaxGridPercentage = 0.05f,
-                AllowBranching = false,
-                PreferOuterWalls = false,
-                UseMathematicalDistribution = true
+                BaseDensity = 0.30f,      // 30% base at level 0
+                MaxMultiplier = 2.5f,     // 2.5× at max level
+                MaxLevel = 39,            // Max level for scaling
+                Exponent = 2.0f,          // Power curve (quadratic)
+                MinLength = 3,            // Minimum 3 cells
+                MaxLength = 8,            // Maximum 8 cells
+                CorridorWidth = 1,        // 1 cell = 6m
+                ChestChanceAtEnd = 0.4f,  // 40% chest
+                EnemyChanceAtEnd = 0.4f,  // 40% enemy
+                TrapChanceAtEnd = 0.05f,  // 5% trap
+                MaxGridPercentage = 0.35f,// Max 35% of grid
+                AllowBranching = true,    // Allow branching
+                PreferOuterWalls = false, // No outer wall preference
+                UseMathematicalDistribution = false // Use uniform distribution
             };
         }
 
@@ -198,11 +198,13 @@ namespace Code.Lavos.Core
             _generatedCorridors = new List<DeadEndCorridor>();
             TotalCells = 0;
 
-            // Use BaseDensity directly (already scaled by caller if needed)
-            float spawnDensity = _config.BaseDensity;
+            // Calculate scaled density using power curve formula
+            // Formula: BaseDensity × Lerp(1.0, MaxMultiplier, t^Exponent)
+            // Where t = level / MaxLevel (39)
+            float spawnDensity = CalculateScaledDensity(level);
             int maxDeadEnds = CalculateMaxDeadEnds(mazeData);
 
-            Debug.Log($"[DeadEndSystem] LEVEL {level} | Spawn Density: {spawnDensity:P1} | Max Dead-Ends: {maxDeadEnds}");
+            Debug.Log($"[DeadEndSystem] LEVEL {level} | Base Density: {_config.BaseDensity:P1} | Scaled Density: {spawnDensity:P1} | Max Dead-Ends: {maxDeadEnds}");
 
             // Find all valid spawn points (passage cells adjacent to walls)
             var spawnPoints = FindValidSpawnPoints();
@@ -335,18 +337,47 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Generate dead-ends using uniform distribution
+        /// Tries ALL directions from each spawn point to fill maze with corridors
         /// </summary>
         private void GenerateWithUniformDistribution(List<(int x, int z)> spawnPoints, float density, int maxCount)
         {
+            int totalAttempts = 0;
+            int maxAttempts = spawnPoints.Count * 4;  // 4 directions per spawn point
+
             foreach (var (spawnX, spawnZ) in spawnPoints)
             {
                 if (_generatedCorridors.Count >= maxCount) break;
+                if (totalAttempts >= maxAttempts) break;
 
-                // Use density as spawn chance
+                // Use density as spawn chance for this spawn point
                 if (_rng.NextDouble() > density) continue;
 
-                // Try to create dead-end
-                if (TryCreateDeadEnd(spawnX, spawnZ, out DeadEndCorridor corridor))
+                // Try to create dead-ends in ALL 4 directions from this spawn point
+                TryCreateDeadEndsAllDirections(spawnX, spawnZ);
+                
+                totalAttempts++;
+            }
+        }
+
+        /// <summary>
+        /// Try to create dead-end corridors in ALL 4 directions from spawn point
+        /// This fills the maze with many branching corridors
+        /// </summary>
+        private void TryCreateDeadEndsAllDirections(int startX, int startZ)
+        {
+            // Try all 4 cardinal directions
+            var dirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+
+            foreach (var dir in dirs)
+            {
+                // Check if we've hit max count
+                if (_generatedCorridors.Count >= _config.MaxGridPercentage * _mazeData.Width * _mazeData.Height / _config.MinLength)
+                {
+                    return;
+                }
+
+                // Try to carve in this direction
+                if (TryCarveDeadEnd(startX, startZ, dir, out DeadEndCorridor corridor))
                 {
                     _generatedCorridors.Add(corridor);
                     TotalCells += corridor.Length * corridor.Width;
