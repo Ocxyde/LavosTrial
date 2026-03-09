@@ -136,6 +136,15 @@ namespace Code.Lavos.Core
             //      - All values from JSON config
             AddDeadEndCorridorsSystem(data, rng, cfg, scaledDeadEndDensity, level);
 
+            // ── Step 6.5: Fill remaining space with corridors ─────
+            //      NEW: Two-pass corridor filling system
+            //      - Preserves original maze structure
+            //      - Fills empty wall space with short corridors
+            //      - Configurable density (default 70%)
+            //      - Short corridors (1-3 cells) connecting passages
+            //      - Avoids existing dead-ends
+            AddCorridorFillSystem(data, rng, cfg);
+
             // ── Step 7: torches ───────────────────────────────────
             PlaceTorches(data, rng, scaledTorchChance);
 
@@ -535,6 +544,54 @@ namespace Code.Lavos.Core
             if (stats.TotalCount == 0)
             {
                 Debug.LogWarning($"[GridMazeGenerator] No dead-ends generated at Level {level}! Check spawn points and density.");
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Step 6.5 — Corridor Fill System (TWO-PASS)
+        //
+        //  Fills remaining wall space with short corridors:
+        //    - Preserves original maze structure (main path + dead-ends)
+        //    - Finds wall cells adjacent to passages
+        //    - Carves short corridors (1-3 cells) into wall space
+        //    - Configurable fill density (default 70%)
+        //    - Avoids existing dead-ends (with chest/enemy flags)
+        //    - Max 40% of grid becomes fill corridors
+        //
+        //  TWO-PASS APPROACH:
+        //    Pass 1: Generate normal maze (DFS + A* + dead-ends)
+        //    Pass 2: Fill remaining wall space with corridors
+        //
+        //  CONFIGURATION:
+        //    - CorridorFillConfig.json
+        //    - FillDensity: 70% of valid wall cells
+        //    - MinLength: 1 cell
+        //    - MaxLength: 3 cells
+        //    - MaxFillPercentage: 40% of grid
+        // ─────────────────────────────────────────────────────────
+        private static void AddCorridorFillSystem(MazeData8 d, System.Random rng, MazeConfig cfg)
+        {
+            // Create corridor fill system with default config from JSON
+            var fillSystem = new CorridorFillSystem();
+            var config = CorridorFillSystem.CreateDefaultConfig();
+
+            Debug.Log($"[GridMazeGenerator] Corridor Fill: Density={config.FillDensity:P1} | " +
+                      $"Length={config.MinLength}-{config.MaxLength} | " +
+                      $"MaxFill={config.MaxFillPercentage:P1}");
+
+            // Fill remaining space with corridors
+            fillSystem.Fill(d, rng, config);
+
+            // Get statistics
+            var stats = fillSystem.GetStatistics();
+
+            // Log results
+            Debug.Log($"[GridMazeGenerator] {stats}");
+
+            // Info message about fill system
+            if (stats.TotalCount > 0)
+            {
+                Debug.Log($"[GridMazeGenerator] Corridor fill complete - maze is now more interconnected");
             }
         }
 

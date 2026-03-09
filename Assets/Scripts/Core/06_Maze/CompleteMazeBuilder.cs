@@ -64,10 +64,15 @@ namespace Code.Lavos.Core
         [SerializeField] private float lastGenMs;
         [SerializeField] private float currentDifficultyFactor;
 
+        [Header("Generator Options")]
+        [Tooltip("Use new GuaranteedPathMazeGenerator (Minotaur Maze)")]
+        public bool useGuaranteedPathGenerator = false;
+
         // Runtime
         private DungeonMazeData    _mazeData;
         private GameConfig         _config;
         private DungeonMazeGenerator  _generator;
+        private GuaranteedPathMazeGenerator _guaranteedGenerator;
         private Transform          _wallsRoot;
         private Transform          _objectsRoot;
         private GameObject         _playerInstance;
@@ -175,7 +180,16 @@ namespace Code.Lavos.Core
                 };
 
                 // Use PassageFirst generator if enabled, otherwise use DFS
-                if (dungeonCfg.UsePassageFirst)
+                if (useGuaranteedPathGenerator)
+                {
+                    // NEW: Minotaur Maze - Guaranteed path with classic labyrinth structure
+                    Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
+                    _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
+                    
+                    // Use same dungeonCfg we already created
+                    _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                }
+                else if (dungeonCfg.UsePassageFirst)
                 {
                     var passageGenerator = new PassageFirstMazeGenerator();
                     _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);

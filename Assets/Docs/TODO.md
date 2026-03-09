@@ -4,7 +4,7 @@
 **Unity Path:** `D:\travaux_Unity\CodeDotLavos`
 **Last Updated:** 2026-03-09 (Maze System Update - Cardinal-Only Passages)
 **License:** GPL-3.0
-**Status:** ✅ **0 COMPILATION ERRORS** | ⚠️ **PLUG-IN-OUT MIXED** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **PHYSICS & COLLISION** | ✅ **8-AXIS MAZE SYSTEM** | ✅ **WALL SNAPPING TO GRID** | ✅ **BINARY STORAGE** | ✅ **PROCEDURAL LEVEL GEN** | ✅ **CARDINAL-ONLY MAZE** | ✅ **DEAD-END CORRIDORS**
+**Status:** ✅ **0 COMPILATION ERRORS** | ⚠️ **PLUG-IN-OUT MIXED** | ✅ **ALL VALUES FROM JSON** | ✅ **MAZE SHARING SYSTEM** | ✅ **PHYSICS & COLLISION** | ✅ **8-AXIS MAZE SYSTEM** | ✅ **WALL SNAPPING TO GRID** | ✅ **BINARY STORAGE** | ✅ **PROCEDURAL LEVEL GEN** | ✅ **CARDINAL-ONLY MAZE** | ✅ **DEAD-END CORRIDORS** | ✅ **CORRIDOR FILL SYSTEM**
 
 ---
 
@@ -1517,6 +1517,7 @@ Impact:
 | **M2** | Diagonal wall support | For diagonal corridors | ⏳ PENDING |
 | **M3** | Create test scene | Dedicated testing | ⏳ PENDING |
 | **M4** | Geometry TODOs | Complete math library | ⏳ PARTIAL |
+| **M5** | Test PassageFirstMazeGenerator | Advanced corridor system | ⏳ PENDING |
 
 **M1 - Wall Object Pooling:**
 - [ ] Create WallPool class
@@ -1541,6 +1542,25 @@ Impact:
 - [ ] Triangle.cs: Implement Orthocenter
 - [ ] Triangle.cs: Implement Point-in-triangle test
 - [ ] TetrahedronMath.cs: Complete remaining methods
+
+**M5 - PassageFirstMazeGenerator Testing:**
+- [ ] Open UniversalLevelGeneratorTool_V2 in Unity Editor
+- [ ] Switch generator from GridMazeGenerator to PassageFirstMazeGenerator
+- [ ] Generate test mazes at levels 0, 10, 20, 39
+- [ ] Verify passage-first algorithm creates clear path from spawn to exit
+- [ ] Check branch passages connect to main passage
+- [ ] Verify chamber expansion at dead-ends
+- [ ] Test corridor decorations (pillars, arches, niches)
+- [ ] Compare performance vs GridMazeGenerator (with CorridorFillSystem)
+- [ ] Document findings in PASSAGEFIRST_TESTING_2026-03-09.md
+- [ ] Decide: Keep both generators or standardize on one?
+
+**Notes for M5:**
+- PassageFirstMazeGenerator location: `Assets/Scripts/Core/06_Maze/PassageFirstMazeGenerator.cs`
+- Uses `DungeonMazeData` instead of `MazeData8`
+- Has 7-phase generation pipeline vs 8-step GridMazeGenerator
+- Features: Landmark plazas, junctions, gates, corridor decorations
+- May require scene setup changes (different prefab requirements)
 
 ---
 

@@ -1,0 +1,10 @@
+﻿{
+    "FillDensity": 0.70,
+    "MinLength": 1,
+    "MaxLength": 3,
+    "CorridorWidth": 1,
+    "MaxFillPercentage": 0.40,
+    "AvoidDeadEnds": true,
+    "PreferCardinalDirections": true,
+    "AllowShortCorridors": true
+}

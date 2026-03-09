@@ -81,6 +81,12 @@ namespace Code.Lavos.Core.Advanced
                 _cells[x, z] = value;
         }
 
+        public void AddFlag(int x, int z, uint flag)
+        {
+            if (InBounds(x, z))
+                _cells[x, z] |= flag;
+        }
+
         public bool HasWall(int x, int z, Direction8 dir)
         {
             var cell = GetCell(x, z);
