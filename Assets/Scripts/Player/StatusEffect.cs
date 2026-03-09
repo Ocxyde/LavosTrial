@@ -20,7 +20,7 @@
 //
 // Part of the Status system - backward compatibility
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Status
 {
     /// <summary>
     /// Backward compatibility: StatusEffectType alias (includes Curse)

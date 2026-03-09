@@ -28,7 +28,7 @@ using UnityEngine;
 using Code.Lavos.HUD;
 using Code.Lavos.Status;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Gameplay
 {
     /// <summary>
     /// COLLECTIBLE — Pickable object (coin, potion, bonus...)

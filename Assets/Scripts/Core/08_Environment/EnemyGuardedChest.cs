@@ -184,7 +184,7 @@ namespace Code.Lavos.Core
                 glowLight.intensity = 2.0f;
             }
 
-            EventHandler.Instance?.InvokeShowHint("🗝 Le coffre est déverrouillé !");
+            EventHandler.Instance?.InvokeShowHint("[KEY] Le coffre est deverrouille !");
 
             // Broadcast via EventHandler if method exists
             EventHandler.Instance?.InvokeItemPickup(
@@ -211,7 +211,7 @@ namespace Code.Lavos.Core
             }
 
             EventHandler.Instance?.InvokeShowHint(
-                $"💰 +{goldReward} or   ✨ +{xpReward} XP");
+                $"[GOLD] +{goldReward} or   [XP] +{xpReward} XP");
 
             Debug.Log($"[EnemyGuardedChest] {gameObject.name} ouvert par {interactor.name}.");
         }

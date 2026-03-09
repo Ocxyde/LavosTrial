@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Code.Lavos.Status;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Player
 {
     [System.Serializable]
     public class PersistentPlayerData

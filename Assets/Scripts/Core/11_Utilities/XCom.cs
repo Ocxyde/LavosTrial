@@ -243,8 +243,8 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
-                string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
-                ShareSystm.CopyToClipboard(code);
+                string code = ShareSystem.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
+                ShareSystem.CopyToClipboard(code);
 
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log("  MAZE EXPORTED");
@@ -275,7 +275,7 @@ namespace Code.Lavos.Core
 
             string code = args[0];
 
-            if (ShareSystm.ImportCode(code, out uint seed, out int level))
+            if (ShareSystem.ImportCode(code, out uint seed, out int level))
             {
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log("  MAZE IMPORTED");
@@ -302,8 +302,8 @@ namespace Code.Lavos.Core
             var builder = Object.FindFirstObjectByType<CompleteMazeBuilder8>();
             if (builder != null)
             {
-                string code = ShareSystm.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
-                string qrUrl = ShareSystm.GenerateQRDataUrl(code);
+                string code = ShareSystem.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
+                string qrUrl = ShareSystem.GenerateQRDataUrl(code);
 
                 Debug.Log("═══════════════════════════════════════");
                 Debug.Log("  SHARE MAZE");
@@ -313,7 +313,7 @@ namespace Code.Lavos.Core
                 Debug.Log("  Copied to clipboard!");
                 Debug.Log("═══════════════════════════════════════");
 
-                ShareSystm.CopyToClipboard(code);
+                ShareSystem.CopyToClipboard(code);
             }
             else
             {

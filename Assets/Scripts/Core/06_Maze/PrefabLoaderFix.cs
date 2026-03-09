@@ -43,11 +43,11 @@ namespace Code.Lavos.Core
             if (wallPrefab != null)
             {
                 prefabs["WallPrefab"] = wallPrefab;
-                Debug.Log("[PrefabLoaderFix] ✅ Loaded: WallPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Loaded: WallPrefab");
             }
             else
             {
-                Debug.LogError("[PrefabLoaderFix] ❌ FAILED to load: WallPrefab");
+                Debug.LogError("[PrefabLoaderFix] [FAIL] FAILED to load: WallPrefab");
             }
 
             // Diagonal Walls - CORRECT NAME
@@ -55,13 +55,13 @@ namespace Code.Lavos.Core
             if (diagWallPrefab != null)
             {
                 prefabs["WallDiagPrefab"] = diagWallPrefab;
-                Debug.Log("[PrefabLoaderFix] ✅ Loaded: DiagonalWallPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Loaded: DiagonalWallPrefab");
             }
             else
             {
                 // Fallback: Use WallPrefab if diagonal doesn't exist
                 prefabs["WallDiagPrefab"] = wallPrefab;
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  DiagonalWallPrefab not found, using WallPrefab instead");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  DiagonalWallPrefab not found, using WallPrefab instead");
             }
 
             // Diagonal Wall Variants (for different angles)
@@ -80,11 +80,11 @@ namespace Code.Lavos.Core
             if (doorPrefab != null)
             {
                 prefabs["DoorPrefab"] = doorPrefab;
-                Debug.Log("[PrefabLoaderFix] ✅ Loaded: DoorPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Loaded: DoorPrefab");
             }
             else
             {
-                Debug.LogError("[PrefabLoaderFix] ❌ FAILED to load: DoorPrefab");
+                Debug.LogError("[PrefabLoaderFix] [FAIL] FAILED to load: DoorPrefab");
             }
 
             // Floor
@@ -92,11 +92,11 @@ namespace Code.Lavos.Core
             if (floorPrefab != null)
             {
                 prefabs["FloorPrefab"] = floorPrefab;
-                Debug.Log("[PrefabLoaderFix] ✅ Loaded: FloorTilePrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Loaded: FloorTilePrefab");
             }
             else
             {
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  FloorTilePrefab not found");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  FloorTilePrefab not found");
             }
 
             // Torch
@@ -104,18 +104,18 @@ namespace Code.Lavos.Core
             if (torchPrefab != null)
             {
                 prefabs["TorchPrefab"] = torchPrefab;
-                Debug.Log("[PrefabLoaderFix] ✅ Loaded: TorchHandlePrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Loaded: TorchHandlePrefab");
             }
             else
             {
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  TorchHandlePrefab not found");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  TorchHandlePrefab not found");
             }
 
             // Missing prefabs - fallback to simpler versions or create new
             var chestPrefab = Resources.Load<GameObject>("Prefabs/ChestPrefab");
             if (chestPrefab == null)
             {
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  ChestPrefab not found - will use DoorPrefab as placeholder");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  ChestPrefab not found - will use DoorPrefab as placeholder");
                 chestPrefab = doorPrefab;
             }
             prefabs["ChestPrefab"] = chestPrefab;
@@ -123,7 +123,7 @@ namespace Code.Lavos.Core
             var enemyPrefab = Resources.Load<GameObject>("Prefabs/EnemyPrefab");
             if (enemyPrefab == null)
             {
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  EnemyPrefab not found - will use DoorPrefab as placeholder");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  EnemyPrefab not found - will use DoorPrefab as placeholder");
                 enemyPrefab = doorPrefab;
             }
             prefabs["EnemyPrefab"] = enemyPrefab;
@@ -131,11 +131,11 @@ namespace Code.Lavos.Core
             var playerPrefab = Resources.Load<GameObject>("Prefabs/PlayerPrefab");
             if (playerPrefab == null)
             {
-                Debug.LogWarning("[PrefabLoaderFix] ⚠️  PlayerPrefab not found - player spawning disabled");
+                Debug.LogWarning("[PrefabLoaderFix] [WARN]  PlayerPrefab not found - player spawning disabled");
             }
             prefabs["PlayerPrefab"] = playerPrefab;
 
-            Debug.Log($"[PrefabLoaderFix] ✅ Loaded {prefabs.Count} prefabs");
+            Debug.Log($"[PrefabLoaderFix] [OK] Loaded {prefabs.Count} prefabs");
             return prefabs;
         }
 
@@ -158,52 +158,52 @@ namespace Code.Lavos.Core
             if (prefabs.TryGetValue("WallPrefab", out var wallPrefab))
             {
                 SetPrivateField(builder, "wallPrefab", wallPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: wallPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: wallPrefab");
             }
 
             if (prefabs.TryGetValue("WallDiagPrefab", out var diagWall))
             {
                 SetPrivateField(builder, "wallDiagPrefab", diagWall);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: wallDiagPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: wallDiagPrefab");
             }
 
             if (prefabs.TryGetValue("DoorPrefab", out var doorPrefab))
             {
                 SetPrivateField(builder, "doorPrefab", doorPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: doorPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: doorPrefab");
             }
 
             if (prefabs.TryGetValue("FloorPrefab", out var floorPrefab))
             {
                 SetPrivateField(builder, "floorPrefab", floorPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: floorPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: floorPrefab");
             }
 
             if (prefabs.TryGetValue("TorchPrefab", out var torchPrefab))
             {
                 SetPrivateField(builder, "torchPrefab", torchPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: torchPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: torchPrefab");
             }
 
             if (prefabs.TryGetValue("ChestPrefab", out var chestPrefab))
             {
                 SetPrivateField(builder, "chestPrefab", chestPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: chestPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: chestPrefab");
             }
 
             if (prefabs.TryGetValue("EnemyPrefab", out var enemyPrefab))
             {
                 SetPrivateField(builder, "enemyPrefab", enemyPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: enemyPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: enemyPrefab");
             }
 
             if (prefabs.TryGetValue("PlayerPrefab", out var playerPrefab))
             {
                 SetPrivateField(builder, "playerPrefab", playerPrefab);
-                Debug.Log("[PrefabLoaderFix] ✅ Applied: playerPrefab");
+                Debug.Log("[PrefabLoaderFix] [OK] Applied: playerPrefab");
             }
 
-            Debug.Log("[PrefabLoaderFix] ✅ All available prefabs applied to MazeBuilder");
+            Debug.Log("[PrefabLoaderFix] [OK] All available prefabs applied to MazeBuilder");
         }
 
         // ====================================================================
@@ -263,7 +263,7 @@ namespace Code.Lavos.Core
             // Apply to builder
             PrefabLoaderFix.ApplyPrefabsToMazeBuilder(mazeBuilder, prefabs);
 
-            Debug.Log("[PrefabLoaderFixEditor] ✅ Prefab fix complete!");
+            Debug.Log("[PrefabLoaderFixEditor] [OK] Prefab fix complete!");
             EditorUtility.DisplayDialog(
                 "Success",
                 "Maze prefabs have been loaded and applied!\n\n" +
@@ -284,7 +284,7 @@ namespace Code.Lavos.Core
 
             foreach (var kvp in prefabs)
             {
-                var status = kvp.Value != null ? "✅" : "❌";
+                var status = kvp.Value != null ? "[OK]" : "[FAIL]";
                 summary += $"{status} {kvp.Key}\n";
             }
 

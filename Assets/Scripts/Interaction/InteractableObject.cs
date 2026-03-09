@@ -22,7 +22,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Interaction
 {
     [RequireComponent(typeof(Collider))]
     public abstract class InteractableObject : MonoBehaviour, IInteractable

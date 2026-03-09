@@ -22,7 +22,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.HUD
 {
     /// <summary>
     /// Persistent UI manager - survives scene loads.
