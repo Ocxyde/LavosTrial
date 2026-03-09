@@ -131,7 +131,7 @@ namespace Code.Lavos.Core
 
 				// Place traps
 				OnGenerationProgress?.Invoke(60, 1.0f);
-				if (levelData.DifficultyParams.TrapDensity > 0)
+				if (levelData.DifficultyParams?.TrapDensity > 0)
 				{
 					PopulateTraps(levelData);
 				}
@@ -180,6 +180,12 @@ namespace Code.Lavos.Core
 
 		private void ScaleParametersForLevel(LevelData levelData)
 		{
+			if (levelData == null)
+			{
+				Log("ERROR: levelData is null in ScaleParametersForLevel");
+				return;
+			}
+
 			Log($"Scaling parameters for Level {levelData.LevelNumber}");
 
 			// Scale maze
@@ -203,13 +209,19 @@ namespace Code.Lavos.Core
 				levelData.DifficultyFactor
 			);
 
-			Log($"Maze Size: {levelData.MazeParams.Width}x{levelData.MazeParams.Height}");
-			Log($"Enemy Density: {levelData.PopulationParams.EnemyDensity:P}");
-			Log($"Trap Density: {levelData.PopulationParams.TrapDensity:P}");
+			Log($"Maze Size: {levelData.MazeParams?.Width ?? 0}x{levelData.MazeParams?.Height ?? 0}");
+			Log($"Enemy Density: {levelData.PopulationParams?.EnemyDensity ?? 0:P}");
+			Log($"Trap Density: {levelData.PopulationParams?.TrapDensity ?? 0:P}");
 		}
 
 		private void GenerateMazeStructure(LevelData levelData)
 		{
+			if (levelData == null)
+			{
+				Log("ERROR: levelData is null in GenerateMazeStructure");
+				return;
+			}
+
 			Log("Generating maze structure...");
 
 			if (mazeBuilder == null)
@@ -220,7 +232,7 @@ namespace Code.Lavos.Core
 
 			// Set level and seed on the maze builder before generating
 			mazeBuilder.SetLevelAndSeed(levelData.LevelNumber, levelData.Seed);
-			
+
 			// Use CompleteMazeBuilder8 to generate the maze
 			mazeBuilder.GenerateMaze();
 
@@ -229,13 +241,20 @@ namespace Code.Lavos.Core
 
 		private void PopulateEnemies(LevelData levelData)
 		{
+			if (levelData == null)
+			{
+				Log("ERROR: levelData is null in PopulateEnemies");
+				return;
+			}
+
 			if (levelData.PopulationParams == null)
 			{
 				Log("WARNING: PopulationParams is null, using default");
 				levelData.PopulationParams = PopulationParameters.CreateDefault();
 			}
 
-			Log($"Populating enemies (density: {levelData.PopulationParams.EnemyDensity:P})");
+			float enemyDensity = levelData.PopulationParams?.EnemyDensity ?? 0.2f;
+			Log($"Populating enemies (density: {enemyDensity:P})");
 
 			if (enemyPlacer == null)
 			{
@@ -244,7 +263,6 @@ namespace Code.Lavos.Core
 			}
 
 			// Use EnemyPlacer with difficulty scaling
-			var enemyDensity = levelData.PopulationParams.EnemyDensity;
 			_lastStats.EnemyCount = 0; // Would be set by enemyPlacer.PlaceEnemies()
 
 			Log($"Spawned {_lastStats.EnemyCount} enemies");
@@ -252,7 +270,14 @@ namespace Code.Lavos.Core
 
 		private void PopulateTreasures(LevelData levelData)
 		{
-			Log($"Placing treasures (density: {levelData.PopulationParams.TreasureChestDensity:P})");
+			if (levelData == null || levelData.PopulationParams == null)
+			{
+				Log("ERROR: levelData or PopulationParams is null in PopulateTreasures");
+				return;
+			}
+
+			float treasureDensity = levelData.PopulationParams.TreasureChestDensity;
+			Log($"Placing treasures (density: {treasureDensity:P})");
 
 			if (spatialPlacer == null)
 			{
@@ -261,8 +286,8 @@ namespace Code.Lavos.Core
 			}
 
 			// Calculate treasure count based on maze size and density
-			int estimatedRoomCount = levelData.MazeParams.MaxRoomCount;
-			int treasureCount = (int)(estimatedRoomCount * levelData.PopulationParams.TreasureChestDensity);
+			int estimatedRoomCount = levelData.MazeParams?.MaxRoomCount ?? 5;
+			int treasureCount = (int)(estimatedRoomCount * treasureDensity);
 
 			_lastStats.TreasureCount = treasureCount;
 			Log($"Placing {treasureCount} treasure chests");
@@ -280,7 +305,14 @@ namespace Code.Lavos.Core
 
 		private void PopulateTraps(LevelData levelData)
 		{
-			Log($"Placing traps (density: {levelData.PopulationParams.TrapDensity:P})");
+			if (levelData == null || levelData.PopulationParams == null)
+			{
+				Log("ERROR: levelData or PopulationParams is null in PopulateTraps");
+				return;
+			}
+
+			float trapDensity = levelData.PopulationParams.TrapDensity;
+			Log($"Placing traps (density: {trapDensity:P})");
 
 			if (spatialPlacer == null)
 			{
@@ -288,8 +320,8 @@ namespace Code.Lavos.Core
 				return;
 			}
 
-			int estimatedRoomCount = levelData.MazeParams.MaxRoomCount;
-			int trapCount = (int)(estimatedRoomCount * levelData.PopulationParams.TrapDensity);
+			int estimatedRoomCount = levelData.MazeParams?.MaxRoomCount ?? 5;
+			int trapCount = (int)(estimatedRoomCount * trapDensity);
 
 			_lastStats.TrapCount = trapCount;
 			Log($"Placing {trapCount} traps");
@@ -297,7 +329,14 @@ namespace Code.Lavos.Core
 
 		private void SetupLighting(LevelData levelData)
 		{
-			Log($"Setting up lighting (torch density: {levelData.PopulationParams.TorchDensity:P})");
+			if (levelData == null || levelData.PopulationParams == null)
+			{
+				Log("ERROR: levelData or PopulationParams is null in SetupLighting");
+				return;
+			}
+
+			float torchDensity = levelData.PopulationParams.TorchDensity;
+			Log($"Setting up lighting (torch density: {torchDensity:P})");
 
 			if (lightEngine == null)
 			{
@@ -305,7 +344,7 @@ namespace Code.Lavos.Core
 				return;
 			}
 
-			int torchCount = (int)(levelData.MazeParams.MaxRoomCount * 3 * levelData.PopulationParams.TorchDensity);
+			int torchCount = (int)((levelData.MazeParams?.MaxRoomCount ?? 5) * 3 * torchDensity);
 			_lastStats.TorchCount = torchCount;
 
 			Log($"Placing {torchCount} torches");

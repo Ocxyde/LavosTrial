@@ -35,7 +35,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// 8-bit pixel-art texture and material factory for MazeLav8s v1.

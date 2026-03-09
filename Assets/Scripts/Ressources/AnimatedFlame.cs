@@ -22,7 +22,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     public class AnimatedFlame : MonoBehaviour
     {

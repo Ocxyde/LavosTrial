@@ -1,10 +1,12 @@
-﻿# Project Documentation - PeuImporte
+﻿# Project Documentation - CodeDotLavos (PeuImporte)
 
-**Unity Version:** 6000.3.7f1  
-**Render Pipeline:** URP Standard  
-**Input System:** New Input System  
-**Coding Standard:** Unity 6  
-**Last Updated:** 2026-03-01
+**Unity Version:** 6000.3.7f1
+**Render Pipeline:** URP Standard
+**Input System:** New Input System
+**Coding Standard:** Unity 6 (C# en_US UTF-8)
+**License:** GPL-3.0
+**Last Updated:** 2026-03-09
+**Codename:** BetsyBoop
 
 ---
 
@@ -14,13 +16,28 @@
 Assets/
 ├── Scripts/
 │   ├── Core/              # Core systems (GameManager, ItemEngine, etc.)
+│   │   ├── 01_CoreSystems
+│   │   ├── 02_Player
+│   │   ├── 03_Interaction
+│   │   ├── 04_Inventory
+│   │   ├── 05_Combat
+│   │   ├── 06_Maze
+│   │   ├── 07_Doors
+│   │   ├── 08_Environment
+│   │   ├── 09_Art
+│   │   ├── 10_Mesh
+│   │   ├── 11_Utilities
+│   │   ├── 12_Animation
+│   │   ├── 13_Compute
+│   │   ├── 14_Geometry
+│   │   └── 15_Resources
 │   ├── Player/            # Player systems (Controller, Stats, Health)
 │   ├── HUD/               # UI systems (Bars, Dialogs, Popups)
 │   ├── Inventory/         # Inventory management
 │   ├── Status/            # Status effects & stats
-│   ├── Ressources/        # Resources & generators
+│   ├── Ressources/        # Resources & generators (FR spelling)
 │   ├── Gameplay/          # Gameplay elements
-│   ├── Ennemies/          # Enemy AI
+│   ├── Ennemies/          # Enemy AI (FR spelling)
 │   ├── Interaction/       # Interaction system
 │   ├── Tests/             # Unit tests
 │   └── Editor/            # Editor tools
@@ -75,7 +92,14 @@ The project uses a modular plug-in architecture centered around core manager cla
 | `GameManager.cs` | Central game state singleton | ✅ Complete |
 | `ItemEngine.cs` | Item registry & management | ✅ Complete |
 | `BehaviorEngine.cs` | Base class for interactables | ✅ Complete |
-| `MazeGenerator.cs` | Procedural maze generation | ✅ Complete |
+| `ProceduralLevelGenerator.cs` | Universal level generation | ✅ Complete |
+| `CompleteMazeBuilder8.cs` | 8-axis maze orchestrator | ✅ Complete |
+| `GridMazeGenerator8.cs` | DFS + A* maze generation | ✅ Complete |
+| `MazeBinaryStorage8.cs` | Binary .lvm save/load | ✅ Complete |
+| `SpatialPlacer.cs` | Object placement engine | ✅ Complete |
+| `DoorsEngine.cs` | Door management | ✅ Complete |
+| `LightPlacementEngine.cs` | Dynamic torch lighting | ✅ Complete |
+| `ComputeGridEngine.cs` | GPU compute grid | ✅ Complete |
 | `DrawingManager.cs` | Texture generation | ✅ Complete |
 | `ParticleGenerator.cs` | Particle VFX | ✅ Complete |
 
@@ -293,7 +317,15 @@ Located in project root:
 | Inventory | 100% | Slot-based with UI |
 | Database | 100% | JSON persistence |
 | Enemies | 80% | Basic AI working |
-| Maze Generation | 100% | Procedural + rendering |
+| **Maze Generation (8-axis)** | **100%** | **DFS + A*, binary storage, sharing** |
+| **Procedural Level Gen** | **100%** | **Exponential difficulty scaling** |
+| **Maze Sharing System** | **100%** | **MD5 codes, QR export/import** |
+
+### Recent Fixes (2026-03-09)
+- ✅ Fixed `NullReferenceException` in `ProceduralLevelGenerator.PopulateEnemies`
+- ✅ Fixed `Destroy()` in edit mode → now uses `DestroyImmediate()` for editor
+- ✅ Added comprehensive null checks across all level generation methods
+- ✅ Fixed edit mode warnings in `CompleteMazeBuilder.DestroyContainer`
 
 ---
 

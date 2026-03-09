@@ -26,7 +26,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// Generates unique 2D pixel art textures for each room type.

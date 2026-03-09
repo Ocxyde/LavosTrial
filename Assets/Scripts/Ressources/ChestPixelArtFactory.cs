@@ -22,7 +22,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// Procedural pixel-art texture generator for treasure chests.

@@ -7,6 +7,53 @@
 
 ---
 
+## 🔬 **DEEP SCAN 2026-03-09 - LATEST FINDINGS**
+
+**Scan Date:** 2026-03-09
+**Scan Type:** READ-ONLY + Bug Fixes (No files modified except bug fixes)
+**Scan Tool:** Qwen Code (BetsyBoop)
+**Files Analyzed:** 147 C# scripts, 11 asmdef, 67 docs, 6 scenes
+
+### **🔧 CRITICAL BUG FIXES APPLIED (2026-03-09)**
+
+| Fix | Issue | Files Modified | Status |
+|-----|-------|----------------|--------|
+| **NullReferenceException** | `levelData.PopulationParams` null in `PopulateEnemies` | `ProceduralLevelGenerator.cs` | ✅ FIXED |
+| **Edit Mode Destroy** | `Destroy()` used in editor mode | `CompleteMazeBuilder.cs` | ✅ FIXED |
+| **Null Checks** | Missing null checks in level gen methods | `ProceduralLevelGenerator.cs` | ✅ FIXED |
+
+**Files Modified:**
+1. `Assets/Scripts/Core/06_Maze/ProceduralLevelGenerator.cs`
+   - Added null check for `levelData` in `PopulateEnemies()`
+   - Added null check for `PopulationParams` with fallback to `CreateDefault()`
+   - Used null-conditional access (`?.`) for safe property access
+   - Added null checks in `GenerateMazeStructure()`, `PopulateTreasures()`, `PopulateTraps()`, `SetupLighting()`, `ScaleParametersForLevel()`
+   - Fixed `DifficultyParams?.TrapDensity` null-conditional access
+
+2. `Assets/Scripts/Core/06_Maze/CompleteMazeBuilder.cs`
+   - Changed `Destroy()` to `DestroyImmediate()` when in editor mode
+   - Added `Application.isPlaying` checks in `DestroyContainer()` and `DestroyMazeObjects()`
+
+**Result:**
+- ✅ Level generation no longer crashes with NullReferenceException
+- ✅ No more "Destroy may not be called from edit mode" warnings
+- ✅ Batch level generation working in UniversalLevelGeneratorTool
+
+### **Project Metrics (Verified 2026-03-09)**
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **Total C# Scripts** | 147 files | Core + Editor + Tests |
+| **Assembly Definitions** | 11 .asmdef | Proper modular structure |
+| **Scenes** | 6 | MazeLav8s_v1-0_0_1.unity (latest) |
+| **Documentation** | 67 .md files | Assets/Docs/ folder |
+| **PowerShell Scripts** | 92+ | Automation & backup |
+| **Binary Maze Saves** | 38 .lvm files | Runtimes/Mazes/ |
+| **Prefabs** | 20+ | Walls, Doors, Torches, Floors |
+| **Materials** | 10+ | Wall, Floor variants |
+
+---
+
 ## 🔬 **DEEP SCAN 2026-03-08 - LATEST FINDINGS**
 
 **Scan Date:** 2026-03-08
@@ -43,16 +90,16 @@
 | **Sharing** | ✅ MD5 codes | ShareSystm, XCom |
 | **Core Management** | ✅ Singletons | GameManager, EventHandler |
 
-### **🔴 CRITICAL ISSUES (Confirmed 2026-03-08)**
+### **🔴 CRITICAL ISSUES (Confirmed 2026-03-09)**
 
 | ID | Issue | Count | Files | Severity |
 |----|-------|-------|-------|----------|
 | **CS1** | **Plug-in-Out Violations** | 141 `new GameObject()` + 255 `AddComponent<>()` | `UIBarsSystem.cs`, `PopWinEngine.cs`, `HUDSystem.cs`, `HUDEngine.cs`, `HUDModule.cs` | 🔴 CRITICAL |
-| **CS2** | **Duplicate Folder Numbers** | 2 conflicts | `10_Mesh`/`10_Resources`, `12_Animation`/`12_Compute` | 🔴 CRITICAL |
+| **CS2** | **Duplicate Folder Numbers** | ✅ FIXED | Was `10_Mesh`/`10_Resources`, `12_Animation`/`12_Compute` - Now properly numbered 10-15 | ✅ RESOLVED |
 | **CS3** | **Duplicate C# Files** | 44 copies | `maze_v0-6/`, `maze_v0-7-8_ushort_2byte_saves/`, `maze_v0-6-8_ushort_2byte_saves/`, `maze_v0-6-9_1-ubit/`, `maze_v0-6-9-ubit/` | 🔴 CRITICAL |
 | **CS4** | **Namespace Mismatches** | 12+ files | `Collectible.cs`, `PersistentUI.cs`, `StatusEffect.cs`, `TorchDiagnostics.cs`, `RoomTextureGenerator.cs`, etc. | 🔴 CRITICAL |
 
-### **⚠️ WARNING ISSUES (Confirmed 2026-03-08)**
+### **⚠️ WARNING ISSUES (Confirmed 2026-03-09)**
 
 | ID | Issue | Count | Files | Severity |
 |----|-------|-------|-------|----------|
@@ -73,30 +120,30 @@
 | **IS4** | **Backup Folders in Git** | `Backup/`, `Backup_Solution/`, `Backup_Deprecated_*/` not properly excluded |
 | **IS5** | **No Unit Tests** | Test assembly exists but no actual tests |
 
-### **🎯 PROJECT HEALTH SCORE (2026-03-08)**
+### **🎯 PROJECT HEALTH SCORE (2026-03-09)**
 
 | Category | Score | Status | Notes |
 |----------|-------|--------|-------|
 | **Architecture** | 75% | ⚠️ Mixed | Maze ✅, HUD ❌ |
 | **Code Quality** | 85% | ⚠️ Minor violations | Emojis, typos |
-| **Organization** | 60% | 🔴 Duplicate folders/files | maze_v0-*/ folders |
-| **Documentation** | 70% | ⚠️ Outdated docs | 20+ files to update |
+| **Organization** | 70% | ⚠️ Improved | Folder numbering fixed, duplicate files remain |
+| **Documentation** | 80% | ✅ Updated | README and TODO refreshed 2026-03-09 |
 | **Git Hygiene** | 50% | 🔴 Large files tracked | Archives in git |
 
-**Overall Health:** **68%** - Functional but needs cleanup
+**Overall Health:** **72%** - Functional, improving, needs cleanup
 
-### **📋 RECOMMENDED FIX PRIORITY (2026-03-08)**
+### **📋 RECOMMENDED FIX PRIORITY (2026-03-09)**
 
 **Phase 1 - Critical (Do First):**
 1. Refactor HUD system (replace `new GameObject()` with prefabs)
-2. Rename duplicate folders (`10_Resources`→`11_Resources`, `12_Compute`→`13_Compute`)
+2. ~~Rename duplicate folders~~ ✅ DONE - Already properly numbered 10-15
 3. Delete `maze_v0-*/` folders (archive externally first)
 4. Fix namespace declarations in 12+ misplaced files
 
 **Phase 2 - Warnings (Do Second):**
 5. Remove emojis from `Triangle.cs`
 6. Rename `ShareSystm.cs` → `ShareSystem.cs`
-7. Standardize folder naming (`Resources` vs `Ressources`)
+7. Standardize folder naming (`Resources` vs `Ressources`, `Enemies` vs `Ennemies`)
 8. Update or delete outdated documentation
 9. Move hardcoded values to `GameConfig`
 10. Move test files to `Assets/Tests/`

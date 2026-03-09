@@ -23,7 +23,8 @@
 using UnityEngine;
 using Code.Lavos.Core;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
+
 {
     // Lightweight runtime diagnostics for the TorchPool system
     // Logs counts of active torches to help verify behavior.

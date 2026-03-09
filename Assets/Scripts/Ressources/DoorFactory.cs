@@ -29,7 +29,7 @@ using UnityEngine;
 
 #pragma warning disable CS0414 // Disable warnings for unused serialized fields (reserved for future features)
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// DEPRECATED - DoorFactory violates plug-in-out architecture.

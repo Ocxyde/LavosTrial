@@ -21,7 +21,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// Procedural pixel-art texture generator for dungeon walls, floors, ceilings, and torch flames.

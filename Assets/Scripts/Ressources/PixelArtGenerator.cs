@@ -20,7 +20,7 @@
 
 using UnityEngine;
 
-namespace Code.Lavos.Core
+namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// Generates pixel art textures for doors, walls, and surfaces.
