@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
@@ -30,14 +30,26 @@ namespace Code.Lavos.Core
         [Tooltip("Spawn chests in maze")]
         [SerializeField] private bool spawnChests = true;
 
+        [Header("Marker Settings")]
+        [Tooltip("Height of entrance/exit markers")]
+        [SerializeField] private float markerHeight = 2f;
+        [Tooltip("Scale of entrance/exit markers")]
+        [SerializeField] private float markerScale = 0.3f;
+        [Tooltip("Light intensity for markers")]
+        [SerializeField] private float markerLightIntensity = 2f;
+        [Tooltip("Particle emission rate")]
+        [SerializeField] private float particleEmissionRate = 10f;
+        [Tooltip("Particle size")]
+        [SerializeField] private float particleSize = 0.15f;
+
         [Header("Wall Settings")]
         [SerializeField] private bool wallPivotIsAtMeshCenter = true;
 
         [Header("State (read-only)")]
-        [SerializeField] private int currentLevel;
-        [SerializeField] private int currentSeed;
-        [SerializeField] private float lastGenMs;
-        [SerializeField] private float currentDifficultyFactor;
+        [SerializeField] private int _currentLevel;
+        [SerializeField] private int _currentSeed;
+        [SerializeField] private float _lastGenMs;
+        [SerializeField] private float _currentDifficultyFactor;
 
         private MazeData8 _mazeData;
         private GameConfig _config;
@@ -48,17 +60,20 @@ namespace Code.Lavos.Core
 
         public MazeData8 MazeData => _mazeData;
         public GameConfig Config => _config;
+        public int CurrentLevel => _currentLevel;
+        public float LastGenMs => _lastGenMs;
+        public float CurrentDifficultyFactor => _currentDifficultyFactor;
 
         private void Start()
         {
-            currentSeed = Random.Range(int.MinValue, int.MaxValue);
+            _currentSeed = Random.Range(int.MinValue, int.MaxValue);
             GenerateMaze();
         }
 
         public void SetLevelAndSeed(int level, int seed)
         {
-            currentLevel = level;
-            currentSeed = seed;
+            _currentLevel = level;
+            _currentSeed = seed;
         }
 
         [ContextMenu("Generate Maze (Pure Corridors)")]
@@ -74,7 +89,7 @@ namespace Code.Lavos.Core
             DestroyMazeObjects();
 
             // Always generate fresh for corridor maze (cache uses different data type)
-            Debug.Log($"[CorridorMazeBuilder] Generating new maze L{currentLevel} S{currentSeed}");
+            Debug.Log($"[CorridorMazeBuilder] Generating new maze L{_currentLevel} S{_currentSeed}");
             var mazeCfg = new MazeConfig
             {
                 BaseSize = _config.MazeCfg.BaseSize,
@@ -92,7 +107,7 @@ namespace Code.Lavos.Core
             if (_mazeData == null) { Debug.LogError("[CorridorMazeBuilder] MazeData is NULL!"); return; }
 
             Debug.Log($"[CorridorMazeBuilder] Maze: {_mazeData.Width}x{_mazeData.Height} seed={_mazeData.Seed}");
-            currentDifficultyFactor = _mazeData.DifficultyFactor;
+            _currentDifficultyFactor = _mazeData.DifficultyFactor;
 
             SpawnGround();
             SpawnAllWalls();
@@ -101,8 +116,8 @@ namespace Code.Lavos.Core
             SpawnEntranceExitMarkers();
 
             SpawnPlayer();
-            lastGenMs = (Time.realtimeSinceStartup - t0) * 1000f;
-            Debug.Log($"[CorridorMazeBuilder] Done -- {lastGenMs:F2}ms factor={currentDifficultyFactor:F3}");
+            _lastGenMs = (Time.realtimeSinceStartup - t0) * 1000f;
+            Debug.Log($"[CorridorMazeBuilder] Done -- {_lastGenMs:F2}ms factor={_currentDifficultyFactor:F3}");
         }
 
         private void LoadConfig()
@@ -288,19 +303,19 @@ namespace Code.Lavos.Core
             float cs = _config.CellSize;
             var pos = new Vector3((cx + 0.5f) * cs, 0.5f, (cz + 0.5f) * cs);
 
-            // Create 8-bit pixel art style marker (cylinder/cube with pixelated texture)
+            // Create 8-bit pixel art style marker (cylinder with emissive material)
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             marker.name = name;
             marker.transform.position = pos;
-            marker.transform.localScale = new Vector3(cs * 0.3f, 2f, cs * 0.3f);
+            marker.transform.localScale = new Vector3(cs * markerScale, markerHeight, cs * markerScale);
 
-            // Create emissive pixel art material
+            // Create emissive material
             Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             if (mat == null) mat = new Material(Shader.Find("Unlit/Color"));
             
             mat.color = new Color(color.r, color.g, color.b, 1f);
             mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", color * 2f); // Emissive glow
+            mat.SetColor("_EmissionColor", color * markerLightIntensity);
 
             var renderer = marker.GetComponent<Renderer>();
             if (renderer != null)
@@ -309,7 +324,7 @@ namespace Code.Lavos.Core
                 renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
-            // Add 8-bit pixel particle effect
+            // Add particle effect
             SpawnPixelParticles(pos, color, isEntrance);
 
             // Add point light for glow effect
@@ -317,7 +332,7 @@ namespace Code.Lavos.Core
             if (glowLight != null)
             {
                 glowLight.color = color;
-                glowLight.intensity = 2f;
+                glowLight.intensity = markerLightIntensity;
                 glowLight.range = cs * 1.5f;
                 glowLight.shadows = LightShadows.None;
             }
@@ -343,7 +358,7 @@ namespace Code.Lavos.Core
             // 8-bit pixel style settings
             main.duration = 1f;
             main.loop = true;
-            main.startSize = 0.15f; // Pixel-sized
+            main.startSize = particleSize;
             main.startSpeed = 0.5f;
             main.startLifetime = 2f;
             main.gravityModifier = 0f;
@@ -351,7 +366,7 @@ namespace Code.Lavos.Core
             main.maxParticles = 20;
 
             // Emission rate
-            emission.rateOverTime = 10f;
+            emission.rateOverTime = particleEmissionRate;
 
             // Shape: emit from top
             shape.shapeType = ParticleSystemShapeType.Sphere;
