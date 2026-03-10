@@ -7,34 +7,145 @@
 
 ---
 
-## 📊 GIT COMMIT LOG - 2026-03-10
+## 📊 COMPLETE GIT COMMIT LOG - ALL SESSIONS
 
-Each commit tracked with relevance to tasks:
+Each commit tracked with relevance to TODO tasks.
+
+### 📅 2026-03-10 (Latest Session)
 
 | Commit | Message | Relevance to TODO | Status |
 |--------|---------|-------------------|--------|
-| `3445828` | Add_documentation_hub_TODO_with_progress_bars | **Documentation Hub** - Links all docs, adds progress bars to TODO.md | ✅ Complete |
-| `e991cc9` | Fix_critical_maze_bugs_Priority1_complete | **Priority 1 Critical Fixes** - DeadEnd config, A* limits, spawn validation | ✅ Complete |
-| `ee7ac14` | Fix editor GameConfig prefab references | **Unity 6 Naming** - Editor script compliance | ✅ Complete |
-| `6adbf21` | Fix remaining BehaviorEngine references | **Unity 6 Naming** - Derived class fixes | ✅ Complete |
-| `cca983f` | Fix DoorsEngine interactionRange | **Unity 6 Naming** - BehaviorEngine derived | ✅ Complete |
-| `1e96197` | Fix MazeBuilderEditor prefab refs | **Unity 6 Naming** - Editor compliance | ✅ Complete |
-| `ba157ac` | Fix MazeBuilderEditor GameConfig | **Unity 6 Naming** - Editor compliance | ✅ Complete |
-| `5925c9f` | Fix BehaviorEngine itemType | **Unity 6 Naming** - Base class fields | ✅ Complete |
-| `8834de3` | Fix remaining GameConfig refs | **Unity 6 Naming** - Property references | ✅ Complete |
-| `7af80bc` | Fix defaultDiagonalWallThickness | **Unity 6 Naming** - Property references | ✅ Complete |
-| `1c2be9c` | Fix remaining GameConfig refs | **Unity 6 Naming** - Property references | ✅ Complete |
-| `24de148` | Fix GameConfig property references | **Unity 6 Naming** - After rename sprint | ✅ Complete |
-| `3d1b93c` | Fix Unity6 naming conventions | **Unity 6 Naming** - PascalCase sprint | ✅ Complete |
-| `ea35a6a` | Update TODO.md Direction8 health | **Documentation** - Sprint tracking | ✅ Complete |
-| `576740d` | Mark MazeData8 as deprecated | **Direction8 Unification** - Cleanup | ✅ Complete |
-| `ab8121a` | Unify Direction8 to Core namespace | **Direction8 Unification** - Core consolidation | ✅ Complete |
-| `c64a510` | Fix Direction8 type in AIAdaptive | **Direction8 Unification** - Type fix | ✅ Complete |
-| `4d66e8d` | Add maze door and marker spawners | **Visual Polish** - Enhanced markers | ✅ Complete |
+| `d944427` | Add_commit_log_tracking_to_TODO | **Documentation** - Task tracking enhancement | ✅ |
+| `3445828` | Add_documentation_hub_TODO_with_progress_bars | **Documentation Hub** - Links all docs, progress bars | ✅ |
+| `e991cc9` | Fix_critical_maze_bugs_Priority1_complete | **Priority 1 Fixes** - DeadEnd config, A* limits, spawn validation | ✅ |
+| `ee7ac14` | Fix editor GameConfig prefab references | **Unity 6 Naming** - Editor script compliance | ✅ |
+| `6adbf21` | Fix remaining BehaviorEngine references | **Unity 6 Naming** - Derived class fixes | ✅ |
+| `cca983f` | Fix DoorsEngine interactionRange | **Unity 6 Naming** - BehaviorEngine derived | ✅ |
+| `1e96197` | Fix MazeBuilderEditor prefab refs | **Unity 6 Naming** - Editor compliance | ✅ |
+| `ba157ac` | Fix MazeBuilderEditor GameConfig | **Unity 6 Naming** - Editor compliance | ✅ |
+| `5925c9f` | Fix BehaviorEngine itemType | **Unity 6 Naming** - Base class fields | ✅ |
+| `8834de3` | Fix remaining GameConfig refs | **Unity 6 Naming** - Property references | ✅ |
+| `7af80bc` | Fix defaultDiagonalWallThickness | **Unity 6 Naming** - Property references | ✅ |
+| `1c2be9c` | Fix remaining GameConfig refs | **Unity 6 Naming** - Property references | ✅ |
+| `24de148` | Fix GameConfig property references | **Unity 6 Naming** - After rename sprint | ✅ |
+| `3d1b93c` | Fix Unity6 naming conventions | **Unity 6 Naming** - PascalCase sprint | ✅ |
+| `ea35a6a` | Update TODO.md Direction8 health | **Documentation** - Sprint tracking | ✅ |
+| `576740d` | Mark MazeData8 as deprecated | **Direction8 Unification** - Cleanup | ✅ |
+| `ab8121a` | Unify Direction8 to Core namespace | **Direction8 Unification** - Core consolidation | ✅ |
+| `c64a510` | Fix Direction8 type in AIAdaptive | **Direction8 Unification** - Type fix | ✅ |
+| `4d66e8d` | Add maze door and marker spawners | **Visual Polish** - Enhanced markers | ✅ |
+| `0d803de` | Update TODO.md with complete 2026-03-10 session summary | **Documentation** - Session tracking | ✅ |
+| `d35cc0b` | Update TODO.md - bypass tasks 2.1-2.4 to Priority 3 | **Task Management** - Reprioritization | ✅ |
+| `623935e` | Update TODO.md - mark 2.1-2.4 DONE add game management dashboard | **Documentation** - Dashboard added | ✅ |
+| `747893e` | Add run_tests.bat - Unity test suite runner | **Testing** - Test automation | ✅ |
 
-**Total Commits Today:** 18  
-**Files Modified:** 40+  
-**Lines Changed:** ~650
+### 📅 2026-03-09 to 2026-03-10 (Maze & Architecture)
+
+| Commit | Message | Relevance to TODO | Status |
+|--------|---------|-------------------|--------|
+| `f685b32` | Fix critical bugs: player teleport, camera, room markers, chest glow | **Critical Fixes** - Player split, camera alignment | ✅ |
+| `8f8f3fe` | feat: implement SafePrefab with SpatialPlacer integration | **Interaction System** - Safe placement | ✅ |
+| `b424831` | Complete maze geometry overhaul (3 phases) | **Maze System** - Geometry rewrite | ✅ |
+| `7322a28` | Added comprehensive maze geometry test suite (58 tests) | **Testing** - Unit tests created | ✅ |
+| `ea2fb39` | Archived Legacy maze files to _Legacy folder | **Cleanup** - Legacy archive | ✅ |
+| `a8e9928` | chore: remove large/unnecessary files from tracking | **Cleanup** - Git optimization | ✅ |
+| `167a770` | Fix GuaranteedPathMazeGenerator casts and AddPrimaryBranches | **Maze System** - Minotaur maze fix | ✅ |
+| `9731f13` | fix: Dead-end corridor density calculation with power curve scaling | **Maze System** - Power curve enabled | ✅ |
+| `02a46da` | fix: Dead-end generation at low levels | **Maze System** - Density fix | ✅ |
+| `5ded76f` | feat: Mathematical Dead-End Corridor System with difficulty scaling | **Maze System** - New system | ✅ |
+| `9a0d651` | feat: Scale dead-end corridors with level progression (15% → 37.5%) | **Maze System** - Difficulty scaling | ✅ |
+| `633dfb2` | feat: Cardinal-only maze with dead-end corridors + bug fixes | **Maze System** - Cardinal-only update | ✅ |
+| `62e0a7d` | docs: Update TODO/README with 2026-03-09 chat log findings | **Documentation** - Chat log | ✅ |
+| `bf918e0` | fix: complete deep scan cleanup (namespaces, emoji, naming) | **Cleanup** - Code quality | ✅ |
+| `fb31392` | fix: initialize _lastStats before population methods | **Bug Fix** - NullReferenceException | ✅ |
+| `45a16a3` | docs: Refresh folder structure and update health score | **Documentation** - Structure update | ✅ |
+
+### 📅 2026-03-07 to 2026-03-08 (Refactoring & Compliance)
+
+| Commit | Message | Relevance to TODO | Status |
+|--------|---------|-------------------|--------|
+| `7c1e2bd` | Fix level generation NullRefException and edit mode Destroy warnings | **Bug Fix** - Null checks | ✅ |
+| `e7b5a52` | fix: Resolve ProceduralLevelGenerator compilation and runtime errors | **Bug Fix** - Compilation errors | ✅ |
+| `5e6f114` | Fix type alias conflicts between Core and Advanced namespaces | **Bug Fix** - Namespace conflicts | ✅ |
+| `588e1df` | fix: 18 null-safety and logic bug fixes in CompleteMazeBuilder8 | **Critical Fixes** - Null safety | ✅ |
+| `2a32170` | feat: Add MazeSize property to CompleteMazeBuilder | **Maze System** - Property added | ✅ |
+| `09ab775` | fix: Critical DB system bugs + update .gitignore | **Database** - Bug fixes | ✅ |
+| `51861c3` | chore: Remove tracked scripts from repository | **Cleanup** - Git cleanup | ✅ |
+| `f39e139` | chore: Remove ignored files from git tracking | **Cleanup** - Git cleanup | ✅ |
+| `1189cc4` | refactor: comprehensive cleanup and geometry implementation | **Refactor** - Code cleanup | ✅ |
+| `eab1e10` | refactor: | **Refactor** - General cleanup | ✅ |
+| `9c8d095` | refactor: | **Refactor** - General cleanup | ✅ |
+| `00337b4` | fix: critical physics collision and type safety issues | **Bug Fix** - Physics collision | ✅ |
+| `12fcde8` | Add maze system files | **Maze System** - New files | ✅ |
+| `f456c82` | fix: ExportMaze clipboard copy order | **Bug Fix** - Export order | ✅ |
+| `1f6014d` | pre-fix: before corridor-door-wall-pivot | **Preparation** - Pre-fix snapshot | ✅ |
+| `e57455c` | fix: tools; Whalls prefabs; Docs. | **Tools** - Wall prefabs | ✅ |
+| `16a731d` | fix: tools; Whalls prefabs; Docs. | **Tools** - Wall prefabs | ✅ |
+| `ef8a841` | gitignore: stop tracking log files | **Git** - Ignore logs | ✅ |
+| `6f36c08` | Fix MazePreviewEditor Object ambiguity + docs | **Editor** - Ambiguity fix | ✅ |
+
+### 📅 2026-03-04 to 2026-03-06 (Maze Rewrite & Config)
+
+| Commit | Message | Relevance to TODO | Status |
+|--------|---------|-------------------|--------|
+| `56db145` | fix: Core maze system - difficulty scaling & JSON config | **Maze System** - Difficulty scaling | ✅ |
+| `00490bf` | fix: Grid maze generation - spawn exit and south wall exit corridor | **Maze System** - Exit corridor | ✅ |
+| `9b06d0f` | refactor: Pure maze rewrite - remove rooms, single spawnpoint cell | **Maze System** - Pure rewrite | ✅ |
+| `b3f33f4` | refactor: GridMazeGenerator room-corridor approach | **Maze System** - Room-corridor | ✅ |
+| `210f380` | refactor: GridMazeGenerator room-corridor approach | **Maze System** - Room-corridor | ✅ |
+| `e50bb2e` | feat: Add A* pathfinding and compute seed system | **Maze System** - A* pathfinding | ✅ |
+| `119e7c9` | feat: Add A* pathfinding system with compute seed management | **Maze System** - A* + seed | ✅ |
+| `ce82c9f` | feat: encrypted procedural seed with Unity Mono-compatible encryption | **Maze System** - Seed encryption | ✅ |
+| `3f10bbe` | feat(maze): encrypted procedural seed system with GameConfig difficulty scaling | **Maze System** - Encrypted seed | ✅ |
+| `ddf4395` | feat(maze): encrypted procedural seed system with GameConfig difficulty scaling | **Maze System** - Encrypted seed | ✅ |
+| `611b931` | feat: Complete maze system with PlayerSetup integration | **Maze System** - PlayerSetup | ✅ |
+| `a047c4c` | feat: Byte-by-byte grid maze engine with plug-in-out architecture | **Maze System** - Byte engine | ✅ |
+| `b1defac` | feat: Byte-by-byte grid maze engine with plug-in-out architecture | **Maze System** - Byte engine | ✅ |
+| `e379673` | refactor: No hardcoded values - all defaults from JSON config | **Config** - JSON config | ✅ |
+| `9d75429` | fix: add torch placement to CompleteMazeBuilder using LightPlacementEngine | **Lighting** - Torch placement | ✅ |
+| `13937fc` | fix: FloorMaterialFactory - proper asset import and return saved material | **Materials** - Factory fix | ✅ |
+| `5b3268f` | feat: Add AudioManager and TorchPool real pooling. | **Audio** - AudioManager + TorchPool | ✅ |
+| `e6f1250` | feat: Complete event-driven architecture - removed all singletons (auto) | **Architecture** - Event-driven | ✅ |
+| `8d6719a` | feat: Complete event-driven architecture - removed all singletons | **Architecture** - Event-driven | ✅ |
+| `aa2da77` | cleanup: fix some issues, and reduced compute time for each files, cleaner | **Cleanup** - Performance | ✅ |
+| `426370c` | cleanup: fix some issues, and reduced compute time for each files, cleaner | **Cleanup** - Performance | ✅ |
+
+### 📅 2026-03-01 to 2026-03-03 (Early March - Lighting & Torch)
+
+| Commit | Message | Relevance to TODO | Status |
+|--------|---------|-------------------|--------|
+| `192866a` | fix: Torch handle snaps to wall + orange flame (no pink) | **Lighting** - Torch snap fix | ✅ |
+| `dad3271` | move: TorchManualActivator to Tests folder | **Testing** - Move to Tests | ✅ |
+| `6b7ca84` | fix: Torch activation one at a time with [T] key | **Lighting** - Toggle activation | ✅ |
+| `1ae7721` | feat: 2D 8-bit particle flame with discrete color bands | **Visual** - Particle flame | ✅ |
+| `4588327` | feat: Add binary storage for light placement | **Lighting** - Binary storage | ✅ |
+| `d19d0cc` | testing light on torches | **Testing** - Light tests | ✅ |
+| `1ed30dc` | Fixed memory leaks and singleton issues | **Bug Fix** - Memory leaks | ✅ |
+| `6e79219` | fix: Use interfaces in Core for plug-in-and-out architecture | **Architecture** - Interfaces | ✅ |
+| `ce37e97` | fix: Move Core scripts with external deps to Gameplay | **Refactor** - Script movement | ✅ |
+| `07b6cc6` | fix: Add DoorTypes and TrapType enums to Core assembly | **Core** - Enums added | ✅ |
+| `41af07c` | fix: Reorganize scripts to eliminate circular dependencies | **Refactor** - Circular deps | ✅ |
+| `e686918` | fix: Add missing asmdef references for Core assembly | **Build** - asmdef fix | ✅ |
+| `e7b01e9` | fix: Remove orphaned Code.Lavos.Maze.asmdef | **Build** - asmdef cleanup | ✅ |
+| `3a97206` | chore: Remove deprecated files (safe cleanup) | **Cleanup** - Deprecated files | ✅ |
+| `d79c3ef` | fix: Apply Unity 6 patches and performance improvements | **Performance** - Unity 6 patches | ✅ |
+| `da6e95e` | new file system | **System** - File system | ✅ |
+
+---
+
+## 📊 COMMIT STATISTICS
+
+| Period | Commits | Key Focus |
+|--------|---------|-----------|
+| **2026-03-10** | 23 | Documentation, Unity 6 Naming, Critical Fixes |
+| **2026-03-09 to 2026-03-10** | 16 | Maze System, Tests, Architecture |
+| **2026-03-07 to 2026-03-08** | 19 | Refactoring, Compliance, Bug Fixes |
+| **2026-03-04 to 2026-03-06** | 20 | Maze Rewrite, Config, Lighting |
+| **2026-03-01 to 2026-03-03** | 16 | Lighting, Torch, Early Architecture |
+
+**Total Commits:** 94  
+**Files Modified:** 200+  
+**Lines Changed:** ~5000+
 
 ---
 
