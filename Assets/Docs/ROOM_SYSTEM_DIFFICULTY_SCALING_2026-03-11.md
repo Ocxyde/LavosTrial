@@ -1,4 +1,4 @@
-﻿# Room System with Difficulty Scaling - 2026-03-11
+﻿﻿# Room System with Difficulty Scaling - 2026-03-11
 
 **Date:** 2026-03-11  
 **Status:** ✅ IMPLEMENTED  
@@ -17,13 +17,15 @@ Implemented a **difficulty-scaled room system** that dynamically adjusts room co
 
 ### **Room Count (MinRooms → MaxRooms)**
 
-| Level | Rooms | Room Size | Door Types Available |
-|-------|-------|-----------|---------------------|
-| **0-5** | 2-3 rooms | 5×5 | Normal only |
-| **6-12** | 4-6 rooms | 7×7 | Normal + Locked (20%) |
-| **13-20** | 6-8 rooms | 9×9 | Normal + Locked (30%) + Secret (10%) |
-| **21-30** | 8-10 rooms | 9×9 | Normal + Locked (30%) + Secret (10%) |
-| **31-39** | 10-12 rooms | 11×11 | Normal + Locked (40%) + Secret (20%) |
+| Level | Maze Size | Rooms | Room Size* | Door Types Available |
+|-------|-----------|-------|------------|---------------------|
+| **0-5** | 13×13 - 17×17 | 2-3 | 3×3 - 5×5 (20%) | Normal only |
+| **6-12** | 19×19 - 25×25 | 4-6 | 5×5 - 7×7 (25%) | Normal + Locked (20%) |
+| **13-20** | 27×27 - 32×32 | 6-8 | 7×7 - 9×9 (28%) | Normal + Locked (30%) + Secret (10%) |
+| **21-30** | 34×34 - 43×43 | 8-10 | 9×9 - 11×11 (30%) | Normal + Locked (30%) + Secret (10%) |
+| **31-39** | 45×45 - 51×51 | 10-12 | 11×11 - 13×13 (30%) | Normal + Locked (40%) + Secret (20%) |
+
+\* **Room size is PROPORTIONAL to maze size** (20% at low levels → 30% at high levels)
 
 ### **Scaling Formula**
 
@@ -32,13 +34,19 @@ Implemented a **difficulty-scaled room system** that dynamically adjusts room co
 float t = level / MaxLevel;  // 0.0 to 1.0
 float curved = Mathf.Pow(t, 1.5f);
 int rooms = minRooms + Mathf.RoundToInt((maxRooms - minRooms) * curved);
+
+// Room size is PROPORTIONAL to maze size (NOT fixed steps!)
+float ratio = Mathf.Lerp(0.20f, 0.30f, t);  // 20% → 30%
+int roomSize = Mathf.RoundToInt(mazeSize * ratio);
+// Ensure odd for symmetric center
+if (roomSize % 2 == 0) roomSize++;
 ```
 
-**Why power curve 1.5?**
-- Provides gradual early ramp (levels 0-10)
-- Accelerates mid-game (levels 11-25)
-- Peaks at end-game (levels 26-39)
-- Avoids overwhelming new players
+**Why proportional sizing?**
+- ✅ Small mazes (level 0) get small rooms (3×3-5×5) - cozy, manageable
+- ✅ Large mazes (level 39) get large rooms (11×11-13×13) - epic boss battles
+- ✅ Room size matters: larger rooms = more dangerous (space for enemies/traps)
+- ✅ No fixed steps - smooth organic scaling with maze difficulty
 
 ---
 
