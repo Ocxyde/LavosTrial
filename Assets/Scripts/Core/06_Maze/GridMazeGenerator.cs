@@ -696,13 +696,13 @@ namespace Code.Lavos.Core
 
                 // Determine door type based on level
                 DoorType doorType = DoorType.Normal;
-                float doorRoll = rng.NextDouble();
-                
-                if (doorRoll < secretDoorChance)
+                double doorRoll = rng.NextDouble();
+
+                if (doorRoll < (double)secretDoorChance)
                 {
                     doorType = DoorType.Secret;
                 }
-                else if (doorRoll < secretDoorChance + lockedDoorChance)
+                else if (doorRoll < (double)(secretDoorChance + lockedDoorChance))
                 {
                     doorType = DoorType.Locked;
                 }
@@ -783,8 +783,8 @@ namespace Code.Lavos.Core
                 }
             }
 
-            // Mark the door position for later spawning
-            data.AddFlag(wallX, wallZ, CellFlags8.HasDoor);
+            // Door positions are tracked by MarkDoorPositions - no flag needed
+            // data.AddFlag(wallX, wallZ, CellFlags8.HasDoor); // HasDoor doesn't exist
         }
 
         /// <summary>

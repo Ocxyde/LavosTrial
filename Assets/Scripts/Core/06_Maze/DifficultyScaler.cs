@@ -204,8 +204,10 @@ namespace Code.Lavos.Core
             float torches   = TorchChance(cfg.TorchChance, level);
             int   wallPenalty = WallCrossPenalty(cfg.BaseWallPenalty, level);
             float deadEnds  = DeadEndDensity(cfg.DeadEndDensity, level);
-            int   rooms     = RoomCount(cfg.MinRooms, cfg.MaxRooms, level);
-            int   roomSize  = RoomSize(cfg.BaseRoomSize, level);
+            
+            // Room system uses defaults (not in DungeonMazeConfig yet)
+            int   rooms     = RoomCount(2, 12, level);  // MinRooms=2, MaxRooms=12
+            int   roomSize  = RoomSize(size, level);    // Proportional to maze size
             float lockedDoors = LockedDoorChance(level);
             float secretDoors = SecretDoorChance(level);
 
