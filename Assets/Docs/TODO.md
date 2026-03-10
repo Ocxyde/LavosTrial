@@ -139,14 +139,16 @@
 | **1.1** | Maze Generator Review (DFS + A*) | `GridMazeGenerator8.cs` | 2-3h | 🔴 **NEXT** |
 | **1.2** | Schedule diff_tmp daily cleanup | Task Scheduler | 15min | ⏳ Pending |
 
-### Priority 2 - High (This Week)
+### Priority 2 - High (This Week) **[BYPASSED → Priority 3]**
 
 | ID | Task | Files | Est. Time | Status |
 |----|------|-------|-----------|--------|
-| **2.1** | Extract magic numbers to Constants | All .cs files | 3-4h | ⏳ Pending |
-| **2.2** | Split CompleteMazeBuilder (1137 lines) | New modular files | 4-6h | ⏳ Pending |
-| **2.3** | Split LightEngine (921 lines) | New focused systems | 3-5h | ⏳ Pending |
-| **2.4** | XML documentation | `DungeonMazeGenerator.cs`, `GridMazeGenerator.cs` | 2h | ⏳ Pending |
+| **2.1** | Extract magic numbers to Constants | All .cs files | 3-4h | ⏭️ **BYPASSED** |
+| **2.2** | Split CompleteMazeBuilder (1137 lines) | New modular files | 4-6h | ⏭️ **BYPASSED** |
+| **2.3** | Split LightEngine (921 lines) | New focused systems | 3-5h | ⏭️ **BYPASSED** |
+| **2.4** | XML documentation | `DungeonMazeGenerator.cs`, `GridMazeGenerator.cs` | 2h | ⏭️ **BYPASSED** |
+
+> **Note:** Tasks 2.1–2.4 bypassed to Priority 3. New Priority 2 tasks may be added based on emerging needs.
 
 ### Priority 3 - Medium (Future)
 
@@ -157,6 +159,10 @@
 | **3.3** | Unit tests for maze algorithms | `Assets/Scripts/Tests/` | 4-6h | ⏳ Pending |
 | **3.4** | Simplify CorridorFillSystem | `CorridorFillSystem.cs` | 2h | ⏳ Pending |
 | **3.5** | Fix RealisticDoorFactory null risks | `RealisticDoorFactory.cs` | 1h | ⏳ Pending |
+| **3.6** | Extract magic numbers to Constants | All .cs files | 3-4h | ⏭️ **from 2.1** |
+| **3.7** | Split CompleteMazeBuilder (1137 lines) | New modular files | 4-6h | ⏭️ **from 2.2** |
+| **3.8** | Split LightEngine (921 lines) | New focused systems | 3-5h | ⏭️ **from 2.3** |
+| **3.9** | XML documentation | `DungeonMazeGenerator.cs`, `GridMazeGenerator.cs` | 2h | ⏭️ **from 2.4** |
 
 ### Priority 4 - Low (Backlog)
 
