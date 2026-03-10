@@ -54,9 +54,9 @@ namespace Code.Lavos.Editor
             // Load config
             var config = GameConfig.Instance;
             Debug.Log($"[MazeBuilderEditor]  Config loaded:");
-            Debug.Log($"    Maze Size: {config.defaultGridSize}x{config.defaultGridSize}");
-            Debug.Log($"    Cell Size: {config.defaultCellSize}m");
-            Debug.Log($"    Wall Height: {config.defaultWallHeight}m");
+            Debug.Log($"    Maze Size: {config.DefaultGridSize}x{config.DefaultGridSize}");
+            Debug.Log($"    Cell Size: {config.DefaultCellSize}m");
+            Debug.Log($"    Wall Height: {config.DefaultWallHeight}m");
 
             // Find maze builder (plug-in-out: find only!)
             var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
