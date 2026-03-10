@@ -29,40 +29,13 @@ namespace Code.Lavos.Core
     //  11.  Save           -> Binary .lvm  ->  Runtimes/Mazes/
     //  12.  Player         -> Spawn LAST
     // -------------------------------------------------------------------------
-    public sealed class CompleteMazeBuilder8 : MonoBehaviour
+    public sealed class CompleteMazeBuilder8 : BaseMazeBuilder
     {
-        // Inspector
-        [Header("Cardinal Prefabs")]
-        [SerializeField] private GameObject wallPrefab;
-        [SerializeField] private GameObject doorPrefab;
-        [SerializeField] private Material wallMaterial;
-
         [Header("Diagonal Prefabs")]
         [SerializeField] private GameObject wallDiagPrefab;
         [SerializeField] private GameObject wallCornerPrefab;
         [SerializeField] private Material wallDiagMaterial;
         [SerializeField] private Material wallCornerMaterial;
-
-        [Header("Object Prefabs")]
-        [SerializeField] private GameObject torchPrefab;
-        [SerializeField] private GameObject chestPrefab;
-        [SerializeField] private GameObject enemyPrefab;
-        [SerializeField] private GameObject floorPrefab;
-        [SerializeField] private GameObject playerPrefab;
-
-        [Header("Config")]
-        [SerializeField] private string configResourcePath = "Config/GameConfig8-default";
-
-        // If true, the WallPrefab pivot is at the mesh center (default Unity cube).
-        // If false, pivot is already at the bottom edge and no Y offset is needed.
-        [Header("Wall Prefab Settings")]
-        [SerializeField] private bool wallPivotIsAtMeshCenter = true;
-
-        [Header("State  (read-only)")]
-        [SerializeField] private int   currentLevel;
-        [SerializeField] private int   currentSeed;
-        [SerializeField] private float lastGenMs;
-        [SerializeField] private float currentDifficultyFactor;
 
         [Header("Generator Options")]
         [Tooltip("Use new GuaranteedPathMazeGenerator (Minotaur Maze)")]
@@ -70,20 +43,15 @@ namespace Code.Lavos.Core
         [Tooltip("Use PassageFirstMazeGenerator for passage-first generation")]
         public bool usePassageFirstGenerator = false;
 
-        // Runtime
-        private DungeonMazeData    _mazeData;
-        private GameConfig         _config;
-        private DungeonMazeGenerator  _generator;
+        // Runtime (specific to CompleteMazeBuilder8)
+        private DungeonMazeData _mazeData;
+        private DungeonMazeGenerator _generator;
         private GuaranteedPathMazeGenerator _guaranteedGenerator;
-        private Transform          _wallsRoot;
-        private Transform          _objectsRoot;
-        private GameObject         _playerInstance;
 
         // -------------------------------------------------------------------------
         // Public Accessors (for other systems to access maze data)
         // -------------------------------------------------------------------------
         public DungeonMazeData MazeData => _mazeData;
-        public GameConfig Config => _config;
 
         // -------------------------------------------------------------------------
         // Unity lifecycle
@@ -288,47 +256,31 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // 1 - Config
+        // 1 - Config (override to add specific logging)
         // -------------------------------------------------------------------------
-        private void LoadConfig()
+        protected override void LoadConfig()
         {
-            var comp = FindFirstObjectByType<GameConfig>();
-            if (comp != null) { _config = comp; return; }
-
-            var json = Resources.Load<TextAsset>(configResourcePath);
-            _config = json != null ? GameConfig.FromJson(json.text) : new GameConfig();
-
-            if (json == null)
-                Debug.LogWarning("[MazeBuilder8] Config not found -- using defaults.");
-            
-            if (_config == null)
+            base.LoadConfig();
+            if (_config != null)
             {
-                Debug.LogError("[MazeBuilder8] CRITICAL: Failed to load or create GameConfig!");
-                enabled = false;
-                return;
+                Debug.Log($"[MazeBuilder8] Config loaded - BaseSize: {_config.MazeCfg.BaseSize}");
             }
         }
 
         // -------------------------------------------------------------------------
-        // 2+3 - Asset validation
+        // 2+3 - Asset validation (override to add diagonal prefabs)
         // -------------------------------------------------------------------------
-        private void ValidateAssets()
+        protected override void ValidateAssets()
         {
-            // Load prefabs from Resources
-            wallPrefab       ??= Resources.Load<GameObject>("Prefabs/WallPrefab");
+            base.ValidateAssets();
+
+            // Load diagonal-specific prefabs
             wallDiagPrefab   ??= Resources.Load<GameObject>("Prefabs/WallDiagPrefab");
             wallCornerPrefab ??= Resources.Load<GameObject>("Prefabs/WallCornerPrefab");
-            doorPrefab       ??= Resources.Load<GameObject>("Prefabs/DoorPrefab");
-            torchPrefab      ??= Resources.Load<GameObject>("Prefabs/TorchHandlePrefab");
-            chestPrefab      ??= Resources.Load<GameObject>("Prefabs/ChestPrefab");
-            enemyPrefab      ??= Resources.Load<GameObject>("Prefabs/EnemyPrefab");
-            floorPrefab      ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
-            playerPrefab     ??= Resources.Load<GameObject>("Prefabs/PlayerPrefab");
 
             // Load materials - try GameConfig first, fallback to Resources
             Material loadedWallMaterial = null;
-            
-            // Try to get material path from GameConfig (only in play mode)
+
             if (Application.isPlaying)
             {
                 var gameConfig = GameConfig.Instance;
@@ -337,17 +289,10 @@ namespace Code.Lavos.Core
                     loadedWallMaterial = Resources.Load<Material>(gameConfig.wallMaterial);
                 }
             }
-            
-            // Fallback: try direct load from Resources
+
             loadedWallMaterial ??= Resources.Load<Material>("Materials/WallMaterial");
-            
-            wallMaterial       ??= loadedWallMaterial;
             wallDiagMaterial   ??= loadedWallMaterial;
             wallCornerMaterial ??= loadedWallMaterial;
-
-            if (wallPrefab   == null) Debug.LogError("[MazeBuilder8] wallPrefab missing! Cannot generate maze walls.");
-            if (playerPrefab == null) Debug.LogWarning("[MazeBuilder8] playerPrefab not assigned - player spawning disabled. Assign prefab or use Tools > Create Player.");
-            if (wallMaterial == null) Debug.LogWarning("[MazeBuilder8] wallMaterial not assigned - walls will use default material. Assign material or run Tools > Quick Setup Prefabs.");
 
             if (wallDiagPrefab == null)
             {
@@ -363,60 +308,24 @@ namespace Code.Lavos.Core
         private float DiagonalWallThickness => _config?.defaultDiagonalWallThickness ?? 0.5f;
 
         // -------------------------------------------------------------------------
-        // 4 - Cleanup
+        // 4 - Cleanup (override for custom container names)
         // -------------------------------------------------------------------------
-        private void DestroyMazeObjects()
-        {
-            DestroyContainer(ref _wallsRoot,   "MazeWalls8");
-            DestroyContainer(ref _objectsRoot, "MazeObjects8");
-            if (_playerInstance != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(_playerInstance);
-                else
-                    DestroyImmediate(_playerInstance);
-                _playerInstance = null;
-            }
-        }
-
-        private void DestroyContainer(ref Transform t, string containerName)
-        {
-            if (t != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(t.gameObject);
-                else
-                    DestroyImmediate(t.gameObject);
-                t = null;
-                return;
-            }
-            var g = GameObject.Find(containerName);
-            if (g != null)
-            {
-                if (Application.isPlaying)
-                    Destroy(g);
-                else
-                    DestroyImmediate(g);
-            }
-        }
+        protected override string GetWallsContainerName() => "MazeWalls8";
+        protected override string GetObjectsContainerName() => "MazeObjects8";
 
         // -------------------------------------------------------------------------
-        // 5 - Ground
+        // 5 - Ground (override for 8-specific naming)
         // -------------------------------------------------------------------------
-        private void SpawnGround()
+        protected override void SpawnGround()
         {
-            if (floorPrefab == null) return;
-            if (_mazeData == null || _config == null)
+            if (floorPrefab == null || _mazeData == null || _config == null)
             {
                 Debug.LogError("[MazeBuilder8] SpawnGround: _mazeData or _config is NULL!");
                 return;
             }
 
             float sz = _mazeData.Width * _config.CellSize;
-            var   go = Instantiate(
-                floorPrefab,
-                new Vector3(sz * 0.5f, 0f, sz * 0.5f),
-                Quaternion.identity);
+            var go = Instantiate(floorPrefab, new Vector3(sz * 0.5f, 0f, sz * 0.5f), Quaternion.identity);
 
             if (go == null)
             {
@@ -424,7 +333,7 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            go.name                 = "MazeFloor8";
+            go.name = "MazeFloor8";
             go.transform.localScale = new Vector3(sz, 1f, sz);
         }
 
