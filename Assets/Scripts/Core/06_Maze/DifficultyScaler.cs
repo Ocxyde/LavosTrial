@@ -117,40 +117,46 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Room count — scales from minimum to maximum rooms based on level.
-        /// Level 0: MinRooms (1-2 rooms)
-        /// Level 12: ~4-6 rooms
-        /// Level 20: ~6-8 rooms
-        /// Level 39: MaxRooms (10-14 rooms)
+        /// MANY SMALL ROOMS strategy: More rooms = more tactical gameplay
+        /// 
+        /// Level 0: MinRooms (4-6 small rooms)
+        /// Level 7: ~8-10 rooms (small, cozy)
+        /// Level 12: ~12-15 rooms
+        /// Level 20: ~16-20 rooms
+        /// Level 39: MaxRooms (24-30 rooms - many small chambers)
+        /// 
         /// Formula: MinRooms + (MaxRooms - MinRooms) × t^RoomExponent
+        /// Using exponent 1.2 for faster early ramp (many rooms from start)
         /// </summary>
         public int RoomCount(int minRooms, int maxRooms, int level)
         {
             float t = NormalizedT(level);
-            // Use room exponent for smooth curve (default 1.5 for gradual ramp)
-            float curved = Mathf.Pow(t, 1.5f);
+            // Use room exponent 1.2 for faster ramp - many rooms early
+            float curved = Mathf.Pow(t, 1.2f);
             int rooms = minRooms + Mathf.RoundToInt((maxRooms - minRooms) * curved);
             return Mathf.Clamp(rooms, minRooms, maxRooms);
         }
 
         /// <summary>
-        /// Room size — scales proportionally to maze size based on difficulty.
-        /// Formula: RoomSize = (MazeSize × RoomSizeRatio) clamped to min/max
+        /// Room size — SMALL rooms for tactical gameplay.
+        /// Many small rooms = more corridors, more doors, more tactical choices
         /// 
-        /// Level 0: Maze 13×13 → Room ~3×3 to 5×5 (small, cozy)
-        /// Level 12: Maze 25×25 → Room ~5×5 to 7×7 (medium)
-        /// Level 20: Maze 32×32 → Room ~7×7 to 9×9 (large)
-        /// Level 39: Maze 51×51 → Room ~9×9 to 13×13 (boss/monster rooms)
+        /// Level 0-5: 3×3 - 4×4 (tiny, cozy rooms)
+        /// Level 6-15: 4×4 - 5×5 (small rooms)
+        /// Level 16-30: 5×5 - 6×6 (medium-small)
+        /// Level 31-39: 6×6 - 7×7 (slightly larger, but still compact)
         /// 
-        /// Room size is proportional to maze size, not fixed steps.
-        /// More dangerous levels = larger rooms (more space for enemies/traps)
+        /// Ratio: 12% → 18% of maze size (down from 20% → 30%)
+        /// This creates MANY small rooms instead of few large ones
         /// </summary>
-        public int RoomSize(int mazeSize, int level, int minRoomSize = 3, int maxRoomSize = 13)
+        public int RoomSize(int mazeSize, int level, int minRoomSize = 3, int maxRoomSize = 7)
         {
             float t = NormalizedT(level);
             
-            // Base room size is proportional to maze size (20% to 30% of maze dimension)
-            float minRatio = 0.20f;  // Small rooms at low levels
-            float maxRatio = 0.30f;  // Large rooms at high levels
+            // Base room size is SMALL (12% to 18% of maze dimension)
+            // Many small rooms > few large rooms
+            float minRatio = 0.12f;  // Small rooms at low levels (was 0.20f)
+            float maxRatio = 0.18f;  // Still compact at high levels (was 0.30f)
             float ratio = Mathf.Lerp(minRatio, maxRatio, t);
             
             // Calculate room size from maze size
@@ -159,7 +165,7 @@ namespace Code.Lavos.Core
             // Ensure room size is odd (for symmetric center)
             if (baseRoomSize % 2 == 0) baseRoomSize++;
             
-            // Clamp to min/max bounds
+            // Clamp to min/max bounds (smaller max = more compact rooms)
             int roomSize = Mathf.Clamp(baseRoomSize, minRoomSize, maxRoomSize);
             
             // Ensure odd

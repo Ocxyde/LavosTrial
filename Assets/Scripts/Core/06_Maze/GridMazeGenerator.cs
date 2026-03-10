@@ -1094,8 +1094,9 @@ namespace Code.Lavos.Core
         public float DeadEndDensity  = 0.10f;  // Base chance for dead-end corridor spawn (10%)
         
         // Room System (2026-03-11)
-        public int   MinRooms        = 2;      // Minimum rooms at level 0
-        public int   MaxRooms        = 12;     // Maximum rooms at level 39
+        // MANY SMALL ROOMS strategy: More rooms = more tactical gameplay
+        public int   MinRooms        = 6;      // Minimum rooms at level 0 (was 2) - many small rooms!
+        public int   MaxRooms        = 30;     // Maximum rooms at level 39 (was 12) - lots of chambers
         public int   BaseRoomSize    = 5;      // Base room size (5×5 at low levels)
         public int   DoorOpeningWidth = 3;     // Door opening width in wall units
         
