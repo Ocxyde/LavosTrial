@@ -35,34 +35,47 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Central event manager for all game systems.
     /// Provides unified event subscription and invocation.
+    /// 
+    /// THREAD SAFETY:
+    /// - All event subscriptions use locks to prevent race conditions
+    /// - Event invocation is protected from modification during iteration
+    /// - Safe to subscribe/unsubscribe from any thread (main thread, worker threads, etc.)
+    /// 
     /// Performance: Cached singleton access for minimal overhead.
     /// </summary>
     public class EventHandler : MonoBehaviour
     {
+        // Thread-safe event subscription lock
+        private readonly object _eventLock = new object();
+        
         // Cached singleton reference (performance optimization)
         private static EventHandler _instance;
         private static bool _instanceChecked = false;
-        
+        private static readonly object _instanceLock = new object();
+
         public static EventHandler Instance
         {
             get
             {
-                if (_instance == null && !_instanceChecked)
+                lock (_instanceLock)
                 {
-                    _instance = FindFirstObjectByType<EventHandler>();
-                    _instanceChecked = true;
-
-                    if (_instance == null)
+                    if (_instance == null && !_instanceChecked)
                     {
-                        // Only warn if actually playing (not in editor pause)
-                        if (Application.isPlaying)
+                        _instance = FindFirstObjectByType<EventHandler>();
+                        _instanceChecked = true;
+
+                        if (_instance == null)
                         {
-                            Debug.LogWarning("[EventHandler] No instance found in scene! Add EventHandler GameObject manually.");
+                            // Only warn if actually playing (not in editor pause)
+                            if (Application.isPlaying)
+                            {
+                                Debug.LogWarning("[EventHandler] No instance found in scene! Add EventHandler GameObject manually.");
+                            }
+                            return null;
                         }
-                        return null;
                     }
+                    return _instance;
                 }
-                return _instance;
             }
         }
 
@@ -203,8 +216,6 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            
-
             if (dontDestroyOnLoad)
             {
                 DontDestroyOnLoad(gameObject);
@@ -215,6 +226,105 @@ namespace Code.Lavos.Core
                 Debug.Log("[EventHandler] Initialized - All systems ready");
             }
         }
+
+        #region Thread-Safe Event Subscription
+
+        /// <summary>
+        /// Subscribe to an event in a thread-safe manner.
+        /// Prevents race conditions when multiple threads try to subscribe simultaneously.
+        /// </summary>
+        /// <typeparam name="T">Event delegate type (Action, Action{T}, etc.)</typeparam>
+        /// <param name="eventHandler">The event to subscribe to</param>
+        /// <param name="subscriber">The delegate to add</param>
+        /// <param name="eventName">Name of the event for debugging</param>
+        /// <returns>True if subscription succeeded, false if event was null</returns>
+        public bool SubscribeSafe<T>(ref T eventHandler, T subscriber, string eventName = "Unknown")
+            where T : class, Delegate
+        {
+            lock (_eventLock)
+            {
+                if (eventHandler == null)
+                {
+                    Debug.LogWarning($"[EventHandler] Cannot subscribe to null event: {eventName}");
+                    return false;
+                }
+
+                // Delegate.Combine is atomic, but we wrap in lock for consistency
+                eventHandler = (T)Delegate.Combine(eventHandler, subscriber);
+                if (debugEvents)
+                {
+                    Debug.Log($"[EventHandler] Subscribed to {eventName} (thread-safe)");
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Unsubscribe from an event in a thread-safe manner.
+        /// Prevents race conditions when multiple threads try to unsubscribe simultaneously.
+        /// </summary>
+        /// <typeparam name="T">Event delegate type</typeparam>
+        /// <param name="eventHandler">The event to unsubscribe from</param>
+        /// <param name="subscriber">The delegate to remove</param>
+        /// <param name="eventName">Name of the event for debugging</param>
+        /// <returns>True if unsubscription succeeded, false if event was null</returns>
+        public bool UnsubscribeSafe<T>(ref T eventHandler, T subscriber, string eventName = "Unknown")
+            where T : class, Delegate
+        {
+            lock (_eventLock)
+            {
+                if (eventHandler == null)
+                {
+                    Debug.LogWarning($"[EventHandler] Cannot unsubscribe from null event: {eventName}");
+                    return false;
+                }
+
+                // Delegate.Remove is atomic, but we wrap in lock for consistency
+                eventHandler = (T)Delegate.Remove(eventHandler, subscriber);
+                if (debugEvents)
+                {
+                    Debug.Log($"[EventHandler] Unsubscribed from {eventName} (thread-safe)");
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Invoke an event in a thread-safe manner.
+        /// Creates a snapshot of the delegate list to prevent modification during invocation.
+        /// </summary>
+        /// <typeparam name="T">Event delegate type</typeparam>
+        /// <param name="eventHandler">The event to invoke</param>
+        /// <param name="eventName">Name of the event for debugging</param>
+        /// <param name="args">Arguments to pass to the event handlers</param>
+        public void InvokeSafe<T>(T eventHandler, string eventName = "Unknown", params object[] args)
+            where T : class, Delegate
+        {
+            if (eventHandler == null) return;
+
+            // Create snapshot to prevent modification during invocation
+            T snapshot;
+            lock (_eventLock)
+            {
+                snapshot = eventHandler;
+            }
+
+            // Invoke outside lock to prevent deadlocks
+            try
+            {
+                snapshot.DynamicInvoke(args);
+                if (debugEvents)
+                {
+                    Debug.Log($"[EventHandler] Invoked {eventName} with {args.Length} args (thread-safe)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[EventHandler] Error invoking {eventName}: {ex.Message}");
+            }
+        }
+
+        #endregion
 
         void Start()
         {
