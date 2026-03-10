@@ -77,7 +77,7 @@ namespace Code.Lavos.Core
         {
             if (!CanInteract)
             {
-                Debug.LogWarning($"[BehaviorEngine] Cannot interact with {itemType}");
+                Debug.LogWarning($"[BehaviorEngine] Cannot interact with {ItemType}");
                 return;
             }
 
@@ -97,7 +97,7 @@ namespace Code.Lavos.Core
             }
 
             OnInteract?.Invoke(this, interactor);
-            Debug.Log($"[BehaviorEngine] Interacted with {itemType}");
+            Debug.Log($"[BehaviorEngine] Interacted with {ItemType}");
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Code.Lavos.Core
         {
             if (!CanCollect)
             {
-                Debug.LogWarning($"[BehaviorEngine] Cannot collect {itemType}");
+                Debug.LogWarning($"[BehaviorEngine] Cannot collect {ItemType}");
                 return;
             }
 
@@ -127,10 +127,10 @@ namespace Code.Lavos.Core
             }
 
             OnCollect?.Invoke(this, collector);
-            Debug.Log($"[BehaviorEngine] Collected {itemType}");
+            Debug.Log($"[BehaviorEngine] Collected {ItemType}");
 
             // Destroy if set
-            if (destroyOnCollect)
+            if (DestroyOnCollectValue)
             {
                 Destroy(gameObject);
             }
