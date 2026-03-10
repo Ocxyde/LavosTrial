@@ -37,10 +37,31 @@ namespace Code.Lavos.HUD
     /// <summary>
     /// Central engine for all popup windows and panels.
     /// Provides inventory windows, dialogs, shops, and custom panels.
+    /// 
+    /// ARCHITECTURE: Service Locator pattern (reduced from singleton)
+    /// - Find via FindFirstObjectByType() or cache reference
+    /// - Avoids singleton global state issues
+    /// - Supports multiple instances if needed (e.g., scene-specific)
     /// </summary>
     public class PopWinEngine : MonoBehaviour
     {
-        public static PopWinEngine Instance { get; private set; }
+        /// <summary>
+        /// Get the active PopWinEngine instance.
+        /// Returns null if not found - use null-conditional operator.
+        /// Example: PopWinEngine.Instance?.CreateWindow("Inventory");
+        /// </summary>
+        public static PopWinEngine Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindFirstObjectByType<PopWinEngine>();
+                }
+                return _instance;
+            }
+        }
+        private static PopWinEngine _instance;
 
         [Header("Settings")]
         [Tooltip("Parent canvas for popup windows (finds automatically if not set)")]
@@ -69,13 +90,15 @@ namespace Code.Lavos.HUD
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            // Cache instance for static access (service locator pattern)
+            if (_instance == null)
             {
-                Destroy(gameObject);
-                return;
+                _instance = this;
             }
-
-            Instance = this;
+            else if (_instance != this)
+            {
+                Debug.LogWarning($"[PopWinEngine] Multiple instances detected. Using '{_instance.name}' as primary.");
+            }
 
             if (dontDestroyOnLoad)
             {
@@ -103,6 +126,19 @@ namespace Code.Lavos.HUD
             _windowParent = winGO.AddComponent<RectTransform>().transform;
             
             Debug.Log($"[PopWinEngine] Created window parent under canvas '{_canvas.name}'");
+        }
+
+        private void OnDestroy()
+        {
+            // Clean up dynamically created GameObjects
+            if (_windowParent != null)
+                Destroy(_windowParent.gameObject);
+
+            // Clear static instance if this was it
+            if (_instance == this)
+            {
+                _instance = null;
+            }
         }
 
         #region Basic Window

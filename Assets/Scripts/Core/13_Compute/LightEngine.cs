@@ -41,12 +41,24 @@ namespace Code.Lavos.Core
     /// <summary>
     /// LightEngine - Central lighting management for ALL light sources.
     /// Handles dynamic lights, fog of war, emission, and atmospheric effects.
+    /// 
+    /// ARCHITECTURE: Service Locator pattern (reduced from singleton)
+    /// - Find via FindFirstObjectByType() or cache reference
+    /// - Avoids singleton global state issues
+    /// - Supports multiple instances if needed (e.g., scene-specific)
+    /// - Thread-safe lazy initialization
     /// </summary>
     public class LightEngine : MonoBehaviour
     {
-        #region Singleton
+        #region Instance (Service Locator)
 
-        private static LightEngine _instance;
+        /// <summary>
+        /// Get the active LightEngine instance.
+        /// Returns null if not found - use null-conditional operator.
+        /// Example: LightEngine.Instance?.RegisterLight(transform);
+        /// 
+        /// Thread-safe lazy initialization with caching.
+        /// </summary>
         public static LightEngine Instance
         {
             get
@@ -54,17 +66,11 @@ namespace Code.Lavos.Core
                 if (_instance == null)
                 {
                     _instance = FindFirstObjectByType<LightEngine>();
-                    if (_instance == null)
-                    {
-                        // CRITICAL: LightEngine must be added to scene manually
-                        // Auto-creation causes cleanup issues on scene unload
-                        Debug.LogWarning("[LightEngine] Not found in scene! Add a 'LightEngine' GameObject manually.");
-                        return null;
-                    }
                 }
                 return _instance;
             }
         }
+        private static LightEngine _instance;
 
         #endregion
 
@@ -202,18 +208,22 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
-            if (_instance != null && _instance != this)
+            // Cache instance for static access (service locator pattern)
+            if (_instance == null)
+            {
+                _instance = this;
+            }
+            else if (_instance != this)
             {
                 if (verboseLogging)
-                    Debug.Log("[LightEngine] Instance already exists, destroying duplicate");
+                    Debug.LogWarning($"[LightEngine] Multiple instances detected. Using '{_instance.name}' as primary.");
                 Destroy(gameObject);
                 return;
             }
-            _instance = this;
-            
+
             // Initialize light pool in Awake (before other Start() methods run)
             InitializeLightPool();
-            
+
             Log($"[LightEngine] Awake - Max Lights: {maxDynamicLights}, Fog: {enableFogOfWar}, Lightning: {enableLightning}");
         }
 

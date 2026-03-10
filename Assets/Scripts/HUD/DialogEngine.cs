@@ -35,10 +35,31 @@ namespace Code.Lavos.HUD
     /// <summary>
     /// Central engine for all dialog and floating text systems.
     /// Provides floating combat text, dialogs, and notifications.
+    /// 
+    /// ARCHITECTURE: Service Locator pattern (reduced from singleton)
+    /// - Find via FindFirstObjectByType() or cache reference
+    /// - Avoids singleton global state issues
+    /// - Supports multiple instances if needed (e.g., scene-specific)
     /// </summary>
     public class DialogEngine : MonoBehaviour
     {
-        public static DialogEngine Instance { get; private set; }
+        /// <summary>
+        /// Get the active DialogEngine instance.
+        /// Returns null if not found - use null-conditional operator.
+        /// Example: DialogEngine.Instance?.ShowDialog("Hello");
+        /// </summary>
+        public static DialogEngine Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = FindFirstObjectByType<DialogEngine>();
+                }
+                return _instance;
+            }
+        }
+        private static DialogEngine _instance;
 
         [Header("Settings")]
         [Tooltip("Parent canvas for dialogs (finds automatically if not set)")]
@@ -85,13 +106,15 @@ namespace Code.Lavos.HUD
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            // Cache instance for static access (service locator pattern)
+            if (_instance == null)
             {
-                Destroy(gameObject);
-                return;
+                _instance = this;
             }
-
-            Instance = this;
+            else if (_instance != this)
+            {
+                Debug.LogWarning($"[DialogEngine] Multiple instances detected. Using '{_instance.name}' as primary.");
+            }
 
             if (dontDestroyOnLoad)
             {
@@ -136,6 +159,12 @@ namespace Code.Lavos.HUD
                 Destroy(_floatingTextParent.gameObject);
             if (_dialogParent != null)
                 Destroy(_dialogParent.gameObject);
+
+            // Clear static instance if this was it
+            if (_instance == this)
+            {
+                _instance = null;
+            }
         }
 
         #region Floating Combat Text
