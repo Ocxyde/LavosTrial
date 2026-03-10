@@ -87,7 +87,7 @@ namespace Code.Lavos.Core.Advanced
                 _cells[x, z] |= flag;
         }
 
-        public bool HasWall(int x, int z, Direction8 dir)
+        public bool HasWall(int x, int z, Core.Direction8 dir)
         {
             var cell = GetCell(x, z);
             var flag = Direction8Helper.ToWallFlag(dir);
