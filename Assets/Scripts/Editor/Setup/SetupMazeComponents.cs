@@ -59,11 +59,11 @@ namespace Code.Lavos.Editor
             }
 
             Debug.Log($"[Setup]  Config loaded from Config/GameConfig-default.json");
-            Debug.Log($"[Setup]    Wall Prefab: {config.wallPrefab}");
-            Debug.Log($"[Setup]    Door Prefab: {config.doorPrefab}");
-            Debug.Log($"[Setup]    Torch Prefab: {config.torchPrefab}");
-            Debug.Log($"[Setup]    Wall Material: {config.wallMaterial}");
-            Debug.Log($"[Setup]    Floor Material: {config.floorMaterial}");
+            Debug.Log($"[Setup]    Wall Prefab: {config.WallPrefab}");
+            Debug.Log($"[Setup]    Door Prefab: {config.DoorPrefab}");
+            Debug.Log($"[Setup]    Torch Prefab: {config.TorchPrefab}");
+            Debug.Log($"[Setup]    Wall Material: {config.WallMaterial}");
+            Debug.Log($"[Setup]    Floor Material: {config.FloorMaterial}");
 
             // Ensure folders exist
             EnsureFolder("Assets/Resources");
@@ -73,17 +73,17 @@ namespace Code.Lavos.Editor
             EnsureFolder("Assets/Textures");
 
             // Create prefabs ONLY if missing at config paths
-            CreatePrefabIfMissing(config.wallPrefab, "Wall");
-            CreatePrefabIfMissing(config.doorPrefab, "Door");
-            CreateTorchPrefabIfMissing(config.torchPrefab);
+            CreatePrefabIfMissing(config.WallPrefab, "Wall");
+            CreatePrefabIfMissing(config.DoorPrefab, "Door");
+            CreateTorchPrefabIfMissing(config.TorchPrefab);
 
             // Create materials ONLY if missing at config paths
-            CreateMaterialIfMissing(config.wallMaterial, "WallMaterial");
-            CreateMaterialIfMissing(config.floorMaterial, "Floor/Stone_Floor");
+            CreateMaterialIfMissing(config.WallMaterial, "WallMaterial");
+            CreateMaterialIfMissing(config.FloorMaterial, "Floor/Stone_Floor");
 
             // Create textures ONLY if missing at config paths
-            CreateTextureIfMissing(config.groundTexture, "floor_texture");
-            CreateTextureIfMissing(config.wallTexture, "wall_texture");
+            CreateTextureIfMissing(config.GroundTexture, "floor_texture");
+            CreateTextureIfMissing(config.WallTexture, "wall_texture");
 
             // Find or create components and ASSIGN from config
             EnsureTorchPool(config);
@@ -242,9 +242,9 @@ namespace Code.Lavos.Editor
             }
 
             // Assign torch prefab from config
-            string torchPrefabPath = $"Assets/{config.torchPrefab}";
+            string torchPrefabPath = $"Assets/{config.TorchPrefab}";
             var torchPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(torchPrefabPath);
-            
+
             if (torchPrefab != null)
             {
                 var serializedObject = new SerializedObject(torchPool);
@@ -253,7 +253,7 @@ namespace Code.Lavos.Editor
                 {
                     prop.objectReferenceValue = torchPrefab;
                     serializedObject.ApplyModifiedProperties();
-                    Debug.Log($"[Setup]   Assigned TorchPrefab to TorchPool: {config.torchPrefab}");
+                    Debug.Log($"[Setup]   Assigned TorchPrefab to TorchPool: {config.TorchPrefab}");
                 }
             }
             else
@@ -265,7 +265,7 @@ namespace Code.Lavos.Editor
         private static void EnsureLightPlacementEngine()
         {
             var lightEngine = FindFirstObjectByType<LightPlacementEngine>();
-            
+
             if (lightEngine == null)
             {
                 GameObject go = new GameObject("LightPlacementEngine");
@@ -288,12 +288,12 @@ namespace Code.Lavos.Editor
             // Assign all prefabs and materials from config
             var serializedObject = new SerializedObject(mazeBuilder);
 
-            AssignField(serializedObject, "wallPrefab", config.wallPrefab, typeof(GameObject));
-            AssignField(serializedObject, "doorPrefab", config.doorPrefab, typeof(GameObject));
-            AssignField(serializedObject, "torchPrefab", config.torchPrefab, typeof(GameObject));
-            AssignField(serializedObject, "wallMaterial", config.wallMaterial, typeof(Material));
-            AssignField(serializedObject, "floorMaterial", config.floorMaterial, typeof(Material));
-            AssignField(serializedObject, "groundTexture", config.groundTexture, typeof(Texture2D));
+            AssignField(serializedObject, "wallPrefab", config.WallPrefab, typeof(GameObject));
+            AssignField(serializedObject, "doorPrefab", config.DoorPrefab, typeof(GameObject));
+            AssignField(serializedObject, "torchPrefab", config.TorchPrefab, typeof(GameObject));
+            AssignField(serializedObject, "wallMaterial", config.WallMaterial, typeof(Material));
+            AssignField(serializedObject, "floorMaterial", config.FloorMaterial, typeof(Material));
+            AssignField(serializedObject, "groundTexture", config.GroundTexture, typeof(Texture2D));
 
             serializedObject.ApplyModifiedProperties();
             Debug.Log("[Setup]   Assigned all prefabs/materials to CompleteMazeBuilder8 from config");

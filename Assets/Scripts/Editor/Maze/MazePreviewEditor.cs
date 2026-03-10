@@ -567,7 +567,7 @@ namespace Code.Lavos.Editor
 
             // Load prefabs from Resources (Plug-in-Out: use existing, don't create)
             // Path format in config: "Prefabs/WallPrefab.prefab" → Resources.Load expects without extension
-            string wallPrefabPath = _config.wallPrefab.Replace(".prefab", "");
+            string wallPrefabPath = _config.WallPrefab.Replace(".prefab", "");
             string diagPrefabPath = "Prefabs/DiagonalWallPrefab";
 
             GameObject cardinalPrefab = Resources.Load<GameObject>(wallPrefabPath);
