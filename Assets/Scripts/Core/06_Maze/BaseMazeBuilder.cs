@@ -1,4 +1,4 @@
-﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // BaseMazeBuilder.cs - Common base class for maze builders to reduce duplication
 
@@ -15,16 +15,16 @@ namespace Code.Lavos.Core
         #region Common Fields
 
         [Header("Cardinal Prefabs")]
-        [SerializeField] protected internal GameObject wallPrefab;
-        [SerializeField] protected internal GameObject doorPrefab;
-        [SerializeField] protected internal Material wallMaterial;
+        [SerializeField] public GameObject wallPrefab;
+        [SerializeField] public GameObject doorPrefab;
+        [SerializeField] public Material wallMaterial;
 
         [Header("Object Prefabs")]
-        [SerializeField] protected internal GameObject torchPrefab;
-        [SerializeField] protected internal GameObject chestPrefab;
-        [SerializeField] protected internal GameObject enemyPrefab;
-        [SerializeField] protected internal GameObject floorPrefab;
-        [SerializeField] protected internal GameObject playerPrefab;
+        [SerializeField] public GameObject torchPrefab;
+        [SerializeField] public GameObject chestPrefab;
+        [SerializeField] public GameObject enemyPrefab;
+        [SerializeField] public GameObject floorPrefab;
+        [SerializeField] public GameObject playerPrefab;
 
         [Header("Config")]
         [SerializeField] protected string configResourcePath = "Config/GameConfig8-default";
