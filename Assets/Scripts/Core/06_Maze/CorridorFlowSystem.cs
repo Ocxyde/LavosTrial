@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -49,27 +49,27 @@ namespace Code.Lavos.Core
     public class CorridorFlowConfig
     {
         [Header("Main Artery Settings")]
-        public int MainArteryWidth = 2;         // 2 cells = 12m wide
-        public float MainArteryTorchChance = 0.8f; // 80% torch coverage
+        public int MainArteryWidth = 1;         // 1 cell = 6m wide
+        public float MainArteryTorchChance = 0.6f;
 
         [Header("Secondary Corridor Settings")]
-        public int SecondaryWidth = 1;          // 1 cell = 6m wide
-        public float SecondaryBranchChance = 0.6f; // 60% of possible branches
-        public int SecondaryMinLength = 3;
-        public int SecondaryMaxLength = 8;
-        public float SecondaryTorchChance = 0.5f; // 50% torch coverage
+        public int SecondaryWidth = 1;
+        public float SecondaryBranchChance = 0.35f;
+        public int SecondaryMinLength = 2;
+        public int SecondaryMaxLength = 5;
+        public float SecondaryTorchChance = 0.4f;
 
         [Header("Tertiary Passage Settings")]
-        public float TertiaryDensity = 0.15f;   // 15% of valid locations
-        public int TertiaryMinLength = 2;
-        public int TertiaryMaxLength = 5;
-        public float TertiaryChestChance = 0.5f; // 50% have chests
-        public float TertiaryEnemyChance = 0.3f; // 30% have enemies
+        public float TertiaryDensity = 0.08f;
+        public int TertiaryMinLength = 1;
+        public int TertiaryMaxLength = 3;
+        public float TertiaryChestChance = 0.4f;
+        public float TertiaryEnemyChance = 0.25f;
 
         [Header("Flow Optimization")]
-        public float DirectnessThreshold = 0.6f; // Min directness ratio
-        public bool WidenMainPath = true;        // Widen main artery
-        public bool EnsureShortcuts = true;      // Add shortcuts if too winding
+        public float DirectnessThreshold = 0.6f;
+        public bool WidenMainPath = false;
+        public bool EnsureShortcuts = false;
     }
 
     /// <summary>

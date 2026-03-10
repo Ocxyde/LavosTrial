@@ -783,7 +783,7 @@ namespace Code.Lavos.Core
         public float TorchChance     = 0.30f;
         public float ChestDensity    = 0.03f;
         public float EnemyDensity    = 0.05f;
-        public float DeadEndDensity  = 0.15f;  // Base chance for dead-end corridor spawn (15%)
+        public float DeadEndDensity  = 0.08f;  // Base chance for dead-end corridor spawn (8%)
         // DiagonalWalls removed 2026-03-09 - cardinal-only passages
 
         // A* pathfinding
