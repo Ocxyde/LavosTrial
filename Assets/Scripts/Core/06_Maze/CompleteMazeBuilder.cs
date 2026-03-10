@@ -624,10 +624,7 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            var pos = CellCenter(
-                _mazeData.SpawnCell.x,
-                _mazeData.SpawnCell.z,
-                _config.PlayerEyeHeight);
+            var pos = GetValidPlayerSpawnPosition();
 
             _playerInstance      = Instantiate(playerPrefab, pos, Quaternion.identity);
             if (_playerInstance == null)
@@ -638,6 +635,74 @@ namespace Code.Lavos.Core
             _playerInstance.name = "Player";
 
             Debug.Log($"[MazeBuilder8] Player spawned at {pos}");
+        }
+
+        /// <summary>
+        /// Get valid player spawn position with collision validation.
+        /// Falls back to finding alternative spawn if primary is blocked.
+        /// </summary>
+        private Vector3 GetValidPlayerSpawnPosition()
+        {
+            if (_mazeData == null || _config == null)
+                return Vector3.zero;
+
+            int sx = _mazeData.SpawnCell.x, sz = _mazeData.SpawnCell.z;
+            Vector3 pos = CellCenter(sx, sz, _config.PlayerEyeHeight);
+
+            // Validate spawn position using raycast
+            if (Physics.Raycast(pos + Vector3.up * 2f, Vector3.down, out var hit, 3f))
+            {
+                if (hit.collider != null && hit.collider.CompareTag("Wall"))
+                {
+                    Debug.LogWarning($"[MazeBuilder8] Primary spawn blocked by wall at {pos}, finding alternative...");
+                    pos = FindAlternativeSpawnPosition();
+                }
+            }
+
+            return pos;
+        }
+
+        /// <summary>
+        /// Find alternative spawn position by searching nearby walkable cells.
+        /// </summary>
+        private Vector3 FindAlternativeSpawnPosition()
+        {
+            if (_mazeData == null || _config == null)
+                return Vector3.zero;
+
+            int startX = _mazeData.SpawnCell.x;
+            int startZ = _mazeData.SpawnCell.z;
+
+            // Search in expanding spiral pattern
+            for (int radius = 1; radius < 5; radius++)
+            {
+                for (int x = -radius; x <= radius; x++)
+                {
+                    for (int z = -radius; z <= radius; z++)
+                    {
+                        int checkX = startX + x;
+                        int checkZ = startZ + z;
+
+                        if (_mazeData.InBounds(checkX, checkZ))
+                        {
+                            var cell = _mazeData.GetCell(checkX, checkZ);
+                            bool isWalkable = (cell & CellFlags8.AllWalls) == 0;
+                            bool isSpawnRoom = (cell & CellFlags8.SpawnRoom) != 0;
+
+                            if (isWalkable || isSpawnRoom)
+                            {
+                                Vector3 altPos = CellCenter(checkX, checkZ, _config.PlayerEyeHeight);
+                                Debug.Log($"[MazeBuilder8] Alternative spawn found at {altPos} (cell {checkX},{checkZ})");
+                                return altPos;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fallback to original position if no alternative found
+            Debug.LogError("[MazeBuilder8] No valid spawn position found! Using original spawn.");
+            return CellCenter(startX, startZ, _config.PlayerEyeHeight);
         }
 
         // -------------------------------------------------------------------------

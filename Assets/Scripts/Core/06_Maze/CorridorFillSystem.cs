@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -447,6 +447,10 @@ namespace Code.Lavos.Core
 
                     if (_mazeData.InBounds(wallX, wallZ))
                     {
+                        // Skip if this is the exit cell - don't add walls to exit!
+                        bool isExit = (_mazeData.GetCell(wallX, wallZ) & CellFlags8.IsExit) != CellFlags8.None;
+                        if (isExit) continue;
+
                         // Add wall flag pointing back to corridor
                         var wallCell = _mazeData.GetCell(wallX, wallZ);
                         wallCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
@@ -487,24 +491,28 @@ namespace Code.Lavos.Core
         {
             // Get perpendicular directions
             Direction8[] perpendiculars = GetPerpendicularDirections(dir);
-            
+
             // Get the direction we came from (for corner placement)
             Direction8 fromDir = isStart ? GetOppositeDirection(dir) : dir;
-            
+
             // Place corner walls in perpendicular + from directions
             foreach (var perpDir in perpendiculars)
             {
                 var (pdx, pdz) = Direction8Helper.ToOffset(perpDir);
                 var (fdx, fdz) = Direction8Helper.ToOffset(fromDir);
-                
+
                 // Corner cell (perpendicular + from direction)
                 int cornerX = x + pdx + fdx;
                 int cornerZ = z + pdz + fdz;
-                
+
                 if (_mazeData.InBounds(cornerX, cornerZ))
                 {
-                    // Add wall flags for corner (both perpendicular and forward walls)
+                    // Skip if this is the exit cell - don't add walls to exit!
                     var cornerCell = _mazeData.GetCell(cornerX, cornerZ);
+                    bool isExit = (cornerCell & CellFlags8.IsExit) != CellFlags8.None;
+                    if (isExit) continue;
+
+                    // Add wall flags for corner (both perpendicular and forward walls)
                     cornerCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
                     cornerCell |= GetWallFlagForDirection(GetOppositeDirection(fromDir));
                     _mazeData.SetCell(cornerX, cornerZ, cornerCell);

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -30,13 +30,14 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Dead-End Corridor Configuration
     /// All values loaded from JSON config - no hardcoding
+    /// Updated 2026-03-10: Corrected defaults per design specification
     /// </summary>
     [Serializable]
     public class DeadEndCorridorConfig
     {
         [Header("Base Density")]
         [Range(0f, 1f)]
-        public float BaseDensity = 0.15f;  // 15% base chance at level 0
+        public float BaseDensity = 0.30f;  // 30% base chance at level 0 (was 0.15f)
 
         [Header("Difficulty Scaling")]
         [Range(1f, 5f)]
@@ -50,27 +51,27 @@ namespace Code.Lavos.Core
 
         [Header("Corridor Dimensions")]
         [Range(1, 10)]
-        public int MinLength = 2;  // Minimum dead-end length (cells)
+        public int MinLength = 3;  // Minimum dead-end length (cells) - was 2
 
         [Range(2, 15)]
-        public int MaxLength = 5;  // Maximum dead-end length (cells)
+        public int MaxLength = 8;  // Maximum dead-end length (cells) - was 5
 
         [Range(1, 5)]
         public int CorridorWidth = 1;  // 1 cell = 6m (fixed)
 
         [Header("Object Placement")]
         [Range(0f, 1f)]
-        public float ChestChanceAtEnd = 0.5f;  // 50% chest at dead-end
+        public float ChestChanceAtEnd = 0.40f;  // 40% chest at dead-end (was 0.5f)
 
         [Range(0f, 1f)]
-        public float EnemyChanceAtEnd = 0.3f;  // 30% enemy at dead-end (if no chest)
+        public float EnemyChanceAtEnd = 0.40f;  // 40% enemy at dead-end (was 0.3f)
 
         [Range(0f, 1f)]
-        public float TrapChanceAtEnd = 0.1f;  // 10% trap at dead-end
+        public float TrapChanceAtEnd = 0.05f;  // 5% trap at dead-end (was 0.1f)
 
         [Header("Limits")]
-        [Range(0.01f, 0.2f)]
-        public float MaxGridPercentage = 0.05f;  // Max 5% of grid becomes dead-ends
+        [Range(0.01f, 0.5f)]
+        public float MaxGridPercentage = 0.35f;  // Max 35% of grid becomes dead-ends (was 0.05f)
 
         [Header("Advanced")]
         public bool AllowBranching = true;  // Dead-ends can branch

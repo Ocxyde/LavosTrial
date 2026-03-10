@@ -355,10 +355,17 @@ namespace Code.Lavos.Core
             var open   = new List<Node>();
             var closed = new HashSet<int>();   // packed key = z*Width + x
 
+            // Add iteration limit to prevent infinite loops on large mazes
+            // For 51x51 maze: 2601 cells × 2 = 5202 max iterations
+            int maxIterations = d.Width * d.Height * 2;
+            int iterations = 0;
+
             open.Add(new Node { X = sx, Z = sz, G = 0, H = HeuristicCardinal(sx, sz, ex, ez) });
 
-            while (open.Count > 0)
+            while (open.Count > 0 && iterations < maxIterations)
             {
+                iterations++;
+
                 // Find minimum F
                 int  best  = 0;
                 for (int i = 1; i < open.Count; i++)
@@ -376,7 +383,7 @@ namespace Code.Lavos.Core
                         CarveStepCardinal(d, node.Parent.X, node.Parent.Z, node.X, node.Z);
                         node = node.Parent;
                     }
-                    Debug.Log("[GridMazeGenerator] A*: Guaranteed path carved successfully");
+                    Debug.Log($"[GridMazeGenerator] A*: Guaranteed path carved successfully ({iterations} iterations)");
                     return;
                 }
 
@@ -412,7 +419,14 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.LogWarning("[GridMazeGenerator] A*: Could not find path - maze may have isolated sections");
+            if (iterations >= maxIterations)
+            {
+                Debug.LogError($"[GridMazeGenerator] A*: Max iterations ({maxIterations}) reached without finding path!");
+            }
+            else
+            {
+                Debug.LogWarning("[GridMazeGenerator] A*: Could not find path - maze may have isolated sections");
+            }
         }
 
         // Manhattan heuristic — correct for 4-directional (cardinal) movement
