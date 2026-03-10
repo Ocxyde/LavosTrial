@@ -23,6 +23,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Code.Lavos.Status;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Core
 {
@@ -42,7 +43,7 @@ namespace Code.Lavos.Core
     {
         // ─── Déplacement ─────────────────────────────────────────────────────────
         [Header("Déplacement")]
-        [SerializeField] private float walkSpeed = 5f;
+        [SerializeField] private float walkSpeed = GameConstants.Player.MoveSpeed;
         [SerializeField] private float sprintSpeed = 9f;
         [SerializeField] private float jumpHeight = 1.5f;
         [SerializeField] private float gravity = -19.81f;
@@ -55,9 +56,9 @@ namespace Code.Lavos.Core
     // ─── Caméra / Regard ─────────────────────────────────────────────────────
     [Header("Caméra")]
     [SerializeField] private Camera playerCamera;
-    [SerializeField] private float mouseSensitivity = 0.2f;
+    [SerializeField] private float mouseSensitivity = GameConstants.Player.MouseSensitivity;
     [SerializeField] private float maxLookAngle = 80f;
-    [SerializeField] private float eyeHeightOffset = 1.7f; // hauteur yeux (mètres depuis pivot) - matches PlayerPrefab camera Y position
+    [SerializeField] private float eyeHeightOffset = GameConstants.Player.EyeHeight; // hauteur yeux (mètres depuis pivot) - matches PlayerPrefab camera Y position
 
     // ─── Head Bob ────────────────────────────────────────────────────────────
     [Header("Head Bob")]
@@ -179,7 +180,7 @@ namespace Code.Lavos.Core
             // FPS VIEW: Camera at middle of eyes (between eyes, not top of head)
             // For 2m tall CharacterController: eyes at ~1.6m (middle of head)
             // Camera local position: (0, 1.6, 0) - exactly at eye level
-            Vector3 targetCamPos = new Vector3(0f, 1.6f, 0f);
+            Vector3 targetCamPos = new Vector3(0f, GameConstants.Player.EyeHeight, 0f);
             
             // Validate camera local position matches expected eye height
             if (playerCamera.transform.localPosition != targetCamPos)
