@@ -1,4 +1,4 @@
-// Copyright (C) 2026 Ocxyde
+﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -17,6 +17,12 @@
 // DungeonMazeData.cs
 // Advanced maze data with trap, treasure, and difficulty metrics
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// DEPRECATED: Use MazeData8 instead. This class is kept for legacy compatibility.
+// -------------------------------------------------------------------------
+// [OBSOLETE 2026-03-10] Use MazeData8 for all maze operations.
+// DungeonMazeData is no longer maintained and will be removed in a future version.
+// -------------------------------------------------------------------------
 
 using UnityEngine;
 using Code.Lavos.Core;
@@ -24,6 +30,8 @@ using Code.Lavos.Core;
 namespace Code.Lavos.Core.Advanced
 {
     /// <summary>
+    /// DEPRECATED: Use MazeData8 instead.
+    /// 
     /// Advanced maze data structure extending MazeData8 with:
     /// - Trap room tracking
     /// - Treasure room tracking
@@ -32,6 +40,7 @@ namespace Code.Lavos.Core.Advanced
     /// - AI-computed difficulty metrics
     /// - Path guarantee markers
     /// </summary>
+    [System.Obsolete("Use MazeData8 instead. DungeonMazeData is deprecated and will be removed.")]
     public class DungeonMazeData
     {
         private uint[,] _cells;

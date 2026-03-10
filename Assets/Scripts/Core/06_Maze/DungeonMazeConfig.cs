@@ -83,7 +83,7 @@ namespace Code.Lavos.Core.Advanced
 
         public float ChestDensity = 0.05f;
 
-        public float DeadEndDensity = 0.08f;
+        public float DeadEndDensity = 0.10f;
 
         public int BossRoomCount = 1;
 

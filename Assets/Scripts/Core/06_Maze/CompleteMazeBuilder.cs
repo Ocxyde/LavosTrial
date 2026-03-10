@@ -22,7 +22,7 @@ namespace Code.Lavos.Core
     //   5.  Ground         -> Spawn floor plane
     //   6.  Spawn Room     -> Guaranteed 5x5 cleared first
     //   7.  Corridors      -> 8-axis DFS + A* (difficulty-scaled)
-    //   8.  Walls          -> Cardinal + diagonal wall prefabs
+    //   8.  Walls          -> Cardinal wall prefabs
     //                         Pivot fixed at bottom-center of each wall edge
     //   9.  Doors          -> Placed ON the access wall, oriented to face corridor
     //  10.  Torches        -> Scaled torch placement
@@ -31,12 +31,6 @@ namespace Code.Lavos.Core
     // -------------------------------------------------------------------------
     public sealed class CompleteMazeBuilder8 : BaseMazeBuilder
     {
-        [Header("Diagonal Prefabs")]
-        [SerializeField] private GameObject wallDiagPrefab;
-        [SerializeField] private GameObject wallCornerPrefab;
-        [SerializeField] private Material wallDiagMaterial;
-        [SerializeField] private Material wallCornerMaterial;
-
         [Header("Generator Options")]
         [Tooltip("Use new GuaranteedPathMazeGenerator (Minotaur Maze)")]
         public bool UseGuaranteedPathGenerator = false;
@@ -67,15 +61,15 @@ namespace Code.Lavos.Core
         [SerializeField] private float minEnemyDensity = 0.04f;
 
         // Runtime (specific to CompleteMazeBuilder8)
-        private DungeonMazeData _mazeData;
-        private DungeonMazeGenerator _generator;
+        private MazeData8 _mazeData;
+        private GridMazeGenerator _generator;
         private GuaranteedPathMazeGenerator _guaranteedGenerator;
         private bool _lastRandomizeSeedState = false;
 
         // -------------------------------------------------------------------------
         // Public Accessors (for other systems to access maze data)
         // -------------------------------------------------------------------------
-        public DungeonMazeData MazeData => _mazeData;
+        public MazeData8 MazeData => _mazeData;
 
         // -------------------------------------------------------------------------
         // Unity lifecycle
@@ -192,7 +186,8 @@ namespace Code.Lavos.Core
                 if (MazeBinaryStorage8Compat.Exists(currentLevel, currentSeed))
                 {
                     Debug.Log($"[MazeBuilder8] Cache hit  L{currentLevel}  S{currentSeed}");
-                    _mazeData = MazeBinaryStorage8Compat.Load(currentLevel, currentSeed);
+                    var dungeonData = MazeBinaryStorage8Compat.Load(currentLevel, currentSeed);
+                    _mazeData = ConvertDungeonToMazeData(dungeonData);
                     foundInCache = (_mazeData != null);
                 }
             }
@@ -204,51 +199,75 @@ namespace Code.Lavos.Core
             if (!foundInCache)
             {
                 Debug.Log($"[MazeBuilder8] Cache miss  L{currentLevel}  S{currentSeed} - generating new maze");
-                
-                // Convert GameConfig to DungeonMazeConfig
-                var dungeonCfg = new DungeonMazeConfig
-                {
-                    BaseSize = _config.MazeCfg.BaseSize,
-                    MinSize = _config.MazeCfg.MinSize,
-                    MaxSize = _config.MazeCfg.MaxSize,
-                    CellSize = _config.CellSize,
-                    WallHeight = _config.WallHeight,
-                    SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
-                    ExitRoomSize = MazeConfig.ExitRoomSize,
-                    TorchChance = _config.MazeCfg.TorchChance,
-                    ChestDensity = spawnChests ? chestDensity : 0f,
-                    EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
-                    AllowDiagonalWalls = false, // DiagonalWalls removed 2026-03-09 - cardinal-only passages
-                    Difficulty = new DifficultyScalerConfig
-                    {
-                        BaseFactor = 1.0f,
-                        FactorPerLevel = 0.15f,
-                        MaxFactor = _config.DifficultyCfg.MaxFactor,
-                        SizeGrowthPerLevel = 2,
-                    },
-                };
 
-                // Use PassageFirst generator if enabled, otherwise use DFS
+                // Use PassageFirst generator if enabled
                 if (UseGuaranteedPathGenerator)
                 {
                     // NEW: Minotaur Maze - Guaranteed path with classic labyrinth structure
                     Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
                     _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
 
-                    // Use same dungeonCfg we already created
-                    _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                    // Create dungeon config for guaranteed path generator
+                    var dungeonCfg = new DungeonMazeConfig
+                    {
+                        BaseSize = _config.MazeCfg.BaseSize,
+                        MinSize = _config.MazeCfg.MinSize,
+                        MaxSize = _config.MazeCfg.MaxSize,
+                        CellSize = _config.CellSize,
+                        WallHeight = _config.WallHeight,
+                        SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                        ExitRoomSize = MazeConfig.ExitRoomSize,
+                        TorchChance = _config.MazeCfg.TorchChance,
+                        ChestDensity = spawnChests ? chestDensity : 0f,
+                        EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
+                        DeadEndDensity = _config.MazeCfg.DeadEndDensity,
+                        AllowDiagonalWalls = false,
+                        Difficulty = new DifficultyScalerConfig
+                        {
+                            BaseFactor = 1.0f,
+                            FactorPerLevel = 0.15f,
+                            MaxFactor = _config.DifficultyCfg.MaxFactor,
+                            SizeGrowthPerLevel = 2,
+                        },
+                    };
+
+                    var dungeonData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                    _mazeData = ConvertDungeonToMazeData(dungeonData);
                 }
-                else if (UsePassageFirstGenerator || dungeonCfg.UsePassageFirst)
+                else if (UsePassageFirstGenerator)
                 {
                     var passageGenerator = new PassageFirstMazeGenerator();
-                    _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                    var dungeonCfg = new DungeonMazeConfig
+                    {
+                        BaseSize = _config.MazeCfg.BaseSize,
+                        MinSize = _config.MazeCfg.MinSize,
+                        MaxSize = _config.MazeCfg.MaxSize,
+                        CellSize = _config.CellSize,
+                        WallHeight = _config.WallHeight,
+                        SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                        ExitRoomSize = MazeConfig.ExitRoomSize,
+                        TorchChance = _config.MazeCfg.TorchChance,
+                        ChestDensity = spawnChests ? chestDensity : 0f,
+                        EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
+                        DeadEndDensity = _config.MazeCfg.DeadEndDensity,
+                        AllowDiagonalWalls = false,
+                        Difficulty = new DifficultyScalerConfig
+                        {
+                            BaseFactor = 1.0f,
+                            FactorPerLevel = 0.15f,
+                            MaxFactor = _config.DifficultyCfg.MaxFactor,
+                            SizeGrowthPerLevel = 2,
+                        },
+                    };
+                    var dungeonData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                    _mazeData = ConvertDungeonToMazeData(dungeonData);
                 }
                 else
                 {
-                    // DEFAULT: Dungeon maze with rooms and corridors
-                    Debug.Log("[MazeBuilder8] Using DungeonMazeGenerator (Rooms + Corridors)");
-                    _generator ??= new DungeonMazeGenerator();
-                    _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+                    // DEFAULT: Grid maze with dead-end corridors and fill
+                    Debug.Log("[MazeBuilder8] Using GridMazeGenerator (DFS + Dead-Ends + Fill)");
+                    _generator ??= new GridMazeGenerator();
+                    _mazeData = _generator.Generate(currentSeed, currentLevel, _config.MazeCfg, _config.DifficultyCfg);
                 }
             }
 
@@ -278,7 +297,7 @@ namespace Code.Lavos.Core
             // Verify ground spawned
             Debug.Log("[MazeBuilder8] Ground spawned, now spawning walls...");
 
-            // 8 - Walls (cardinal + diagonal)
+            // 8 - Walls (cardinal only)
             SpawnAllWalls();
 
             // 9 - Doors (on access wall, oriented)
@@ -298,7 +317,8 @@ namespace Code.Lavos.Core
             {
                 if (!MazeBinaryStorage8Compat.Exists(currentLevel, currentSeed))
                 {
-                    MazeBinaryStorage8Compat.Save(_mazeData);
+                    var dungeonData = ConvertMazeToDungeonData(_mazeData);
+                    MazeBinaryStorage8Compat.Save(dungeonData);
                     Debug.Log($"[MazeBuilder8] Maze saved to cache L{currentLevel} S{currentSeed}");
                 }
             }
@@ -347,44 +367,17 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // 2+3 - Asset validation (override to add diagonal prefabs)
+        // 2+3 - Asset validation
         // -------------------------------------------------------------------------
         protected override void ValidateAssets()
         {
             base.ValidateAssets();
-
-            // Load diagonal-specific prefabs
-            wallDiagPrefab   ??= Resources.Load<GameObject>("Prefabs/WallDiagPrefab");
-            wallCornerPrefab ??= Resources.Load<GameObject>("Prefabs/WallCornerPrefab");
-
-            // Load materials - try GameConfig first, fallback to Resources
-            Material loadedWallMaterial = null;
-
-            if (Application.isPlaying)
-            {
-                var gameConfig = GameConfig.Instance;
-                if (gameConfig != null)
-                {
-                    loadedWallMaterial = Resources.Load<Material>(gameConfig.WallMaterial);
-                }
-            }
-
-            loadedWallMaterial ??= Resources.Load<Material>("Materials/WallMaterial");
-            wallDiagMaterial   ??= loadedWallMaterial;
-            wallCornerMaterial ??= loadedWallMaterial;
-
-            if (wallDiagPrefab == null)
-            {
-                wallDiagPrefab = wallPrefab;
-                Debug.LogWarning("[MazeBuilder8] wallDiagPrefab not set -- reusing wallPrefab at 45 deg.");
-            }
         }
 
         // -------------------------------------------------------------------------
         // Get wall thickness from config (no hardcoded values)
         // -------------------------------------------------------------------------
         private float WallThickness => _config?.WallThickness ?? 0.2f;
-        private float DiagonalWallThickness => _config?.DefaultDiagonalWallThickness ?? 0.5f;
 
         // -------------------------------------------------------------------------
         // 4 - Cleanup (override for custom container names)
@@ -427,46 +420,71 @@ namespace Code.Lavos.Core
         {
             Debug.Log($"[MazeBuilder8] Generating new maze L{currentLevel} S{currentSeed}");
 
-            // Create dungeon config
-            var dungeonCfg = new DungeonMazeConfig
-            {
-                BaseSize = _config.MazeCfg.BaseSize,
-                MinSize = _config.MazeCfg.MinSize,
-                MaxSize = _config.MazeCfg.MaxSize,
-                CellSize = _config.CellSize,
-                WallHeight = _config.WallHeight,
-                SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
-                ExitRoomSize = MazeConfig.ExitRoomSize,
-                TorchChance = _config.MazeCfg.TorchChance,
-                ChestDensity = _config.MazeCfg.ChestDensity,
-                EnemyDensity = _config.MazeCfg.EnemyDensity,
-                AllowDiagonalWalls = false,
-                Difficulty = new DifficultyScalerConfig
-                {
-                    BaseFactor = 1.0f,
-                    FactorPerLevel = 0.15f,
-                    MaxFactor = _config.DifficultyCfg.MaxFactor,
-                    SizeGrowthPerLevel = 2,
-                },
-            };
-
             // Use appropriate generator based on settings
             if (UseGuaranteedPathGenerator)
             {
                 Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
                 _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
-                _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+
+                var dungeonCfg = new DungeonMazeConfig
+                {
+                    BaseSize = _config.MazeCfg.BaseSize,
+                    MinSize = _config.MazeCfg.MinSize,
+                    MaxSize = _config.MazeCfg.MaxSize,
+                    CellSize = _config.CellSize,
+                    WallHeight = _config.WallHeight,
+                    SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                    ExitRoomSize = MazeConfig.ExitRoomSize,
+                    TorchChance = _config.MazeCfg.TorchChance,
+                    ChestDensity = spawnChests ? chestDensity : 0f,
+                    EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
+                    DeadEndDensity = _config.MazeCfg.DeadEndDensity,
+                    AllowDiagonalWalls = false,
+                    Difficulty = new DifficultyScalerConfig
+                    {
+                        BaseFactor = 1.0f,
+                        FactorPerLevel = 0.15f,
+                        MaxFactor = _config.DifficultyCfg.MaxFactor,
+                        SizeGrowthPerLevel = 2,
+                    },
+                };
+
+                var dungeonData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                _mazeData = ConvertDungeonToMazeData(dungeonData);
             }
-            else if (UsePassageFirstGenerator || dungeonCfg.UsePassageFirst)
+            else if (UsePassageFirstGenerator)
             {
                 var passageGenerator = new PassageFirstMazeGenerator();
-                _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                var dungeonCfg = new DungeonMazeConfig
+                {
+                    BaseSize = _config.MazeCfg.BaseSize,
+                    MinSize = _config.MazeCfg.MinSize,
+                    MaxSize = _config.MazeCfg.MaxSize,
+                    CellSize = _config.CellSize,
+                    WallHeight = _config.WallHeight,
+                    SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                    ExitRoomSize = MazeConfig.ExitRoomSize,
+                    TorchChance = _config.MazeCfg.TorchChance,
+                    ChestDensity = spawnChests ? chestDensity : 0f,
+                    EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
+                    DeadEndDensity = _config.MazeCfg.DeadEndDensity,
+                    AllowDiagonalWalls = false,
+                    Difficulty = new DifficultyScalerConfig
+                    {
+                        BaseFactor = 1.0f,
+                        FactorPerLevel = 0.15f,
+                        MaxFactor = _config.DifficultyCfg.MaxFactor,
+                        SizeGrowthPerLevel = 2,
+                    },
+                };
+                var dungeonData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+                _mazeData = ConvertDungeonToMazeData(dungeonData);
             }
             else
             {
-                Debug.Log("[MazeBuilder8] Using DungeonMazeGenerator (Rooms + Corridors)");
-                _generator ??= new DungeonMazeGenerator();
-                _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+                Debug.Log("[MazeBuilder8] Using GridMazeGenerator (DFS + Dead-Ends + Fill)");
+                _generator ??= new GridMazeGenerator();
+                _mazeData = _generator.Generate(currentSeed, currentLevel, _config.MazeCfg, _config.DifficultyCfg);
             }
 
             // Verify maze data
@@ -485,6 +503,54 @@ namespace Code.Lavos.Core
                 Debug.LogError("[MazeBuilder8] CRITICAL: _config is NULL - cannot spawn maze objects!");
                 return;
             }
+        }
+
+        /// <summary>
+        /// Convert DungeonMazeData to MazeData8 for compatibility
+        /// </summary>
+        private MazeData8 ConvertDungeonToMazeData(DungeonMazeData dungeonData)
+        {
+            if (dungeonData == null) return null;
+
+            var mazeData = new MazeData8(dungeonData.Width, dungeonData.Height, dungeonData.Seed, dungeonData.Level);
+            mazeData.DifficultyFactor = dungeonData.DifficultyFactor;
+
+            for (int x = 0; x < dungeonData.Width; x++)
+            {
+                for (int z = 0; z < dungeonData.Height; z++)
+                {
+                    var dungeonCell = dungeonData.GetCell(x, z);
+                    mazeData.SetCell(x, z, (CellFlags8)dungeonCell);
+                }
+            }
+
+            return mazeData;
+        }
+
+        /// <summary>
+        /// Convert MazeData8 to DungeonMazeData for storage compatibility
+        /// </summary>
+        private DungeonMazeData ConvertMazeToDungeonData(MazeData8 mazeData)
+        {
+            if (mazeData == null) return null;
+
+            var dungeonData = new DungeonMazeData(mazeData.Width, mazeData.Height, mazeData.Seed, mazeData.Level);
+            dungeonData.DifficultyFactor = mazeData.DifficultyFactor;
+
+            for (int x = 0; x < mazeData.Width; x++)
+            {
+                for (int z = 0; z < mazeData.Height; z++)
+                {
+                    var mazeCell = mazeData.GetCell(x, z);
+                    dungeonData.SetCell(x, z, (uint)mazeCell);
+                }
+            }
+
+            // Copy spawn and exit positions
+            dungeonData.SetSpawn(mazeData.SpawnCell.x, mazeData.SpawnCell.z);
+            dungeonData.SetExit(mazeData.ExitCell.x, mazeData.ExitCell.z);
+
+            return dungeonData;
         }
 
         /// <summary>
@@ -597,9 +663,9 @@ namespace Code.Lavos.Core
         /// Check if a cell is walkable (no wall flags set).
         /// A cell with Wall_All = 0 is walkable (corridor/floor space).
         /// </summary>
-        private bool IsCellWalkable(uint cellFlags)
+        private bool IsCellWalkable(CellFlags8 cellFlags)
         {
-            return (cellFlags & Advanced.CellFlags8.Wall_All) == 0;
+            return ((uint)cellFlags & (uint)Advanced.CellFlags8.Wall_All) == 0;
         }
 
         /// <summary>
@@ -765,8 +831,9 @@ namespace Code.Lavos.Core
                         if (_mazeData.InBounds(checkX, checkZ))
                         {
                             var cell = _mazeData.GetCell(checkX, checkZ);
-                            bool isWalkable = (cell & (uint)CellFlags8.AllWalls) == 0;
-                            bool isSpawnRoom = (cell & (uint)CellFlags8.SpawnRoom) != 0;
+                            uint cellFlags = (uint)cell;
+                            bool isWalkable = (cellFlags & (uint)CellFlags8.AllWalls) == 0;
+                            bool isSpawnRoom = (cellFlags & (uint)CellFlags8.SpawnRoom) != 0;
 
                             if (isWalkable || isSpawnRoom)
                             {
@@ -824,7 +891,7 @@ namespace Code.Lavos.Core
             => $"Level {currentLevel} | {_mazeData?.Width}x{_mazeData?.Height} | " +
                $"Seed {currentSeed} | factor={currentDifficultyFactor:F3} | {lastGenMs:F2}ms";
 
-        public DungeonMazeData CurrentMazeData   => _mazeData;
+        public MazeData8 CurrentMazeData   => _mazeData;
         public int             CurrentLevel      => currentLevel;
         public int             CurrentSeed       => currentSeed;
         public float           CurrentDifficultyFactor => currentDifficultyFactor;

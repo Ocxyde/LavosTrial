@@ -13,30 +13,7 @@ namespace Code.Lavos.Core
     //
     // Low byte  (bits 0-7)  : wall presence per axis
     // High byte (bits 8-15) : object / room / decoration metadata
-    //
-    // Bit map:
-    //    0  WallN       North wall
-    //    1  WallS       South wall
-    //    2  WallE       East wall
-    //    3  WallW       West wall
-    //    4  WallNE      North-East diagonal wall
-    //    5  WallNW      North-West diagonal wall
-    //    6  WallSE      South-East diagonal wall
-    //    7  WallSW      South-West diagonal wall
-    //    8  SpawnRoom   Part of guaranteed spawn room
-    //    9  HasChest    Chest placed here
-    //   10  HasEnemy    Enemy placed here
-    //   11  HasTorch    Torch on this cell
-    //   12  IsExit      Exit cell marker
-    //   13  IsRoom      Room cell (dead-end or crossroads)
-    //   14  HasPillar   Pillar decoration (at landmarks/gates)
-    //   15  HasNiche    Wall niche/alcove (for statues, treasures)
-    //   16  HasArch     Arch decoration (corridor transitions)
-    //
-    // DEPRECATED: Use DungeonMazeData with uint cell flags for advanced features.
-    // Kept for future reference and legacy compatibility.
     // -------------------------------------------------------------------------
-    [Obsolete("Use DungeonMazeData with uint cell flags instead. Kept for future reference.")]
     [Flags]
     public enum CellFlags8 : ushort
     {
@@ -76,11 +53,7 @@ namespace Code.Lavos.Core
 
     // -------------------------------------------------------------------------
     // Direction8 - 8-axis enum
-    //
-    // DEPRECATED: Use Core.Direction8 from shared namespace.
-    // Kept for future reference and legacy compatibility.
     // -------------------------------------------------------------------------
-    [Obsolete("Use Core.Direction8 instead. Kept for future reference.")]
     public enum Direction8
     {
         N  = 0,
@@ -95,11 +68,7 @@ namespace Code.Lavos.Core
 
     // -------------------------------------------------------------------------
     // Direction8Helper
-    //
-    // DEPRECATED: Use Direction8Helper from DungeonMazeData or Core namespace.
-    // Kept for future reference and legacy compatibility.
     // -------------------------------------------------------------------------
-    [Obsolete("Use Direction8Helper from DungeonMazeData instead. Kept for future reference.")]
     public static class Direction8Helper
     {
         public static (int dx, int dz) ToOffset(Direction8 d) => d switch
@@ -155,14 +124,7 @@ namespace Code.Lavos.Core
 
     // -------------------------------------------------------------------------
     // MazeData8 - mutable data container for generated maze
-    //
-    // DEPRECATED: Use DungeonMazeData for advanced features with uint cell flags.
-    // Kept for future reference and legacy compatibility.
-    //
-    // Note: Core dimensions (Width, Height, Seed, Level) are immutable,
-    //       but difficulty factors and config can be set post-construction
     // -------------------------------------------------------------------------
-    [Obsolete("Use DungeonMazeData instead. Kept for future reference.")]
     public sealed class MazeData8
     {
         // Metadata

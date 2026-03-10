@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -144,11 +144,11 @@ namespace Code.Lavos.Core
         {
             return new CorridorFillConfig
             {
-                FillDensity = 0.08f,
+                FillDensity = 0.12f,
                 MinLength = 1,
                 MaxLength = 2,
                 CorridorWidth = 1,
-                MaxFillPercentage = 0.05f,
+                MaxFillPercentage = 0.08f,
                 AvoidDeadEnds = true,
                 PreferCardinalDirections = true,
                 AllowShortCorridors = true

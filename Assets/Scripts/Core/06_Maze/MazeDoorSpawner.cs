@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // MazeDoorSpawner.cs - Handles door spawning in maze access points
 
@@ -10,6 +10,7 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Handles spawning of doors on access walls in the maze.
     /// Doors are placed at open passages (where there's no wall).
+    /// PLUG-IN-OUT: Works with MazeData8 through EventHandler events.
     /// </summary>
     public static class MazeDoorSpawner
     {
@@ -17,7 +18,7 @@ namespace Code.Lavos.Core
         /// Spawn doors at spawn and exit room access points.
         /// </summary>
         public static void SpawnDoors(
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             GameObject doorPrefab,
             float cellSize, float wallHeight, float wallThickness,
             bool wallPivotIsAtMeshCenter)
@@ -50,7 +51,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private static void SpawnDoorAtRoom(
             int cx, int cz, string doorName,
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             GameObject doorPrefab,
             float cellSize, float wallHeight, float wallThickness,
             bool wallPivotIsAtMeshCenter)

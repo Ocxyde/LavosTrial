@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // MazeMarkerSpawner.cs - Handles spawning of entrance/exit markers
 
@@ -9,6 +9,7 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// Handles spawning of entrance/exit markers with visual effects.
+    /// PLUG-IN-OUT: Works with MazeData8 through EventHandler events.
     /// </summary>
     public static class MazeMarkerSpawner
     {
@@ -16,7 +17,7 @@ namespace Code.Lavos.Core
         /// Spawn entrance and exit room markers with visual effects.
         /// </summary>
         public static void SpawnRoomMarkers(
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             float cellSize,
             float markerHeight,
             float markerScale,
@@ -128,46 +129,58 @@ namespace Code.Lavos.Core
             Mesh mesh = new Mesh();
             mesh.name = "Torus";
 
-            var vertices = new Vector3[segments * 16];
-            var normals = new Vector3[vertices.Length];
-            var uvs = new Vector2[vertices.Length];
-            var triangles = new int[segments * 16 * 3];
+            int radialSegments = 12;
+            int totalVertices = segments * radialSegments;
+            var vertices = new Vector3[totalVertices];
+            var normals = new Vector3[totalVertices];
+            var uvs = new Vector2[totalVertices];
 
             int vertIndex = 0;
-            int triIndex = 0;
-
             for (int i = 0; i < segments; i++)
             {
                 float u = (float)i / segments * Mathf.PI * 2f;
-                float uNext = (float)(i + 1) / segments * Mathf.PI * 2f;
-
-                for (int j = 0; j < 16; j++)
+                for (int j = 0; j < radialSegments; j++)
                 {
-                    float v = (float)j / 16 * Mathf.PI * 2f;
+                    float v = (float)j / radialSegments * Mathf.PI * 2f;
 
-                    float x = (radius + thickness * Mathf.Cos(v)) * Mathf.Cos(u);
-                    float y = thickness * Mathf.Sin(v);
-                    float z = (radius + thickness * Mathf.Cos(v)) * Mathf.Sin(u);
+                    float cosU = Mathf.Cos(u);
+                    float sinU = Mathf.Sin(u);
+                    float cosV = Mathf.Cos(v);
+                    float sinV = Mathf.Sin(v);
+
+                    float x = (radius + thickness * cosV) * cosU;
+                    float y = thickness * sinV;
+                    float z = (radius + thickness * cosV) * sinU;
 
                     vertices[vertIndex] = new Vector3(x, y, z);
-                    normals[vertIndex] = new Vector3(Mathf.Cos(u) * Mathf.Cos(v), Mathf.Sin(v), Mathf.Sin(u) * Mathf.Cos(v));
-                    uvs[vertIndex] = new Vector2((float)i / segments, (float)j / 16);
+                    normals[vertIndex] = new Vector3(cosU * cosV, sinV, sinU * cosV);
+                    uvs[vertIndex] = new Vector2((float)i / segments, (float)j / radialSegments);
                     vertIndex++;
                 }
+            }
 
-                if (i > 0)
+            int totalTriangles = segments * radialSegments * 6;
+            var triangles = new int[totalTriangles];
+
+            int triIndex = 0;
+            for (int i = 0; i < segments; i++)
+            {
+                int nextI = (i + 1) % segments;
+                for (int j = 0; j < radialSegments; j++)
                 {
-                    int baseVert = (i - 1) * 16;
-                    for (int j = 0; j < 15; j++)
-                    {
-                        triangles[triIndex++] = baseVert + j;
-                        triangles[triIndex++] = baseVert + j + 1;
-                        triangles[triIndex++] = baseVert + j + 16;
+                    int nextJ = (j + 1) % radialSegments;
+                    int current = i * radialSegments + j;
+                    int nextRowCurrent = nextI * radialSegments + j;
+                    int currentNextJ = i * radialSegments + nextJ;
+                    int nextRowNextJ = nextI * radialSegments + nextJ;
 
-                        triangles[triIndex++] = baseVert + j + 16;
-                        triangles[triIndex++] = baseVert + j + 1;
-                        triangles[triIndex++] = baseVert + j + 17;
-                    }
+                    triangles[triIndex++] = current;
+                    triangles[triIndex++] = nextRowCurrent;
+                    triangles[triIndex++] = currentNextJ;
+
+                    triangles[triIndex++] = currentNextJ;
+                    triangles[triIndex++] = nextRowCurrent;
+                    triangles[triIndex++] = nextRowNextJ;
                 }
             }
 

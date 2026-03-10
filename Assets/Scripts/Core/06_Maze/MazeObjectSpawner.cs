@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // MazeObjectSpawner.cs - Handles spawning of torches, chests, and enemies
 
@@ -10,6 +10,7 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// Handles spawning of objects (torches, chests, enemies) in the maze.
+    /// PLUG-IN-OUT: Works with MazeData8 through EventHandler events.
     /// </summary>
     public static class MazeObjectSpawner
     {
@@ -17,7 +18,7 @@ namespace Code.Lavos.Core
         /// Spawn torches in the maze based on torch flags in maze data.
         /// </summary>
         public static void SpawnTorches(
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             GameObject torchPrefab,
             float cellSize,
             Transform objectsRoot)
@@ -42,7 +43,7 @@ namespace Code.Lavos.Core
                 {
                     var cell = mazeData.GetCell(x, z);
 
-                    if ((cell & (uint)CellFlags8.HasTorch) != 0)
+                    if ((cell & CellFlags8.HasTorch) != 0)
                     {
                         Vector3 pos = new Vector3(
                             (x + 0.5f) * cellSize,
@@ -68,7 +69,7 @@ namespace Code.Lavos.Core
         /// Spawn objects (chests and enemies) based on maze data flags.
         /// </summary>
         public static void SpawnObjects(
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             GameObject chestPrefab,
             GameObject enemyPrefab,
             float cellSize,
@@ -95,7 +96,7 @@ namespace Code.Lavos.Core
                     );
 
                     // Spawn chest
-                    if ((cell & (uint)CellFlags8.HasChest) != 0 && chestPrefab != null)
+                    if ((cell & CellFlags8.HasChest) != 0 && chestPrefab != null)
                     {
                         var chest = Object.Instantiate(chestPrefab, pos, Quaternion.identity);
                         if (chest != null)
@@ -107,7 +108,7 @@ namespace Code.Lavos.Core
                     }
 
                     // Spawn enemy
-                    if ((cell & (uint)CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
+                    if ((cell & CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
                     {
                         var enemy = Object.Instantiate(enemyPrefab, pos, Quaternion.identity);
                         if (enemy != null)
@@ -127,7 +128,7 @@ namespace Code.Lavos.Core
         /// Find all valid object spawn positions in the maze.
         /// </summary>
         public static List<Vector3> FindSpawnPositions(
-            DungeonMazeData mazeData,
+            MazeData8 mazeData,
             CellFlags8 flag,
             float cellSize)
         {
@@ -140,7 +141,7 @@ namespace Code.Lavos.Core
                 for (int z = 0; z < mazeData.Height; z++)
                 {
                     var cell = mazeData.GetCell(x, z);
-                    if ((cell & (uint)flag) != 0)
+                    if ((cell & flag) != 0)
                     {
                         positions.Add(new Vector3(
                             (x + 0.5f) * cellSize,

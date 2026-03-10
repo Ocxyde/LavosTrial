@@ -149,10 +149,8 @@ namespace Code.Lavos.Core
 
             // ── Step 5: A* guaranteed path (cardinal only) ────────
             //      Ensures passage even if DFS creates isolated sections
-            EnsurePathCardinal(data,
-                       data.SpawnCell.x, data.SpawnCell.z,
-                       data.ExitCell.x,  data.ExitCell.z,
-                       scaledWallPenalty);
+            //      Force INDIRECT path by adding intermediate waypoints
+            CarveIndirectPath(data, rng, scaledWallPenalty);
 
             // ── Step 6: Add dead-end corridors ────────────────────
             //      Uses DeadEndCorridorSystem with mathematical distribution
@@ -735,6 +733,67 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
+        //  Step 5.5 — Carve Indirect Path with Waypoints
+        //
+        //  Creates a winding, non-linear path from spawn to exit by:
+        //  1. Adding 2-4 random intermediate waypoints
+        //  2. Using A* with high wall penalty between each waypoint
+        //  3. Ensuring path doesn't go in straight lines
+        //
+        //  Result: Much more maze-like, less obvious route to exit
+        // ─────────────────────────────────────────────────────────
+        private static void CarveIndirectPath(MazeData8 data, System.Random rng, int wallPenalty)
+        {
+            var waypoints = new List<(int x, int z)>();
+            
+            // Add start and end points
+            waypoints.Add(data.SpawnCell);
+            
+            // Add 2-4 random intermediate waypoints (avoiding straight line)
+            int numWaypoints = rng.Next(2, 5);  // 2 to 4 waypoints
+            int margin = 2;  // Keep waypoints away from edges
+            
+            for (int i = 0; i < numWaypoints; i++)
+            {
+                int wx, wz;
+                int attempts = 0;
+                do
+                {
+                    // Generate waypoint away from direct line between spawn and exit
+                    wx = rng.Next(margin, data.Width - margin);
+                    wz = rng.Next(margin, data.Height - margin);
+                    attempts++;
+                } while (IsOnDirectLine(data.SpawnCell, data.ExitCell, wx, wz) && attempts < 20);
+                
+                waypoints.Add((wx, wz));
+            }
+            
+            waypoints.Add(data.ExitCell);
+            
+            // Carve path through each waypoint with HIGH wall penalty
+            int veryHighPenalty = wallPenalty * 5;  // 5x penalty = very winding
+            
+            for (int i = 0; i < waypoints.Count - 1; i++)
+            {
+                EnsurePathCardinal(data,
+                    waypoints[i].x, waypoints[i].z,
+                    waypoints[i + 1].x, waypoints[i + 1].z,
+                    veryHighPenalty);
+            }
+            
+            Debug.Log($"[GridMazeGenerator] Carved indirect path with {numWaypoints} waypoints");
+        }
+        
+        // Check if a point lies on the direct line between two points
+        private static bool IsOnDirectLine((int x, int z) start, (int x, int z) end, int px, int pz)
+        {
+            // Simple check: is point within 2 cells of the direct line?
+            float t = (float)(px - start.x) / (end.x - start.x + 0.001f);
+            float expectedZ = start.z + t * (end.z - start.z);
+            return Mathf.Abs(pz - expectedZ) < 2f;
+        }
+
+        // ─────────────────────────────────────────────────────────
         //  Step 6.5 (OPTION B): CORRIDOR FLOW SYSTEM (Three-tier hierarchy)
         //
         //  NEW 2026-03-09: Optimized corridor generation with:
@@ -783,7 +842,7 @@ namespace Code.Lavos.Core
         public float TorchChance     = 0.30f;
         public float ChestDensity    = 0.03f;
         public float EnemyDensity    = 0.05f;
-        public float DeadEndDensity  = 0.08f;  // Base chance for dead-end corridor spawn (8%)
+        public float DeadEndDensity  = 0.10f;  // Base chance for dead-end corridor spawn (10%)
         // DiagonalWalls removed 2026-03-09 - cardinal-only passages
 
         // A* pathfinding

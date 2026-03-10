@@ -277,7 +277,7 @@ namespace Code.Lavos.Core
 			{
 				for (int z = 0; z < mazeData.Height; z++)
 				{
-					uint cell = mazeData.GetCell(x, z);
+					uint cell = (uint)mazeData.GetCell(x, z);
 					Vector3 position = new Vector3(x * mazeData.Config.CellSize, 0f, z * mazeData.Config.CellSize);
 
 					// Place pillars

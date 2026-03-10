@@ -1,4 +1,4 @@
-﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -49,22 +49,22 @@ namespace Code.Lavos.Core
     public class CorridorFlowConfig
     {
         [Header("Main Artery Settings")]
-        public int MainArteryWidth = 1;         // 1 cell = 6m wide
+        public int MainArteryWidth = 1;
         public float MainArteryTorchChance = 0.6f;
 
         [Header("Secondary Corridor Settings")]
         public int SecondaryWidth = 1;
-        public float SecondaryBranchChance = 0.35f;
+        public float SecondaryBranchChance = 0.25f;
         public int SecondaryMinLength = 2;
-        public int SecondaryMaxLength = 5;
+        public int SecondaryMaxLength = 4;
         public float SecondaryTorchChance = 0.4f;
 
         [Header("Tertiary Passage Settings")]
         public float TertiaryDensity = 0.08f;
         public int TertiaryMinLength = 1;
-        public int TertiaryMaxLength = 3;
-        public float TertiaryChestChance = 0.4f;
-        public float TertiaryEnemyChance = 0.25f;
+        public int TertiaryMaxLength = 2;
+        public float TertiaryChestChance = 0.3f;
+        public float TertiaryEnemyChance = 0.2f;
 
         [Header("Flow Optimization")]
         public float DirectnessThreshold = 0.6f;
