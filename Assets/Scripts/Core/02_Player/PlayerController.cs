@@ -57,7 +57,7 @@ namespace Code.Lavos.Core
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float mouseSensitivity = 0.2f;
     [SerializeField] private float maxLookAngle = 80f;
-    [SerializeField] private float eyeHeightOffset = 0.75f; // hauteur yeux (mètres depuis pivot)
+    [SerializeField] private float eyeHeightOffset = 1.7f; // hauteur yeux (mètres depuis pivot) - matches PlayerPrefab camera Y position
 
     // ─── Head Bob ────────────────────────────────────────────────────────────
     [Header("Head Bob")]
@@ -159,8 +159,29 @@ namespace Code.Lavos.Core
 
         if (playerCamera != null)
         {
+            // Verify camera is child of player (plug-in-out pattern)
+            if (playerCamera.transform.parent != transform)
+            {
+                Debug.LogWarning("[PlayerController] Camera is not a child of Player! Auto-fixing...");
+                // Auto-fix: Reparent camera to player
+                playerCamera.transform.SetParent(transform);
+                playerCamera.transform.localPosition = _camRestPosition;
+                playerCamera.transform.localRotation = Quaternion.identity;
+                Debug.Log("[PlayerController] Camera reparented to player with correct local position");
+            }
+
             _camRestPosition = new Vector3(0f, eyeHeightOffset, 0f);
-            playerCamera.transform.localPosition = _camRestPosition;
+
+            // Validate camera local position matches expected eye height
+            if (playerCamera.transform.localPosition != _camRestPosition)
+            {
+                Debug.Log($"[PlayerController] Repositioning camera from {playerCamera.transform.localPosition} to {_camRestPosition}");
+                playerCamera.transform.localPosition = _camRestPosition;
+            }
+        }
+        else
+        {
+            Debug.LogError("[PlayerController] No camera found! Player will not be able to see.");
         }
 
         Cursor.lockState = CursorLockMode.Locked;

@@ -67,6 +67,8 @@ namespace Code.Lavos.Core
         [Header("Generator Options")]
         [Tooltip("Use new GuaranteedPathMazeGenerator (Minotaur Maze)")]
         public bool useGuaranteedPathGenerator = false;
+        [Tooltip("Use PassageFirstMazeGenerator for passage-first generation")]
+        public bool usePassageFirstGenerator = false;
 
         // Runtime
         private DungeonMazeData    _mazeData;
@@ -185,17 +187,19 @@ namespace Code.Lavos.Core
                     // NEW: Minotaur Maze - Guaranteed path with classic labyrinth structure
                     Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
                     _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
-                    
+
                     // Use same dungeonCfg we already created
                     _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
                 }
-                else if (dungeonCfg.UsePassageFirst)
+                else if (usePassageFirstGenerator || dungeonCfg.UsePassageFirst)
                 {
                     var passageGenerator = new PassageFirstMazeGenerator();
                     _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
                 }
                 else
                 {
+                    // DEFAULT: Dungeon maze with rooms and corridors
+                    Debug.Log("[MazeBuilder8] Using DungeonMazeGenerator (Rooms + Corridors)");
                     _generator ??= new DungeonMazeGenerator();
                     _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
                 }
@@ -238,6 +242,9 @@ namespace Code.Lavos.Core
 
             // Objects (chests + enemies)
             SpawnObjects();
+
+            // 11b - Visual Room Markers (spawn/exit indicators)
+            SpawnRoomMarkers();
 
             // 11 - Binary save
             try
@@ -811,15 +818,82 @@ namespace Code.Lavos.Core
             {
                 var cell = _mazeData.GetCell(x, z);
 
-                if ((cell & Advanced.CellFlags8.HasChest) != 0 && chestPrefab != null)
-                    PlaceAtCell(x, z, chestPrefab, $"Chest_{x}_{z}", _objectsRoot);
+                // Skip spawn cell and exit cell for enemy/chest spawning
+                bool isSpawnCell = (x == _mazeData.SpawnCell.x && z == _mazeData.SpawnCell.z);
+                bool isExitCell = (x == _mazeData.ExitCell.x && z == _mazeData.ExitCell.z);
 
+                // Chests - skip spawn/exit rooms (reserve for player safety)
+                if ((cell & Advanced.CellFlags8.HasChest) != 0 && chestPrefab != null)
+                {
+                    if (!isSpawnCell && !isExitCell)
+                        PlaceAtCell(x, z, chestPrefab, $"Chest_{x}_{z}", _objectsRoot);
+                }
+
+                // Enemies - NEVER spawn at player spawn or exit (critical bug fix)
                 if ((cell & Advanced.CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
-                    PlaceAtCell(x, z, enemyPrefab, $"Enemy_{x}_{z}", _objectsRoot);
+                {
+                    if (!isSpawnCell && !isExitCell)
+                        PlaceAtCell(x, z, enemyPrefab, $"Enemy_{x}_{z}", _objectsRoot);
+                    else
+                        Debug.LogWarning($"[MazeBuilder8] Enemy flag at spawn/exit cell ({x},{z}) - skipped to prevent player damage");
+                }
             }
         }
 
         // -------------------------------------------------------------------------
+        // 11b - Visual Markers (spawn/exit room indicators)
+        // -------------------------------------------------------------------------
+        private void SpawnRoomMarkers()
+        {
+            if (_mazeData == null || _config == null)
+            {
+                Debug.LogError("[MazeBuilder8] SpawnRoomMarkers: _mazeData or _config is NULL!");
+                return;
+            }
+
+            EnsureObjectsRoot();
+
+            // Spawn room marker - Green cylinder at spawn cell center
+            Vector3 spawnPos = CellCenter(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, 0.5f);
+            GameObject spawnMarker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            spawnMarker.transform.position = spawnPos;
+            spawnMarker.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
+            spawnMarker.transform.SetParent(_objectsRoot);
+            spawnMarker.name = "Marker_SpawnRoom";
+
+            // Green material for spawn room
+            Material spawnMat = new Material(Shader.Find("Standard"));
+            if (spawnMat != null)
+            {
+                spawnMat.color = new Color(0f, 1f, 0f, 0.8f); // Bright green
+                spawnMat.EnableKeyword("_EMISSION");
+                spawnMat.SetColor("_EmissionColor", new Color(0f, 0.5f, 0f, 1f));
+            }
+            var spawnRenderer = spawnMarker.GetComponent<Renderer>();
+            if (spawnRenderer != null) spawnRenderer.material = spawnMat;
+
+            // Exit room marker - Red cube at exit cell center
+            Vector3 exitPos = CellCenter(_mazeData.ExitCell.x, _mazeData.ExitCell.z, 0.5f);
+            GameObject exitMarker = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            exitMarker.transform.position = exitPos;
+            exitMarker.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
+            exitMarker.transform.SetParent(_objectsRoot);
+            exitMarker.name = "Marker_ExitRoom";
+
+            // Red material for exit room
+            Material exitMat = new Material(Shader.Find("Standard"));
+            if (exitMat != null)
+            {
+                exitMat.color = new Color(1f, 0f, 0f, 0.8f); // Bright red
+                exitMat.EnableKeyword("_EMISSION");
+                exitMat.SetColor("_EmissionColor", new Color(0.5f, 0f, 0f, 1f));
+            }
+            var exitRenderer = exitMarker.GetComponent<Renderer>();
+            if (exitRenderer != null) exitRenderer.material = exitMat;
+
+            Debug.Log($"[MazeBuilder8] Room markers spawned: Spawn@{_mazeData.SpawnCell} Exit@{_mazeData.ExitCell}");
+        }
+
         // 12 - Player  (ALWAYS LAST)
         // -------------------------------------------------------------------------
         private void SpawnPlayer()
@@ -827,14 +901,9 @@ namespace Code.Lavos.Core
             var existing = FindFirstObjectByType<PlayerController>();
             if (existing != null)
             {
+                // Player already exists - do NOT teleport (prevents splitting glitch)
                 _playerInstance = existing.gameObject;
-                if (_mazeData != null && _config != null)
-                {
-                    _playerInstance.transform.position = CellCenter(
-                        _mazeData.SpawnCell.x,
-                        _mazeData.SpawnCell.z,
-                        _config.PlayerEyeHeight);
-                }
+                Debug.Log("[MazeBuilder8] Player already exists - keeping current position (no teleport)");
                 return;
             }
 
