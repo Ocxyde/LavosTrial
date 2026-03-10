@@ -325,6 +325,7 @@ GameObject:
   - component: {fileID: 1549835790}
   - component: {fileID: 1549835791}
   - component: {fileID: 1549835792}
+  - component: {fileID: 1549835793}
   m_Layer: 0
   m_Name: MazeGenerator
   m_TagString: Untagged
@@ -356,9 +357,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1549835788}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88c68a95eb7786343a4878d5d03f6226, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.CompleteCorridorMazeBuilder
+  m_Script: {fileID: 11500000, guid: 311f88d1ddfe66748bc12095cb6d21b4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.CompleteMazeBuilder8
   wallPrefab: {fileID: 8004386566490166349, guid: 759d09c983ad6f042bc98e0918145aa3, type: 3}
   doorPrefab: {fileID: 3119339005932253209, guid: c40d0353ae79b514ab026335702f1d86, type: 3}
   wallMaterial: {fileID: 2100000, guid: 6f8de78d2917059469d56c8d69a1a470, type: 2}
@@ -368,18 +369,25 @@ MonoBehaviour:
   floorPrefab: {fileID: 6387627051471425154, guid: b0e89d943720d5d4085619d44ad8a999, type: 3}
   playerPrefab: {fileID: 5866923124126434052, guid: e41a9542d3c9f3e4685498e882421d84, type: 3}
   configResourcePath: Config/GameConfig8-default
-  spawnEnemies: 1
-  spawnChests: 1
-  markerHeight: 2
-  markerScale: 0.3
-  markerLightIntensity: 2
-  particleEmissionRate: 10
-  particleSize: 0.15
   wallPivotIsAtMeshCenter: 1
-  _currentLevel: 21
-  _currentSeed: 21095
-  _lastGenMs: 5.31
-  _currentDifficultyFactor: 1.11
+  currentLevel: 0
+  currentSeed: 42857
+  lastGenMs: 0
+  currentDifficultyFactor: 0
+  wallDiagPrefab: {fileID: 0}
+  wallCornerPrefab: {fileID: 0}
+  wallDiagMaterial: {fileID: 0}
+  wallCornerMaterial: {fileID: 0}
+  UseGuaranteedPathGenerator: 0
+  UsePassageFirstGenerator: 0
+  useFixedSeed: 1
+  fixedSeed: 42857
+  randomizeSeed: 0
+  spawnEnemies: 1
+  enemyDensity: 0.08
+  spawnChests: 1
+  chestDensity: 0.05
+  minEnemyDensity: 0.04
 --- !u!114 &1549835792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -390,7 +398,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f88446cf94b42eabc4a4c523e1d9bbf, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.EventHandler
   dontDestroyOnLoad: 1
   debugEvents: 0

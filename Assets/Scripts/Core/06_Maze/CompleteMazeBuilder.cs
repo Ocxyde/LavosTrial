@@ -51,6 +51,21 @@ namespace Code.Lavos.Core
         [Tooltip("Click to generate a new random seed")]
         [SerializeField] private bool randomizeSeed = false;
 
+        [Header("Object Spawning")]
+        [Tooltip("Enable enemy spawning in the maze")]
+        [SerializeField] private bool spawnEnemies = true;
+        [Tooltip("Enemy density (0-1) - percentage of rooms with enemies")]
+        [Range(0f, 1f)]
+        [SerializeField] private float enemyDensity = 0.08f;
+        [Tooltip("Enable chest spawning in the maze")]
+        [SerializeField] private bool spawnChests = true;
+        [Tooltip("Chest density (0-1) - percentage of rooms with chests")]
+        [Range(0f, 1f)]
+        [SerializeField] private float chestDensity = 0.05f;
+        [Tooltip("Minimum enemies at low levels (ensures combat at lvl 0-3)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float minEnemyDensity = 0.04f;
+
         // Runtime (specific to CompleteMazeBuilder8)
         private DungeonMazeData _mazeData;
         private DungeonMazeGenerator _generator;
@@ -201,8 +216,8 @@ namespace Code.Lavos.Core
                     SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
                     ExitRoomSize = MazeConfig.ExitRoomSize,
                     TorchChance = _config.MazeCfg.TorchChance,
-                    ChestDensity = _config.MazeCfg.ChestDensity,
-                    EnemyDensity = _config.MazeCfg.EnemyDensity,
+                    ChestDensity = spawnChests ? chestDensity : 0f,
+                    EnemyDensity = spawnEnemies ? Mathf.Max(minEnemyDensity, enemyDensity) : 0f,
                     AllowDiagonalWalls = false, // DiagonalWalls removed 2026-03-09 - cardinal-only passages
                     Difficulty = new DifficultyScalerConfig
                     {
