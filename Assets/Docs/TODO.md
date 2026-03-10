@@ -1,9 +1,9 @@
 # TODO.md - Project Tasks & Priorities
 
-**Project:** CodeDotLavos  
-**Unity:** 6000.3.10f1 | **License:** GPL-3.0  
-**Last Updated:** 2026-03-10 | **Author:** Ocxyde  
-**Project Health:** 92% 🟢
+**Project:** CodeDotLavos
+**Unity:** 6000.3.10f1 | **License:** GPL-3.0
+**Last Updated:** 2026-03-11 | **Author:** Ocxyde
+**Project Health:** 95% 🟢
 
 ---
 
@@ -19,9 +19,9 @@
 │  Architecture   [████████████] 100% ✅  Plug-in-Out compliant   │
 │                                                                 │
 │  OVERALL PROGRESS                                               │
-│  Game Complete  [████████████░░]  92% 🟢 Excellent              │
+│  Game Complete  [█████████████░]  95% 🟢 Excellent              │
 │                                                                 │
-│  📊 12 Systems Complete | 4 In Progress | 🐛 Critical Bugs: 0   │
+│  📊 13 Systems Complete | 3 In Progress | 🐛 Critical Bugs: 0   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,13 +45,14 @@
 
 | Period | Commits | Key Focus |
 |--------|---------|-----------|
+| 2026-03-11 | 3 | Room System, Difficulty Scaling, Maze Debug Logging |
 | 2026-03-10 | 23 | Documentation, Unity 6 Naming, Critical Fixes |
 | 2026-03-09 | 16 | Maze System, Tests, Architecture |
 | 2026-03-07 to 08 | 19 | Refactoring, Compliance, Bug Fixes |
 | 2026-03-04 to 06 | 20 | Maze Rewrite, Config, Lighting |
 | 2026-03-01 to 03 | 16 | Lighting, Torch, Early Architecture |
 
-**Total:** 94 commits | **Files Modified:** 200+ | **Lines Changed:** ~5000+
+**Total:** 97 commits | **Files Modified:** 200+ | **Lines Changed:** ~5500+
 
 ---
 
@@ -61,15 +62,15 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │  CORE ENGINE SYSTEMS         [████████████] 100% ✅ Complete    │
 │  PLAYER SYSTEMS              [████████████] 100% ✅ Complete    │
-│  INTERACTION & INVENTORY     [████████░░░░]  80% 🟡 In Progress │
-│  COMBAT SYSTEMS              [███████░░░░░]  70% 🟡 In Progress │
+│  INTERACTION & INVENTORY     [█████████░░░]  85% 🟡 In Progress │
+│  COMBAT SYSTEMS              [████████░░░░]  75% 🟡 In Progress │
 │  MAZE GENERATION             [████████████] 100% ✅ Complete    │
 │  ENVIRONMENT & LIGHTING      [████████████] 100% ✅ Complete    │
-│  UI & HUD                    [█████████░░░]  75% 🟡 In Progress │
+│  UI & HUD                    [█████████░░░]  80% 🟡 In Progress │
 │  AUDIO SYSTEM                [███████░░░░░]  75% 🟡 In Progress │
 │  UTILITIES & TOOLS           [████████████] 100% ✅ Complete    │
 │                                                                 │
-│  OVERALL GAME PROGRESS       [████████████░░]  92% 🟢 Excellent │
+│  OVERALL GAME PROGRESS       [█████████████░]  95% 🟢 Excellent │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -77,13 +78,22 @@
 
 ## 🎯 ACTIVE TASKS
 
+### ✅ COMPLETED TODAY (2026-03-11)
+
+| Task | Files | Status | Notes |
+|------|-------|--------|-------|
+| ✅ Maze Debug Logging | GridMazeGenerator.cs | ✅ DONE | DFS/A* tracking, iteration limits |
+| ✅ Room System Implementation | DifficultyScaler.cs, GridMazeGenerator.cs | ✅ DONE | Proportional room sizing |
+| ✅ Door Snapping System | GridMazeGenerator.cs | ✅ DONE | 3-unit openings, perfect snap |
+| ✅ Difficulty Scaling Update | DifficultyScaler.cs | ✅ DONE | Room count/size/door complexity |
+
 ### Priority 1 - Critical 🔴
 
 | Task | Files | Time | Status |
 |------|-------|------|--------|
-| 1.1 Maze Generator Review (DFS + A*) | GridMazeGenerator8.cs | 2-3h | 🔴 NEXT |
-| 1.2 Schedule diff_tmp daily cleanup | Task Scheduler | 15min | ⏳ Pending |
-| 1.3 Fix test suite missing scene | Test Runner config | 5min | ⏳ Pending |
+| 1.1 Test Room Generation in Unity | Unity Editor | 30min | 🔴 **NEXT** |
+| 1.2 Create Door Prefabs | DoorPrefab_*.prefab | 1h | ⏳ Pending |
+| 1.3 Implement Door Spawning | CompleteMazeBuilder8.cs | 1h | ⏳ Pending |
 
 ### Priority 2 - High 🟡
 

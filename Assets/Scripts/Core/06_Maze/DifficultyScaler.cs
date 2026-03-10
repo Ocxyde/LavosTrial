@@ -133,18 +133,39 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Room size — scales from small (5×5) to large (9×9) based on level.
-        /// Level 0-5: 5×5 rooms
-        /// Level 6-15: 7×7 rooms
-        /// Level 16-30: 9×9 rooms
-        /// Level 31-39: 11×11 rooms (boss rooms)
+        /// Room size — scales proportionally to maze size based on difficulty.
+        /// Formula: RoomSize = (MazeSize × RoomSizeRatio) clamped to min/max
+        /// 
+        /// Level 0: Maze 13×13 → Room ~3×3 to 5×5 (small, cozy)
+        /// Level 12: Maze 25×25 → Room ~5×5 to 7×7 (medium)
+        /// Level 20: Maze 32×32 → Room ~7×7 to 9×9 (large)
+        /// Level 39: Maze 51×51 → Room ~9×9 to 13×13 (boss/monster rooms)
+        /// 
+        /// Room size is proportional to maze size, not fixed steps.
+        /// More dangerous levels = larger rooms (more space for enemies/traps)
         /// </summary>
-        public int RoomSize(int baseRoomSize, int level)
+        public int RoomSize(int mazeSize, int level, int minRoomSize = 3, int maxRoomSize = 13)
         {
             float t = NormalizedT(level);
-            // Scale room size in steps: 5, 7, 9, 11
-            int sizeStep = Mathf.RoundToInt(t * 3f); // 0, 1, 2, 3
-            return baseRoomSize + (sizeStep * 2); // +0, +2, +4, +6
+            
+            // Base room size is proportional to maze size (20% to 30% of maze dimension)
+            float minRatio = 0.20f;  // Small rooms at low levels
+            float maxRatio = 0.30f;  // Large rooms at high levels
+            float ratio = Mathf.Lerp(minRatio, maxRatio, t);
+            
+            // Calculate room size from maze size
+            int baseRoomSize = Mathf.RoundToInt(mazeSize * ratio);
+            
+            // Ensure room size is odd (for symmetric center)
+            if (baseRoomSize % 2 == 0) baseRoomSize++;
+            
+            // Clamp to min/max bounds
+            int roomSize = Mathf.Clamp(baseRoomSize, minRoomSize, maxRoomSize);
+            
+            // Ensure odd
+            if (roomSize % 2 == 0) roomSize--;
+            
+            return roomSize;
         }
 
         /// <summary>

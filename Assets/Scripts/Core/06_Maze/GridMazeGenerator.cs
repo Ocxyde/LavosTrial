@@ -629,11 +629,16 @@ namespace Code.Lavos.Core
         {
             // Get difficulty-scaled room parameters
             int roomCount = scaler.RoomCount(cfg.MinRooms, cfg.MaxRooms, level);
-            int roomSize = scaler.RoomSize(cfg.BaseRoomSize, level);
+            
+            // Room size is now proportional to maze size and difficulty
+            // Larger mazes at higher levels get proportionally larger rooms
+            int roomSize = scaler.RoomSize(data.Width, level);
+            
             float lockedDoorChance = scaler.LockedDoorChance(level);
             float secretDoorChance = scaler.SecretDoorChance(level);
 
             Debug.Log($"[GridMazeGenerator] Step 5.5: Carving {roomCount} rooms (size={roomSize}×{roomSize}) at Level {level}");
+            Debug.Log($"[GridMazeGenerator] Room size proportional to maze: {roomSize}/{data.Width} ({(float)roomSize/data.Width:P0})");
             Debug.Log($"[GridMazeGenerator] Door types: locked={lockedDoorChance:P0}, secret={secretDoorChance:P0}");
 
             int roomsCarved = 0;
