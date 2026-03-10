@@ -686,8 +686,8 @@ namespace Code.Lavos.Core
                         if (_mazeData.InBounds(checkX, checkZ))
                         {
                             var cell = _mazeData.GetCell(checkX, checkZ);
-                            bool isWalkable = (cell & CellFlags8.AllWalls) == 0;
-                            bool isSpawnRoom = (cell & CellFlags8.SpawnRoom) != 0;
+                            bool isWalkable = (cell & (uint)CellFlags8.AllWalls) == 0;
+                            bool isSpawnRoom = (cell & (uint)CellFlags8.SpawnRoom) != 0;
 
                             if (isWalkable || isSpawnRoom)
                             {
