@@ -1,7 +1,7 @@
 # TODO.md - Project Tasks & Priorities
 
-**Project:** CodeDotLavos  
-**Unity:** 6000.3.10f1 | **License:** GPL-3.0  
+**Project:** CodeDotLavos
+**Unity:** 6000.3.10f1 | **License:** GPL-3.0
 **Last Updated:** 2026-03-10 | **Author:** Ocxyde
 
 ---
@@ -15,42 +15,86 @@
 | **Architecture** | ✅ 100% Compliant | Plug-in-Out pattern |
 | **Critical Bugs** | ✅ All Fixed | Null checks complete |
 | **Direction8 Unification** | ✅ Complete | Core namespace consolidated |
+| **Unity 6 Naming** | ✅ Complete | PascalCase/camelCase compliant |
+| **GameConfig References** | ✅ Complete | All property references fixed |
 
 ---
 
 ## ✅ COMPLETED - 2026-03-10 Sessions
 
-### Direction8 Unification Sprint (All Complete)
+### 🎯 Unity 6 Naming Convention Sprint (All Complete)
+
+**Total Files Fixed:** 18 | **Total Violations Resolved:** ~53
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│              DIRECTION8 UNIFICATION - HEALTH REPORT             │
+│         UNITY 6 NAMING CONVENTION - HEALTH REPORT               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│  ✓ Fix Direction8 type mismatch in AIAdaptiveDifficulty        │
-│    [████████████████████] 100%  HEALTH: EXCELLENT              │
+│  ✓ GameConfig.cs           [████████████] 36 properties fixed   │
+│    - defaultCellSize → DefaultCellSize                          │
+│    - mouseSensitivity → MouseSensitivity                        │
+│    - wallPrefab → WallPrefab                                    │
+│    - All 36 expression-bodied properties → PascalCase           │
 │                                                                 │
-│  ✓ Unify Direction8 to Core namespace in DungeonMazeData       │
-│    [████████████████████] 100%  HEALTH: EXCELLENT              │
+│  ✓ SpecialRoom.cs          [████████████] 9 fields fixed        │
+│    - ambientColor → AmbientColor                                │
+│    - fogDensity → FogDensity                                    │
+│    - isPlayerInside → _isPlayerInside                           │
 │                                                                 │
-│  ✓ Mark MazeData8 as deprecated (keep for future use)          │
-│    [████████████████████] 100%  HEALTH: EXCELLENT              │
+│  ✓ CompleteMazeBuilder.cs  [████████████] 2 fields fixed        │
+│    - useGuaranteedPathGenerator → UseGuaranteedPathGenerator    │
 │                                                                 │
-│  ✓ Run backup.ps1                                              │
-│    [████████████████████] 100%  HEALTH: EXCELLENT              │
+│  ✓ BehaviorEngine.cs       [████████████] 4 fields fixed        │
+│    - canInteract → CanInteractValue                             │
+│    - interactionRange → InteractionRangeValue                   │
 │                                                                 │
-│  ✓ Run cleanup_diff_tmp.ps1 (daily task)                       │
-│    [████████████████████] 100%  HEALTH: EXCELLENT              │
+│  ✓ InteractableObject.cs   [████████████] 2 fields fixed        │
+│    - interactionPrompt → InteractionPromptValue                 │
 │                                                                 │
 │  ════════════════════════════════════════════════════          │
 │  OVERALL SPRINT HEALTH                                          │
 │  ████████████████████████████████████████  100%                │
 │  Status: ALL TASKS COMPLETE ✓                                   │
-│  Git: 4 commits ready to push                                   │
-│  Backup: Up to date                                             │
-│  Cleanup: diff_tmp folder clean                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### 🔧 GameConfig Property Reference Fix Sprint (All Complete)
+
+**Total Files Fixed:** 12 | **Total References Updated:** ~60
+
+| File | References Fixed | Key Changes |
+|------|-----------------|-------------|
+| `PlayerSetup.cs` | 2 | DefaultPlayerEyeHeight, MouseSensitivity |
+| `TorchPlacer.cs` | 2 | DefaultCellSize, DefaultWallHeight |
+| `ItemPlacer.cs` | 3 | GenerateRooms, DefaultDoorSpawnChance, MaxRooms |
+| `EnemyPlacer.cs` | 3 | GenerateRooms, DefaultDoorSpawnChance, MaxRooms |
+| `ChestPlacer.cs` | 3 | GenerateRooms, DefaultDoorSpawnChance, MaxRooms |
+| `RoomDoorPlacer.cs` | 4 | EnableTrappedDoors, DefaultTrapChance, EnableLockedDoors, EnableSecretDoors |
+| `DoorHolePlacer.cs` | 6 | DefaultDoorWidth, DefaultDoorHeight, DefaultDoorDepth, DefaultDoorHoleDepth, ShowDebugGizmos |
+| `MazeCorridorGenerator.cs` | 3 | DefaultCorridorWidth, CorridorRandomness, GeneratePerimeterCorridor |
+| `LightPlacementEngine.cs` | 4 | TorchPrefab |
+| `ShareSystem.cs` | 2 | ShareSalt |
+| `CompleteMazeBuilder.cs` | 2 | WallMaterial, DefaultDiagonalWallThickness |
+| `BaseMazeBuilder.cs` | 1 | WallMaterial |
+
+### 🛠️ BehaviorEngine Derived Class Fixes (All Complete)
+
+| File | Fixes Applied |
+|------|--------------|
+| `ChestBehavior.cs` | canInteract → CanInteractValue, canCollect → CanCollectValue, interactionRange → InteractionRangeValue |
+| `TrapBehavior.cs` | canInteract → CanInteractValue, canCollect → CanCollectValue, interactionRange → InteractionRangeValue |
+| `DoorsEngine.cs` | interactionRange → InteractionRangeValue |
+
+### 📝 Editor Script Fixes (All Complete)
+
+| File | References Fixed |
+|------|-----------------|
+| `MazeBuilderEditor.cs` | 13 refs (DefaultGridSize, WallPrefab, DoorPrefab, WallMaterial, FloorMaterial, GroundTexture) |
+| `SetupMazeComponents.cs` | 20 refs (all prefab/material/texture paths) |
+| `MazePreviewEditor.cs` | 8 refs (TorchPrefab, ChestPrefab, EnemyPrefab, FloorMaterial, WallPrefab) |
+
+### Direction8 Unification Sprint (All Complete)
 
 | Task | Files Modified | Status |
 |------|----------------|--------|
@@ -149,7 +193,7 @@
 
 1. [ ] Run `backup.ps1` first
 2. [ ] Review Maze Generator (DFS + A*) - Task 1.1
-3. [ ] Test all null check fixes in Unity
+3. [ ] Test all naming convention fixes in Unity
 4. [ ] Run full test suite
 5. [ ] Schedule diff_tmp daily cleanup
 
@@ -199,20 +243,52 @@
 
 ## 🏆 ACHIEVEMENTS - 2026-03-10
 
-| Achievement | Status |
-|-------------|--------|
-| **Direction8 Unification Sprint** | ✅ All 5 tasks complete |
-| **Null Check Trilogy** | ✅ All 3 CRITICAL tasks complete |
-| **Singleton Reduction** | ✅ 3 classes refactored to Service Locator |
-| **BaseMazeBuilder** | ✅ 150 lines duplicate code removed |
-| **README for Modders** | ✅ Complete rewrite |
-| **Plug-in-Out Compliance** | ✅ 108 violations fixed |
-| **Visual Polish** | ✅ All markers enhanced |
+| Achievement | Status | Details |
+|-------------|--------|---------|
+| **Unity 6 Naming Convention Sprint** | ✅ ~53 violations fixed | 18 files refactored |
+| **GameConfig Property Reference Fix** | ✅ ~60 refs updated | 12 files corrected |
+| **BehaviorEngine Derived Class Fix** | ✅ 3 files fixed | ChestBehavior, TrapBehavior, DoorsEngine |
+| **Editor Script Fixes** | ✅ 41 refs fixed | MazeBuilderEditor, SetupMazeComponents, MazePreviewEditor |
+| **Direction8 Unification Sprint** | ✅ All 5 tasks complete | Core namespace consolidated |
+| **Null Check Trilogy** | ✅ All 3 CRITICAL tasks complete | 22 files total |
+| **Singleton Reduction** | ✅ 3 classes refactored | Service Locator pattern |
+| **BaseMazeBuilder** | ✅ 150 lines removed | Duplicate code extracted |
+| **README for Modders** | ✅ Complete rewrite | Modder-focused guide |
+| **Plug-in-Out Compliance** | ✅ 108 violations fixed | Architecture compliant |
+| **Visual Polish** | ✅ All markers enhanced | Visual effects complete |
 
 ---
 
-**License:** GPL-3.0  
-**Author:** Ocxyde  
+## 📊 TODAY'S GIT SUMMARY
+
+**Total Commits:** 16
+**Total Files Modified:** 40+
+**Total Lines Changed:** ~500
+
+```
+Commits (newest first):
+  ee7ac14  Fix editor GameConfig prefab and material references
+  6adbf21  Fix remaining BehaviorEngine and GameConfig references
+  cca983f  Fix DoorsEngine interactionRange reference
+  1e96197  Fix MazeBuilderEditor prefab and material references
+  ba157ac  Fix MazeBuilderEditor GameConfig references
+  5925c9f  Fix BehaviorEngine itemType and destroyOnCollect references
+  8834de3  Fix all remaining GameConfig property references
+  7af80bc  Fix defaultDiagonalWallThickness reference
+  1c2be9c  Fix remaining GameConfig property references
+  24de148  Fix GameConfig property references after rename
+  3d1b93c  Fix Unity6 naming conventions - PascalCase for public and protected members
+  ea35a6a  Update TODO.md with Direction8 sprint health bars
+  576740d  Mark MazeData8 as deprecated
+  ab8121a  Unify Direction8 to Core namespace
+  c64a510  Fix Direction8 type in AIAdaptiveDifficulty
+  4d66e8d  Add maze door and marker spawners
+```
+
+---
+
+**License:** GPL-3.0
+**Author:** Ocxyde
 **Copyright © 2026 CodeDotLavos. All rights reserved.**
 
 ---
