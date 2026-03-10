@@ -1,10 +1,34 @@
-﻿# ARCHITECTURE_OVERVIEW.md
+﻿﻿# ARCHITECTURE_OVERVIEW.md
 
-**Project:** CodeDotLavos
-**Unity Version:** 6000.3.7f1
-**Architecture:** Plug-in-Out
-**License:** GPL-3.0
-**Last Updated:** 2026-03-06
+**Project:** CodeDotLavos  
+**Unity Version:** 6000.3.10f1  
+**Architecture:** Plug-in-Out  
+**License:** GPL-3.0  
+**Last Updated:** 2026-03-10  
+**Author:** Ocxyde
+
+---
+
+## 📚 DOCUMENTATION HUB
+
+**Start Here:** [PROJECT_DEEP_SCAN_SUMMARY_20260310.md](PROJECT_DEEP_SCAN_SUMMARY_20260310.md) - 📊 Complete project overview
+
+### Quick Links
+| Document | Purpose |
+|----------|---------|
+| [TODO.md](TODO.md) | 📋 Tasks & priorities with progress bars |
+| [PROJECT_DEEP_SCAN_SUMMARY_20260310.md](PROJECT_DEEP_SCAN_SUMMARY_20260310.md) | 📊 Complete project overview |
+| [ARCHITECTURE_MAP.md](ARCHITECTURE_MAP.md) | 🗺️ File structure map |
+| [PROJECT_STANDARDS.md](PROJECT_STANDARDS.md) | 📋 Coding standards |
+| [README.md](README.md) | 📖 Modder's guide |
+
+### Maze System Documentation
+| Document | Purpose |
+|----------|---------|
+| [MAZE_CARDINAL_UPDATE_2026-03-09.md](MAZE_CARDINAL_UPDATE_2026-03-09.md) | Cardinal-only maze system |
+| [CRITICAL_FIXES_APPLIED_20260310.md](CRITICAL_FIXES_APPLIED_20260310.md) | Priority 1 bug fixes |
+| [DEAD_END_CORRIDOR_SYSTEM.md](DEAD_END_CORRIDOR_SYSTEM.md) | Dead-end system docs |
+| [DUNGEON_MAZE_GENERATOR.md](DUNGEON_MAZE_GENERATOR.md) | Dungeon generator docs |
 
 ---
 
