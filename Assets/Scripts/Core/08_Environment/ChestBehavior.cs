@@ -351,7 +351,10 @@ namespace Code.Lavos.Core
             piece.transform.SetParent(parent);
             piece.transform.localPosition = pos;
             piece.transform.localScale = scale;
-            piece.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            
+            var pieceRenderer = piece.GetComponent<MeshRenderer>();
+            if (pieceRenderer != null)
+                pieceRenderer.sharedMaterial = mat;
         }
 
         private void CreateGlowEffect()

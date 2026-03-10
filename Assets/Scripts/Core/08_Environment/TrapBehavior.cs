@@ -197,7 +197,9 @@ namespace Code.Lavos.Core
             // Visual feedback
             if (trapVisual != null)
             {
-                trapVisual.GetComponent<SpriteRenderer>().color = Color.white;
+                var spriteRenderer = trapVisual.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
+                    spriteRenderer.color = Color.white;
                 Invoke(nameof(ResetVisual), 0.2f);
             }
 
@@ -208,7 +210,9 @@ namespace Code.Lavos.Core
         {
             if (trapVisual != null)
             {
-                trapVisual.GetComponent<SpriteRenderer>().color = trapColor;
+                var spriteRenderer = trapVisual.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
+                    spriteRenderer.color = trapColor;
             }
         }
 

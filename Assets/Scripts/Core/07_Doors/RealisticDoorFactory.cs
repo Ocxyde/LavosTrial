@@ -232,7 +232,10 @@ namespace Code.Lavos.Core
                 -0.02f  // Slightly recessed
             );
             leftPanel.transform.localScale = new Vector3(panelWidth, panelHeight, PANEL_THICKNESS * 0.8f);
-            leftPanel.GetComponent<MeshRenderer>().sharedMaterial = panelMat;
+            
+            var leftRenderer = leftPanel.GetComponent<MeshRenderer>();
+            if (leftRenderer != null)
+                leftRenderer.sharedMaterial = panelMat;
 
             // Create right panel
             GameObject rightPanel = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -244,7 +247,10 @@ namespace Code.Lavos.Core
                 -0.02f  // Slightly recessed
             );
             rightPanel.transform.localScale = new Vector3(panelWidth, panelHeight, PANEL_THICKNESS * 0.8f);
-            rightPanel.GetComponent<MeshRenderer>().sharedMaterial = panelMat;
+            
+            var rightRenderer = rightPanel.GetComponent<MeshRenderer>();
+            if (rightRenderer != null)
+                rightRenderer.sharedMaterial = panelMat;
 
             return leafObj;
         }
@@ -279,7 +285,10 @@ namespace Code.Lavos.Core
             knob.transform.SetParent(handleObj.transform);
             knob.transform.localPosition = Vector3.zero;
             knob.transform.localScale = Vector3.one * HANDLE_RADIUS * 2f;
-            knob.GetComponent<MeshRenderer>().sharedMaterial = GetHandleMaterial(variant);
+            
+            var knobRenderer = knob.GetComponent<MeshRenderer>();
+            if (knobRenderer != null)
+                knobRenderer.sharedMaterial = GetHandleMaterial(variant);
 
             // Create handle plate (rosette)
             GameObject plate = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -287,7 +296,10 @@ namespace Code.Lavos.Core
             plate.transform.SetParent(handleObj.transform);
             plate.transform.localPosition = new Vector3(0, 0, -0.02f);
             plate.transform.localScale = new Vector3(HANDLE_RADIUS * 3f, 0.02f, HANDLE_RADIUS * 3f);
-            plate.GetComponent<MeshRenderer>().sharedMaterial = GetHandleMaterial(variant);
+            
+            var plateRenderer = plate.GetComponent<MeshRenderer>();
+            if (plateRenderer != null)
+                plateRenderer.sharedMaterial = GetHandleMaterial(variant);
 
             // Rotate cylinder to face correctly
             plate.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
@@ -335,7 +347,10 @@ namespace Code.Lavos.Core
             plate.transform.SetParent(hingeObj.transform);
             plate.transform.localPosition = Vector3.zero;
             plate.transform.localScale = new Vector3(HINGE_SIZE, HINGE_SIZE * 2f, HINGE_SIZE / 2f);
-            plate.GetComponent<MeshRenderer>().sharedMaterial = material;
+            
+            var plateRenderer = plate.GetComponent<MeshRenderer>();
+            if (plateRenderer != null)
+                plateRenderer.sharedMaterial = material;
         }
 
         #endregion
@@ -350,7 +365,10 @@ namespace Code.Lavos.Core
             piece.transform.localPosition = pos;
             piece.transform.localRotation = Quaternion.identity;
             piece.transform.localScale = scale;
-            piece.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            
+            var pieceRenderer = piece.GetComponent<MeshRenderer>();
+            if (pieceRenderer != null)
+                pieceRenderer.sharedMaterial = mat;
         }
 
         private static void AddDoorCollider(GameObject door, float width, float height, float depth)

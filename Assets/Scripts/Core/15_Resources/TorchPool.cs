@@ -377,7 +377,11 @@ namespace Code.Lavos.Core
             handle.transform.localScale = new Vector3(0.08f, 0.35f, 0.08f);
 
             if (_sharedHandleMat != null)
-                handle.GetComponent<MeshRenderer>().sharedMaterial = _sharedHandleMat;
+            {
+                var handleRenderer = handle.GetComponent<MeshRenderer>();
+                if (handleRenderer != null)
+                    handleRenderer.sharedMaterial = _sharedHandleMat;
+            }
 
             Destroy(handle.GetComponent<BoxCollider>());
 
@@ -421,7 +425,11 @@ namespace Code.Lavos.Core
                 flame.transform.localScale = new Vector3(0.3f, 0.45f, 1f);
 
                 if (_sharedFlameMat != null)
-                    flame.GetComponent<MeshRenderer>().sharedMaterial = _sharedFlameMat;
+                {
+                    var flameRenderer = flame.GetComponent<MeshRenderer>();
+                    if (flameRenderer != null)
+                        flameRenderer.sharedMaterial = _sharedFlameMat;
+                }
 
                 Destroy(flame.GetComponent<MeshCollider>());
 

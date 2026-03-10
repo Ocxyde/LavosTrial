@@ -930,7 +930,10 @@ namespace Code.Lavos.Core
                 ringMat.color = color;
                 ringMat.EnableKeyword("_EMISSION");
                 ringMat.SetColor("_EmissionColor", color * 2f);
-                ringObj.GetComponent<Renderer>().material = ringMat;
+                
+                var ringRenderer = ringObj.GetComponent<Renderer>();
+                if (ringRenderer != null)
+                    ringRenderer.material = ringMat;
             }
 
             // Add rotation animation component

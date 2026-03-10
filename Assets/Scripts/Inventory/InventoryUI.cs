@@ -132,7 +132,9 @@ namespace Code.Lavos.Core
             InventorySlot slot = _inventory.GetSlot(i);
             if (slot != null && _slotObjects[i] != null)
             {
-                _slotObjects[i].GetComponent<InventorySlotUI>().UpdateSlot(slot);
+                var slotUI = _slotObjects[i].GetComponent<InventorySlotUI>();
+                if (slotUI != null)
+                    slotUI.UpdateSlot(slot);
             }
         }
     }
