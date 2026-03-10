@@ -25,38 +25,34 @@ using UnityEngine;
 
 namespace Code.Lavos.Core
 {
-    // ─────────────────────────────────────────────────────────────
-    //  GridMazeGenerator
-    //
-    //  Generates a procedural maze on a 4-axis (cardinal) grid.
-    //
-    //  Algorithm:
-    //    1. Fill all cells — all 4 walls set (ushort = 0x000F)
-    //    2. Recursive Backtracker (DFS) — 4 cardinal directions only
-    //       Cardinal step: dx=±2 OR dz=±2 (standard wall removal)
-    //       NO diagonal passages - ensures clear wall alignment
-    //    3. Carve guaranteed 5×5 spawn room at (1,1)
-    //    4. Place exit at (W-2, H-2)
-    //    5. A* from spawn → exit (cardinal only, cost = 10)
-    //       Guarantees passage even if DFS fails
-    //    6. Add dead-end corridors (branching from main path)
-    //    7. Torch placement  (30% of wall-adjacent, non-spawn cells)
-    //    8. Chest + enemy placement on open interior cells
-    //
-    //  Key Changes (2026-03-09):
-    //  - Removed diagonal wall carving from DFS
-    //  - Guaranteed A* path ensures passage
-    //  - Dead-end corridors add complexity
-    //  - Corridor choices at intersections
-    //
-    //  Usage:
-    //      var gen  = new GridMazeGenerator();
-    //      var data = gen.Generate(seed: 42, level: 0, cfg: mazeCfg);
-    //
-    //  Backward compatibility:
-    //      - GridSize returns data.Width
-    //      - GetCell(x,z) returns data.GetCell(x,z)
-    // ─────────────────────────────────────────────────────────────
+    /// <summary>
+    /// GridMazeGenerator - Procedural maze generator using DFS + A* pathfinding.
+    /// 
+    /// Generates mazes on a 4-axis (cardinal) grid with guaranteed paths and dead-end corridors.
+    /// 
+    /// Algorithm Pipeline:
+    /// 1. Fill all cells with walls (solid block)
+    /// 2. DFS carving - 4 cardinal directions only (no diagonals)
+    /// 3. Carve 5×5 spawn room at (1,1)
+    /// 4. Place exit room at (W-2, H-2)
+    /// 5. A* pathfinding from spawn → exit (guarantees passage)
+    /// 6. Add dead-end corridors (branching paths with rewards)
+    /// 7. Fill remaining space with corridors
+    /// 8. Place torches (30% of wall-adjacent cells)
+    /// 9. Place chests and enemies on open cells
+    /// 
+    /// Key Features (2026-03-09):
+    /// - Cardinal-only passages (clean wall alignment)
+    /// - Guaranteed A* path ensures completion
+    /// - Dead-end corridors add complexity and choices
+    /// - Difficulty-scaled density (level-based)
+    /// 
+    /// Usage:
+    /// <code>
+    /// var gen = new GridMazeGenerator();
+    /// var data = gen.Generate(seed: 42, level: 0, cfg: mazeCfg);
+    /// </code>
+    /// </summary>
     public sealed class GridMazeGenerator
     {
         // ─────────────────────────────────────────────────────────
@@ -79,6 +75,34 @@ namespace Code.Lavos.Core
         // ─────────────────────────────────────────────────────────
         //  PUBLIC — Generate with difficulty scaling
         // ─────────────────────────────────────────────────────────
+        
+        /// <summary>
+        /// Generate a complete procedural maze with difficulty scaling.
+        /// </summary>
+        /// <param name="seed">Random seed for reproducibility. Use same seed to regenerate identical maze.</param>
+        /// <param name="level">Difficulty level (0-39). Higher levels = larger mazes, more enemies, more dead-ends.</param>
+        /// <param name="cfg">Maze configuration with base parameters from JSON config.</param>
+        /// <param name="scaler">Optional difficulty scaler. If null, uses default DifficultyScaler.</param>
+        /// <returns>Generated MazeData8 with complete maze structure, spawn/exit positions, and object placements.</returns>
+        /// 
+        /// <remarks>
+        /// <para><strong>Generation Pipeline:</strong></para>
+        /// <list type="bullet">
+        /// <item><description>Fill all walls (solid block initialization)</description></item>
+        /// <item><description>DFS carving (4 cardinal directions only)</description></item>
+        /// <item><description>Carve spawn room (5×5 at position 1,1)</description></item>
+        /// <item><description>Carve exit room at (Width-2, Height-2)</description></item>
+        /// <item><description>A* guaranteed path (spawn → exit)</description></item>
+        /// <item><description>Add dead-end corridors (difficulty-scaled)</description></item>
+        /// <item><description>Fill remaining space with corridors</description></item>
+        /// <item><description>Place torches on wall-adjacent cells</description></item>
+        /// <item><description>Place chests and enemies</description></item>
+        /// </list>
+        /// 
+        /// <para><strong>Difficulty Scaling:</strong></para>
+        /// <para>Level 0: Base size, 30% torch chance, 15% dead-end density</para>
+        /// <para>Level 39: 2.5× size, 75% torch chance, 37.5% dead-end density</para>
+        /// </remarks>
         public MazeData8 Generate(int seed, int level, MazeConfig cfg, DifficultyScaler scaler = null)
         {
             // Use provided scaler or create default
@@ -174,8 +198,20 @@ namespace Code.Lavos.Core
         // ─────────────────────────────────────────────────────────
         //  Backward Compatibility API (for legacy code)
         // ─────────────────────────────────────────────────────────
-        public int GridSize => _generatedData?.Width ?? 0;
         
+        /// <summary>
+        /// Get the generated maze width (grid size). Legacy API for backward compatibility.
+        /// Returns 0 if no maze has been generated yet.
+        /// </summary>
+        public int GridSize => _generatedData?.Width ?? 0;
+
+        /// <summary>
+        /// Get cell flags at position (x, z). Legacy API for backward compatibility.
+        /// Returns CellFlags8.AllWalls if no maze has been generated or position is out of bounds.
+        /// </summary>
+        /// <param name="x">X coordinate (0 to Width-1)</param>
+        /// <param name="z">Z coordinate (0 to Height-1)</param>
+        /// <returns>Cell flags indicating walls, objects, and room markers</returns>
         public CellFlags8 GetCell(int x, int z)
         {
             return _generatedData?.GetCell(x, z) ?? CellFlags8.AllWalls;

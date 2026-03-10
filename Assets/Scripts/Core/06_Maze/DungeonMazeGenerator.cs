@@ -25,15 +25,32 @@ using UnityEngine;
 namespace Code.Lavos.Core.Advanced
 {
     /// <summary>
-    /// Advanced dungeon maze generator combining:
-    /// - 8-axis procedural generation with DFS
+    /// DungeonMazeGenerator - Advanced procedural dungeon maze generator with AI-based difficulty scaling.
+    /// 
+    /// Combines multiple generation techniques for complex, varied dungeon layouts:
+    /// - 8-axis procedural generation with DFS (Depth-First Search)
     /// - Multi-corridor entrance/exit with branching dead-ends
     /// - Trap room systems (spikes, lava, darkness)
     /// - Treasure chambers guarded by enemies
     /// - Winding corridors and crossroads
     /// - AI-based adaptive difficulty scaling
     /// 
-    /// Plug-in-out architecture: Finds all components, never creates them
+    /// Generation Pipeline:
+    /// 1. Initialize maze data structure
+    /// 2. Fill all walls (solid block)
+    /// 3. DFS carve main passages (8-directional)
+    /// 4. Carve spawn room (5×5 guaranteed safe area)
+    /// 5. Carve exit room (distant, difficult to reach)
+    /// 6. Identify and expand dead-ends into chambers
+    /// 7. Identify and expand crossroads into meeting halls
+    /// 8. Place trap rooms in strategic dead-ends
+    /// 9. Place treasure chambers guarded by enemies
+    /// 10. Carve winding corridors for complexity
+    /// 11. Calculate AI difficulty metrics
+    /// 12. Place torches, chests, enemies based on difficulty
+    /// 13. Guarantee A* path from spawn to exit
+    /// 
+    /// Architecture: Plug-in-out - finds all components, never creates them
     /// Replaces GridMazeGenerator8 while maintaining compatibility
     /// </summary>
     public sealed class DungeonMazeGenerator
@@ -53,25 +70,42 @@ namespace Code.Lavos.Core.Advanced
         // ─────────────────────────────────────────────────────────────
         // PUBLIC API - Generate complete dungeon
         // ─────────────────────────────────────────────────────────────
-        
+
         /// <summary>
         /// Generate a complete advanced dungeon maze with all features.
-        /// 
-        /// Pipeline:
-        /// 1. Initialize maze data structure
-        /// 2. Fill all walls (8-axis)
-        /// 3. DFS carve main passages
-        /// 4. Carve spawn room (5x5 guaranteed safe area)
-        /// 5. Carve exit room (distant, difficult to reach)
-        /// 6. Identify and expand dead-ends into chambers
-        /// 7. Identify and expand crossroads into meeting halls
-        /// 8. Place trap rooms in strategic dead-ends
-        /// 9. Place treasure chambers guarded by enemies
-        /// 10. Carve winding corridors for complexity
-        /// 11. Calculate AI difficulty metrics
-        /// 12. Place torches, chests, enemies based on difficulty
-        /// 13. Guarantee A* path from spawn to exit
         /// </summary>
+        /// <param name="seed">Random seed for reproducibility. Same seed generates identical dungeon.</param>
+        /// <param name="level">Difficulty level (0-39). Higher levels = larger mazes, more traps, more treasure.</param>
+        /// <param name="cfg">Dungeon maze configuration with parameters from JSON config.</param>
+        /// <returns>Generated DungeonMazeData with complete structure, spawn/exit, traps, treasure, and AI metrics.</returns>
+        /// 
+        /// <remarks>
+        /// <para><strong>Generation Pipeline (13 Phases):</strong></para>
+        /// <list type="number">
+        /// <item><description><strong>Initialize:</strong> Create maze data structure with dimensions</description></item>
+        /// <item><description><strong>Solid Block:</strong> Fill all cells with walls (8-axis)</description></item>
+        /// <item><description><strong>DFS Carving:</strong> 8-directional depth-first search passages</description></item>
+        /// <item><description><strong>Spawn Room:</strong> 5×5 guaranteed safe area at start</description></item>
+        /// <item><description><strong>Exit Room:</strong> Distant room, difficult to reach</description></item>
+        /// <item><description><strong>Chamber Expansion:</strong> Expand dead-ends and crossroads (25×25+ mazes only)</description></item>
+        /// <item><description><strong>Trap Rooms:</strong> Place spike/lava/darkness traps strategically</description></item>
+        /// <item><description><strong>Treasure Chambers:</strong> Place guarded treasure rooms</description></item>
+        /// <item><description><strong>Winding Corridors:</strong> Add labyrinthine paths for complexity (25×25+ only)</description></item>
+        /// <item><description><strong>AI Analysis:</strong> Calculate adaptive difficulty multiplier</description></item>
+        /// <item><description><strong>Path Guarantee:</strong> Ensure A* path from spawn to exit</description></item>
+        /// <item><description><strong>Object Placement:</strong> Torches, chests, enemies based on density</description></item>
+        /// <item><description><strong>Finalize:</strong> Store generation time and metrics</description></item>
+        /// </list>
+        /// 
+        /// <para><strong>Difficulty Scaling:</strong></para>
+        /// <para>Level 0: Base size, 1.0× difficulty, few traps/treasures</para>
+        /// <para>Level 39: 2.5× size, 3.0× AI difficulty, maximum traps/treasures</para>
+        /// 
+        /// <para><strong>Special Features:</strong></para>
+        /// <para>- Chamber expansion skipped for mazes &lt; 25×25 (preserves wall structure)</para>
+        /// <para>- Treasure rooms marked but not cleared for small mazes</para>
+        /// <para>- AI adaptive factor based on trap/treasure distribution and path complexity</para>
+        /// </remarks>
         public DungeonMazeData Generate(int seed, int level, DungeonMazeConfig cfg)
         {
             ValidateConfig(cfg);
