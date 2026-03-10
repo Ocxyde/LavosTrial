@@ -464,7 +464,7 @@ namespace Code.Lavos.Core
 
             // Check distance
             float distance = Vector3.Distance(player.transform.position, transform.position);
-            return distance <= interactionRange;
+            return distance <= InteractionRangeValue;
         }
 
         /// <summary>
