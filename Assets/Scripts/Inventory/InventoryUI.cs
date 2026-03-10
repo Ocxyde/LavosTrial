@@ -114,6 +114,11 @@ namespace Code.Lavos.Core
         for (int i = 0; i < slotCount; i++)
         {
             GameObject slotObj = Instantiate(slotPrefab, slotsContainer);
+            if (slotObj == null)
+            {
+                Debug.LogError($"[InventoryUI] Failed to instantiate slot prefab at index {i}!");
+                continue;
+            }
             var slotUI = slotObj.GetComponent<InventorySlotUI>();
             if (slotUI != null)
             {

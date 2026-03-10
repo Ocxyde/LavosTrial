@@ -174,6 +174,11 @@ namespace Code.Lavos.Core
             for (int i = 0; i < initialPoolSize; i++)
             {
                 var go = Instantiate(prefab, pool.inactiveParent);
+                if (go == null)
+                {
+                    Debug.LogError($"[LightEmittingPool] Failed to instantiate {type} prefab for pool!");
+                    continue;
+                }
                 go.name = $"{type}_{i}";
                 go.SetActive(false);
                 pool.available.Add(go);
@@ -217,8 +222,13 @@ namespace Code.Lavos.Core
                 // Create new (auto-expand)
                 var prefab = GetPrefabForType(type);
                 if (prefab == null) return null;
-                
+
                 go = Instantiate(prefab, pool.inactiveParent);
+                if (go == null)
+                {
+                    Debug.LogError($"[LightEmittingPool] Failed to instantiate {type} prefab (auto-expand)!");
+                    return null;
+                }
                 go.name = $"{type}_{pool.active.Count}";
                 Log($"[LightEmittingPool] Auto-expanded pool for {type}");
             }

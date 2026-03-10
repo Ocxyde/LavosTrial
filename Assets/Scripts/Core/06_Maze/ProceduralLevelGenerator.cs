@@ -284,9 +284,12 @@ namespace Code.Lavos.Core
 					if ((cell & (uint)CellFlags8.HasPillar) != 0 && pillarPrefab != null)
 					{
 						var pillar = Instantiate(pillarPrefab, position, Quaternion.identity);
-						pillar.transform.SetParent(mazeBuilder.transform, true);
-						decorCount++;
-						Log($"  Pillar placed at ({x}, {z})");
+						if (pillar != null)
+						{
+							pillar.transform.SetParent(mazeBuilder.transform, true);
+							decorCount++;
+							Log($"  Pillar placed at ({x}, {z})");
+						}
 					}
 
 					// Place arches (marked with HasTorch in wall context)
@@ -296,9 +299,12 @@ namespace Code.Lavos.Core
 						if ((cell & (uint)CellFlags8.AllWalls) != 0)
 						{
 							var arch = Instantiate(archPrefab, position, Quaternion.identity);
-							arch.transform.SetParent(mazeBuilder.transform, true);
-							decorCount++;
-							Log($"  Arch placed at ({x}, {z})");
+							if (arch != null)
+							{
+								arch.transform.SetParent(mazeBuilder.transform, true);
+								decorCount++;
+								Log($"  Arch placed at ({x}, {z})");
+							}
 						}
 					}
 
@@ -306,9 +312,12 @@ namespace Code.Lavos.Core
 					if ((cell & (uint)CellFlags8.HasNiche) != 0 && nicheStatuePrefab != null)
 					{
 						var niche = Instantiate(nicheStatuePrefab, position, Quaternion.identity);
-						niche.transform.SetParent(mazeBuilder.transform, true);
-						decorCount++;
-						Log($"  Niche statue placed at ({x}, {z})");
+						if (niche != null)
+						{
+							niche.transform.SetParent(mazeBuilder.transform, true);
+							decorCount++;
+							Log($"  Niche statue placed at ({x}, {z})");
+						}
 					}
 				}
 			}

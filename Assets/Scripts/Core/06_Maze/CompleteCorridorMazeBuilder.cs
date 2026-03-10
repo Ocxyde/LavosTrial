@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
@@ -174,6 +174,11 @@ namespace Code.Lavos.Core
             if (floorPrefab == null || _mazeData == null || _config == null) return;
             float sz = _mazeData.Width * _config.CellSize;
             var go = Instantiate(floorPrefab, new Vector3(sz * 0.5f, 0f, sz * 0.5f), Quaternion.identity);
+            if (go == null)
+            {
+                Debug.LogError("[CorridorMazeBuilder] Failed to instantiate floor prefab!");
+                return;
+            }
             go.name = "MazeFloor";
             go.transform.localScale = new Vector3(sz, 1f, sz);
         }
@@ -214,6 +219,11 @@ namespace Code.Lavos.Core
             var pos = new Vector3((cx + 0.5f + dx * 0.5f) * cs, 0f, (cz + 0.5f + dz * 0.5f) * cs);
             Quaternion rot = (dir == Direction8.E || dir == Direction8.W) ? Quaternion.Euler(0f, 90f, 0f) : Quaternion.identity;
             var go = Instantiate(wallPrefab, pos, rot);
+            if (go == null)
+            {
+                Debug.LogError($"[CorridorMazeBuilder] Failed to instantiate wall at ({cx},{cz})!");
+                return;
+            }
             go.name = $"Wall_{cx}_{cz}_{dir}";
             go.transform.SetParent(_wallsRoot);
             float thickness = _config.WallThickness;
@@ -245,10 +255,13 @@ namespace Code.Lavos.Core
                 {
                     var pos = new Vector3((x + 0.5f) * _config.CellSize, 0f, (z + 0.5f) * _config.CellSize);
                     var go = Instantiate(torchPrefab, pos, Quaternion.identity);
-                    go.name = $"Torch_{x}_{z}";
-                    if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
-                    go.transform.SetParent(_objectsRoot);
-                    count++;
+                    if (go != null)
+                    {
+                        go.name = $"Torch_{x}_{z}";
+                        if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
+                        go.transform.SetParent(_objectsRoot);
+                        count++;
+                    }
                 }
             }
             Debug.Log($"[CorridorMazeBuilder] Spawned {count} torches");
@@ -268,19 +281,25 @@ namespace Code.Lavos.Core
                 if (spawnChests && (cell & CellFlags8.HasChest) != 0 && chestPrefab != null)
                 {
                     var go = Instantiate(chestPrefab, pos, Quaternion.identity);
-                    go.name = $"Chest_{x}_{z}";
-                    if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
-                    go.transform.SetParent(_objectsRoot);
-                    Debug.Log($"[CorridorMazeBuilder] Chest at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2}) - Grid({x},{z})");
-                    chests++;
+                    if (go != null)
+                    {
+                        go.name = $"Chest_{x}_{z}";
+                        if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
+                        go.transform.SetParent(_objectsRoot);
+                        Debug.Log($"[CorridorMazeBuilder] Chest at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2}) - Grid({x},{z})");
+                        chests++;
+                    }
                 }
                 if (spawnEnemies && (cell & CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
                 {
                     var go = Instantiate(enemyPrefab, pos, Quaternion.identity);
-                    go.name = $"Enemy_{x}_{z}";
-                    if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
-                    go.transform.SetParent(_objectsRoot);
-                    enemies++;
+                    if (go != null)
+                    {
+                        go.name = $"Enemy_{x}_{z}";
+                        if (_objectsRoot == null) _objectsRoot = new GameObject("MazeObjects").transform;
+                        go.transform.SetParent(_objectsRoot);
+                        enemies++;
+                    }
                 }
             }
             Debug.Log($"[CorridorMazeBuilder] Spawned {chests} chests, {enemies} enemies");
@@ -308,6 +327,11 @@ namespace Code.Lavos.Core
             int sx = _mazeData.SpawnCell.x, sz = _mazeData.SpawnCell.z;
             var pos = new Vector3((sx + 0.5f) * _config.CellSize, _config.PlayerEyeHeight, (sz + 0.5f) * _config.CellSize);
             _playerInstance = Instantiate(playerPrefab, pos, Quaternion.identity);
+            if (_playerInstance == null)
+            {
+                Debug.LogError("[CorridorMazeBuilder] Failed to instantiate player prefab!");
+                return;
+            }
             _playerInstance.name = "Player";
             Debug.Log($"[CorridorMazeBuilder] Player spawned at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2})");
         }

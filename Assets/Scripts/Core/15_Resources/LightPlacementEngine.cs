@@ -299,6 +299,11 @@ namespace Code.Lavos.Core
             foreach (var torchRecord in torchRecords)
             {
                 GameObject torchObj = Instantiate(torchPrefab, torchRecord.position, torchRecord.rotation, _lightsParent);
+                if (torchObj == null)
+                {
+                    Debug.LogError($"[LightPlacementEngine] Failed to instantiate torch at {torchRecord.position}!");
+                    continue;
+                }
                 _instantiatedLights.Add(torchObj);
 
                 // Get controller and store reference
@@ -483,8 +488,13 @@ namespace Code.Lavos.Core
             foreach (var lightData in lights)
             {
                 GameObject lightObj = Instantiate(prefab, lightData.position, lightData.rotation, _lightsParent);
+                if (lightObj == null)
+                {
+                    Debug.LogError($"[LightPlacementEngine] Failed to instantiate {lightType} light at {lightData.position}!");
+                    continue;
+                }
                 _instantiatedLights.Add(lightObj);
-                
+
                 LightEmittingController controller = lightObj.GetComponent<LightEmittingController>();
                 if (controller != null)
                 {

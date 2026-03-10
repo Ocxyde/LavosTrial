@@ -311,6 +311,11 @@ namespace Code.Lavos.Core
             {
                 // Instantiate from prefab
                 go = Instantiate(torchHandlePrefab, transform);
+                if (go == null)
+                {
+                    Debug.LogError("[TorchPool] Failed to instantiate torch handle prefab!");
+                    return null;
+                }
             }
             else
             {
