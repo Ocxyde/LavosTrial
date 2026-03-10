@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Core.Advanced
 {
@@ -171,7 +172,7 @@ namespace Code.Lavos.Core.Advanced
         {
             int count = 0;
 
-            Direction8[] cardinals = { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+            Core.Direction8[] cardinals = { Core.Direction8.N, Core.Direction8.S, Core.Direction8.E, Core.Direction8.W };
             foreach (var dir in cardinals)
             {
                 if (!mazeData.HasWall(x, z, dir))
