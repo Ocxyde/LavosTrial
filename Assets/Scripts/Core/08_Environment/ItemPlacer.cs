@@ -111,9 +111,9 @@ namespace Code.Lavos.Core
         {
             var config = GameConfig.Instance;
             
-            enableItemSpawning = config.generateRooms;
-            itemSpawnChance = config.defaultDoorSpawnChance;
-            maxItems = config.maxRooms;
+            enableItemSpawning = config.GenerateRooms;
+            itemSpawnChance = config.DefaultDoorSpawnChance;
+            maxItems = config.MaxRooms;
 
             if (showDebugLogs)
             {

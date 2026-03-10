@@ -126,13 +126,13 @@ namespace Code.Lavos.Core
             
             // Door placement settings from JSON
             placeDoorsInHoles = true;  // Always place if this component exists
-            randomizeWallTextures = config.randomizeWallTextures;
+            randomizeWallTextures = config.RandomizeWallTextures;
             
             // Door variant settings from JSON
-            enableTrappedDoors = config.enableTrappedDoors;
-            trapChance = config.defaultTrapChance;
-            enableLockedDoors = config.enableLockedDoors;
-            enableSecretDoors = config.enableSecretDoors;
+            enableTrappedDoors = config.EnableTrappedDoors;
+            trapChance = config.DefaultTrapChance;
+            enableLockedDoors = config.EnableLockedDoors;
+            enableSecretDoors = config.EnableSecretDoors;
 
             Debug.Log($"[RoomDoorPlacer]  Config loaded from JSON:");
             Debug.Log($"  • Trapped Doors: {enableTrappedDoors} ({trapChance * 100f:F0}% chance)");

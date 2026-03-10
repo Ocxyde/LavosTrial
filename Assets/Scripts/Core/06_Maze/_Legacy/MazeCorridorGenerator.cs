@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -101,9 +101,9 @@ namespace Code.Lavos.Core
 
             // Load config
             var cfg = GameConfig.Instance;
-            corridorWidth = cfg.defaultCorridorWidth;
-            corridorRandomness = cfg.corridorRandomness;
-            generatePerimeterCorridor = cfg.generatePerimeterCorridor;
+            corridorWidth = cfg.DefaultCorridorWidth;
+            corridorRandomness = cfg.CorridorRandomness;
+            generatePerimeterCorridor = cfg.GeneratePerimeterCorridor;
 
             Debug.Log($"[MazeCorridorGenerator] Initialized - Grid: {gridSize}x{gridSize}, Seed: {seed}");
         }

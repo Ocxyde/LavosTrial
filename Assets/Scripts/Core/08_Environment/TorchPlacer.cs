@@ -135,7 +135,7 @@ namespace Code.Lavos.Core
         {
             var config = GameConfig.Instance;
 
-            enableTorchSpawning = config.generateRooms;
+            enableTorchSpawning = config.GenerateRooms;
             useDynamicLighting = true;
             torchCount = 60;
             minDistanceBetweenTorches = 4f;

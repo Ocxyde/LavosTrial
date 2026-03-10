@@ -122,9 +122,9 @@ namespace Code.Lavos.Core
             var config = GameConfig.Instance;
             
             // Enemy settings from JSON (reuse room settings)
-            enableEnemySpawning = config.generateRooms;
-            enemySpawnChance = config.defaultDoorSpawnChance;
-            maxEnemies = config.maxRooms;
+            enableEnemySpawning = config.GenerateRooms;
+            enemySpawnChance = config.DefaultDoorSpawnChance;
+            maxEnemies = config.MaxRooms;
 
             if (showDebugLogs)
             {

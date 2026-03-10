@@ -129,9 +129,9 @@ namespace Code.Lavos.Core
             var config = GameConfig.Instance;
             
             // Chest settings from JSON
-            enableChestSpawning = config.generateRooms;  // Reuse room generation flag
-            chestSpawnChance = config.defaultDoorSpawnChance;  // Reuse door chance
-            maxChests = config.maxRooms;  // Reuse room count
+            enableChestSpawning = config.GenerateRooms;  // Reuse room generation flag
+            chestSpawnChance = config.DefaultDoorSpawnChance;  // Reuse door chance
+            maxChests = config.MaxRooms;  // Reuse room count
 
             if (showDebugLogs)
             {

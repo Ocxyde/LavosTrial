@@ -141,15 +141,15 @@ namespace Code.Lavos.Core
             var config = GameConfig.Instance;
             
             // Door dimensions from JSON
-            doorWidth = config.defaultDoorWidth;
-            doorHeight = config.defaultDoorHeight;
-            doorDepth = config.defaultDoorDepth;
-            holeDepth = config.defaultDoorHoleDepth;
+            doorWidth = config.DefaultDoorWidth;
+            doorHeight = config.DefaultDoorHeight;
+            doorDepth = config.DefaultDoorDepth;
+            holeDepth = config.DefaultDoorHoleDepth;
             
             // Door spawn settings from JSON
-            doorSpawnChance = config.defaultDoorSpawnChance;
+            doorSpawnChance = config.DefaultDoorSpawnChance;
             carveHolesInWalls = true;  // Always carve holes if this component exists
-            showDebugGizmos = config.showDebugGizmos;
+            showDebugGizmos = config.ShowDebugGizmos;
 
             Debug.Log($"[DoorHolePlacer]  Config loaded from JSON:");
             Debug.Log($"  • Door Size: {doorWidth}m x {doorHeight}m x {doorDepth}m");
