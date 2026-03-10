@@ -1,8 +1,5 @@
-﻿{
-    "name": "Code.Lavos.Tests",
-    "references": [
-        "Code.Lavos.Core"
-    ],
+{
+    "name": "Prefabs.Tests",
     "optionalUnityReferences": [
         "TestAssemblies"
     ],

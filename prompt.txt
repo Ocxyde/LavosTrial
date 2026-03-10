@@ -4,7 +4,7 @@ here's my holy saint order :p
 first of all, read carefully Assets/Docs folder.. the always apply *.md into that folder.
 Secundo) do net try to exec cmd or create folder, you have not permission on this computer.
 don't forget plug-in-out system hierarchy! and I don't wanna patch everytime to fix an error, do it by revision of old files and history logs in.
-Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.7f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
+Always remember to use backup.ps1 b(but ask me to do) to backup after any change in files or folder, also i use Unity6 so, code name use Unity6 standard for coding. also use new input system management for input system . aslo I use Rider as IDE. also I use Unity 6000.3.10f1. my working dir is : D:\travaux_Unity\PeuImporte , don't touch backup files it's read-only
 all files must be unix style with UTF-8 encoder
 Also always show me the diff from changing files.
 store temp diff in folder called 'diff_tmp' del all diff files older than 2 days
