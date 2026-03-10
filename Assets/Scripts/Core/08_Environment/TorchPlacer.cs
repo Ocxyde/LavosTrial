@@ -323,8 +323,8 @@ namespace Code.Lavos.Core
 
         #region Utilities
 
-        private float GetCellSize() => GameConfig.Instance.defaultCellSize;
-        private float GetWallHeight() => GameConfig.Instance.defaultWallHeight;
+        private float GetCellSize() => GameConfig.Instance.DefaultCellSize;
+        private float GetWallHeight() => GameConfig.Instance.DefaultWallHeight;
 
         #endregion
 

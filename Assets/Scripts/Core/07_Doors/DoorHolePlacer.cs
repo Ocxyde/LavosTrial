@@ -326,7 +326,7 @@ namespace Code.Lavos.Core
         {
             // Try JSON config first
             if (GameConfig.Instance != null)
-                return GameConfig.Instance.defaultCellSize;
+                return GameConfig.Instance.DefaultCellSize;
 
             // Should never reach here - GameConfig is required
             Debug.LogError("[DoorHolePlacer] GameConfig not available - cell size undefined");

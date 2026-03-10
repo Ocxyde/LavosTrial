@@ -245,11 +245,11 @@ namespace Code.Lavos.Core
             float roll = Random.value;
             
             // Secret door
-            if (enableSecretDoors && roll < GameConfig.Instance.defaultSecretDoorChance)
+            if (enableSecretDoors && roll < GameConfig.Instance.DefaultSecretDoorChance)
                 return DoorVariant.Secret;
             
             // Locked door
-            if (enableLockedDoors && roll < GameConfig.Instance.defaultLockedDoorChance)
+            if (enableLockedDoors && roll < GameConfig.Instance.DefaultLockedDoorChance)
                 return DoorVariant.Locked;
             
             // Normal door

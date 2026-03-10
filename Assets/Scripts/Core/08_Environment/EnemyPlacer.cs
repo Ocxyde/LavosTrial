@@ -255,7 +255,7 @@ namespace Code.Lavos.Core
 
         private float GetCellSize()
         {
-            return GameConfig.Instance.defaultCellSize;
+            return GameConfig.Instance.DefaultCellSize;
         }
 
         #endregion

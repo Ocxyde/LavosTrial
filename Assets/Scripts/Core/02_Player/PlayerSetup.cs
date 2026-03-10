@@ -165,8 +165,8 @@ namespace Code.Lavos.Core
             var config = GameConfig.Instance;
 
             // Load camera settings from JSON
-            _eyeHeight = config.defaultPlayerEyeHeight;
-            _followSpeed = config.mouseSensitivity * 5f;
+            _eyeHeight = config.DefaultPlayerEyeHeight;
+            _followSpeed = config.MouseSensitivity * 5f;
 
             Debug.Log($"[PlayerSetup] Config loaded: EyeHeight={_eyeHeight}m, FollowSpeed={_followSpeed}");
         }
