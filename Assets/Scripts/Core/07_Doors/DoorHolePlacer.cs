@@ -121,7 +121,11 @@ namespace Code.Lavos.Core
         {
             // GridMazeGenerator is created by CompleteMazeBuilder8
             if (completeMazeBuilder == null)
+            {
                 completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
+                if (completeMazeBuilder == null)
+                    Debug.LogWarning("[DoorHolePlacer] CompleteMazeBuilder8 not found!");
+            }
         }
 
         #endregion

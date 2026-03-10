@@ -106,13 +106,25 @@ namespace Code.Lavos.Core
         {
             // GridMazeGenerator is created by CompleteMazeBuilder8
             if (completeMazeBuilder == null)
+            {
                 completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
-            
+                if (completeMazeBuilder == null)
+                    Debug.LogWarning("[TorchPlacer] CompleteMazeBuilder8 not found!");
+            }
+
             if (lightPlacementEngine == null)
+            {
                 lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
-            
+                if (lightPlacementEngine == null)
+                    Debug.LogWarning("[TorchPlacer] LightPlacementEngine not found!");
+            }
+
             if (torchPool == null)
+            {
                 torchPool = FindFirstObjectByType<TorchPool>();
+                if (torchPool == null)
+                    Debug.LogWarning("[TorchPlacer] TorchPool not found!");
+            }
         }
 
         #endregion

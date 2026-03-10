@@ -123,20 +123,28 @@ namespace Code.Lavos.Core
         {
             // CompleteMazeBuilder8 creates and owns the maze data
             if (completeMazeBuilder == null)
+            {
                 completeMazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
-            
+                if (completeMazeBuilder == null)
+                    Debug.LogWarning("[SpatialPlacer] CompleteMazeBuilder8 not found!");
+            }
+
             if (lightPlacementEngine == null)
+            {
                 lightPlacementEngine = FindFirstObjectByType<LightPlacementEngine>();
-            
+                if (lightPlacementEngine == null)
+                    Debug.LogWarning("[SpatialPlacer] LightPlacementEngine not found!");
+            }
+
             if (chestPlacer == null)
                 chestPlacer = GetComponent<ChestPlacer>();
-            
+
             if (enemyPlacer == null)
                 enemyPlacer = GetComponent<EnemyPlacer>();
-            
+
             if (itemPlacer == null)
                 itemPlacer = GetComponent<ItemPlacer>();
-            
+
             if (torchPlacer == null)
                 torchPlacer = GetComponent<TorchPlacer>();
         }

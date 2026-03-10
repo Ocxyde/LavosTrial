@@ -105,7 +105,11 @@ namespace Code.Lavos.Core
         private void FindComponents()
         {
             if (holePlacer == null)
+            {
                 holePlacer = FindFirstObjectByType<DoorHolePlacer>();
+                if (holePlacer == null)
+                    Debug.LogWarning("[RoomDoorPlacer] DoorHolePlacer not found!");
+            }
         }
 
         #endregion

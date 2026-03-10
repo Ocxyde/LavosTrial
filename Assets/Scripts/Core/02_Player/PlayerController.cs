@@ -135,7 +135,13 @@ namespace Code.Lavos.Core
         if (_controller == null) { Debug.LogError("[PlayerController] CharacterController manquant !"); enabled = false; return; }
 
         _playerStats = GetComponent<PlayerStats>();
+        
+        // CRITICAL: Null check after FindFirstObjectByType
         _combatSystem = FindFirstObjectByType<CombatSystem>();
+        if (_combatSystem == null)
+        {
+            Debug.LogWarning("[PlayerController] CombatSystem not found in scene - combat features disabled");
+        }
 
         _controller.skinWidth = 0.08f;
         _controller.minMoveDistance = 0.001f;

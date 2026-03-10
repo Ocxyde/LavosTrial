@@ -57,8 +57,12 @@ namespace Code.Lavos.HUD
             _keyboard = Keyboard.current;
             _windowRect = new Rect(10, 10, 300, 150);
 
-            // Find PlayerStats
+            // Find PlayerStats - CRITICAL: Null check after FindFirstObjectByType
             _playerStats = FindFirstObjectByType<PlayerStats>();
+            if (_playerStats == null)
+            {
+                Debug.LogWarning("[DebugHUD] PlayerStats not found - debug info will be limited");
+            }
 
             SubscribeToEvents();
             UpdateInfo();
