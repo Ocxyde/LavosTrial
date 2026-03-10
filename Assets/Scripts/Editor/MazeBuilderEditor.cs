@@ -353,45 +353,45 @@ namespace Code.Lavos.Editor
             var wallPrefabProp = serializedObject.FindProperty("wallPrefab");
             if (wallPrefabProp != null && wallPrefabProp.objectReferenceValue == null)
             {
-                wallPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.wallPrefab, "Wall");
+                wallPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.WallPrefab, "Wall");
                 if (wallPrefabProp.objectReferenceValue != null)
-                    Debug.Log($"   Auto-assigned: wallPrefab from config ({config.wallPrefab})");
+                    Debug.Log($"   Auto-assigned: wallPrefab from config ({config.WallPrefab})");
             }
 
             // Door Prefab
             var doorPrefabProp = serializedObject.FindProperty("doorPrefab");
             if (doorPrefabProp != null && doorPrefabProp.objectReferenceValue == null)
             {
-                doorPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.doorPrefab, "Door");
+                doorPrefabProp.objectReferenceValue = LoadPrefabFromConfig(config.DoorPrefab, "Door");
                 if (doorPrefabProp.objectReferenceValue != null)
-                    Debug.Log($"   Auto-assigned: doorPrefab from config ({config.doorPrefab})");
+                    Debug.Log($"   Auto-assigned: doorPrefab from config ({config.DoorPrefab})");
             }
 
             // Wall Material
             var wallMaterialProp = serializedObject.FindProperty("wallMaterial");
             if (wallMaterialProp != null && wallMaterialProp.objectReferenceValue == null)
             {
-                wallMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.wallMaterial, "Wall");
+                wallMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.WallMaterial, "Wall");
                 if (wallMaterialProp.objectReferenceValue != null)
-                    Debug.Log($"   Auto-assigned: wallMaterial from config ({config.wallMaterial})");
+                    Debug.Log($"   Auto-assigned: wallMaterial from config ({config.WallMaterial})");
             }
 
             // Floor Material
             var floorMaterialProp = serializedObject.FindProperty("floorMaterial");
             if (floorMaterialProp != null && floorMaterialProp.objectReferenceValue == null)
             {
-                floorMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.floorMaterial, "Floor");
+                floorMaterialProp.objectReferenceValue = LoadMaterialFromConfig(config.FloorMaterial, "Floor");
                 if (floorMaterialProp.objectReferenceValue != null)
-                    Debug.Log($"   Auto-assigned: floorMaterial from config ({config.floorMaterial})");
+                    Debug.Log($"   Auto-assigned: floorMaterial from config ({config.FloorMaterial})");
             }
 
             // Ground Texture
             var groundTextureProp = serializedObject.FindProperty("groundTexture");
             if (groundTextureProp != null && groundTextureProp.objectReferenceValue == null)
             {
-                groundTextureProp.objectReferenceValue = LoadTextureFromConfig(config.groundTexture, "Floor");
+                groundTextureProp.objectReferenceValue = LoadTextureFromConfig(config.GroundTexture, "Floor");
                 if (groundTextureProp.objectReferenceValue != null)
-                    Debug.Log($"   Auto-assigned: groundTexture from config ({config.groundTexture})");
+                    Debug.Log($"   Auto-assigned: groundTexture from config ({config.GroundTexture})");
             }
         }
 
