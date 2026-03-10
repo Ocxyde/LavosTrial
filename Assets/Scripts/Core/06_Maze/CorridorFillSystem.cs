@@ -1,4 +1,4 @@
-﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -42,7 +42,7 @@ namespace Code.Lavos.Core
     {
         [Header("Fill Density")]
         [Range(0f, 1f)]
-        public float FillDensity = 0.70f;  // 70% of valid wall cells
+        public float FillDensity = 0.15f;  // 15% of valid wall cells (was 0.70f - too open)
 
         [Header("Corridor Dimensions")]
         [Range(1, 5)]
@@ -135,11 +135,11 @@ namespace Code.Lavos.Core
         {
             return new CorridorFillConfig
             {
-                FillDensity = 0.70f,        // 70% of valid walls
+                FillDensity = 0.15f,        // 15% of valid walls (was 0.70f - too open)
                 MinLength = 1,              // 1 cell minimum
                 MaxLength = 3,              // 3 cells maximum
                 CorridorWidth = 1,          // 1 cell wide
-                MaxFillPercentage = 0.40f,  // Max 40% of grid
+                MaxFillPercentage = 0.10f,  // Max 10% of grid (was 0.40f - too open)
                 AvoidDeadEnds = true,       // Don't carve into dead-ends
                 PreferCardinalDirections = true,
                 AllowShortCorridors = true
