@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -136,12 +136,12 @@ namespace Code.Lavos.Editor
                 if (gameConfig != null)
                 {
                     // Load material from Resources (using path from GameConfig)
-                    wallMaterial = Resources.Load<Material>(gameConfig.wallMaterial);
+                    wallMaterial = Resources.Load<Material>(gameConfig.WallMaterial);
                     
                     // If material not found, try to load texture and create material
                     if (wallMaterial == null)
                     {
-                        Texture2D wallTexture = Resources.Load<Texture2D>(gameConfig.wallTexture);
+                        Texture2D wallTexture = Resources.Load<Texture2D>(gameConfig.WallTexture);
                         if (wallTexture != null)
                         {
                             // Create material with texture

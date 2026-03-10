@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // BaseMazeBuilder.cs - Common base class for maze builders to reduce duplication
 
@@ -162,7 +162,7 @@ namespace Code.Lavos.Core
                 var gameConfig = GameConfig.Instance;
                 if (gameConfig != null)
                 {
-                    loadedWallMaterial = Resources.Load<Material>(gameConfig.wallMaterial);
+                    loadedWallMaterial = Resources.Load<Material>(gameConfig.WallMaterial);
                 }
             }
 

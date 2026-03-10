@@ -286,7 +286,7 @@ namespace Code.Lavos.Core
                 var gameConfig = GameConfig.Instance;
                 if (gameConfig != null)
                 {
-                    loadedWallMaterial = Resources.Load<Material>(gameConfig.wallMaterial);
+                    loadedWallMaterial = Resources.Load<Material>(gameConfig.WallMaterial);
                 }
             }
 

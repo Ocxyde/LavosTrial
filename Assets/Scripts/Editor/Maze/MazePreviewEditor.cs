@@ -534,11 +534,11 @@ namespace Code.Lavos.Editor
             if (renderer != null)
             {
                 // Try to load floor material from Resources
-                var floorMat = Resources.Load<Material>(_config.floorMaterial.Replace(".mat", ""));
+                var floorMat = Resources.Load<Material>(_config.FloorMaterial.Replace(".mat", ""));
                 if (floorMat != null)
                 {
                     renderer.sharedMaterial = floorMat;
-                    Debug.Log($"  Ground material: {_config.floorMaterial}");
+                    Debug.Log($"  Ground material: {_config.FloorMaterial}");
                 }
                 else
                 {
@@ -546,7 +546,7 @@ namespace Code.Lavos.Editor
                     Material mat = new Material(Shader.Find("Unlit/Color"));
                     mat.color = new Color(0.4f, 0.4f, 0.4f);
                     renderer.sharedMaterial = mat;
-                    Debug.LogWarning($"  Floor material not found: {_config.floorMaterial}, using fallback");
+                    Debug.LogWarning($"  Floor material not found: {_config.FloorMaterial}, using fallback");
                 }
             }
 
@@ -709,9 +709,9 @@ namespace Code.Lavos.Editor
             int enemyCount = 0;
 
             // Load prefabs from Resources (Plug-in-Out: use existing prefabs)
-            string torchPath = _config.torchPrefab.Replace(".prefab", "");
-            string chestPath = _config.chestPrefab.Replace(".prefab", "");
-            string enemyPath = _config.enemyPrefab.Replace(".prefab", "");
+            string torchPath = _config.TorchPrefab.Replace(".prefab", "");
+            string chestPath = _config.ChestPrefab.Replace(".prefab", "");
+            string enemyPath = _config.EnemyPrefab.Replace(".prefab", "");
 
             GameObject torchPrefab = Resources.Load<GameObject>(torchPath);
             GameObject chestPrefab = Resources.Load<GameObject>(chestPath);
