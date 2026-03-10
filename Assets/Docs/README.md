@@ -1,46 +1,67 @@
-﻿# Project Documentation - CodeDotLavos (PeuImporte)
+﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
 
-**Unity Version:** 6000.3.7f1
-**Render Pipeline:** URP Standard
-**Input System:** New Input System
-**Coding Standard:** Unity 6 (C# en_US UTF-8)
-**License:** GPL-3.0
-**Last Updated:** 2026-03-09 (Chat Log Review Complete)
-**Codename:** BetsyBoop
+**A Unity 6 First-Person Maze Roguelike Engine**
+
+**Unity Version:** 6000.3.10f1 | **License:** GPL-3.0 | **Author:** Ocxyde
 
 ---
 
-## 📋 **LATEST SESSION - 2026-03-09 CHAT LOG REVIEW**
+## 🚀 Quick Start for Modders
 
-**Review Date:** 2026-03-09
-**Review Type:** Chat Log Analysis (Logs/ folder - recent sessions)
-**Sessions Reviewed:** 10+ chat logs from 2026-03-07 to 2026-03-09
+### 5-Minute Setup
 
-### **🔧 CRITICAL BUG FIXES APPLIED (2026-03-09)**
+1. **Open Project**
+   ```bash
+   # Open Unity Hub → Add → Select "D:\travaux_Unity\CodeDotLavos"
+   # Use Unity 6000.3.10f1 or compatible Unity 6 version
+   ```
 
-| Fix | Issue | Status |
-|-----|-------|--------|
-| **NullReferenceException** | `levelData.PopulationParams` null in `PopulateEnemies` | ✅ FIXED |
-| **Edit Mode Destroy** | `Destroy()` used in editor mode | ✅ FIXED |
-| **Null Checks** | Missing null checks in level gen methods | ✅ FIXED |
+2. **Load Main Scene**
+   - Open `Assets/Scenes/MazeLav8s_v1-0_1_7.unity`
+   - Press **Play** to test
 
-**Files Modified:**
-- `ProceduralLevelGenerator.cs` - Null checks + null-conditional access
-- `CompleteMazeBuilder.cs` - `DestroyImmediate()` for editor mode
+3. **Default Controls**
+   | Action | Key |
+   |--------|-----|
+   | Move | WASD |
+   | Look | Mouse |
+   | Sprint | Shift (1% stamina/sec) |
+   | Jump | Space (1% stamina/jump) |
+   | Interact | E |
 
-### **🔴 ISSUES IDENTIFIED FROM CHAT LOGS**
+---
 
-| ID | Issue | Priority | Status |
-|----|-------|----------|--------|
-| **CL1** | LightPlacementEngine - Missing Torch Prefab | 🔴 CRITICAL | ⏳ PENDING |
-| **CL2** | PlayerSetup - No Camera Found | 🔴 CRITICAL | ⏳ PENDING |
-| **CL3** | Door in Middle of Maze (No Room) | 🔴 CRITICAL | ⏳ PENDING |
-| **CL4** | Player Disappears on Play Mode | 🔴 CRITICAL | ⏳ PENDING |
-| **CL5** | Two Cameras on Scene Load | 🔴 CRITICAL | ⏳ PENDING |
-| **CL6** | Stamina Regen Bug | 🟡 MEDIUM | ⏳ PENDING |
-| **CL7** | Missing Unity Headers (31 files) | 🟡 MEDIUM | ⏳ PENDING |
+## 📦 What You Can Mod
 
-**See:** [TODO.md](TODO.md) for detailed issue descriptions and solutions.
+### ✅ Easy Mods (No Code)
+
+| What | How | Files |
+|------|-----|-------|
+| **Change maze seed** | Edit in Inspector | Scene → MazeBuilder |
+| **Adjust player stats** | Modify Health, Mana, Stamina | `PlayerStats` component |
+| **Swap textures** | Replace material assets | `Assets/Materials/` |
+| **Tweak colors** | Change material colors | Inspector |
+| **Adjust difficulty** | Modify enemy spawn rates | `ProceduralLevelGenerator` |
+
+### ⚙️ Medium Mods (Some Code)
+
+| What | How | Files |
+|------|-----|-------|
+| **Add new items** | Create item JSON + prefab | `Assets/Resources/Items/` |
+| **New enemy types** | Extend `EnemyController` | `Assets/Scripts/Ennemies/` |
+| **Custom doors** | Modify door factory | `DoorFactory.cs` |
+| **UI changes** | Edit HUD prefabs | `Assets/Prefabs/HUD/` |
+| **Sound effects** | Add audio clips | `Assets/Audio/` |
+
+### 🔨 Advanced Mods (C# Required)
+
+| What | How | Files |
+|------|-----|-------|
+| **New maze algorithms** | Extend `GridMazeGenerator8` | `GridMazeGenerator8.cs` |
+| **Custom room types** | Modify corridor system | `CorridorFillSystem.cs` |
+| **New status effects** | Add to `StatusEffectData` | `StatusEffectData.cs` |
+| **Combat mechanics** | Extend `CombatSystem` | `CombatSystem.cs` |
+| **Save system changes** | Modify `DatabaseManager` | `DatabaseManager.cs` |
 
 ---
 
@@ -49,367 +70,409 @@
 ```
 Assets/
 ├── Scripts/
-│   ├── Core/              # Core systems (GameManager, ItemEngine, etc.)
-│   │   ├── 01_CoreSystems
-│   │   ├── 02_Player
-│   │   ├── 03_Interaction
-│   │   ├── 04_Inventory
-│   │   ├── 05_Combat
-│   │   ├── 06_Maze
-│   │   ├── 07_Doors
-│   │   ├── 08_Environment
-│   │   ├── 09_Art
-│   │   ├── 10_Mesh
-│   │   ├── 11_Utilities
-│   │   ├── 12_Animation
-│   │   ├── 13_Compute
-│   │   ├── 14_Geometry
-│   │   └── 15_Resources
-│   ├── Player/            # Player systems (Controller, Stats, Health)
-│   ├── HUD/               # UI systems (Bars, Dialogs, Popups)
-│   ├── Inventory/         # Inventory management
-│   ├── Status/            # Status effects & stats
-│   ├── Ressources/        # Resources & generators (FR spelling)
-│   ├── Gameplay/          # Gameplay elements
-│   ├── Ennemies/          # Enemy AI (FR spelling)
-│   ├── Interaction/       # Interaction system
-│   ├── Tests/             # Unit tests
-│   └── Editor/            # Editor tools
-├── DB_SQLite/             # Database system
-├── Settings/              # URP settings
-├── Docs/                  # This documentation
-└── InputSystem_Actions.inputactions
+│   ├── Core/                    # Core systems - DO NOT MODIFY unless extending
+│   │   ├── 01_CoreSystems/      # GameManager, EventHandler (global state)
+│   │   ├── 02_Player/           # PlayerController, CameraFollow
+│   │   ├── 04_Inventory/        # Inventory management
+│   │   ├── 06_Maze/             # 🎯 MAZE GENERATION (mod this!)
+│   │   ├── 07_Doors/            # Door systems
+│   │   ├── 13_Compute/          # Lighting, audio, effects
+│   │   └── 15_Resources/        # Torch, chest, object behaviors
+│   ├── HUD/                     # UI systems (bars, dialogs, windows)
+│   ├── Status/                  # Buffs, debuffs, stats
+│   ├── Ennemies/                # Enemy AI behaviors
+│   └── Editor/                  # Unity editor tools
+├── Resources/
+│   ├── Prefabs/                 # 🎯 Add your prefabs here
+│   ├── Items/                   # 🎯 Add item JSON definitions
+│   └── Config/                  # Game configuration files
+├── Materials/                   # Surface textures & colors
+├── Textures/                    # Image assets
+├── Audio/                       # Sound effects & music
+├── Scenes/                      # Game scenes
+└── Docs/                        # Documentation (you are here!)
 ```
+
+**🎯 = Good starting points for modding**
 
 ---
 
 ## 🎯 Core Architecture
 
-### Plug-in-and-Out System
+### Plug-in-Out System (How Components Connect)
 
-The project uses a modular plug-in architecture centered around core manager classes:
+This project uses a **loose-coupling architecture**: components find each other, they don't create each other.
 
+**Why this matters for modders:**
+- ✅ You can add new scripts without breaking existing ones
+- ✅ Components auto-discover each other at runtime
+- ✅ Easy to test mods in isolation
+
+```csharp
+// ✅ CORRECT - How to find other components
+private void Awake()
+{
+    // Find existing component (don't create new one!)
+    var player = FindFirstObjectByType<PlayerController>();
+}
+
+// ❌ WRONG - Don't do this
+private void Awake()
+{
+    var player = gameObject.AddComponent<PlayerController>(); // Creates duplicate!
+}
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    GameManager                          │
-│              (Central Game State Singleton)             │
-└─────────────────────────────────────────────────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-┌───────────────┐  ┌───────────────┐  ┌───────────────┐
-│  ItemEngine   │  │ PlayerController│  │  HUDSystem   │
-│  (Items Mgr)  │  │  (New Input)   │  │   (UI/UX)    │
-└───────┬───────┘  └───────┬───────┘  └───────┬───────┘
-        │                  │                  │
-        ▼                  ▼                  ▼
-┌───────────────┐  ┌───────────────┐  ┌───────────────┐
-│BehaviorEngine │  │ PlayerStats   │  │ DialogEngine │
-│  (Base Class) │  │  (StatsEngine)│  │  (Floating)  │
-└───────┬───────┘  └───────┬───────┘  └───────────────┘
-        │                  │                  │
-        ▼                  ▼                  ▼
-┌───────────────┐  ┌───────────────┐  ┌───────────────┐
-│ DoubleDoor    │  │ StatsEngine   │  │ PopWinEngine │
-│ ChestBehavior │  │ (Pure C#)     │  │ (Windows)    │
-└───────────────┘  └───────────────┘  └───────────────┘
+
+### Key Components
+
+| Component | Purpose | Modding Notes |
+|-----------|---------|---------------|
+| `GameManager` | Central game state | Singleton - extend, don't replace |
+| `EventHandler` | Global event hub | Subscribe to events, don't modify |
+| `PlayerController` | Player movement | Use New Input System |
+| `CompleteMazeBuilder` | Maze orchestrator | Main entry for maze mods |
+| `GridMazeGenerator8` | Maze algorithm | DFS + A* - extend for custom algos |
+| `SpatialPlacer` | Object placement | Handles spawning objects |
+| `LightPlacementEngine` | Torch lighting | Auto-registers light sources |
+
+---
+
+## 🔧 Modding Tutorials
+
+### Tutorial 1: Add a New Item
+
+**Step 1:** Create item JSON in `Assets/Resources/Items/`
+
+```json
+{
+  "id": "my_custom_potion",
+  "name": "Custom Healing Potion",
+  "description": "Restores 50 HP over 5 seconds",
+  "type": "Consumable",
+  "maxStack": 99,
+  "effects": [
+    {
+      "type": "HealOverTime",
+      "value": 10,
+      "duration": 5.0,
+      "tickRate": 1.0
+    }
+  ]
+}
+```
+
+**Step 2:** Create prefab (optional)
+- Right-click `Assets/Resources/Prefabs/` → Create → Prefab
+- Add `ItemBehavior` component
+- Configure properties
+
+**Step 3:** Test
+- Run game
+- Use console command or spawn in scene
+
+---
+
+### Tutorial 2: Create Custom Maze Algorithm
+
+**Step 1:** Create new script `Assets/Scripts/Core/06_Maze/MyCustomMazeGenerator.cs`
+
+```csharp
+using UnityEngine;
+using Code.Lavos.Core;
+
+namespace Code.Lavos.Core.Maze
+{
+    /// <summary>
+    /// Custom maze generator using your own algorithm.
+    /// </summary>
+    public class MyCustomMazeGenerator : GridMazeGenerator8
+    {
+        [Header("Custom Settings")]
+        [SerializeField] private float myCustomParameter = 0.5f;
+
+        protected override void GenerateMazeInternal()
+        {
+            // Your algorithm here
+            Debug.Log($"[MyCustomMaze] Generating with param: {myCustomParameter}");
+
+            // Call base methods as needed
+            base.GenerateMazeInternal();
+        }
+    }
+}
+```
+
+**Step 2:** Assign in Inspector
+- Select `MazeBuilder` GameObject
+- Replace `GridMazeGenerator8` component with `MyCustomMazeGenerator`
+
+**Step 3:** Test
+- Press Play
+- Watch Console for your log messages
+
+---
+
+### Tutorial 3: Add New Status Effect
+
+**Step 1:** Edit `Assets/Scripts/Status/StatusEffectData.cs`
+
+```csharp
+public enum StatusEffectType
+{
+    // Existing effects...
+    Burn,
+    Freeze,
+    Poison,
+
+    // Add your new effect
+    MyCustomBuff,      // ✅ Add here
+    MyCustomDebuff,    // ✅ Add here
+}
+```
+
+**Step 2:** Add effect logic in `StatusEffect.cs`
+
+```csharp
+public class StatusEffect : MonoBehaviour
+{
+    private void ApplyEffect(StatusEffectType type, float value)
+    {
+        switch (type)
+        {
+            case StatusEffectType.MyCustomBuff:
+                // Your effect logic
+                target.Stats.AddModifier("Damage", value);
+                break;
+
+            case StatusEffectType.MyCustomDebuff:
+                // Your debuff logic
+                target.Stats.AddModifier("Speed", -value);
+                break;
+        }
+    }
+}
 ```
 
 ---
 
-## 📦 Key Systems
+### Tutorial 4: Modify Player Stats
 
-### 1. **Core Systems** (`Assets/Scripts/Core/`)
+**In Unity Inspector:**
 
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `GameManager.cs` | Central game state singleton | ✅ Complete |
-| `ItemEngine.cs` | Item registry & management | ✅ Complete |
-| `BehaviorEngine.cs` | Base class for interactables | ✅ Complete |
-| `ProceduralLevelGenerator.cs` | Universal level generation | ✅ Complete |
-| `CompleteMazeBuilder8.cs` | 8-axis maze orchestrator | ✅ Complete |
-| `GridMazeGenerator8.cs` | DFS + A* maze generation | ✅ Complete |
-| `MazeBinaryStorage8.cs` | Binary .lvm save/load | ✅ Complete |
-| `SpatialPlacer.cs` | Object placement engine | ✅ Complete |
-| `DoorsEngine.cs` | Door management | ✅ Complete |
-| `LightPlacementEngine.cs` | Dynamic torch lighting | ✅ Complete |
-| `ComputeGridEngine.cs` | GPU compute grid | ✅ Complete |
-| `DrawingManager.cs` | Texture generation | ✅ Complete |
-| `ParticleGenerator.cs` | Particle VFX | ✅ Complete |
+1. Select `Player` GameObject
+2. Find `PlayerStats` component
+3. Modify values:
+   - **Base Health:** 100 → 200
+   - **Base Mana:** 50 → 100
+   - **Stamina Regen:** 5 → 10
 
-### 2. **Player Systems** (`Assets/Scripts/Player/`)
+**Or via code:**
 
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `PlayerController.cs` | Movement, camera, input | ✅ Complete |
-| `PlayerStats.cs` | Stats wrapper (StatsEngine) | ✅ Complete |
-| `PlayerHealth.cs` | Health management | ✅ Complete |
-| `PersistentPlayerData.cs` | Save/load data | ✅ Complete |
-
-**Features:**
-- ✅ New Input System (WASD + Mouse)
-- ✅ Sprint system (10% speed boost, 1% stamina/sec)
-- ✅ Jump system (1% stamina per jump)
-- ✅ Camera follow with head bob
-- ✅ Interaction system (E key)
-
-### 3. **HUD & UI Systems** (`Assets/Scripts/HUD/`)
-
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `UIBarsSystem.cs` | Health/Mana/Stamina bars | ✅ Complete |
-| `DialogEngine.cs` | Floating text + dialogs | ✅ Complete |
-| `PopWinEngine.cs` | Popup windows + inventories | ✅ Complete |
-| `HUDSystem.cs` | Main HUD manager | ✅ Complete |
-| `HUDEngine.cs` | HUD registry | ✅ Complete |
-
-**Features:**
-- ✅ Real-time bar updates (events)
-- ✅ Color interpolation (based on %)
-- ✅ Floating combat text (damage/heal)
-- ✅ Dialog system (bottom-left, resizable)
-- ✅ Inventory windows (slot-based)
-- ✅ Stats board window (prepend feature)
-
-### 4. **Status System** (`Assets/Scripts/Status/`)
-
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `StatsEngine.cs` | Pure C# stat calculations | ✅ Complete |
-| `StatusEffectData.cs` | Effect definitions | ✅ Complete |
-| `StatModifier.cs` | Stat modifiers | ✅ Complete |
-| `DamageType.cs` | Damage types | ✅ Complete |
-
-**Features:**
-- ✅ Buff/Debuff system
-- ✅ Stat modifiers (additive, multiplicative, override)
-- ✅ Damage resistances/vulnerabilities
-- ✅ DoT/HoT (damage/heal over time)
-- ✅ Status effect icons with timers
-
-### 5. **Inventory System** (`Assets/Scripts/Inventory/`)
-
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `Inventory.cs` | Inventory manager (Singleton) | ✅ Complete |
-| `InventorySlot.cs` | Slot data structure | ✅ Complete |
-| `InventoryUI.cs` | UI display | ✅ Complete |
-| `InventorySlotUI.cs` | UI slot component | ✅ Complete |
-| `ItemPickup.cs` | World pickups | ✅ Complete |
-
-**Features:**
-- ✅ Stackable items
-- ✅ Grid-based UI
-- ✅ Drag & drop (can be added)
-- ✅ Item categories (Consumable, Equipment, etc.)
-
-### 6. **Database System** (`Assets/DB_SQLite/`)
-
-| Script | Purpose | Status |
-|--------|---------|--------|
-| `DatabaseManager.cs` | JSON persistence | ✅ Complete |
-| `DatabaseSaveLoadHelper.cs` | Save/load utilities | ✅ Complete |
-| `DatabaseConfig.cs` | Configuration | ✅ Complete |
-
-**Features:**
-- ✅ JSON-based save system
-- ✅ Cross-platform (Windows, Linux, macOS)
-- ✅ Player data persistence
-- ✅ Inventory save/load
+```csharp
+// In a custom script
+var stats = FindFirstObjectByType<PlayerStats>();
+if (stats != null)
+{
+    stats.SetBaseHealth(200);
+    stats.SetBaseMana(100);
+    stats.SetStaminaRegenRate(10);
+}
+```
 
 ---
 
-## 🎮 Gameplay Features
+## 🎮 Game Systems Reference
 
-### Movement & Controls
+### Player Stats System
 
-| Action | Input | Stamina Cost |
-|--------|-------|--------------|
-| Move | WASD / Arrow Keys | None |
-| Sprint | Hold Shift | 1% current/sec |
-| Jump | Space | 1% current/jump |
-| Look | Mouse | None |
-| Interact | E | None |
-| Camera Toggle | Tab | None |
+| Stat | Default | Description | Modifiable |
+|------|---------|-------------|------------|
+| Health | 100 | Player HP | ✅ Yes |
+| Mana | 50 | Resource for abilities | ✅ Yes |
+| Stamina | 100 | Sprint/jump resource | ✅ Yes |
+| Strength | 10 | Physical damage | ✅ Yes |
+| Agility | 10 | Speed, crit chance | ✅ Yes |
+| Intelligence | 10 | Magic power | ✅ Yes |
+| Vitality | 10 | HP regen | ✅ Yes |
+| Dexterity | 10 | Accuracy, dodge | ✅ Yes |
 
-### Combat System
+### Damage Types
 
-- ✅ Damage types (Physical, Fire, Ice, Lightning, etc.)
-- ✅ Critical hits (5% base chance, 150% damage)
-- ✅ Resistance system (per damage type)
-- ✅ Invincibility frames (0.5s after hit)
-- ✅ Floating damage numbers
+| Type | Effectiveness | Resistance |
+|------|---------------|------------|
+| Physical | Normal | Armor |
+| Fire | Strong vs Nature | Weak vs Water |
+| Ice | Strong vs Fire | Weak vs Lightning |
+| Lightning | Strong vs Ice | Weak vs Earth |
+| Nature | Strong vs Lightning | Weak vs Fire |
+| Water | Strong vs Fire | Weak vs Nature |
+| Holy | Strong vs Dark | Weak vs Dark |
+| Dark | Strong vs Holy | Weak vs Holy |
 
 ### Status Effects
 
-- ✅ Buffs (positive effects)
-- ✅ Debuffs (negative effects)
-- ✅ Curses (special debuffs)
-- ✅ Stacking effects
-- ✅ Duration timers
-- ✅ Icon display with fade
+| Effect | Type | Duration | Stackable |
+|--------|------|----------|-----------|
+| Burn | DoT | 5 sec | ✅ Yes |
+| Freeze | Debuff | 3 sec | ❌ No |
+| Poison | DoT | 10 sec | ✅ Yes |
+| Haste | Buff | 15 sec | ✅ Yes |
+| Slow | Debuff | 8 sec | ❌ No |
+| Shield | Buff | 20 sec | ❌ No |
 
 ---
 
 ## 🛠️ Development Tools
 
-### Automation Scripts
+### PowerShell Scripts
 
 Located in project root:
 
-| Script | Purpose |
-|--------|---------|
-| `backup.ps1` | Smart backup system |
-| `apply-patches-and-backup.ps1` | Run patches + backup |
-| `scan-project-errors.ps1` | Scan for issues |
-| `fix-all-issues.ps1` | Auto-fix problems |
-| `clear-unity-cache.bat` | Clear Unity cache |
-| `git-quick.bat` | Git operations menu |
-| `git-commit.ps1` | Quick commit (with backup) |
-| `git-push.ps1` | Push to remote |
-| `git-pull.ps1` | Pull from remote |
-| `git-status.ps1` | Detailed status |
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `backup.ps1` | Smart backup | Runs automatically on git commit |
+| `cleanup_diff_tmp.ps1` | Clean old temp files | Run daily |
+| `git-commit.ps1` | Quick commit | `.\git-commit.ps1 "message"` |
+| `git-push.ps1` | Push to remote | `.\git-push.ps1` |
 
 ### Git Workflow
 
 ```bash
-# Quick commit (auto-backup)
-.\git-commit.ps1 "Fixed player movement"
+# Make your changes, then:
 
-# Push to remote
+# 1. Stage all changes
+git add -A
+
+# 2. Commit (auto-backup)
+.\git-commit.ps1 "Added custom potion item"
+
+# 3. Push to remote
 .\git-push.ps1
-
-# Check status
-.\git-status.ps1
 ```
 
 ---
 
-## 📊 Code Quality
+## 📖 Documentation Index
 
-| Metric | Status |
-|--------|--------|
-| **Total C# Files** | 100+ |
-| **Compilation Errors** | 0 ✅ |
-| **Warnings** | 0 ✅ |
-| **UTF-8 Encoding** | 100% ✅ |
-| **Unix LF Line Endings** | 100% ✅ |
-| **Unity 6 Headers** | 100% ✅ |
-| **New Input System** | 100% ✅ |
-| **URP Compatible** | 100% ✅ |
+| File | Purpose | For |
+|------|---------|-----|
+| [README.md](README.md) | This file - modder's guide | **Modders** |
+| [TODO.md](TODO.md) | Task list & roadmap | Developers |
+| [ARCHITECTURE_OVERVIEW.md](ARCHITECTURE_OVERVIEW.md) | System architecture | Advanced modders |
+| [PROJECT_STANDARDS.md](PROJECT_STANDARDS.md) | Coding standards | Developers |
+| [MAZE_TROUBLESHOOTING_GUIDE.md](MAZE_TROUBLESHOOTING_GUIDE.md) | Maze issues | Debugging |
+| [TEST_CHECKLIST.md](TEST_CHECKLIST.md) | Testing guide | QA |
 
 ---
 
-## 🚀 Getting Started
-
-### 1. Open Project
-
-1. Open Unity Hub
-2. Click "Add" → Select `D:\travaux_Unity\PeuImporte`
-3. Open with Unity 6000.3.7f1
-
-### 2. Verify Setup
-
-1. Check Console for errors (should be 0)
-2. Verify Input System is enabled (Project Settings)
-3. Verify URP is active (Graphics Settings)
-
-### 3. Test Game
-
-1. Open main scene
-2. Press Play
-3. Test movement (WASD + Mouse)
-4. Test sprint (Shift) + jump (Space)
-5. Watch stamina bar drain
-
----
-
-## 📖 Additional Documentation
-
-| File | Location | Purpose |
-|------|----------|---------|
-| `README.md` | Project Root | Project overview |
-| `TODO.md` | Project Root | Task list & roadmap |
-| `HUD_EVENT_SYSTEM.md` | Project Root | HUD event documentation |
-| `GIT_WORKFLOW_GUIDE.md` | Project Root | Git usage guide |
-| `TETRAHEDRON_SYSTEM.md` | Project Root | Tetrahedron mesh system |
-| `README.md` | **Assets/Docs/** | This file |
-| `TODO.md` | **Assets/Docs/** | See below |
-
----
-
-## 🎯 Current Status
-
-**Production Ready:** ✅ YES
-
-| System | Completion | Notes |
-|--------|------------|-------|
-| Core Architecture | 100% | Plug-in-and-out working |
-| Player Controller | 100% | Sprint + jump with stamina |
-| Status Effects | 100% | Full buff/debuff system |
-| HUD & UI | 100% | Bars + dialogs + windows |
-| Inventory | 100% | Slot-based with UI |
-| Database | 100% | JSON persistence |
-| Enemies | 80% | Basic AI working |
-| **Maze Generation (8-axis)** | **100%** | **DFS + A*, binary storage, sharing** |
-| **Procedural Level Gen** | **100%** | **Exponential difficulty scaling** |
-| **Maze Sharing System** | **100%** | **MD5 codes, QR export/import** |
-
-### Recent Fixes (2026-03-09)
-- ✅ Fixed `NullReferenceException` in `ProceduralLevelGenerator.PopulateEnemies`
-- ✅ Fixed `Destroy()` in edit mode → now uses `DestroyImmediate()` for editor
-- ✅ Added comprehensive null checks across all level generation methods
-- ✅ Fixed edit mode warnings in `CompleteMazeBuilder.DestroyContainer`
-
-### Known Issues (From Chat Logs 2026-03-09)
-- ⏳ LightPlacementEngine needs torch prefab assignment
-- ⏳ PlayerSetup camera reference issue
-- ⏳ Door placement needs room/alcove
-- ⏳ Player disappearance on play mode (dual camera conflict)
-- ⏳ Stamina regen rate needs adjustment
-- ⏳ 31 files missing Unity headers
-
----
-
-## 🔧 Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
 **Unity won't compile:**
 ```bash
-# Clear cache
+# Clear Unity cache
 .\clear-unity-cache.bat
 # Reopen Unity
 ```
 
-**Git issues:**
-```bash
-# Check status
-.\git-status.ps1
-# Fix with menu
-.\git-quick.bat
-```
+**Maze not generating:**
+1. Check `CompleteMazeBuilder` has config assigned
+2. Verify seed is valid number
+3. Check Console for errors
+
+**Player falls through floor:**
+1. Check colliders on floor prefabs
+2. Verify player has Rigidbody
+3. Check layer collision matrix
 
 **UI not showing:**
-- Check if `UIBarsSystem` component is in scene
-- Check Canvas is enabled
-- Check sorting order (should be 100+)
+1. Check `Canvas` is enabled in scene
+2. Verify `UIBarsSystem` component exists
+3. Check sorting order (should be 100+)
 
 **Input not working:**
-- Verify New Input System is enabled (Project Settings)
-- Check InputSystem_Actions.inputactions exists
-- Check PlayerController has InputSystem reference
+1. Project Settings → Input Manager → Enable New Input System
+2. Check `InputSystem_Actions.inputactions` exists
+3. Restart Unity
 
 ---
 
-## 📞 Support
+## 📞 Getting Help
 
-For issues or questions:
-1. Check Console for errors
-2. Run `.\scan-project-errors.ps1`
-3. Review `HUD_EVENT_SYSTEM.md` for UI details
-4. Check Unity Editor.log for crashes
+### Before Asking
+
+1. ✅ Check Console for errors
+2. ✅ Run `.\scan-project-errors.ps1`
+3. ✅ Search existing documentation
+4. ✅ Check Unity Editor.log
+
+### Useful Commands
+
+```bash
+# Check project health
+.\scan-project-errors.ps1
+
+# View git status
+.\git-status.ps1
+
+# Clean temporary files
+.\cleanup_diff_tmp.ps1
+```
+
+### Resources
+
+- **Unity Docs:** https://docs.unity3d.com/
+- **New Input System:** https://docs.unity3d.com/Packages/com.unity.inputsystem@latest
+- **URP:** https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@latest
 
 ---
 
-**Happy Developing!** 🎮✨
+## 🎯 Next Steps
+
+### Beginner Path
+
+1. ✅ Run the game as-is
+2. ✅ Modify player stats in Inspector
+3. ✅ Change maze seed
+4. ✅ Swap textures/materials
+5. ✅ Add simple item
+
+### Intermediate Path
+
+1. ✅ Create custom enemy type
+2. ✅ Modify maze generation parameters
+3. ✅ Add new status effect
+4. ✅ Create custom UI panel
+5. ✅ Extend existing system
+
+### Advanced Path
+
+1. ✅ Write custom maze algorithm
+2. ✅ Implement new damage type
+3. ✅ Create multiplayer system
+4. ✅ Mod the save/load system
+5. ✅ Fork and maintain your own branch
+
+---
+
+## 📜 License
+
+**GPL-3.0** - You are free to:
+- ✅ Use for personal projects
+- ✅ Use for commercial projects
+- ✅ Modify and distribute
+- ✅ Fork and maintain
+
+**Requirements:**
+- 📄 Include GPL-3.0 license in derivatives
+- 🔓 Open source your modifications
+- 📝 Credit original authors
+
+See [COPYING](../../COPYING) for full license text.
+
+---
+
+**Happy Modding! 🎮✨**
+
+*Last Updated: 2026-03-10 | Unity 6000.3.10f1 | Author: Ocxyde*
