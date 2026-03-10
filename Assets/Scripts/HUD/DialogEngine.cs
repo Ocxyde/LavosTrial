@@ -41,8 +41,11 @@ namespace Code.Lavos.HUD
         public static DialogEngine Instance { get; private set; }
 
         [Header("Settings")]
+        [Tooltip("Parent canvas for dialogs (finds automatically if not set)")]
         [SerializeField] private Transform canvasParent;
         [SerializeField] private bool dontDestroyOnLoad = true;
+
+        private Canvas _canvas; // Cached canvas reference
 
         [Header("Floating Text Settings")]
         [SerializeField] private float defaultFloatDuration = 1.5f;
@@ -100,15 +103,27 @@ namespace Code.Lavos.HUD
 
         private void CreateParents()
         {
-            // Create floating text parent
+            // PLUG-IN-OUT: Find existing canvas
+            _canvas = FindFirstObjectByType<Canvas>();
+            
+            if (_canvas == null)
+            {
+                Debug.LogError("[DialogEngine] No Canvas found in scene! Dialogs will not be visible.");
+                enabled = false;
+                return;
+            }
+
+            // Create floating text parent (DYNAMIC VFX: acceptable for transient text)
             var floatGO = new GameObject("FloatingTextContainer");
-            floatGO.transform.SetParent(canvasParent != null ? canvasParent : transform, false);
+            floatGO.transform.SetParent(_canvas.transform, false);
             _floatingTextParent = floatGO.AddComponent<RectTransform>().transform;
 
-            // Create dialog parent
+            // Create dialog parent (DYNAMIC UI: acceptable for variable dialogs)
             var dialogGO = new GameObject("DialogContainer");
-            dialogGO.transform.SetParent(canvasParent != null ? canvasParent : transform, false);
+            dialogGO.transform.SetParent(_canvas.transform, false);
             _dialogParent = dialogGO.AddComponent<RectTransform>().transform;
+            
+            Debug.Log($"[DialogEngine] Created parents under canvas '{_canvas.name}'");
         }
 
         private void OnDestroy()
@@ -127,9 +142,11 @@ namespace Code.Lavos.HUD
 
         /// <summary>
         /// Show floating combat text (damage, heal, etc.).
+        /// NOTE: Creates dynamic UI elements - acceptable for transient VFX.
         /// </summary>
         public void ShowFloatingText(string text, Color color, Vector2 position, float? duration = null)
         {
+            // DYNAMIC VFX: Create temporary floating text (acceptable for transient VFX)
             var go = new GameObject($"Float_{text}");
             go.transform.SetParent(_floatingTextParent, false);
 

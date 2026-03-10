@@ -853,45 +853,140 @@ namespace Code.Lavos.Core
 
             EnsureObjectsRoot();
 
-            // Spawn room marker - Green cylinder at spawn cell center
+            // Spawn room marker - Enhanced green cylinder with particles and ring
             Vector3 spawnPos = CellCenter(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, 0.5f);
-            GameObject spawnMarker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            spawnMarker.transform.position = spawnPos;
-            spawnMarker.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
-            spawnMarker.transform.SetParent(_objectsRoot);
-            spawnMarker.name = "Marker_SpawnRoom";
+            SpawnEnhancedMarker(spawnPos, Color.green, "Marker_SpawnRoom", isEntrance: true);
 
-            // Green material for spawn room
-            Material spawnMat = new Material(Shader.Find("Standard"));
-            if (spawnMat != null)
-            {
-                spawnMat.color = new Color(0f, 1f, 0f, 0.8f); // Bright green
-                spawnMat.EnableKeyword("_EMISSION");
-                spawnMat.SetColor("_EmissionColor", new Color(0f, 0.5f, 0f, 1f));
-            }
-            var spawnRenderer = spawnMarker.GetComponent<Renderer>();
-            if (spawnRenderer != null) spawnRenderer.material = spawnMat;
-
-            // Exit room marker - Red cube at exit cell center
+            // Exit room marker - Enhanced red cube with particles and ring
             Vector3 exitPos = CellCenter(_mazeData.ExitCell.x, _mazeData.ExitCell.z, 0.5f);
-            GameObject exitMarker = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            exitMarker.transform.position = exitPos;
-            exitMarker.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
-            exitMarker.transform.SetParent(_objectsRoot);
-            exitMarker.name = "Marker_ExitRoom";
-
-            // Red material for exit room
-            Material exitMat = new Material(Shader.Find("Standard"));
-            if (exitMat != null)
-            {
-                exitMat.color = new Color(1f, 0f, 0f, 0.8f); // Bright red
-                exitMat.EnableKeyword("_EMISSION");
-                exitMat.SetColor("_EmissionColor", new Color(0.5f, 0f, 0f, 1f));
-            }
-            var exitRenderer = exitMarker.GetComponent<Renderer>();
-            if (exitRenderer != null) exitRenderer.material = exitMat;
+            SpawnEnhancedMarker(exitPos, Color.red, "Marker_ExitRoom", isEntrance: false);
 
             Debug.Log($"[MazeBuilder8] Room markers spawned: Spawn@{_mazeData.SpawnCell} Exit@{_mazeData.ExitCell}");
+        }
+
+        private void SpawnEnhancedMarker(Vector3 position, Color color, string name, bool isEntrance)
+        {
+            float cs = _config.CellSize;
+
+            // Create 8-bit pixel art style marker (cylinder with pixelated texture)
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = name;
+            marker.transform.position = position;
+            marker.transform.localScale = new Vector3(cs * 0.3f, 2f, cs * 0.3f);
+
+            // Create 8-bit pixel art texture for marker
+            Texture2D pixelTex = Create8BitMarkerTexture(color, isEntrance);
+            
+            // Create emissive material with pixel art texture
+            Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            if (mat == null) mat = new Material(Shader.Find("Unlit/Color"));
+
+            mat.mainTexture = pixelTex;
+            mat.color = new Color(color.r, color.g, color.b, 1f);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", color * 3f);
+
+            var renderer = marker.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material = mat;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+            }
+
+            // Add point light for glow effect
+            Light glowLight = marker.AddComponent<Light>();
+            if (glowLight != null)
+            {
+                glowLight.color = color;
+                glowLight.intensity = 2.5f;
+                glowLight.range = cs * 2f;
+                glowLight.shadows = LightShadows.None;
+                glowLight.bounceIntensity = 1.5f;
+            }
+
+            // Add floating ring effect around marker
+            SpawnFloatingRing(position, color, isEntrance);
+
+            if (_objectsRoot != null)
+                marker.transform.SetParent(_objectsRoot);
+        }
+
+        private void SpawnFloatingRing(Vector3 position, Color color, bool isEntrance)
+        {
+            // Create rotating ring around marker for extra visual flair
+            GameObject ringObj = new GameObject(isEntrance ? "EntranceRing" : "ExitRing");
+            ringObj.transform.position = position + Vector3.up * 1f;
+            ringObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+
+            // Create ring mesh (torus approximation)
+            Mesh ringMesh = CreateRingMesh(0.6f, 0.05f, 32);
+            ringObj.AddComponent<MeshFilter>().mesh = ringMesh;
+
+            // Emissive material for ring
+            Material ringMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            if (ringMat != null)
+            {
+                ringMat.color = color;
+                ringMat.EnableKeyword("_EMISSION");
+                ringMat.SetColor("_EmissionColor", color * 2f);
+                ringObj.GetComponent<Renderer>().material = ringMat;
+            }
+
+            // Add rotation animation component
+            RingRotator rotator = ringObj.AddComponent<RingRotator>();
+            rotator.rotationSpeed = isEntrance ? 30f : -20f;
+
+            if (_objectsRoot != null)
+                ringObj.transform.SetParent(_objectsRoot);
+        }
+
+        private Mesh CreateRingMesh(float radius, float thickness, int segments)
+        {
+            Mesh mesh = new Mesh();
+            mesh.name = "RingMesh";
+
+            Vector3[] vertices = new Vector3[segments * 4];
+            int[] triangles = new int[segments * 6];
+            Vector3[] normals = new Vector3[segments * 4];
+
+            float angleStep = 360f / segments;
+            float halfThickness = thickness * 0.5f;
+
+            for (int i = 0; i < segments; i++)
+            {
+                float angle1 = i * angleStep * Mathf.Deg2Rad;
+                float angle2 = (i + 1) * angleStep * Mathf.Deg2Rad;
+
+                Vector3 p1 = new Vector3(Mathf.Cos(angle1) * radius, 0, Mathf.Sin(angle1) * radius);
+                Vector3 p2 = new Vector3(Mathf.Cos(angle2) * radius, 0, Mathf.Sin(angle2) * radius);
+
+                int vIdx = i * 4;
+                vertices[vIdx] = p1 + Vector3.up * halfThickness;
+                vertices[vIdx + 1] = p1 + Vector3.down * halfThickness;
+                vertices[vIdx + 2] = p2 + Vector3.up * halfThickness;
+                vertices[vIdx + 3] = p2 + Vector3.down * halfThickness;
+
+                normals[vIdx] = Vector3.up;
+                normals[vIdx + 1] = Vector3.up;
+                normals[vIdx + 2] = Vector3.up;
+                normals[vIdx + 3] = Vector3.up;
+
+                int tIdx = i * 6;
+                triangles[tIdx] = vIdx;
+                triangles[tIdx + 1] = vIdx + 2;
+                triangles[tIdx + 2] = vIdx + 1;
+                triangles[tIdx + 3] = vIdx + 2;
+                triangles[tIdx + 4] = vIdx + 3;
+                triangles[tIdx + 5] = vIdx + 1;
+            }
+
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.normals = normals;
+            mesh.RecalculateBounds();
+
+            return mesh;
         }
 
         // 12 - Player  (ALWAYS LAST)
@@ -996,6 +1091,46 @@ namespace Code.Lavos.Core
                     cfg.MazeCfg.MaxSize
                 ) ?? cfg.MazeCfg.BaseSize;
             }
+        }
+
+        // -------------------------------------------------------------------------
+        // 8-bit Pixel Art Marker Texture Generator
+        // -------------------------------------------------------------------------
+        private static Texture2D Create8BitMarkerTexture(Color color, bool isEntrance, int size = 32)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point; // Pixel-perfect, no smoothing
+            tex.wrapMode = TextureWrapMode.Clamp;
+
+            // 8-bit color palette (limited colors for retro style)
+            byte r = (byte)(color.r * 255);
+            byte g = (byte)(color.g * 255);
+            byte b = (byte)(color.b * 255);
+
+            // Pixel art pattern (checkerboard + border for 8-bit style)
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    // Border (2 pixels)
+                    if (x < 2 || x >= size - 2 || y < 2 || y >= size - 2)
+                    {
+                        tex.SetPixel(x, y, new Color32((byte)(r * 0.5f), (byte)(g * 0.5f), (byte)(b * 0.5f), 255));
+                    }
+                    // Center pattern (checkerboard for pixel art look)
+                    else if ((x + y) % 4 < 2)
+                    {
+                        tex.SetPixel(x, y, new Color32(r, g, b, 255));
+                    }
+                    else
+                    {
+                        tex.SetPixel(x, y, new Color32((byte)(r * 0.8f), (byte)(g * 0.8f), (byte)(b * 0.8f), 255));
+                    }
+                }
+            }
+
+            tex.Apply();
+            return tex;
         }
     }
 }

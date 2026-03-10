@@ -222,12 +222,24 @@ namespace Code.Lavos.HUD
 
         private void CreateCanvas()
         {
-            // Setup Canvas on this GameObject
-            _canvas = gameObject.GetComponent<Canvas>();
+            // PLUG-IN-OUT: Check for existing canvas first
+            _canvas = FindFirstObjectByType<Canvas>();
+            
             if (_canvas == null)
             {
-                _canvas = gameObject.AddComponent<Canvas>();
+                // FALLBACK: Create canvas on this GameObject (self-contained HUD)
+                _canvas = gameObject.GetComponent<Canvas>();
+                if (_canvas == null)
+                {
+                    _canvas = gameObject.AddComponent<Canvas>();
+                }
+                Debug.Log("[HUDSystem] Created new canvas on HUDSystem GameObject");
             }
+            else
+            {
+                Debug.Log($"[HUDSystem] Found existing canvas '{_canvas.name}'");
+            }
+            
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             _canvas.sortingOrder = 100;
 
@@ -252,20 +264,22 @@ namespace Code.Lavos.HUD
             _hudRoot = new GameObject("HUDContainer");
             _hudRoot.transform.SetParent(transform);
             _hudRoot.transform.SetAsFirstSibling(); // Keep at top of hierarchy
-            
+
             Debug.Log("[HUDSystem] Canvas and HUDContainer created successfully");
         }
 
         private enum BarPosition { LeftEdge, RightEdge, BottomEdge }
 
         /// <summary>
-        /// Create a bar container positioned on screen edge (proven UIBarsSystem method).
+        /// Create a bar container positioned on screen edge.
+        /// NOTE: Creates dynamic UI elements - acceptable for HUD system (auto-constructed at runtime).
         /// </summary>
         private RectTransform CreateBarContainerEdge(
             string name, Transform parent,
             Image.FillMethod fillMethod, Color fillColor,
             BarPosition position)
         {
+            // DYNAMIC CONTENT: Create HUD bar (acceptable for auto-constructed UI)
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
 

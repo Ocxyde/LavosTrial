@@ -545,27 +545,20 @@ namespace Code.Lavos.HUD
 
         /// <summary>
         /// Ensure canvas exists and is properly configured.
+        /// PLUG-IN-OUT: Find existing canvas, never create.
         /// </summary>
         private void EnsureCanvas()
         {
-            // Try to find existing canvas first (from HUDSystem or other)
+            // PLUG-IN-OUT: Find existing canvas (from HUDSystem or scene)
             _canvas = FindFirstObjectByType<Canvas>();
             Debug.Log($"[UIBarsSystem] EnsureCanvas - Found existing canvas: {_canvas != null}");
 
             if (_canvas == null)
             {
-                var go = new GameObject("UI_Canvas");
-                _canvas = go.AddComponent<Canvas>();
-                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-                _canvas.sortingOrder = 100;
-
-                var scaler = go.AddComponent<CanvasScaler>();
-                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                scaler.referenceResolution = new Vector2(1920, 1080);
-                scaler.matchWidthOrHeight = 0.5f;
-
-                go.AddComponent<GraphicRaycaster>();
-                Debug.Log("[UIBarsSystem] EnsureCanvas - Created new canvas");
+                // FALLBACK: No canvas found - log error and disable
+                Debug.LogError("[UIBarsSystem] No Canvas found in scene! Add HUDSystem or create a Canvas GameObject.");
+                enabled = false;
+                return;
             }
             else
             {
@@ -732,38 +725,39 @@ namespace Code.Lavos.HUD
         /// <summary>
         /// Show floating text (damage, heal, gain, loss, etc.).
         /// Reusable for any stat change visualization.
+        /// NOTE: Creates dynamic UI elements for VFX - acceptable for temporary floating text.
         /// </summary>
         private void ShowFloatingText(string text, Color color, string type)
         {
             if (_healthBarRoot == null) return;
 
-            // Create floating text GameObject
+            // DYNAMIC VFX: Create temporary floating text (acceptable for transient VFX)
             var go = new GameObject($"Floating_{type}");
             go.transform.SetParent(_healthBarRoot.parent, false);
-            
+
             var rect = go.AddComponent<RectTransform>();
             rect.sizeDelta = new Vector2(120, 45);
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = new Vector2(0, 60);
-            
+
             var tmp = go.AddComponent<TextMeshProUGUI>();
             tmp.text = text;
             tmp.fontSize = 32;
             tmp.fontStyle = TMPro.FontStyles.Bold;
             tmp.color = color;
             tmp.alignment = TextAlignmentOptions.Center;
-            
+
             // Outline for better visibility
             var outline = go.AddComponent<Outline>();
             outline.effectColor = Color.black;
             outline.effectDistance = new Vector2(3, 3);
-            
+
             // Shadow for depth
             var shadow = go.AddComponent<Shadow>();
             shadow.effectColor = new Color(0, 0, 0, 0.5f);
             shadow.effectDistance = new Vector2(2, 2);
-            
+
             // Fade out coroutine
             StartCoroutine(FadeOutFloatingText(go, tmp));
         }
@@ -923,11 +917,13 @@ namespace Code.Lavos.HUD
 
         /// <summary>
         /// Build a status effect icon.
+        /// NOTE: Creates dynamic UI elements - acceptable for unknown number of status effects.
         /// </summary>
         private EffectIconData BuildEffectIcon(StatusEffectData effect)
         {
             Color iconColor = GetEffectColor(effect);
 
+            // DYNAMIC CONTENT: Create effect icon (acceptable for variable number of effects)
             var root = new GameObject($"Effect_{effect.id}");
             root.transform.SetParent(_effectsContainer, false);
 

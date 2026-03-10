@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
@@ -102,7 +102,7 @@ namespace Code.Lavos.Core
                 DeadEndDensity = _config.MazeCfg.DeadEndDensity,
             };
             _generator ??= new GridMazeGenerator();
-            _mazeData = _generator.Generate(currentSeed, currentLevel, mazeCfg);
+            _mazeData = _generator.Generate(_currentSeed, _currentLevel, mazeCfg);
 
             if (_mazeData == null) { Debug.LogError("[CorridorMazeBuilder] MazeData is NULL!"); return; }
 
@@ -115,6 +115,7 @@ namespace Code.Lavos.Core
             SpawnObjects();
             SpawnEntranceExitMarkers();
 
+            Debug.Log("[CorridorMazeBuilder] Calling SpawnPlayer()...");
             SpawnPlayer();
             _lastGenMs = (Time.realtimeSinceStartup - t0) * 1000f;
             Debug.Log($"[CorridorMazeBuilder] Done -- {_lastGenMs:F2}ms factor={_currentDifficultyFactor:F3}");
@@ -137,8 +138,21 @@ namespace Code.Lavos.Core
             chestPrefab ??= Resources.Load<GameObject>("Prefabs/ChestPrefab");
             enemyPrefab ??= Resources.Load<GameObject>("Prefabs/EnemyPrefab");
             floorPrefab ??= Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
-            playerPrefab ??= Resources.Load<GameObject>("Prefabs/PlayerPrefab");
+            // FIX: Prefab is named "Player" not "PlayerPrefab"
+            playerPrefab ??= Resources.Load<GameObject>("Prefabs/Player");
+            
+            // Log prefab loading status
+            Debug.Log($"[CorridorMazeBuilder] Prefab loading status:");
+            Debug.Log($"  - wallPrefab: {(wallPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - doorPrefab: {(doorPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - torchPrefab: {(torchPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - chestPrefab: {(chestPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - enemyPrefab: {(enemyPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - floorPrefab: {(floorPrefab != null ? "LOADED" : "NULL")}");
+            Debug.Log($"  - playerPrefab: {(playerPrefab != null ? "LOADED" : "NULL")} (looking for 'Prefabs/Player')");
+            
             if (wallPrefab == null) Debug.LogError("[CorridorMazeBuilder] wallPrefab missing!");
+            if (playerPrefab == null) Debug.LogError("[CorridorMazeBuilder] playerPrefab missing! Check Assets/Resources/Prefabs/Player.prefab exists");
         }
 
         private void DestroyMazeObjects()
@@ -206,6 +220,17 @@ namespace Code.Lavos.Core
             float yOffset = wallPivotIsAtMeshCenter ? wh * 0.5f : 0f;
             go.transform.localScale = new Vector3(cs, wh, thickness);
             go.transform.localPosition += Vector3.up * yOffset;
+            
+            // Ensure wall has a collider for collision with player, enemies, and items
+            BoxCollider collider = go.GetComponent<BoxCollider>();
+            if (collider == null)
+            {
+                collider = go.AddComponent<BoxCollider>();
+                Debug.Log($"[CorridorMazeBuilder] Added BoxCollider to wall {go.name}");
+            }
+            collider.enabled = true;
+            collider.isTrigger = false; // Ensure it's a solid collider, not a trigger
+            
             if (wallMaterial != null) { var r = go.GetComponent<Renderer>(); if (r != null) r.material = wallMaterial; }
         }
 
@@ -263,7 +288,23 @@ namespace Code.Lavos.Core
 
         private void SpawnPlayer()
         {
-            if (playerPrefab == null || _mazeData == null || _config == null) return;
+            // Debug logging to identify spawn issue
+            if (playerPrefab == null)
+            {
+                Debug.LogError("[CorridorMazeBuilder] SpawnPlayer FAILED: playerPrefab is NULL!");
+                return;
+            }
+            if (_mazeData == null)
+            {
+                Debug.LogError("[CorridorMazeBuilder] SpawnPlayer FAILED: _mazeData is NULL!");
+                return;
+            }
+            if (_config == null)
+            {
+                Debug.LogError("[CorridorMazeBuilder] SpawnPlayer FAILED: _config is NULL!");
+                return;
+            }
+
             int sx = _mazeData.SpawnCell.x, sz = _mazeData.SpawnCell.z;
             var pos = new Vector3((sx + 0.5f) * _config.CellSize, _config.PlayerEyeHeight, (sz + 0.5f) * _config.CellSize);
             _playerInstance = Instantiate(playerPrefab, pos, Quaternion.identity);
@@ -303,28 +344,33 @@ namespace Code.Lavos.Core
             float cs = _config.CellSize;
             var pos = new Vector3((cx + 0.5f) * cs, 0.5f, (cz + 0.5f) * cs);
 
-            // Create 8-bit pixel art style marker (cylinder with emissive material)
+            // Create 8-bit pixel art style marker (cylinder with pixelated texture)
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             marker.name = name;
             marker.transform.position = pos;
             marker.transform.localScale = new Vector3(cs * markerScale, markerHeight, cs * markerScale);
 
-            // Create emissive material
+            // Create 8-bit pixel art texture for marker
+            Texture2D pixelTex = Create8BitMarkerTexture(color, isEntrance);
+            
+            // Create emissive material with pixel art texture
             Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             if (mat == null) mat = new Material(Shader.Find("Unlit/Color"));
-            
+
+            mat.mainTexture = pixelTex;
             mat.color = new Color(color.r, color.g, color.b, 1f);
             mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", color * markerLightIntensity);
+            mat.SetColor("_EmissionColor", color * markerLightIntensity * 1.5f);
 
             var renderer = marker.GetComponent<Renderer>();
             if (renderer != null)
             {
                 renderer.material = mat;
                 renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
             }
 
-            // Add particle effect
+            // Add particle effect (ascending pixels)
             SpawnPixelParticles(pos, color, isEntrance);
 
             // Add point light for glow effect
@@ -332,15 +378,100 @@ namespace Code.Lavos.Core
             if (glowLight != null)
             {
                 glowLight.color = color;
-                glowLight.intensity = markerLightIntensity;
-                glowLight.range = cs * 1.5f;
+                glowLight.intensity = markerLightIntensity * 1.2f;
+                glowLight.range = cs * 2f;
                 glowLight.shadows = LightShadows.None;
+                glowLight.bounceIntensity = 1.5f;
             }
+
+            // Add floating ring effect around marker
+            SpawnFloatingRing(pos, color, isEntrance);
 
             if (_objectsRoot != null)
                 marker.transform.SetParent(_objectsRoot);
 
             Debug.Log($"[CorridorMazeBuilder] {name} spawned at grid ({cx},{cz})");
+        }
+
+        private void SpawnFloatingRing(Vector3 position, Color color, bool isEntrance)
+        {
+            // Create rotating ring around marker for extra visual flair
+            GameObject ringObj = new GameObject(isEntrance ? "EntranceRing" : "ExitRing");
+            ringObj.transform.position = position + Vector3.up * 1f;
+            ringObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+
+            // Create ring mesh (torus approximation)
+            Mesh ringMesh = CreateRingMesh(0.6f, 0.05f, 32);
+            MeshFilter meshFilter = ringObj.AddComponent<MeshFilter>();
+            meshFilter.mesh = ringMesh;
+
+            // Add renderer BEFORE accessing material
+            MeshRenderer renderer = ringObj.AddComponent<MeshRenderer>();
+
+            // Emissive material for ring
+            Material ringMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            if (ringMat != null)
+            {
+                ringMat.color = color;
+                ringMat.EnableKeyword("_EMISSION");
+                ringMat.SetColor("_EmissionColor", color * 2f);
+                renderer.material = ringMat;
+            }
+
+            // Add rotation animation component
+            RingRotator rotator = ringObj.AddComponent<RingRotator>();
+            rotator.rotationSpeed = isEntrance ? 30f : -20f; // Entrance spins faster, opposite direction
+
+            if (_objectsRoot != null)
+                ringObj.transform.SetParent(_objectsRoot);
+        }
+
+        private Mesh CreateRingMesh(float radius, float thickness, int segments)
+        {
+            Mesh mesh = new Mesh();
+            mesh.name = "RingMesh";
+
+            Vector3[] vertices = new Vector3[segments * 4];
+            int[] triangles = new int[segments * 6];
+            Vector3[] normals = new Vector3[segments * 4];
+
+            float angleStep = 360f / segments;
+            float halfThickness = thickness * 0.5f;
+
+            for (int i = 0; i < segments; i++)
+            {
+                float angle1 = i * angleStep * Mathf.Deg2Rad;
+                float angle2 = (i + 1) * angleStep * Mathf.Deg2Rad;
+
+                Vector3 p1 = new Vector3(Mathf.Cos(angle1) * radius, 0, Mathf.Sin(angle1) * radius);
+                Vector3 p2 = new Vector3(Mathf.Cos(angle2) * radius, 0, Mathf.Sin(angle2) * radius);
+
+                int vIdx = i * 4;
+                vertices[vIdx] = p1 + Vector3.up * halfThickness;
+                vertices[vIdx + 1] = p1 + Vector3.down * halfThickness;
+                vertices[vIdx + 2] = p2 + Vector3.up * halfThickness;
+                vertices[vIdx + 3] = p2 + Vector3.down * halfThickness;
+
+                normals[vIdx] = Vector3.up;
+                normals[vIdx + 1] = Vector3.up;
+                normals[vIdx + 2] = Vector3.up;
+                normals[vIdx + 3] = Vector3.up;
+
+                int tIdx = i * 6;
+                triangles[tIdx] = vIdx;
+                triangles[tIdx + 1] = vIdx + 2;
+                triangles[tIdx + 2] = vIdx + 1;
+                triangles[tIdx + 3] = vIdx + 2;
+                triangles[tIdx + 4] = vIdx + 3;
+                triangles[tIdx + 5] = vIdx + 1;
+            }
+
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.normals = normals;
+            mesh.RecalculateBounds();
+
+            return mesh;
         }
 
         private void SpawnPixelParticles(Vector3 position, Color color, bool isEntrance)
@@ -350,29 +481,31 @@ namespace Code.Lavos.Core
             particleObj.transform.position = position + Vector3.up * 1f;
 
             var particleSystem = particleObj.AddComponent<ParticleSystem>();
+            
+            // Configure all settings BEFORE accessing modules
             var main = particleSystem.main;
-            var emission = particleSystem.emission;
-            var shape = particleSystem.shape;
-            var colorOverLifetime = particleSystem.colorOverLifetime;
-
+            
             // 8-bit pixel style settings
-            main.duration = 1f;
-            main.loop = true;
             main.startSize = particleSize;
             main.startSpeed = 0.5f;
             main.startLifetime = 2f;
             main.gravityModifier = 0f;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.maxParticles = 20;
+            main.loop = true;
+            main.playOnAwake = true;
 
-            // Emission rate
+            // Emission
+            var emission = particleSystem.emission;
             emission.rateOverTime = particleEmissionRate;
 
             // Shape: emit from top
+            var shape = particleSystem.shape;
             shape.shapeType = ParticleSystemShapeType.Sphere;
             shape.radius = 0.3f;
 
-            // Color gradient (fading pixel)
+            // Color over lifetime (fading pixel)
+            var colorOverLifetime = particleSystem.colorOverLifetime;
             Gradient grad = new Gradient();
             grad.SetKeys(
                 new GradientColorKey[] { new GradientColorKey(color, 0f), new GradientColorKey(color * 0.5f, 1f) },
@@ -380,12 +513,52 @@ namespace Code.Lavos.Core
             );
             colorOverLifetime.color = grad;
 
-            // Rotate for dynamic effect
+            // Rotation for dynamic effect
             var rotationOverLifetime = particleSystem.rotationOverLifetime;
             rotationOverLifetime.zMultiplier = 90f;
 
             if (_objectsRoot != null)
                 particleObj.transform.SetParent(_objectsRoot);
+        }
+
+        // -------------------------------------------------------------------------
+        // 8-bit Pixel Art Marker Texture Generator
+        // -------------------------------------------------------------------------
+        private static Texture2D Create8BitMarkerTexture(Color color, bool isEntrance, int size = 32)
+        {
+            Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Point; // Pixel-perfect, no smoothing
+            tex.wrapMode = TextureWrapMode.Clamp;
+
+            // 8-bit color palette (limited colors for retro style)
+            byte r = (byte)(color.r * 255);
+            byte g = (byte)(color.g * 255);
+            byte b = (byte)(color.b * 255);
+
+            // Pixel art pattern (checkerboard + border for 8-bit style)
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    // Border (2 pixels)
+                    if (x < 2 || x >= size - 2 || y < 2 || y >= size - 2)
+                    {
+                        tex.SetPixel(x, y, new Color32((byte)(r * 0.5f), (byte)(g * 0.5f), (byte)(b * 0.5f), 255));
+                    }
+                    // Center pattern (checkerboard for pixel art look)
+                    else if ((x + y) % 4 < 2)
+                    {
+                        tex.SetPixel(x, y, new Color32(r, g, b, 255));
+                    }
+                    else
+                    {
+                        tex.SetPixel(x, y, new Color32((byte)(r * 0.8f), (byte)(g * 0.8f), (byte)(b * 0.8f), 255));
+                    }
+                }
+            }
+
+            tex.Apply();
+            return tex;
         }
     }
 }

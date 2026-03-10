@@ -47,3 +47,6 @@
 ---
 
 **Motto:** "Happy coding with me : Ocxyde :)"
+
+## Qwen Added Memories
+- DAILY REMINDER: Remind user to run cleanup_diff_tmp.ps1 or cleanup_diff_tmp.bat daily to delete diff_tmp files older than 2 days

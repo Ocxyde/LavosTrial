@@ -88,6 +88,7 @@ namespace Code.Lavos.Ressources
 
         /// <summary>
         /// Create a 3D door with custom dimensions that fits into a wall hole.
+        /// FACTORY PATTERN: Creates door GameObjects dynamically - acceptable for factory.
         /// </summary>
         public static GameObject CreateDoor(
             Vector3 position,
@@ -98,7 +99,7 @@ namespace Code.Lavos.Ressources
             float customHeight,
             float customDepth)
         {
-            // Create door container
+            // FACTORY: Create door container (acceptable for factory pattern)
             GameObject doorObj = new GameObject($"Door_{variant}_{trap}");
             doorObj.transform.position = position;
             doorObj.transform.rotation = rotation;

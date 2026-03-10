@@ -165,18 +165,29 @@ namespace Code.Lavos.Core
                 Debug.LogWarning("[PlayerController] Camera is not a child of Player! Auto-fixing...");
                 // Auto-fix: Reparent camera to player
                 playerCamera.transform.SetParent(transform);
-                playerCamera.transform.localPosition = _camRestPosition;
+                playerCamera.transform.localPosition = new Vector3(0f, eyeHeightOffset, 0f);
                 playerCamera.transform.localRotation = Quaternion.identity;
                 Debug.Log("[PlayerController] Camera reparented to player with correct local position");
             }
 
-            _camRestPosition = new Vector3(0f, eyeHeightOffset, 0f);
-
+            // FPS VIEW: Camera at middle of eyes (between eyes, not top of head)
+            // For 2m tall CharacterController: eyes at ~1.6m (middle of head)
+            // Camera local position: (0, 1.6, 0) - exactly at eye level
+            Vector3 targetCamPos = new Vector3(0f, 1.6f, 0f);
+            
             // Validate camera local position matches expected eye height
-            if (playerCamera.transform.localPosition != _camRestPosition)
+            if (playerCamera.transform.localPosition != targetCamPos)
             {
-                Debug.Log($"[PlayerController] Repositioning camera from {playerCamera.transform.localPosition} to {_camRestPosition}");
-                playerCamera.transform.localPosition = _camRestPosition;
+                Debug.Log($"[PlayerController] Setting FPS camera from {playerCamera.transform.localPosition} to {targetCamPos}");
+                playerCamera.transform.localPosition = targetCamPos;
+            }
+            
+            // Disable any CameraFollow component (we want FPS, not third-person)
+            CameraFollow camFollow = playerCamera.GetComponent<CameraFollow>();
+            if (camFollow != null)
+            {
+                camFollow.enabled = false;
+                Debug.Log("[PlayerController] Disabled CameraFollow for FPS view");
             }
         }
         else
@@ -471,7 +482,10 @@ namespace Code.Lavos.Core
         _bobCurrentOffset = Vector3.Lerp(_bobCurrentOffset, _bobTargetOffset, Time.deltaTime * bobSmoothing);
 
         // Application : position de repos + offset bob
-        playerCamera.transform.localPosition = _camRestPosition + _bobCurrentOffset;
+        // FIX: Ensure Z is always 0 to prevent camera drift
+        Vector3 finalCamPos = _camRestPosition + _bobCurrentOffset;
+        finalCamPos.z = 0f; // Force Z to 0
+        playerCamera.transform.localPosition = finalCamPos;
     }
 
     // ─────────────────────────────────────────────────────────────────────────

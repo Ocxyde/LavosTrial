@@ -43,8 +43,11 @@ namespace Code.Lavos.HUD
         public static PopWinEngine Instance { get; private set; }
 
         [Header("Settings")]
+        [Tooltip("Parent canvas for popup windows (finds automatically if not set)")]
         [SerializeField] private Transform canvasParent;
         [SerializeField] private bool dontDestroyOnLoad = true;
+
+        private Canvas _canvas; // Cached canvas reference
 
         [Header("Window Prefabs")]
         [SerializeField] private Sprite windowBackground;
@@ -84,18 +87,33 @@ namespace Code.Lavos.HUD
 
         private void CreateWindowParent()
         {
+            // PLUG-IN-OUT: Find existing canvas
+            _canvas = FindFirstObjectByType<Canvas>();
+            
+            if (_canvas == null)
+            {
+                Debug.LogError("[PopWinEngine] No Canvas found in scene! Windows will not be visible.");
+                enabled = false;
+                return;
+            }
+
+            // Create window parent under canvas
             var winGO = new GameObject("PopupWindows");
-            winGO.transform.SetParent(canvasParent != null ? canvasParent : transform, false);
+            winGO.transform.SetParent(_canvas.transform, false);
             _windowParent = winGO.AddComponent<RectTransform>().transform;
+            
+            Debug.Log($"[PopWinEngine] Created window parent under canvas '{_canvas.name}'");
         }
 
         #region Basic Window
 
         /// <summary>
         /// Create a basic popup window.
+        /// NOTE: Creates dynamic UI elements - acceptable for popup window system (unknown number of windows).
         /// </summary>
         public GameObject CreateWindow(string title, float width = 400f, float height = 300f)
         {
+            // DYNAMIC CONTENT: Create popup window (acceptable for variable number of windows)
             var windowGO = new GameObject($"Window_{title}");
             windowGO.transform.SetParent(_windowParent, false);
 
