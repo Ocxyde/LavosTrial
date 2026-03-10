@@ -338,7 +338,99 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // SpawnAllWalls
+        // Implementation of Abstract Methods from BaseMazeBuilder
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// Generate maze data (implementation of abstract method).
+        /// </summary>
+        protected override void GenerateMazeData()
+        {
+            Debug.Log($"[MazeBuilder8] Generating new maze L{currentLevel} S{currentSeed}");
+
+            // Create dungeon config
+            var dungeonCfg = new DungeonMazeConfig
+            {
+                BaseSize = _config.MazeCfg.BaseSize,
+                MinSize = _config.MazeCfg.MinSize,
+                MaxSize = _config.MazeCfg.MaxSize,
+                CellSize = _config.CellSize,
+                WallHeight = _config.WallHeight,
+                SpawnRoomSize = _config.MazeCfg.SpawnRoomSize,
+                ExitRoomSize = MazeConfig.ExitRoomSize,
+                TorchChance = _config.MazeCfg.TorchChance,
+                ChestDensity = _config.MazeCfg.ChestDensity,
+                EnemyDensity = _config.MazeCfg.EnemyDensity,
+                AllowDiagonalWalls = false,
+                Difficulty = new DifficultyScalerConfig
+                {
+                    BaseFactor = 1.0f,
+                    FactorPerLevel = 0.15f,
+                    MaxFactor = _config.DifficultyCfg.MaxFactor,
+                    SizeGrowthPerLevel = 2,
+                },
+            };
+
+            // Use appropriate generator based on settings
+            if (useGuaranteedPathGenerator)
+            {
+                Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
+                _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
+                _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+            }
+            else if (usePassageFirstGenerator || dungeonCfg.UsePassageFirst)
+            {
+                var passageGenerator = new PassageFirstMazeGenerator();
+                _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
+            }
+            else
+            {
+                Debug.Log("[MazeBuilder8] Using DungeonMazeGenerator (Rooms + Corridors)");
+                _generator ??= new DungeonMazeGenerator();
+                _mazeData = _generator.Generate(currentSeed, currentLevel, dungeonCfg);
+            }
+
+            // Verify maze data
+            if (_mazeData == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: _mazeData is NULL after generation/load!");
+                return;
+            }
+
+            Debug.Log($"[MazeBuilder8] Maze data loaded: {_mazeData.Width}x{_mazeData.Height} seed={_mazeData.Seed} level={_mazeData.Level}");
+            currentDifficultyFactor = _mazeData.DifficultyFactor;
+
+            // Verify config before proceeding
+            if (_config == null)
+            {
+                Debug.LogError("[MazeBuilder8] CRITICAL: _config is NULL - cannot spawn maze objects!");
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Get maze size (implementation of abstract method).
+        /// </summary>
+        protected override float GetMazeSize() => _mazeData?.Width ?? 0f;
+
+        /// <summary>
+        /// Get player spawn position (implementation of abstract method).
+        /// </summary>
+        protected override Vector3 GetPlayerSpawnPosition()
+        {
+            if (_mazeData == null || _config == null)
+                return Vector3.zero;
+
+            int sx = _mazeData.SpawnCell.x, sz = _mazeData.SpawnCell.z;
+            return new Vector3(
+                (sx + 0.5f) * _config.CellSize,
+                _config.PlayerEyeHeight,
+                (sz + 0.5f) * _config.CellSize
+            );
+        }
+
+        // -------------------------------------------------------------------------
+        // SpawnAllWalls (override - 8-axis specific implementation)
         //
         // BOUNDARY-BASED WALL SPAWNING (NO OVERLAPPING WALLS):
         // 
@@ -359,7 +451,7 @@ namespace Code.Lavos.Core
         // Diagonal wall position = corner shared by cell (cx,cz) in direction dir,
         //   at y = 0.  Scale X = cellSize * sqrt(2).
         // -------------------------------------------------------------------------
-        private void SpawnAllWalls()
+        protected override void SpawnAllWalls()
         {
             if (wallPrefab == null)
             {
