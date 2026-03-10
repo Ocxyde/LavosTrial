@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // SetupMazeSceneV2.cs - Automated scene setup for A-Maze-Lav8s_2.0.0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -201,10 +201,22 @@ namespace Code.Lavos.Editor
             // Add GraphicRaycaster
             canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
-            // Create EventSystem
+            // Create EventSystem with New Input System (if available)
             var eventSystemObj = new GameObject("EventSystem");
             var eventSystem = eventSystemObj.AddComponent<UnityEngine.EventSystems.EventSystem>();
-            var inputModule = eventSystemObj.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            
+            // Try to use Input System package module first, fallback to standalone
+            var inputSystemType = System.Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, UnityEngine.InputSystem.UI");
+            if (inputSystemType != null)
+            {
+                eventSystemObj.AddComponent(inputSystemType);
+                Debug.Log("[SetupMazeSceneV2] Using New Input System module");
+            }
+            else
+            {
+                eventSystemObj.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+                Debug.Log("[SetupMazeSceneV2] Using Standalone Input Module (fallback)");
+            }
 
             // Add UIBarsSystem for HUD (health, mana, stamina)
             var barsObj = new GameObject("UIBarsSystem");
