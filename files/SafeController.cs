@@ -1,0 +1,172 @@
+// SafeController.cs
+// Main orchestrator for safe interaction, item distribution, and destruction timer
+// Unity 6000.10f1 compatible - UTF-8 encoding - Unix line endings
+//
+// CORE: Manages safe interaction via F key, item pickup, animation, and self-destruction after 60 seconds
+
+using UnityEngine;
+using UnityEngine.InputSystem;
+using Code.Lavos.Core;
+
+namespace Code.Lavos.Interactables
+{
+    public class SafeController : MonoBehaviour
+    {
+        [Header("Safe Configuration")]
+        [SerializeField] private float destructionDelaySeconds = 60f;
+        [SerializeField] private bool debugMode = false;
+
+        [Header("Component References")]
+        private SafeAnimationController animationController;
+        private SafeItemContainer itemContainer;
+        private SafeInteractionTrigger interactionTrigger;
+        private EventHandler eventHandler;
+
+        private bool hasBeenInteracted = false;
+        private float destructionTimer = 0f;
+        private bool isBeingDestroyed = false;
+
+        private void Awake()
+        {
+            ValidateComponents();
+        }
+
+        private void Start()
+        {
+            FindAndInitializeComponents();
+        }
+
+        private void Update()
+        {
+            HandleInteractionInput();
+            HandleDestructionTimer();
+        }
+
+        private void ValidateComponents()
+        {
+            if (animationController == null)
+                animationController = GetComponent<SafeAnimationController>();
+
+            if (itemContainer == null)
+                itemContainer = GetComponent<SafeItemContainer>();
+
+            if (interactionTrigger == null)
+                interactionTrigger = GetComponent<SafeInteractionTrigger>();
+
+            if (debugMode)
+            {
+                if (animationController == null)
+                    Debug.LogWarning("[SafeController] SafeAnimationController not found on this GameObject");
+                if (itemContainer == null)
+                    Debug.LogWarning("[SafeController] SafeItemContainer not found on this GameObject");
+                if (interactionTrigger == null)
+                    Debug.LogWarning("[SafeController] SafeInteractionTrigger not found on this GameObject");
+            }
+        }
+
+        private void FindAndInitializeComponents()
+        {
+            eventHandler = FindFirstObjectByType<EventHandler>();
+
+            if (eventHandler == null && debugMode)
+                Debug.LogWarning("[SafeController] EventHandler not found in scene");
+        }
+
+        private void HandleInteractionInput()
+        {
+            if (hasBeenInteracted || isBeingDestroyed)
+                return;
+
+            if (!CanPlayerInteract())
+                return;
+
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.fKey.wasPressedThisFrame)
+            {
+                OnPlayerInteraction();
+            }
+        }
+
+        private bool CanPlayerInteract()
+        {
+            if (interactionTrigger == null)
+                return false;
+
+            return interactionTrigger.IsPlayerInRange();
+        }
+
+        private void OnPlayerInteraction()
+        {
+            if (debugMode)
+                Debug.Log("[SafeController] Player interaction detected (F key)");
+
+            hasBeenInteracted = true;
+
+            if (animationController != null)
+                animationController.PlayOpenAnimation();
+
+            if (itemContainer != null)
+                itemContainer.DistributeItems();
+
+            BroadcastSafeOpened();
+
+            destructionTimer = destructionDelaySeconds;
+        }
+
+        private void HandleDestructionTimer()
+        {
+            if (!hasBeenInteracted || isBeingDestroyed)
+                return;
+
+            destructionTimer -= Time.deltaTime;
+
+            if (debugMode && destructionTimer > 0f && destructionTimer < 2f)
+                Debug.Log($"[SafeController] Safe will be destroyed in {destructionTimer:F2} seconds");
+
+            if (destructionTimer <= 0f)
+            {
+                DestroySafe();
+            }
+        }
+
+        private void BroadcastSafeOpened()
+        {
+            if (eventHandler == null)
+                return;
+
+            if (eventHandler.OnSafeOpened != null)
+            {
+                eventHandler.OnSafeOpened.Invoke();
+
+                if (debugMode)
+                    Debug.Log("[SafeController] Broadcasted OnSafeOpened event");
+            }
+        }
+
+        private void DestroySafe()
+        {
+            if (isBeingDestroyed)
+                return;
+
+            isBeingDestroyed = true;
+
+            if (debugMode)
+                Debug.Log("[SafeController] Destroying safe after 60 seconds");
+
+            Destroy(gameObject);
+        }
+
+        public float GetRemainingDestructionTime()
+        {
+            if (!hasBeenInteracted)
+                return -1f;
+
+            return Mathf.Max(0f, destructionTimer);
+        }
+
+        public bool HasBeenInteracted()
+        {
+            return hasBeenInteracted;
+        }
+    }
+}

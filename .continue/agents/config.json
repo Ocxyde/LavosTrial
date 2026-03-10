@@ -1,14 +1,31 @@
-﻿{
+﻿﻿﻿{
   "models": [
     {
-      "title": "Qwen 2.5 Local",
-      "provider": "ollama",
-      "model": "qwen2.5:0.5b"
+      "title": "Qwen3.5-4B-Claude-4.6-Opus-Reasoning (LM Studio)",
+      "provider": "openai",
+      "model": "qwen3.5-4b-claude-4.6-opus-reasoning-distilled",
+      "apiBase": "http://10.2.0.2:8080/v1"
     }
   ],
   "tabAutocompleteModel": {
-    "title": "Qwen 2.5 Local",
-    "provider": "ollama",
-    "model": "qwen2.5:0.5b"
-  }
+    "title": "Qwen3.5-4B-Claude-4.6-Opus-Reasoning (LM Studio)",
+    "provider": "openai",
+    "model": "qwen3.5-4b-claude-4.6-opus-reasoning-distilled",
+    "apiBase": "http://10.2.0.2:8080/v1"
+  },
+  "embeddings": {
+    "provider": "openai",
+    "model": "nomic-embed-text",
+    "apiBase": "http://10.2.0.2:8080/v1"
+  },
+  "context": [
+    "code",
+    "docs",
+    "diff",
+    "terminal",
+    "problems",
+    "folder",
+    "codebase"
+  ],
+  "systemMessage": "You are a Unity development assistant for Code.Lavos project.\n- Unity 6 (6000.3.10f1)\n- Rider IDE\n- New Input System\n- C# coding conventions\n- Unix LF line endings, UTF-8 encoding\n- GPL v3 license\n- Plugin-in-out architecture with core main file\n- Codename: BetsyBoop"
 }

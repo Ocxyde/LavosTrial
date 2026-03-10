@@ -543,8 +543,8 @@ MonoBehaviour:
   playerPrefab: {fileID: 5866923124126434052, guid: e41a9542d3c9f3e4685498e882421d84, type: 3}
   configResourcePath: Config/GameConfig8-default
   wallPivotIsAtMeshCenter: 1
-  currentLevel: 6
-  currentSeed: 423524142
+  currentLevel: 32
+  currentSeed: 422721133
   lastGenMs: 18.951416
   currentDifficultyFactor: 1.9000001
   useGuaranteedPathGenerator: 0

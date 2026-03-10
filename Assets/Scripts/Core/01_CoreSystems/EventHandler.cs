@@ -132,6 +132,14 @@ namespace Code.Lavos.Core
 
         #endregion
 
+        #region Safe Events
+
+        public event Action<Vector3> OnSafeOpened;
+        public event Action<Vector3, int> OnSafeRewardClaimed;
+        public event Action<Vector3> OnSafeClosed;
+
+        #endregion
+
         #region Game Events
 
         public event Action<int> OnScoreChanged;
@@ -628,6 +636,28 @@ namespace Code.Lavos.Core
         {
             OnChestItemSpawned?.Invoke(position, lootTable);
             if (debugEvents) Debug.Log($"[EventHandler] ChestItemSpawned at {position}");
+        }
+
+        #endregion
+
+        #region Safe Event Invokers
+
+        public void InvokeSafeOpened(Vector3 position)
+        {
+            OnSafeOpened?.Invoke(position);
+            if (debugEvents) Debug.Log($"[EventHandler] SafeOpened at {position}");
+        }
+
+        public void InvokeSafeRewardClaimed(Vector3 position, int itemCount)
+        {
+            OnSafeRewardClaimed?.Invoke(position, itemCount);
+            if (debugEvents) Debug.Log($"[EventHandler] SafeRewardClaimed: {itemCount} items at {position}");
+        }
+
+        public void InvokeSafeClosed(Vector3 position)
+        {
+            OnSafeClosed?.Invoke(position);
+            if (debugEvents) Debug.Log($"[EventHandler] SafeClosed at {position}");
         }
 
         #endregion

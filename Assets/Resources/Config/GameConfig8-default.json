@@ -1,0 +1,7 @@
+{
+    "CellSize": 6.0,
+    "WallHeight": 4.0,
+    "defaultCorridorWidth": 2,
+    "corridorRandomness": 0.3,
+    "generatePerimeterCorridor": true
+}

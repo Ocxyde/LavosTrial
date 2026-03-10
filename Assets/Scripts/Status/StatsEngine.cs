@@ -45,7 +45,7 @@ namespace Code.Lavos.Status
         private float _baseMaxStamina = 100f;
         private float _baseHealthRegen = 2f;
         private float _baseManaRegen = 5f;
-        private float _baseStaminaRegen = 10f;
+        private float _baseStaminaRegen = 5f; // Reduced from 10f for lesser regen
         private float _baseCriticalChance = 0.05f;
         private float _baseCriticalDamage = 2f;
 
@@ -56,8 +56,8 @@ namespace Code.Lavos.Status
 
         // ─── Out of Combat Regeneration ────────────────────────────────────────
         private float _lastStaminaUseTime = -10f; // Negative so OOC regen is active at start
-        private const float OutOfCombatDelay = 3f; // Seconds without using stamina to get OOC regen
-        private const float OutOfCombatMultiplier = 1.5f; // 1.5x regen when out of combat (nerfed from 2x)
+        private const float OutOfCombatDelay = 5f; // Seconds without using stamina to get OOC regen (increased from 3f)
+        private const float OutOfCombatMultiplier = 1.2f; // 1.2x regen when out of combat (reduced from 1.5f)
 
         // ─── Stat Modifiers ────────────────────────────────────────────────────
         private readonly StatModifierCollection _healthModifiers = new();
@@ -132,7 +132,7 @@ namespace Code.Lavos.Status
         }
 
         public void SetBaseStats(float maxHealth, float maxMana, float maxStamina,
-                                  float healthRegen = 2f, float manaRegen = 5f, float staminaRegen = 10f)
+                                  float healthRegen = 2f, float manaRegen = 5f, float staminaRegen = 5f)
         {
             _baseMaxHealth = maxHealth;
             _baseMaxMana = maxMana;

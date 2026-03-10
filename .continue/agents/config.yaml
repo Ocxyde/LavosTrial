@@ -1,20 +1,20 @@
 ﻿models:
-  - title: Qwen 2.5 0.5B Instruct
-    provider: ollama
-    model: qwen2.5:0.5b
-    apiBase: http://10.2.0.2:8080
+  - title: Qwen3.5-4B-Claude-4.6-Opus-Reasoning (LM Studio)
+    provider: openai
+    model: qwen3.5-4b-claude-4.6-opus-reasoning-distilled
+    apiBase: http://10.2.0.2:8080/v1
 
 embeddings:
-  provider: ollama
+  provider: openai
   model: nomic-embed-text
-  apiBase: http://10.2.0.2:8080
+  apiBase: http://10.2.0.2:8080/v1
 
 tabAutocomplete:
   model:
-    title: Qwen 2.5 0.5B Instruct
-    provider: ollama
-    model: qwen2.5:0.5b
-    apiBase: http://10.2.0.2:8080
+    title: Qwen3.5-4B-Claude-4.6-Opus-Reasoning (LM Studio)
+    provider: openai
+    model: qwen3.5-4b-claude-4.6-opus-reasoning-distilled
+    apiBase: http://10.2.0.2:8080/v1
   # Disable for specific file types if needed
   # disableInFiles: ["*.md", "*.txt"]
 

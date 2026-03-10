@@ -118,7 +118,9 @@ namespace Code.Lavos.Core
             CarveSpawnRoom(data, 1, 1, cfg.SpawnRoomSize);
             data.SetSpawn(1, 1);
 
-            // ── Step 4: exit ──────────────────────────────────────
+            // ── Step 4: exit room ─────────────────────────────────
+            int exitSize = MazeConfig.ExitRoomSize;
+            CarveExitRoom(data, size - 2, size - 2, exitSize);
             data.SetExit(size - 2, size - 2);
 
             // ── Step 5: A* guaranteed path (cardinal only) ────────
@@ -269,6 +271,18 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
+        private static void CarveExitRoom(MazeData8 d, int ox, int oz, int roomSize)
+        {
+            int half = roomSize / 2;
+            for (int x = ox - half; x <= ox + half; x++)
+            for (int z = oz - half; z <= oz + half; z++)
+            {
+                if (d.InBounds(x, z))
+                    d.SetCell(x, z, CellFlags8.None);   // wipe all wall flags
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────
         //  Step 5 — A* guaranteed path (CARDINAL 4-directional movement)
         //
         //  Cost model (cardinal A* only):
@@ -278,11 +292,28 @@ namespace Code.Lavos.Core
         //  GUARANTEES PASSAGE:
         //    - If DFS creates isolated sections, A* carves a path
         //    - Ensures player can always reach exit
+        // ─────────────────────────────────────────────────────────
+        //  Step 5 — A* guaranteed path (CARDINAL 4-directional movement)
+        //
+        //  Cost model (cardinal only):
+        //    Cardinal move through passage = 10
+        //    Cardinal move through wall    = 10000 (very high!)
+        //
+        //  GUARANTEES PASSAGE:
+        //    - A* strongly prefers existing passages
+        //    - Only carves walls when NO passage route exists
+        //    - Ensures player can always reach exit
         //    - Only cardinal movements (no diagonals)
+        //
+        //  WALL PENALTY RATIONALE:
+        //    - Passage move = 10
+        //    - Wall move = 10000 (1000x passage cost)
+        //    - A* will explore 1000 passage cells before carving
+        //    - Ensures A* fills gaps, never creates direct paths
         // ─────────────────────────────────────────────────────────
         private static void EnsurePathCardinal(MazeData8 d,
                                         int sx, int sz, int ex, int ez,
-                                        int wallPenalty = 100)
+                                        int wallPenalty = 10000)
         {
             // Open set — sorted by F cost; use list + linear min for simplicity
             var open   = new List<Node>();
@@ -709,6 +740,6 @@ namespace Code.Lavos.Core
         public int BaseWallPenalty = 100;  // penalty for crossing a wall
 
         // Corridor Flow System (2026-03-09)
-        public bool UseCorridorFlowSystem = true;  // Use three-tier corridor hierarchy
+        public bool UseCorridorFlowSystem = false;  // Disabled - creates long straight corridors
     }
 }

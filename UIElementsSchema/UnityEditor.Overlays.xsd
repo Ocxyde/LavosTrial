@@ -51,7 +51,7 @@
     </xs:complexContent>
   </xs:complexType>
   <xs:element name="OverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q2="UnityEditor.Overlays" type="q2:OverlayContainerType" />
-  <xs:complexType name="DynamicPanelOverlayContainerType">
+  <xs:complexType name="MainToolbarOverlayContainerType">
     <xs:complexContent mixed="false">
       <xs:restriction base="engine:VisualElementType">
         <xs:attribute default="unity-overlay-container" name="name" type="xs:string" use="optional" />
@@ -68,7 +68,6 @@
         <xs:attribute default="" name="data-source-type" type="xs:string" use="optional" />
         <xs:attribute name="horizontal" type="xs:boolean" use="optional" />
         <xs:attribute default="" name="supported-overlay-layout" type="xs:string" use="optional" />
-        <xs:attribute default="false" name="align-right" type="xs:boolean" use="optional" />
         <xs:attribute default="" name="content-container" type="xs:string" use="optional" />
         <xs:attribute default="" name="class" type="xs:string" use="optional" />
         <xs:attribute default="" name="style" type="xs:string" use="optional" />
@@ -76,7 +75,7 @@
       </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
-  <xs:element name="DynamicPanelOverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q3="UnityEditor.Overlays" type="q3:DynamicPanelOverlayContainerType" />
+  <xs:element name="MainToolbarOverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q3="UnityEditor.Overlays" type="q3:MainToolbarOverlayContainerType" />
   <xs:complexType name="ToolbarOverlayContainerType">
     <xs:complexContent mixed="false">
       <xs:restriction base="engine:VisualElementType">
@@ -102,7 +101,7 @@
     </xs:complexContent>
   </xs:complexType>
   <xs:element name="ToolbarOverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q4="UnityEditor.Overlays" type="q4:ToolbarOverlayContainerType" />
-  <xs:complexType name="MainToolbarOverlayContainerType">
+  <xs:complexType name="DynamicPanelOverlayContainerType">
     <xs:complexContent mixed="false">
       <xs:restriction base="engine:VisualElementType">
         <xs:attribute default="unity-overlay-container" name="name" type="xs:string" use="optional" />
@@ -119,6 +118,7 @@
         <xs:attribute default="" name="data-source-type" type="xs:string" use="optional" />
         <xs:attribute name="horizontal" type="xs:boolean" use="optional" />
         <xs:attribute default="" name="supported-overlay-layout" type="xs:string" use="optional" />
+        <xs:attribute default="false" name="align-right" type="xs:boolean" use="optional" />
         <xs:attribute default="" name="content-container" type="xs:string" use="optional" />
         <xs:attribute default="" name="class" type="xs:string" use="optional" />
         <xs:attribute default="" name="style" type="xs:string" use="optional" />
@@ -126,5 +126,5 @@
       </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
-  <xs:element name="MainToolbarOverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q5="UnityEditor.Overlays" type="q5:MainToolbarOverlayContainerType" />
+  <xs:element name="DynamicPanelOverlayContainer" substitutionGroup="engine:VisualElement" xmlns:q5="UnityEditor.Overlays" type="q5:DynamicPanelOverlayContainerType" />
 </xs:schema>
