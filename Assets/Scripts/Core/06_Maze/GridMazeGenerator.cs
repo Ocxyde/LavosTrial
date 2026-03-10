@@ -135,8 +135,12 @@ namespace Code.Lavos.Core
 
             // ── Step 2: DFS over 4 cardinal axes ONLY ─────────────
             //      No diagonal passages - ensures clean wall alignment
+            //      FIXED 2026-03-11: Added debug logging to track DFS carving
             var visited = new bool[size, size];
+            int cellsBeforeDFS = CountPassageCells(data);
             CarvePassagesCardinal(data, rng, visited, 1, 1);
+            int cellsAfterDFS = CountPassageCells(data);
+            Debug.Log($"[GridMazeGenerator] DFS carved {cellsAfterDFS - cellsBeforeDFS} passage cells");
 
             // ── Step 3: spawn room ────────────────────────────────
             CarveSpawnRoom(data, 1, 1, cfg.SpawnRoomSize);
@@ -186,9 +190,13 @@ namespace Code.Lavos.Core
             // Store for backward compatibility accessors
             _generatedData = data;
 
-            Debug.Log($"[GridMazeGenerator] Maze generated: {size}x{size}, " +
+            // Final summary logging
+            int totalPassages = CountPassageCells(data);
+            float passagePercentage = (float)totalPassages / (data.Width * data.Height) * 100f;
+            Debug.Log($"[GridMazeGenerator] MAZE GENERATION COMPLETE: {data.Width}x{data.Height}, " +
                       $"spawn=({data.SpawnCell.x},{data.SpawnCell.z}), " +
-                      $"exit=({data.ExitCell.x},{data.ExitCell.z})");
+                      $"exit=({data.ExitCell.x},{data.ExitCell.z}), " +
+                      $"passages={totalPassages} ({passagePercentage:P1} of grid)");
 
             return data;
         }
@@ -349,13 +357,16 @@ namespace Code.Lavos.Core
                                         int sx, int sz, int ex, int ez,
                                         int wallPenalty = 10000)
         {
+            Debug.Log($"[GridMazeGenerator] A*: Starting pathfind from ({sx},{sz}) to ({ex},{ez}) with wallPenalty={wallPenalty}");
+
             // Open set — sorted by F cost; use list + linear min for simplicity
             var open   = new List<Node>();
             var closed = new HashSet<int>();   // packed key = z*Width + x
 
             // Add iteration limit to prevent infinite loops on large mazes
-            // For 51x51 maze: 2601 cells × 2 = 5202 max iterations
-            int maxIterations = d.Width * d.Height * 2;
+            // FIXED 2026-03-11: Increased limit from 2x to 4x for larger mazes
+            // For 51x51 maze: 2601 cells × 4 = 10404 max iterations
+            int maxIterations = d.Width * d.Height * 4;
             int iterations = 0;
 
             open.Add(new Node { X = sx, Z = sz, G = 0, H = HeuristicCardinal(sx, sz, ex, ez) });
@@ -376,12 +387,14 @@ namespace Code.Lavos.Core
                 {
                     // Trace path back and carve any walls
                     var node = current;
+                    int carvedCells = 0;
                     while (node.Parent != null)
                     {
                         CarveStepCardinal(d, node.Parent.X, node.Parent.Z, node.X, node.Z);
+                        carvedCells++;
                         node = node.Parent;
                     }
-                    Debug.Log($"[GridMazeGenerator] A*: Guaranteed path carved successfully ({iterations} iterations)");
+                    Debug.Log($"[GridMazeGenerator] A*: Guaranteed path carved successfully ({carvedCells} cells, {iterations} iterations)");
                     return;
                 }
 
@@ -419,11 +432,12 @@ namespace Code.Lavos.Core
 
             if (iterations >= maxIterations)
             {
-                Debug.LogError($"[GridMazeGenerator] A*: Max iterations ({maxIterations}) reached without finding path!");
+                Debug.LogError($"[GridMazeGenerator] A*: ERROR - Max iterations ({maxIterations}) reached without finding path! Maze may have isolated sections.");
+                Debug.LogError($"[GridMazeGenerator] A*: This usually means DFS didn't carve enough passages. Check DFS starting position and visited array.");
             }
             else
             {
-                Debug.LogWarning("[GridMazeGenerator] A*: Could not find path - maze may have isolated sections");
+                Debug.LogWarning($"[GridMazeGenerator] A*: WARNING - Could not find path after {iterations} iterations - maze may have isolated sections");
             }
         }
 
@@ -721,6 +735,22 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
+        //  Helper: Count passage cells (for debugging)
+        // ─────────────────────────────────────────────────────────
+        private static int CountPassageCells(MazeData8 d)
+        {
+            int count = 0;
+            for (int x = 0; x < d.Width; x++)
+            for (int z = 0; z < d.Height; z++)
+            {
+                var cell = d.GetCell(x, z);
+                if ((cell & CellFlags8.AllWalls) == CellFlags8.None)
+                    count++;
+            }
+            return count;
+        }
+
+        // ─────────────────────────────────────────────────────────
         //  Fisher-Yates in-place shuffle
         // ─────────────────────────────────────────────────────────
         private static void Shuffle<T>(T[] arr, System.Random rng)
@@ -744,15 +774,17 @@ namespace Code.Lavos.Core
         // ─────────────────────────────────────────────────────────
         private static void CarveIndirectPath(MazeData8 data, System.Random rng, int wallPenalty)
         {
-            var waypoints = new List<(int x, int z)>();
+            Debug.Log($"[GridMazeGenerator] Carving indirect path with waypoints...");
             
+            var waypoints = new List<(int x, int z)>();
+
             // Add start and end points
             waypoints.Add(data.SpawnCell);
-            
+
             // Add 2-4 random intermediate waypoints (avoiding straight line)
             int numWaypoints = rng.Next(2, 5);  // 2 to 4 waypoints
             int margin = 2;  // Keep waypoints away from edges
-            
+
             for (int i = 0; i < numWaypoints; i++)
             {
                 int wx, wz;
@@ -764,23 +796,24 @@ namespace Code.Lavos.Core
                     wz = rng.Next(margin, data.Height - margin);
                     attempts++;
                 } while (IsOnDirectLine(data.SpawnCell, data.ExitCell, wx, wz) && attempts < 20);
-                
+
                 waypoints.Add((wx, wz));
             }
-            
+
             waypoints.Add(data.ExitCell);
-            
+
             // Carve path through each waypoint with HIGH wall penalty
             int veryHighPenalty = wallPenalty * 5;  // 5x penalty = very winding
-            
+
             for (int i = 0; i < waypoints.Count - 1; i++)
             {
+                Debug.Log($"[GridMazeGenerator] Carving segment {i+1}/{waypoints.Count-1}: ({waypoints[i].x},{waypoints[i].z}) → ({waypoints[i+1].x},{waypoints[i+1].z})");
                 EnsurePathCardinal(data,
                     waypoints[i].x, waypoints[i].z,
                     waypoints[i + 1].x, waypoints[i + 1].z,
                     veryHighPenalty);
             }
-            
+
             Debug.Log($"[GridMazeGenerator] Carved indirect path with {numWaypoints} waypoints");
         }
         
