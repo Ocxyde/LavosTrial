@@ -81,9 +81,9 @@ namespace Code.Lavos.Core
         {
             // Set item type
             SetItemType(ItemType.Chest);
-            canInteract = true;
-            canCollect = false;
-            interactionRange = 3f;
+            CanInteractValue = true;
+            CanCollectValue = false;
+            InteractionRangeValue = 3f;
 
             InitShaders();
         }

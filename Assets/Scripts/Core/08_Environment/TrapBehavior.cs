@@ -58,9 +58,9 @@ namespace Code.Lavos.Core
         private new void Awake()
         {
             SetItemType(ItemType.Switch);
-            canInteract = false;
-            canCollect = false;
-            interactionRange = triggerRadius;
+            CanInteractValue = false;
+            CanCollectValue = false;
+            InteractionRangeValue = triggerRadius;
 
             CreateTrapVisual();
         }

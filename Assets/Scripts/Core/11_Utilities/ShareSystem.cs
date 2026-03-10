@@ -211,9 +211,9 @@ namespace Code.Lavos.Core
 
             // Try to get salt from GameConfig (plug-in-out: find, never create)
             var config = Object.FindFirstObjectByType<GameConfig>();
-            if (config != null && !string.IsNullOrEmpty(config.shareSalt))
+            if (config != null && !string.IsNullOrEmpty(config.ShareSalt))
             {
-                salt = config.shareSalt;
+                salt = config.ShareSalt;
             }
 
             string data = $"{seed}:{level}:{salt}";

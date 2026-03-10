@@ -120,10 +120,10 @@ namespace Code.Lavos.Core
             if (torchPrefab == null)
             {
                 var cfg = FindFirstObjectByType<GameConfig>();
-                if (cfg != null && !string.IsNullOrEmpty(cfg.torchPrefab))
+                if (cfg != null && !string.IsNullOrEmpty(cfg.TorchPrefab))
                 {
-                    Debug.Log($"[LightPlacementEngine]  Loading torch prefab from GameConfig: {cfg.torchPrefab}");
-                    torchPrefab = Resources.Load<GameObject>(cfg.torchPrefab.Replace("Assets/Resources/", "").Replace(".prefab", ""));
+                    Debug.Log($"[LightPlacementEngine]  Loading torch prefab from GameConfig: {cfg.TorchPrefab}");
+                    torchPrefab = Resources.Load<GameObject>(cfg.TorchPrefab.Replace("Assets/Resources/", "").Replace(".prefab", ""));
 
                     if (torchPrefab != null)
                     {
@@ -131,7 +131,7 @@ namespace Code.Lavos.Core
                     }
                     else
                     {
-                        Debug.LogWarning($"[LightPlacementEngine]  TorchPrefab not found at: {cfg.torchPrefab}");
+                        Debug.LogWarning($"[LightPlacementEngine]  TorchPrefab not found at: {cfg.TorchPrefab}");
                     }
                 }
             }
