@@ -50,32 +50,32 @@ namespace Code.Lavos.Core
 
         [Header("Atmosphere")]
         [Tooltip("Ambient color inside the room")]
-        [SerializeField] public Color ambientColor = new Color(0.3f, 0.2f, 0.4f);
-        
+        [SerializeField] public Color AmbientColor = new Color(0.3f, 0.2f, 0.4f);
+
         [Tooltip("Fog color inside the room")]
-        [SerializeField] public Color fogColor = new Color(0.4f, 0.3f, 0.5f);
-        
+        [SerializeField] public Color FogColor = new Color(0.4f, 0.3f, 0.5f);
+
         [Tooltip("Fog density (0 = no fog, 1 = thick fog)")]
         [Range(0f, 1f)]
-        [SerializeField] public float fogDensity = 0.3f;
-        
+        [SerializeField] public float FogDensity = 0.3f;
+
         [Tooltip("Fog start distance from camera")]
-        [SerializeField] public float fogStartDistance = 2f;
-        
+        [SerializeField] public float FogStartDistance = 2f;
+
         [Tooltip("Fog end distance from camera")]
-        [SerializeField] public float fogEndDistance = 15f;
+        [SerializeField] public float FogEndDistance = 15f;
 
         [Header("Lighting")]
-        [SerializeField] public Color roomLightColor = new Color(0.8f, 0.6f, 1f);
-        [SerializeField] public float roomLightIntensity = 0.5f;
-        [SerializeField] public float lightRange = 15f;
+        [SerializeField] public Color RoomLightColor = new Color(0.8f, 0.6f, 1f);
+        [SerializeField] public float RoomLightIntensity = 0.5f;
+        [SerializeField] public float LightRange = 15f;
 
         [Header("Visual Bounds")]
         [SerializeField] private bool showGizmos = true;
         [SerializeField] private Color gizmoColor = Color.magenta;
 
         // Private state
-        private bool isPlayerInside = false;
+        private bool _isPlayerInside = false;
         private Color originalAmbientColor;
         private Color originalFogColor;
         private float originalFogDensity;
@@ -119,9 +119,9 @@ namespace Code.Lavos.Core
             
             roomLight = lightObj.AddComponent<Light>();
             roomLight.type = LightType.Point;
-            roomLight.color = roomLightColor;
+            roomLight.color = RoomLightColor;
             roomLight.intensity = 0f; // Start off, fade in when player enters
-            roomLight.range = lightRange;
+            roomLight.range = LightRange;
             roomLight.shadows = LightShadows.Soft;
         }
 
@@ -151,29 +151,29 @@ namespace Code.Lavos.Core
 
         void EnterRoom()
         {
-            isPlayerInside = true;
-            
+            _isPlayerInside = true;
+
             Debug.Log($"[SpecialRoom] Player entered - Activating atmosphere");
             
             // Apply custom ambient color
-            RenderSettings.ambientLight = ambientColor;
-            
+            RenderSettings.ambientLight = AmbientColor;
+
             // Apply custom fog
             RenderSettings.fog = true;
-            RenderSettings.fogColor = fogColor;
+            RenderSettings.fogColor = FogColor;
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogDensity = fogDensity;
-            RenderSettings.fogStartDistance = fogStartDistance;
-            RenderSettings.fogEndDistance = fogEndDistance;
-            
+            RenderSettings.fogDensity = FogDensity;
+            RenderSettings.fogStartDistance = FogStartDistance;
+            RenderSettings.fogEndDistance = FogEndDistance;
+
             // Fade in room light using coroutine
             StopAllCoroutines();
-            StartCoroutine(FadeLightCoroutine(0f, roomLightIntensity, 1f));
+            StartCoroutine(FadeLightCoroutine(0f, RoomLightIntensity, 1f));
         }
 
         void ExitRoom()
         {
-            isPlayerInside = false;
+            _isPlayerInside = false;
             
             Debug.Log($"[SpecialRoom] Player exited - Restoring original settings");
             
@@ -185,7 +185,7 @@ namespace Code.Lavos.Core
             
             // Fade out room light using coroutine
             StopAllCoroutines();
-            StartCoroutine(FadeLightCoroutine(roomLightIntensity, 0f, 0.5f));
+            StartCoroutine(FadeLightCoroutine(RoomLightIntensity, 0f, 0.5f));
         }
 
         System.Collections.IEnumerator FadeLightCoroutine(float from, float to, float duration)
@@ -218,8 +218,8 @@ namespace Code.Lavos.Core
         void OnDestroy()
         {
             // Always restore settings when room is destroyed
-            if (!isPlayerInside) return;
-            
+            if (!_isPlayerInside) return;
+
             RenderSettings.ambientLight = originalAmbientColor;
             RenderSettings.fogColor = originalFogColor;
             RenderSettings.fogDensity = originalFogDensity;

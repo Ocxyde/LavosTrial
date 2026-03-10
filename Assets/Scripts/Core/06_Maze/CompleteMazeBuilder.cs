@@ -39,9 +39,9 @@ namespace Code.Lavos.Core
 
         [Header("Generator Options")]
         [Tooltip("Use new GuaranteedPathMazeGenerator (Minotaur Maze)")]
-        public bool useGuaranteedPathGenerator = false;
+        public bool UseGuaranteedPathGenerator = false;
         [Tooltip("Use PassageFirstMazeGenerator for passage-first generation")]
-        public bool usePassageFirstGenerator = false;
+        public bool UsePassageFirstGenerator = false;
 
         // Runtime (specific to CompleteMazeBuilder8)
         private DungeonMazeData _mazeData;
@@ -150,7 +150,7 @@ namespace Code.Lavos.Core
                 };
 
                 // Use PassageFirst generator if enabled, otherwise use DFS
-                if (useGuaranteedPathGenerator)
+                if (UseGuaranteedPathGenerator)
                 {
                     // NEW: Minotaur Maze - Guaranteed path with classic labyrinth structure
                     Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
@@ -159,7 +159,7 @@ namespace Code.Lavos.Core
                     // Use same dungeonCfg we already created
                     _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
                 }
-                else if (usePassageFirstGenerator || dungeonCfg.UsePassageFirst)
+                else if (UsePassageFirstGenerator || dungeonCfg.UsePassageFirst)
                 {
                     var passageGenerator = new PassageFirstMazeGenerator();
                     _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
@@ -372,13 +372,13 @@ namespace Code.Lavos.Core
             };
 
             // Use appropriate generator based on settings
-            if (useGuaranteedPathGenerator)
+            if (UseGuaranteedPathGenerator)
             {
                 Debug.Log("[MazeBuilder8] Using GuaranteedPathMazeGenerator (Minotaur Maze)");
                 _guaranteedGenerator ??= new GuaranteedPathMazeGenerator();
                 _mazeData = _guaranteedGenerator.Generate(currentSeed, currentLevel, dungeonCfg);
             }
-            else if (usePassageFirstGenerator || dungeonCfg.UsePassageFirst)
+            else if (UsePassageFirstGenerator || dungeonCfg.UsePassageFirst)
             {
                 var passageGenerator = new PassageFirstMazeGenerator();
                 _mazeData = passageGenerator.Generate(currentSeed, currentLevel, dungeonCfg);

@@ -64,56 +64,56 @@ namespace Code.Lavos.Core
         }
 
         // ── Backward compatibility aliases (for legacy code) ──────
-        public float defaultCellSize => CellSize;
-        public float defaultWallHeight => WallHeight;
-        public float defaultPlayerEyeHeight => PlayerEyeHeight;
-        public float defaultPlayerSpawnOffset => PlayerSpawnOffset;
-        public int defaultRoomSize => MazeCfg.SpawnRoomSize;
-        public int defaultGridSize => MazeCfg.BaseSize;
-        public int minMazeSize => MazeCfg.MinSize;
-        public int maxMazeSize => MazeCfg.MaxSize;
-        public float defaultDoorSpawnChance => 0.6f;
-        public int maxRooms => 8;
-        public bool generateRooms => true;
-        
+        public float DefaultCellSize => CellSize;
+        public float DefaultWallHeight => WallHeight;
+        public float DefaultPlayerEyeHeight => PlayerEyeHeight;
+        public float DefaultPlayerSpawnOffset => PlayerSpawnOffset;
+        public int DefaultRoomSize => MazeCfg.SpawnRoomSize;
+        public int DefaultGridSize => MazeCfg.BaseSize;
+        public int MinMazeSize => MazeCfg.MinSize;
+        public int MaxMazeSize => MazeCfg.MaxSize;
+        public float DefaultDoorSpawnChance => 0.6f;
+        public int MaxRooms => 8;
+        public bool GenerateRooms => true;
+
         // Door system aliases
-        public float defaultDoorWidth => 2.5f;
-        public float defaultDoorHeight => 3.0f;
-        public float defaultDoorDepth => 0.5f;
-        public float defaultDoorHoleDepth => 0.5f;
-        public bool showDebugGizmos => false;
-        public bool randomizeWallTextures => true;
-        public bool enableTrappedDoors => true;
-        public float defaultTrapChance => 0.2f;
-        public bool enableLockedDoors => true;
-        public bool enableSecretDoors => true;
-        public float defaultLockedDoorChance => 0.3f;
-        public float defaultSecretDoorChance => 0.1f;
-        
+        public float DefaultDoorWidth => 2.5f;
+        public float DefaultDoorHeight => 3.0f;
+        public float DefaultDoorDepth => 0.5f;
+        public float DefaultDoorHoleDepth => 0.5f;
+        public bool ShowDebugGizmos => false;
+        public bool RandomizeWallTextures => true;
+        public bool EnableTrappedDoors => true;
+        public float DefaultTrapChance => 0.2f;
+        public bool EnableLockedDoors => true;
+        public bool EnableSecretDoors => true;
+        public float DefaultLockedDoorChance => 0.3f;
+        public float DefaultSecretDoorChance => 0.1f;
+
         // Corridor system aliases
-        public int defaultCorridorWidth => 1;
-        public float corridorRandomness => 0.3f;
-        public bool generatePerimeterCorridor => true;
-        
+        public int DefaultCorridorWidth => 1;
+        public float CorridorRandomness => 0.3f;
+        public bool GeneratePerimeterCorridor => true;
+
         // Player settings aliases
-        public float mouseSensitivity => 1.0f;
-        
+        public float MouseSensitivity => 1.0f;
+
         // Prefab paths (for editor tools)
-        public string wallPrefab => "Prefabs/WallPrefab.prefab";
-        public string doorPrefab => "Prefabs/DoorPrefab.prefab";
-        public string torchPrefab => "Prefabs/TorchHandlePrefab.prefab";
-        public string chestPrefab => "Prefabs/ChestPrefab.prefab";
-        public string enemyPrefab => "Prefabs/EnemyPrefab.prefab";
-        
+        public string WallPrefab => "Prefabs/WallPrefab.prefab";
+        public string DoorPrefab => "Prefabs/DoorPrefab.prefab";
+        public string TorchPrefab => "Prefabs/TorchHandlePrefab.prefab";
+        public string ChestPrefab => "Prefabs/ChestPrefab.prefab";
+        public string EnemyPrefab => "Prefabs/EnemyPrefab.prefab";
+
         // Material paths (for editor tools)
-        public string wallMaterial => "Materials/WallMaterial.mat";
-        public string floorMaterial => "Materials/Floor/Stone_Floor.mat";
-        public string groundTexture => "Textures/floor_texture.png";
-        public string wallTexture => "Textures/wall_texture.png";
+        public string WallMaterial => "Materials/WallMaterial.mat";
+        public string FloorMaterial => "Materials/Floor/Stone_Floor.mat";
+        public string GroundTexture => "Textures/floor_texture.png";
+        public string WallTexture => "Textures/wall_texture.png";
 
         // Wall thickness (for scaling - no hardcoded values in CompleteMazeBuilder)
-        public float defaultWallThickness => 0.2f;
-        public float defaultDiagonalWallThickness => 0.5f;
+        public float DefaultWallThickness => 0.2f;
+        public float DefaultDiagonalWallThickness => 0.5f;
 
         [Header("Maze Geometry")]
         public float CellSize          = 6.0f;
@@ -131,7 +131,7 @@ namespace Code.Lavos.Core
         public DifficultyScaler DifficultyCfg = new DifficultyScaler();
 
         [Header("Share System")]
-        public string shareSalt = "LAVOS_SECRET_SALT_2026";  // Salt for maze code checksum
+        public string ShareSalt = "LAVOS_SECRET_SALT_2026";  // Salt for maze code checksum
 
         // ── JSON deserialization proxy ────────────────────────────
 #pragma warning disable CS0649  // Fields assigned via JsonUtility.FromJson
@@ -172,7 +172,7 @@ namespace Code.Lavos.Core
                 WallHeight        = p.wallHeight        > 0 ? p.wallHeight        : 4.0f,
                 PlayerEyeHeight   = p.playerEyeHeight   > 0 ? p.playerEyeHeight   : 1.7f,
                 PlayerSpawnOffset = p.playerSpawnOffset > 0 ? p.playerSpawnOffset : 0.5f,
-                shareSalt         = !string.IsNullOrEmpty(p.shareSalt) ? p.shareSalt : "LAVOS_SECRET_SALT_2026",
+                ShareSalt         = !string.IsNullOrEmpty(p.shareSalt) ? p.shareSalt : "LAVOS_SECRET_SALT_2026",
                 MazeCfg = new MazeConfig
                 {
                     BaseSize       = p.mazeBaseSize  > 0 ? p.mazeBaseSize  : 12,

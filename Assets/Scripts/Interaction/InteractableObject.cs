@@ -29,14 +29,14 @@ namespace Code.Lavos.Interaction
     public abstract class InteractableObject : MonoBehaviour, IInteractable
     {
         [Header("Interaction Settings")]
-        [SerializeField] protected string interactionPrompt = "Interact";
-        [SerializeField] protected bool canInteract = true;
+        [SerializeField] protected string InteractionPromptValue = "Interact";
+        [SerializeField] protected bool CanInteractValue = true;
 
-        public virtual string InteractionPrompt => interactionPrompt;
+        public virtual string InteractionPrompt => InteractionPromptValue;
 
         public virtual bool CanInteract(MonoBehaviour player)
         {
-            return canInteract && player != null;
+            return CanInteractValue && player != null;
         }
 
         public abstract void OnInteract(MonoBehaviour player);

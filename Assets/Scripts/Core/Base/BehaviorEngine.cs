@@ -32,19 +32,19 @@ namespace Code.Lavos.Core
     public abstract class BehaviorEngine : MonoBehaviour
     {
         [Header("Item Settings")]
-        [SerializeField] protected ItemType itemType = ItemType.Generic;
-        [SerializeField] protected bool canInteract = true;
-        [SerializeField] protected bool canCollect = false;
-        [SerializeField] protected bool destroyOnCollect = false;
-        [SerializeField] protected float interactionRange = 3f;
+        [SerializeField] protected ItemType ItemTypeValue = ItemType.Generic;
+        [SerializeField] protected bool CanInteractValue = true;
+        [SerializeField] protected bool CanCollectValue = false;
+        [SerializeField] protected bool DestroyOnCollectValue = false;
+        [SerializeField] protected float InteractionRangeValue = 3f;
 
         [Header("Visual Feedback")]
-        [SerializeField] protected GameObject interactPrompt;
-        [SerializeField] protected GameObject collectedEffect;
+        [SerializeField] protected GameObject InteractPrompt;
+        [SerializeField] protected GameObject CollectedEffect;
 
         [Header("Audio")]
-        [SerializeField] protected AudioClip interactSound;
-        [SerializeField] protected AudioClip collectSound;
+        [SerializeField] protected AudioClip InteractSound;
+        [SerializeField] protected AudioClip CollectSound;
 
         // State
         protected bool _isInteracted = false;
@@ -56,10 +56,10 @@ namespace Code.Lavos.Core
         public System.Action<BehaviorEngine, GameObject> OnCollect;
 
         // Properties
-        public ItemType ItemType => itemType;
-        public bool CanInteract => canInteract && _isEnabled && !_isCollected;
-        public bool CanCollect => canCollect && _isEnabled && !_isCollected;
-        public bool DestroyOnCollect => destroyOnCollect;
+        public ItemType ItemType => ItemTypeValue;
+        public bool CanInteract => CanInteractValue && _isEnabled && !_isCollected;
+        public bool CanCollect => CanCollectValue && _isEnabled && !_isCollected;
+        public bool DestroyOnCollect => DestroyOnCollectValue;
         public bool IsCollected => _isCollected;
         public bool IsEnabled => _isEnabled;
 
@@ -84,15 +84,15 @@ namespace Code.Lavos.Core
             _isInteracted = true;
 
             // Play sound
-            if (interactSound != null)
+            if (InteractSound != null)
             {
-                AudioSource.PlayClipAtPoint(interactSound, transform.position);
+                AudioSource.PlayClipAtPoint(InteractSound, transform.position);
             }
 
             // Show prompt
-            if (interactPrompt != null)
+            if (InteractPrompt != null)
             {
-                interactPrompt.SetActive(true);
+                InteractPrompt.SetActive(true);
                 Invoke(nameof(HidePrompt), 1f);
             }
 
@@ -115,15 +115,15 @@ namespace Code.Lavos.Core
             _isCollected = true;
 
             // Spawn collect effect
-            if (collectedEffect != null)
+            if (CollectedEffect != null)
             {
-                Instantiate(collectedEffect, transform.position, Quaternion.identity);
+                Instantiate(CollectedEffect, transform.position, Quaternion.identity);
             }
 
             // Play sound
-            if (collectSound != null)
+            if (CollectSound != null)
             {
-                AudioSource.PlayClipAtPoint(collectSound, transform.position);
+                AudioSource.PlayClipAtPoint(CollectSound, transform.position);
             }
 
             OnCollect?.Invoke(this, collector);
@@ -175,7 +175,7 @@ namespace Code.Lavos.Core
         /// </summary>
         public bool IsInRange(Vector3 position)
         {
-            return Vector3.Distance(position, transform.position) <= interactionRange;
+            return Vector3.Distance(position, transform.position) <= InteractionRangeValue;
         }
 
         /// <summary>
@@ -183,9 +183,9 @@ namespace Code.Lavos.Core
         /// </summary>
         public void ShowPrompt()
         {
-            if (interactPrompt != null)
+            if (InteractPrompt != null)
             {
-                interactPrompt.SetActive(true);
+                InteractPrompt.SetActive(true);
             }
         }
 
@@ -194,9 +194,9 @@ namespace Code.Lavos.Core
         /// </summary>
         public void HidePrompt()
         {
-            if (interactPrompt != null)
+            if (InteractPrompt != null)
             {
-                interactPrompt.SetActive(false);
+                InteractPrompt.SetActive(false);
             }
         }
 
@@ -205,7 +205,7 @@ namespace Code.Lavos.Core
         /// </summary>
         public void SetItemType(ItemType type)
         {
-            itemType = type;
+            ItemTypeValue = type;
         }
 
         protected virtual void OnDestroy()
@@ -217,7 +217,7 @@ namespace Code.Lavos.Core
         {
             // Draw interaction range
             Gizmos.color = CanInteract ? Color.green : Color.gray;
-            Gizmos.DrawWireSphere(transform.position, interactionRange);
+            Gizmos.DrawWireSphere(transform.position, InteractionRangeValue);
 
             // Draw item type indicator
             Gizmos.color = GetItemTypeColor();
@@ -226,7 +226,7 @@ namespace Code.Lavos.Core
 
         protected Color GetItemTypeColor()
         {
-            return itemType switch
+            return ItemTypeValue switch
             {
                 ItemType.Door => Color.blue,
                 ItemType.Chest => Color.yellow,
