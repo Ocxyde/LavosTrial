@@ -377,7 +377,7 @@ MonoBehaviour:
   particleSize: 0.15
   wallPivotIsAtMeshCenter: 1
   _currentLevel: 21
-  _currentSeed: 24008
+  _currentSeed: 21095
   _lastGenMs: 5.31
   _currentDifficultyFactor: 1.11
 --- !u!114 &1549835792

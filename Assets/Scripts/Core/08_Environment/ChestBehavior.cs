@@ -41,9 +41,9 @@ namespace Code.Lavos.Core
         [SerializeField] private float chestDepth = 1f;
 
         [Header("Glow Settings")]
-        [SerializeField] private Color glowColor = new Color(1f, 0.8f, 0.3f, 0.6f);
-        [SerializeField] private float glowIntensity = 1f;
-        [SerializeField] private float glowPulseSpeed = 1.5f;
+        [SerializeField] private Color glowColor = new Color(1f, 0.85f, 0.4f, 0.4f);
+        [SerializeField] private float glowIntensity = 0.6f;
+        [SerializeField] private float glowPulseSpeed = 0.8f;
 
         [Header("Contents")]
         [SerializeField] private LootTable lootTable;
@@ -368,7 +368,7 @@ namespace Code.Lavos.Core
             _glowLight.type = LightType.Point;
             _glowLight.color = glowColor;
             _glowLight.intensity = glowIntensity;
-            _glowLight.range = 5f;
+            _glowLight.range = 3f;
 
             // Glow mesh (visible aura)
             GameObject glowObj = new GameObject("GlowMesh");
@@ -437,10 +437,10 @@ namespace Code.Lavos.Core
 
             _isOpen = true;
 
-            // Increase glow when open
+            // Increase glow when open (subtle)
             if (_glowLight != null)
             {
-                _glowLight.intensity = glowIntensity * 1.5f;
+                _glowLight.intensity = glowIntensity * 1.2f;
             }
 
             // Raise event through EventHandler (plug-in-out architecture)
@@ -501,7 +501,7 @@ namespace Code.Lavos.Core
             {
                 // Spawn item from loot table
                 Debug.Log($"[ChestBehavior] Additional item spawned");
-                
+
                 if (EventHandler.Instance != null)
                 {
                     EventHandler.Instance.InvokeChestItemSpawned(transform.position, lootTable);
@@ -525,7 +525,7 @@ namespace Code.Lavos.Core
 
             if (_chestMat != null) Destroy(_chestMat);
             if (_glowMat != null) Destroy(_glowMat);
-            
+
             // Fix memory leak: Destroy dynamically created GameObjects
             if (_glowLight != null) Destroy(_glowLight.gameObject);
         }
@@ -557,21 +557,21 @@ namespace Code.Lavos.Core
         void IInteractable.OnInteract(MonoBehaviour player)
         {
             if (!((IInteractable)this).CanInteract(player)) return;
-            
+
             Open();
             GenerateLoot(player.gameObject);
             Debug.Log($"[ChestBehavior] Player opened chest at {transform.position}");
         }
 
         /// <summary>
-        /// Highlight chest when player looks at it.
+        /// Highlight chest when player looks at it (subtle).
         /// </summary>
         void IInteractable.OnHighlightEnter(MonoBehaviour player)
         {
             // Optional: Add highlight effect
             if (_glowLight != null)
             {
-                _glowLight.intensity = glowIntensity * 1.5f;
+                _glowLight.intensity = glowIntensity * 1.2f;
             }
         }
 

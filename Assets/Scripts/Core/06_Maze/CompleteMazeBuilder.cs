@@ -43,10 +43,19 @@ namespace Code.Lavos.Core
         [Tooltip("Use PassageFirstMazeGenerator for passage-first generation")]
         public bool UsePassageFirstGenerator = false;
 
+        [Header("Random Seed (Scene)")]
+        [Tooltip("Enable to use a fixed seed from Inspector")]
+        [SerializeField] private bool useFixedSeed = false;
+        [Tooltip("Seed value for reproducible maze generation")]
+        [SerializeField] private int fixedSeed = 12345;
+        [Tooltip("Click to generate a new random seed")]
+        [SerializeField] private bool randomizeSeed = false;
+
         // Runtime (specific to CompleteMazeBuilder8)
         private DungeonMazeData _mazeData;
         private DungeonMazeGenerator _generator;
         private GuaranteedPathMazeGenerator _guaranteedGenerator;
+        private bool _lastRandomizeSeedState = false;
 
         // -------------------------------------------------------------------------
         // Public Accessors (for other systems to access maze data)
@@ -58,8 +67,23 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         private void Start()
         {
-            currentSeed = Random.Range(int.MinValue, int.MaxValue);
+            InitializeSeed();
             GenerateMaze();
+        }
+
+        private void InitializeSeed()
+        {
+            if (randomizeSeed && !_lastRandomizeSeedState)
+            {
+                fixedSeed = Random.Range(int.MinValue, int.MaxValue);
+                Debug.Log($"[MazeBuilder8] Random seed generated: {fixedSeed}");
+                randomizeSeed = false;
+            }
+
+            currentSeed = useFixedSeed ? fixedSeed : Random.Range(int.MinValue, int.MaxValue);
+            _lastRandomizeSeedState = randomizeSeed;
+
+            Debug.Log($"[MazeBuilder8] Seed initialized: {currentSeed} (fixed={useFixedSeed})");
         }
 
         // -------------------------------------------------------------------------
@@ -73,7 +97,47 @@ namespace Code.Lavos.Core
         {
             currentLevel = level;
             currentSeed = seed;
+            useFixedSeed = true;
+            fixedSeed = seed;
             Debug.Log($"[MazeBuilder8] Level and seed set: L{level} S{seed}");
+        }
+
+        /// <summary>
+        /// Generate a new random seed and regenerate the maze.
+        /// </summary>
+        [ContextMenu("Randomize Seed & Regenerate")]
+        public void RandomizeSeedAndRegenerate()
+        {
+            fixedSeed = Random.Range(int.MinValue, int.MaxValue);
+            useFixedSeed = true;
+            currentSeed = fixedSeed;
+            Debug.Log($"[MazeBuilder8] Seed randomized: {fixedSeed}");
+            GenerateMaze();
+        }
+
+        /// <summary>
+        /// Set a specific seed for reproducible maze generation.
+        /// </summary>
+        public void SetSeed(int seed)
+        {
+            useFixedSeed = true;
+            fixedSeed = seed;
+            currentSeed = seed;
+            Debug.Log($"[MazeBuilder8] Seed set: {seed}");
+        }
+
+        /// <summary>
+        /// Get the current seed value.
+        /// </summary>
+        public int GetSeed() => currentSeed;
+
+        /// <summary>
+        /// Toggle between fixed and random seed mode.
+        /// </summary>
+        public void SetFixedSeedMode(bool fixedMode)
+        {
+            useFixedSeed = fixedMode;
+            Debug.Log($"[MazeBuilder8] Fixed seed mode: {fixedMode}");
         }
 
         [ContextMenu("Generate Maze (8-axis)")]

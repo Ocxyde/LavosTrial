@@ -240,22 +240,52 @@ namespace Code.Lavos.Core
                         y * cellSize + cellSize / 2f
                     );
 
-                    // Check adjacent cells for open faces
+                    // Check adjacent cells for open faces - prefer corridor faces
                     if (y + 1 < size && !gridMazeGenerator.GetCell(x, y + 1).IsWall())
-                        wallFaces.Add((cellCenter, Quaternion.Euler(0f, 180f, 0f)));
+                    {
+                        if (IsCorridorCell(x, y + 1))
+                            wallFaces.Insert(0, (cellCenter, Quaternion.Euler(0f, 180f, 0f)));
+                        else
+                            wallFaces.Add((cellCenter, Quaternion.Euler(0f, 180f, 0f)));
+                    }
 
                     if (y - 1 >= 0 && !gridMazeGenerator.GetCell(x, y - 1).IsWall())
-                        wallFaces.Add((cellCenter, Quaternion.identity));
+                    {
+                        if (IsCorridorCell(x, y - 1))
+                            wallFaces.Insert(0, (cellCenter, Quaternion.identity));
+                        else
+                            wallFaces.Add((cellCenter, Quaternion.identity));
+                    }
 
                     if (x + 1 < size && !gridMazeGenerator.GetCell(x + 1, y).IsWall())
-                        wallFaces.Add((cellCenter, Quaternion.Euler(0f, -90f, 0f)));
+                    {
+                        if (IsCorridorCell(x + 1, y))
+                            wallFaces.Insert(0, (cellCenter, Quaternion.Euler(0f, -90f, 0f)));
+                        else
+                            wallFaces.Add((cellCenter, Quaternion.Euler(0f, -90f, 0f)));
+                    }
 
                     if (x - 1 >= 0 && !gridMazeGenerator.GetCell(x - 1, y).IsWall())
-                        wallFaces.Add((cellCenter, Quaternion.Euler(0f, 90f, 0f)));
+                    {
+                        if (IsCorridorCell(x - 1, y))
+                            wallFaces.Insert(0, (cellCenter, Quaternion.Euler(0f, 90f, 0f)));
+                        else
+                            wallFaces.Add((cellCenter, Quaternion.Euler(0f, 90f, 0f)));
+                    }
                 }
             }
 
             return wallFaces;
+        }
+
+        private bool IsCorridorCell(int x, int y)
+        {
+            var cell = gridMazeGenerator.GetCell(x, y);
+            bool isPassage = !cell.IsWall();
+            bool isRoom = (cell & CellFlags8.IsRoom) != CellFlags8.None;
+            bool isSpawn = (cell & CellFlags8.SpawnRoom) != CellFlags8.None;
+            bool isExit = (cell & CellFlags8.IsExit) != CellFlags8.None;
+            return isPassage && !isRoom && !isSpawn && !isExit;
         }
 
         #endregion

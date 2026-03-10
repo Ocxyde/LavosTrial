@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -28,7 +28,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Code.Lavos.Core
@@ -42,26 +41,26 @@ namespace Code.Lavos.Core
     {
         [Header("Fill Density")]
         [Range(0f, 1f)]
-        public float FillDensity = 0.15f;  // 15% of valid wall cells (was 0.70f - too open)
+        public float FillDensity = 0.15f;
 
         [Header("Corridor Dimensions")]
         [Range(1, 5)]
-        public int MinLength = 1;  // Minimum corridor length
+        public int MinLength = 1;
 
         [Range(2, 6)]
-        public int MaxLength = 3;  // Maximum corridor length
+        public int MaxLength = 3;
 
         [Range(1, 3)]
-        public int CorridorWidth = 1;  // 1 cell = 6m
+        public int CorridorWidth = 1;
 
         [Header("Limits")]
         [Range(0.1f, 0.6f)]
-        public float MaxFillPercentage = 0.40f;  // Max 40% of grid
+        public float MaxFillPercentage = 0.40f;
 
         [Header("Behavior")]
-        public bool AvoidDeadEnds = true;  // Don't carve into existing dead-ends
-        public bool PreferCardinalDirections = true;  // N,S,E,W only
-        public bool AllowShortCorridors = true;  // Allow 1-cell corridors
+        public bool AvoidDeadEnds = true;
+        public bool PreferCardinalDirections = true;
+        public bool AllowShortCorridors = true;
     }
 
     /// <summary>
@@ -103,6 +102,16 @@ namespace Code.Lavos.Core
         private System.Random _rng;
         private List<FillCorridor> _filledCorridors;
         private int _totalCellsCarved;
+        private HashSet<(int x, int z)> _carvedCells;
+
+        /// <summary>
+        /// Ensure Fill() has been called and initialized state
+        /// </summary>
+        private void EnsureInitialized()
+        {
+            if (_mazeData == null) throw new InvalidOperationException("Fill() must be called first");
+            if (_rng == null) throw new InvalidOperationException("Fill() must be called first");
+        }
 
         /// <summary>
         /// Generated fill corridors
@@ -135,12 +144,12 @@ namespace Code.Lavos.Core
         {
             return new CorridorFillConfig
             {
-                FillDensity = 0.15f,        // 15% of valid walls (was 0.70f - too open)
-                MinLength = 1,              // 1 cell minimum
-                MaxLength = 3,              // 3 cells maximum
-                CorridorWidth = 1,          // 1 cell wide
-                MaxFillPercentage = 0.10f,  // Max 10% of grid (was 0.40f - too open)
-                AvoidDeadEnds = true,       // Don't carve into dead-ends
+                FillDensity = 0.15f,
+                MinLength = 1,
+                MaxLength = 3,
+                CorridorWidth = 1,
+                MaxFillPercentage = 0.10f,
+                AvoidDeadEnds = true,
                 PreferCardinalDirections = true,
                 AllowShortCorridors = true
             };
@@ -159,16 +168,32 @@ namespace Code.Lavos.Core
                 _config = overrideConfig;
             }
 
+            if (_config.MinLength > _config.MaxLength)
+            {
+                throw new InvalidOperationException($"CorridorFillConfig: MinLength ({_config.MinLength}) cannot be greater than MaxLength ({_config.MaxLength})");
+            }
+
             _filledCorridors = new List<FillCorridor>();
             _totalCellsCarved = 0;
+            _carvedCells = new HashSet<(int x, int z)>();
 
             int maxFillCells = CalculateMaxFillCells(mazeData);
 
+#if UNITY_EDITOR
             Debug.Log($"[CorridorFill] Starting fill | Density: {_config.FillDensity:P1} | Max Fill: {maxFillCells} cells");
+#endif
 
             // Find all wall cells adjacent to passages (valid spawn points)
             var validWalls = FindWallCellsAdjacentToPassages(mazeData);
+#if UNITY_EDITOR
             Debug.Log($"[CorridorFill] Found {validWalls.Count} valid wall cells");
+#endif
+
+            if (validWalls.Count == 0)
+            {
+                Debug.LogWarning("[CorridorFill] No valid wall cells found - maze may be incomplete");
+                return;
+            }
 
             // Shuffle for random distribution
             Shuffle(validWalls);
@@ -180,7 +205,9 @@ namespace Code.Lavos.Core
                 // Check if we've hit the limit
                 if (carvedCells >= maxFillCells)
                 {
+#if UNITY_EDITOR
                     Debug.Log($"[CorridorFill] Reached max fill limit ({maxFillCells} cells)");
+#endif
                     break;
                 }
 
@@ -199,7 +226,9 @@ namespace Code.Lavos.Core
                 }
             }
 
+#if UNITY_EDITOR
             Debug.Log($"[CorridorFill] Fill complete | Corridors: {TotalCount} | Cells carved: {TotalCellsCarved}");
+#endif
         }
 
         /// <summary>
@@ -276,6 +305,11 @@ namespace Code.Lavos.Core
         {
             corridor = null;
 
+            if (_carvedCells.Contains((startX, startZ)))
+            {
+                return false;
+            }
+
             // Get random cardinal directions
             var dirs = GetRandomCardinalDirections();
 
@@ -312,6 +346,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private bool CanCarveCorridor(int startX, int startZ, Direction8 dir, out int length)
         {
+            EnsureInitialized();
             length = 0;
 
             var (dx, dz) = Direction8Helper.ToOffset(dir);
@@ -345,6 +380,12 @@ namespace Code.Lavos.Core
                     break;
                 }
 
+                // Check if cell was already carved by another corridor
+                if (_carvedCells.Contains((nextX, nextZ)))
+                {
+                    break;
+                }
+
                 // Check if we'd be carving into a dead-end (if AvoidDeadEnds is enabled)
                 if (_config.AvoidDeadEnds && IsNearDeadEnd(nextX, nextZ))
                 {
@@ -372,6 +413,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private bool IsCarveableWall(int x, int z)
         {
+            EnsureInitialized();
             var cell = _mazeData.GetCell(x, z);
 
             // Must have all walls set
@@ -391,8 +433,9 @@ namespace Code.Lavos.Core
         /// </summary>
         private bool IsNearDeadEnd(int x, int z)
         {
-            // Check adjacent cells for dead-end flags
+            EnsureInitialized();
             var cardinalDirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+            int passageCount = 0;
 
             foreach (var dir in cardinalDirs)
             {
@@ -403,12 +446,16 @@ namespace Code.Lavos.Core
                 if (!_mazeData.InBounds(nx, nz)) continue;
 
                 var cell = _mazeData.GetCell(nx, nz);
-                // Check for chest/enemy flags (indicates dead-end)
+
                 bool hasChest = (cell & CellFlags8.HasChest) != CellFlags8.None;
                 bool hasEnemy = (cell & CellFlags8.HasEnemy) != CellFlags8.None;
-
                 if (hasChest || hasEnemy) return true;
+
+                bool isPassage = (cell & CellFlags8.AllWalls) == CellFlags8.None;
+                if (isPassage) passageCount++;
             }
+
+            if (passageCount == 1) return true;
 
             return false;
         }
@@ -437,6 +484,7 @@ namespace Code.Lavos.Core
                 cell &= ~CellFlags8.WallE;
                 cell &= ~CellFlags8.WallW;
                 _mazeData.SetCell(currX, currZ, cell);
+                _carvedCells.Add((currX, currZ));
 
                 // STEP 2: Ensure walls on both sides of corridor
                 foreach (var perpDir in perpendiculars)
@@ -445,17 +493,12 @@ namespace Code.Lavos.Core
                     int wallX = currX + pdx;
                     int wallZ = currZ + pdz;
 
-                    if (_mazeData.InBounds(wallX, wallZ))
-                    {
-                        // Skip if this is the exit cell - don't add walls to exit!
-                        bool isExit = (_mazeData.GetCell(wallX, wallZ) & CellFlags8.IsExit) != CellFlags8.None;
-                        if (isExit) continue;
+                    if (!_mazeData.InBounds(wallX, wallZ)) continue;
+                    if (!IsCarveableWall(wallX, wallZ)) continue;
 
-                        // Add wall flag pointing back to corridor
-                        var wallCell = _mazeData.GetCell(wallX, wallZ);
-                        wallCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
-                        _mazeData.SetCell(wallX, wallZ, wallCell);
-                    }
+                    var wallCell = _mazeData.GetCell(wallX, wallZ);
+                    wallCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
+                    _mazeData.SetCell(wallX, wallZ, wallCell);
                 }
 
                 // Move to next cell
@@ -479,7 +522,7 @@ namespace Code.Lavos.Core
                 case Direction8.S: return CellFlags8.WallS;
                 case Direction8.E: return CellFlags8.WallE;
                 case Direction8.W: return CellFlags8.WallW;
-                default: return CellFlags8.WallN;
+                default: throw new ArgumentException($"Direction {dir} is not supported for wall flags", nameof(dir));
             }
         }
 
@@ -505,18 +548,13 @@ namespace Code.Lavos.Core
                 int cornerX = x + pdx + fdx;
                 int cornerZ = z + pdz + fdz;
 
-                if (_mazeData.InBounds(cornerX, cornerZ))
-                {
-                    // Skip if this is the exit cell - don't add walls to exit!
-                    var cornerCell = _mazeData.GetCell(cornerX, cornerZ);
-                    bool isExit = (cornerCell & CellFlags8.IsExit) != CellFlags8.None;
-                    if (isExit) continue;
+                if (!_mazeData.InBounds(cornerX, cornerZ)) continue;
+                if (!IsCarveableWall(cornerX, cornerZ)) continue;
 
-                    // Add wall flags for corner (both perpendicular and forward walls)
-                    cornerCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
-                    cornerCell |= GetWallFlagForDirection(GetOppositeDirection(fromDir));
-                    _mazeData.SetCell(cornerX, cornerZ, cornerCell);
-                }
+                var cornerCell = _mazeData.GetCell(cornerX, cornerZ);
+                cornerCell |= GetWallFlagForDirection(GetOppositeDirection(perpDir));
+                cornerCell |= GetWallFlagForDirection(GetOppositeDirection(fromDir));
+                _mazeData.SetCell(cornerX, cornerZ, cornerCell);
             }
         }
 
@@ -531,7 +569,7 @@ namespace Code.Lavos.Core
                 case Direction8.S: return Direction8.N;
                 case Direction8.E: return Direction8.W;
                 case Direction8.W: return Direction8.E;
-                default: return Direction8.S;
+                default: throw new ArgumentException($"Direction {dir} does not have a supported opposite", nameof(dir));
             }
         }
 
@@ -542,25 +580,26 @@ namespace Code.Lavos.Core
         {
             switch (dir)
             {
-                case Direction8.N: // North-South corridor → Walls on East & West
+                case Direction8.N:
+                case Direction8.S:
                     return new Direction8[] { Direction8.E, Direction8.W };
-                case Direction8.S: // North-South corridor → Walls on East & West
-                    return new Direction8[] { Direction8.E, Direction8.W };
-                case Direction8.E: // East-West corridor → Walls on North & South
-                    return new Direction8[] { Direction8.N, Direction8.S };
-                case Direction8.W: // East-West corridor → Walls on North & South
+                case Direction8.E:
+                case Direction8.W:
                     return new Direction8[] { Direction8.N, Direction8.S };
                 default:
-                    return new Direction8[] { Direction8.E, Direction8.W };
+                    throw new ArgumentException($"Direction {dir} does not have supported perpendiculars", nameof(dir));
             }
         }
+
+        private static readonly Direction8[] _cardinalDirections = { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
 
         /// <summary>
         /// Get random cardinal directions (N,S,E,W)
         /// </summary>
         private Direction8[] GetRandomCardinalDirections()
         {
-            var dirs = new Direction8[] { Direction8.N, Direction8.S, Direction8.E, Direction8.W };
+            var dirs = new Direction8[4];
+            Array.Copy(_cardinalDirections, dirs, 4);
             Shuffle(dirs);
             return dirs;
         }
@@ -570,6 +609,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void Shuffle<T>(T[] arr)
         {
+            if (_rng == null) throw new InvalidOperationException("Fill() must be called first");
             for (int i = arr.Length - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -582,6 +622,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void Shuffle<T>(List<T> list)
         {
+            if (_rng == null) throw new InvalidOperationException("Fill() must be called first");
             for (int i = list.Count - 1; i > 0; i--)
             {
                 int j = _rng.Next(i + 1);
@@ -594,12 +635,22 @@ namespace Code.Lavos.Core
         /// </summary>
         public CorridorFillStatistics GetStatistics()
         {
+            double avgLength = 0;
+            if (_filledCorridors.Count > 0)
+            {
+                int totalLength = 0;
+                for (int i = 0; i < _filledCorridors.Count; i++)
+                {
+                    totalLength += _filledCorridors[i].Length;
+                }
+                avgLength = (double)totalLength / _filledCorridors.Count;
+            }
+
             return new CorridorFillStatistics
             {
                 TotalCount = TotalCount,
                 TotalCellsCarved = TotalCellsCarved,
-                AvgLength = _filledCorridors.Count > 0 ?
-                    _filledCorridors.Average(c => c.Length) : 0
+                AvgLength = avgLength
             };
         }
     }
