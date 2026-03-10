@@ -452,13 +452,12 @@ namespace Code.Lavos.Core
             float wh = _config.WallHeight;
 
             int cardinalCount = 0;
-            int diagonalCount = 0;
 
             Debug.Log(
                 $"[MazeBuilder8] Spawning walls for {_mazeData.Width}x{_mazeData.Height} maze " +
-                $"using modular MazeWallSpawner");
+                $"using modular MazeWallSpawner (cardinal-only passages)");
 
-            // Spawn walls using modular spawner
+            // Spawn cardinal walls using modular spawner
             for (int z = 0; z < _mazeData.Height; z++)
             for (int x = 0; x < _mazeData.Width; x++)
             {
@@ -467,7 +466,7 @@ namespace Code.Lavos.Core
 
                 if (isWalkable)
                 {
-                    // Cardinal walls
+                    // Cardinal walls only (N, S, E, W)
                     if (ShouldSpawnWall(x, z, Direction8.N, out _))
                     {
                         MazeWallSpawner.SpawnCardinalWall(
@@ -505,50 +504,14 @@ namespace Code.Lavos.Core
                         cardinalCount++;
                     }
 
-                    // Diagonal walls (if any)
-                    if ((cell & CellFlags8.Wall_NE) != CellFlags8.None)
-                    {
-                        MazeWallSpawner.SpawnDiagonalWall(
-                            x, z, Direction8.NE,
-                            wallDiagPrefab, wallDiagMaterial,
-                            cs, wh, DiagonalWallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        diagonalCount++;
-                    }
-                    if ((cell & CellFlags8.Wall_NW) != CellFlags8.None)
-                    {
-                        MazeWallSpawner.SpawnDiagonalWall(
-                            x, z, Direction8.NW,
-                            wallDiagPrefab, wallDiagMaterial,
-                            cs, wh, DiagonalWallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        diagonalCount++;
-                    }
-                    if ((cell & CellFlags8.Wall_SE) != CellFlags8.None)
-                    {
-                        MazeWallSpawner.SpawnDiagonalWall(
-                            x, z, Direction8.SE,
-                            wallDiagPrefab, wallDiagMaterial,
-                            cs, wh, DiagonalWallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        diagonalCount++;
-                    }
-                    if ((cell & CellFlags8.Wall_SW) != CellFlags8.None)
-                    {
-                        MazeWallSpawner.SpawnDiagonalWall(
-                            x, z, Direction8.SW,
-                            wallDiagPrefab, wallDiagMaterial,
-                            cs, wh, DiagonalWallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        diagonalCount++;
-                    }
+                    // NOTE: Diagonal walls (NE, NW, SE, SW) removed 2026-03-09
+                    // MazeWallSpawner.SpawnDiagonalWall() is available for future use
                 }
             }
 
             Debug.Log(
                 $"[MazeBuilder8] Wall spawn complete: " +
-                $"{cardinalCount} cardinal + {diagonalCount} diagonal = " +
-                $"{cardinalCount + diagonalCount} total walls (using MazeWallSpawner)");
+                $"{cardinalCount} cardinal walls (cardinal-only mode)");
         }
 
         /// <summary>
