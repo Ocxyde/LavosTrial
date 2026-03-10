@@ -46,8 +46,10 @@ namespace Code.Lavos.Tools
 		private Vector2 _scrollPosition = Vector2.zero;
 		private int _selectedTab = 0;
 		private bool _showAdvancedSettings = false;
+#pragma warning disable CS0414 // Assigned but not used
 		private bool _showStorageManager = false;
 		private bool _showStatistics = false;
+#pragma warning restore CS0414
 
 		// Generation Parameters
 		private int _targetLevelNumber = 1;
