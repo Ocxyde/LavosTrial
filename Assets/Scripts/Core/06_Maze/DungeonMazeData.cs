@@ -19,6 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 
 using UnityEngine;
+using Code.Lavos.Core;
 
 namespace Code.Lavos.Core.Advanced
 {
@@ -213,74 +214,59 @@ namespace Code.Lavos.Core.Advanced
     }
 
     /// <summary>
-    /// 8-directional movement helper.
-    /// </summary>
-    public enum Direction8
-    {
-        N = 0,   // North (0, 1)
-        S = 1,   // South (0, -1)
-        E = 2,   // East (1, 0)
-        W = 3,   // West (-1, 0)
-        NE = 4,  // Northeast (1, 1)
-        NW = 5,  // Northwest (-1, 1)
-        SE = 6,  // Southeast (1, -1)
-        SW = 7,  // Southwest (-1, -1)
-    }
-
-    /// <summary>
     /// Direction8 helper utilities.
     /// </summary>
     public static class Direction8Helper
     {
-        public static (int dx, int dz) ToOffset(Direction8 dir)
+        public static (int dx, int dz) ToOffset(Core.Direction8 dir)
         {
             return dir switch
             {
-                Direction8.N => (0, 1),
-                Direction8.S => (0, -1),
-                Direction8.E => (1, 0),
-                Direction8.W => (-1, 0),
-                Direction8.NE => (1, 1),
-                Direction8.NW => (-1, 1),
-                Direction8.SE => (1, -1),
-                Direction8.SW => (-1, -1),
+                Core.Direction8.N => (0, 1),
+                Core.Direction8.S => (0, -1),
+                Core.Direction8.E => (1, 0),
+                Core.Direction8.W => (-1, 0),
+                Core.Direction8.NE => (1, 1),
+                Core.Direction8.NW => (-1, 1),
+                Core.Direction8.SE => (1, -1),
+                Core.Direction8.SW => (-1, -1),
                 _ => (0, 0),
             };
         }
 
-        public static Direction8 Opposite(Direction8 dir)
+        public static Core.Direction8 Opposite(Core.Direction8 dir)
         {
             return dir switch
             {
-                Direction8.N => Direction8.S,
-                Direction8.S => Direction8.N,
-                Direction8.E => Direction8.W,
-                Direction8.W => Direction8.E,
-                Direction8.NE => Direction8.SW,
-                Direction8.NW => Direction8.SE,
-                Direction8.SE => Direction8.NW,
-                Direction8.SW => Direction8.NE,
+                Core.Direction8.N => Core.Direction8.S,
+                Core.Direction8.S => Core.Direction8.N,
+                Core.Direction8.E => Core.Direction8.W,
+                Core.Direction8.W => Core.Direction8.E,
+                Core.Direction8.NE => Core.Direction8.SW,
+                Core.Direction8.NW => Core.Direction8.SE,
+                Core.Direction8.SE => Core.Direction8.NW,
+                Core.Direction8.SW => Core.Direction8.NE,
                 _ => dir,
             };
         }
 
-        public static bool IsDiagonal(Direction8 dir)
+        public static bool IsDiagonal(Core.Direction8 dir)
         {
-            return dir >= Direction8.NE;
+            return dir >= Core.Direction8.NE;
         }
 
-        public static uint ToWallFlag(Direction8 dir)
+        public static uint ToWallFlag(Core.Direction8 dir)
         {
             return dir switch
             {
-                Direction8.N => CellFlags8.Wall_N,
-                Direction8.S => CellFlags8.Wall_S,
-                Direction8.E => CellFlags8.Wall_E,
-                Direction8.W => CellFlags8.Wall_W,
-                Direction8.NE => CellFlags8.Wall_NE,
-                Direction8.NW => CellFlags8.Wall_NW,
-                Direction8.SE => CellFlags8.Wall_SE,
-                Direction8.SW => CellFlags8.Wall_SW,
+                Core.Direction8.N => CellFlags8.Wall_N,
+                Core.Direction8.S => CellFlags8.Wall_S,
+                Core.Direction8.E => CellFlags8.Wall_E,
+                Core.Direction8.W => CellFlags8.Wall_W,
+                Core.Direction8.NE => CellFlags8.Wall_NE,
+                Core.Direction8.NW => CellFlags8.Wall_NW,
+                Core.Direction8.SE => CellFlags8.Wall_SE,
+                Core.Direction8.SW => CellFlags8.Wall_SW,
                 _ => 0,
             };
         }
