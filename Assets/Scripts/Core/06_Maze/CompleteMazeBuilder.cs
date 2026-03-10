@@ -430,26 +430,7 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // SpawnAllWalls (override - 8-axis specific implementation)
-        //
-        // BOUNDARY-BASED WALL SPAWNING (NO OVERLAPPING WALLS):
-        // 
-        // PROBLEM SOLVED: Previous approach spawned walls from EVERY cell,
-        // causing duplicate walls at shared edges (overlapping geometry).
-        //
-        // SOLUTION: Only spawn walls on BOUNDARIES:
-        // 1. For each WALKABLE cell (corridor/floor)
-        // 2. Check each neighbor direction
-        // 3. Spawn wall ONLY if neighbor is NOT walkable OR is maze edge
-        // 4. Result: Clean walls with no overlaps!
-        //
-        // Cardinal wall position = center of the edge shared by cell (cx,cz)
-        //   in direction dir, at y = 0.
-        //   Formula: x = (cx + 0.5 + dx * 0.5) * cellSize
-        //            z = (cz + 0.5 + dz * 0.5) * cellSize
-        //
-        // Diagonal wall position = corner shared by cell (cx,cz) in direction dir,
-        //   at y = 0.  Scale X = cellSize * sqrt(2).
+        // SpawnAllWalls (override - uses MazeWallSpawner module)
         // -------------------------------------------------------------------------
         protected override void SpawnAllWalls()
         {
@@ -472,60 +453,102 @@ namespace Code.Lavos.Core
 
             int cardinalCount = 0;
             int diagonalCount = 0;
-            int totalCells = _mazeData.Width * _mazeData.Height;
-            int boundaryWalls = 0;
-            int internalWalls = 0;
 
             Debug.Log(
                 $"[MazeBuilder8] Spawning walls for {_mazeData.Width}x{_mazeData.Height} maze " +
-                $"({totalCells} cells) using BOUNDARY method (no overlaps)");
+                $"using modular MazeWallSpawner");
 
-            // Spawn walls ONLY on boundaries between walkable and non-walkable cells
+            // Spawn walls using modular spawner
             for (int z = 0; z < _mazeData.Height; z++)
             for (int x = 0; x < _mazeData.Width; x++)
             {
                 var cell = _mazeData.GetCell(x, z);
                 bool isWalkable = IsCellWalkable(cell);
 
-                // Only process walkable cells (corridors, spawn, exit)
                 if (isWalkable)
                 {
-                    // Check each direction: spawn wall if neighbor is NOT walkable or is boundary
-                    if (ShouldSpawnWall(x, z, Direction8.N, out bool isBoundary))
+                    // Cardinal walls
+                    if (ShouldSpawnWall(x, z, Direction8.N, out _))
                     {
-                        SpawnCardinalWall(x, z, Direction8.N, cs, wh);
+                        MazeWallSpawner.SpawnCardinalWall(
+                            x, z, Direction8.N,
+                            wallPrefab, wallMaterial,
+                            cs, wh, WallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
                         cardinalCount++;
-                        if (isBoundary) boundaryWalls++; else internalWalls++;
                     }
-                    if (ShouldSpawnWall(x, z, Direction8.E, out isBoundary))
+                    if (ShouldSpawnWall(x, z, Direction8.E, out _))
                     {
-                        SpawnCardinalWall(x, z, Direction8.E, cs, wh);
+                        MazeWallSpawner.SpawnCardinalWall(
+                            x, z, Direction8.E,
+                            wallPrefab, wallMaterial,
+                            cs, wh, WallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
                         cardinalCount++;
-                        if (isBoundary) boundaryWalls++; else internalWalls++;
                     }
-                    if (ShouldSpawnWall(x, z, Direction8.S, out isBoundary))
+                    if (ShouldSpawnWall(x, z, Direction8.S, out _))
                     {
-                        SpawnCardinalWall(x, z, Direction8.S, cs, wh);
+                        MazeWallSpawner.SpawnCardinalWall(
+                            x, z, Direction8.S,
+                            wallPrefab, wallMaterial,
+                            cs, wh, WallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
                         cardinalCount++;
-                        if (isBoundary) boundaryWalls++; else internalWalls++;
                     }
-                    if (ShouldSpawnWall(x, z, Direction8.W, out isBoundary))
+                    if (ShouldSpawnWall(x, z, Direction8.W, out _))
                     {
-                        SpawnCardinalWall(x, z, Direction8.W, cs, wh);
+                        MazeWallSpawner.SpawnCardinalWall(
+                            x, z, Direction8.W,
+                            wallPrefab, wallMaterial,
+                            cs, wh, WallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
                         cardinalCount++;
-                        if (isBoundary) boundaryWalls++; else internalWalls++;
                     }
 
-                    // Diagonal walls removed 2026-03-09 - cardinal-only passages
-                    // diagonalCount remains 0
+                    // Diagonal walls (if any)
+                    if ((cell & CellFlags8.Wall_NE) != CellFlags8.None)
+                    {
+                        MazeWallSpawner.SpawnDiagonalWall(
+                            x, z, Direction8.NE,
+                            wallDiagPrefab, wallDiagMaterial,
+                            cs, wh, DiagonalWallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
+                        diagonalCount++;
+                    }
+                    if ((cell & CellFlags8.Wall_NW) != CellFlags8.None)
+                    {
+                        MazeWallSpawner.SpawnDiagonalWall(
+                            x, z, Direction8.NW,
+                            wallDiagPrefab, wallDiagMaterial,
+                            cs, wh, DiagonalWallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
+                        diagonalCount++;
+                    }
+                    if ((cell & CellFlags8.Wall_SE) != CellFlags8.None)
+                    {
+                        MazeWallSpawner.SpawnDiagonalWall(
+                            x, z, Direction8.SE,
+                            wallDiagPrefab, wallDiagMaterial,
+                            cs, wh, DiagonalWallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
+                        diagonalCount++;
+                    }
+                    if ((cell & CellFlags8.Wall_SW) != CellFlags8.None)
+                    {
+                        MazeWallSpawner.SpawnDiagonalWall(
+                            x, z, Direction8.SW,
+                            wallDiagPrefab, wallDiagMaterial,
+                            cs, wh, DiagonalWallThickness,
+                            wallPivotIsAtMeshCenter, _wallsRoot);
+                        diagonalCount++;
+                    }
                 }
             }
 
             Debug.Log(
                 $"[MazeBuilder8] Wall spawn complete: " +
                 $"{cardinalCount} cardinal + {diagonalCount} diagonal = " +
-                $"{cardinalCount + diagonalCount} total walls " +
-                $"(perimeter: {boundaryWalls}, interior: {internalWalls})");
+                $"{cardinalCount + diagonalCount} total walls (using MazeWallSpawner)");
         }
 
         /// <summary>
@@ -575,422 +598,42 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // SpawnCardinalWall
-        //
-        // Position: bottom-center of the shared edge, y = 0.
-        //   edgeCenter.x = (cx + 0.5 + dx * 0.5) * cellSize
-        //   edgeCenter.z = (cz + 0.5 + dz * 0.5) * cellSize
-        //   edgeCenter.y = 0
-        //
-        // If pivot is at mesh center, shift up by wh * 0.5 so the wall
-        // stands on the floor instead of sinking into it.
-        // Scale: X = length along wall, Y = height, Z = thickness (from config)
-        // -------------------------------------------------------------------------
-        private void SpawnCardinalWall(int cx, int cz, Direction8 dir, float cs, float wh)
-        {
-            var (dx, dz) = Direction8Helper.ToOffset(dir);
-
-            // Bottom-center of the wall edge at floor level
-            var edgePos = new Vector3(
-                (cx + 0.5f + dx * 0.5f) * cs,
-                0f,
-                (cz + 0.5f + dz * 0.5f) * cs
-            );
-
-            Quaternion rot = (dir == Direction8.E || dir == Direction8.W)
-                ? Quaternion.Euler(0f, 90f, 0f)
-                : Quaternion.identity;
-
-            var wall = Instantiate(wallPrefab, edgePos, rot, _wallsRoot);
-            if (wall == null)
-            {
-                Debug.LogError($"[MazeBuilder8] Failed to instantiate cardinal wall at {edgePos}");
-                return;
-            }
-
-            // Scale: X = length along wall, Y = height, Z = thickness (from config)
-            wall.transform.localScale = new Vector3(cs, wh, WallThickness);
-
-            // Apply material if assigned
-            if (wallMaterial != null)
-            {
-                var renderer = wall.GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    renderer.material = wallMaterial;
-                }
-            }
-
-            // If the prefab pivot is at mesh center, offset Y so wall sits on floor
-            if (wallPivotIsAtMeshCenter)
-            {
-                var p = wall.transform.position;
-                wall.transform.position = new Vector3(p.x, wh * 0.5f, p.z);
-            }
-
-            wall.name = $"Wall_{cx}_{cz}_{dir}";
-        }
-
-        // -------------------------------------------------------------------------
-        // SpawnDiagonalWall
-        //
-        // Position: corner shared by cell (cx,cz) in direction dir, y = 0.
-        //   NE -> (+h, 0, +h)  rot +45 deg Y
-        //   NW -> (-h, 0, +h)  rot -45 deg Y
-        //   SE -> (+h, 0, -h)  rot -45 deg Y
-        //   SW -> (-h, 0, -h)  rot +45 deg Y
-        // Scale: X = cellSize * sqrt(2), Y = height, Z = thickness (from config)
-        // -------------------------------------------------------------------------
-        private void SpawnDiagonalWall(int cx, int cz, Direction8 dir, float cs, float wh)
-        {
-            float h      = cs * 0.5f;
-
-            Vector3 offset;
-            float   rotY;
-
-            switch (dir)
-            {
-                case Direction8.NE: offset = new Vector3( h, 0f,  h); rotY =  45f; break;
-                case Direction8.NW: offset = new Vector3(-h, 0f,  h); rotY = -45f; break;
-                case Direction8.SE: offset = new Vector3( h, 0f, -h); rotY = -45f; break;
-                case Direction8.SW: offset = new Vector3(-h, 0f, -h); rotY =  45f; break;
-                default: return;
-            }
-
-            // Corner position in world space, at y = 0
-            var cornerPos = new Vector3(
-                (cx + 0.5f) * cs + offset.x,
-                0f,
-                (cz + 0.5f) * cs + offset.z
-            );
-
-            var wall = Instantiate(
-                wallDiagPrefab,
-                cornerPos,
-                Quaternion.Euler(0f, rotY, 0f),
-                _wallsRoot);
-
-            if (wall == null)
-            {
-                Debug.LogError($"[MazeBuilder8] Failed to instantiate diagonal wall at {cornerPos}");
-                return;
-            }
-
-            // Scale: X = cellSize * sqrt(2), Y = height, Z = thickness (from config)
-            float diagLength = cs * Mathf.Sqrt(2f);
-            wall.transform.localScale = new Vector3(diagLength, wh, DiagonalWallThickness);
-
-            // Apply diagonal material if assigned
-            if (wallDiagMaterial != null)
-            {
-                var renderer = wall.GetComponent<Renderer>();
-                if (renderer != null)
-                {
-                    renderer.material = wallDiagMaterial;
-                }
-            }
-
-            if (wallPivotIsAtMeshCenter)
-            {
-                var p = wall.transform.position;
-                wall.transform.position = new Vector3(p.x, wh * 0.5f, p.z);
-            }
-
-            wall.name = $"WallDiag_{cx}_{cz}_{dir}";
-        }
-
-        // -------------------------------------------------------------------------
-        // 9 - Doors
-        //
-        // Doors are NOT placed at the cell center.
-        // For each cell (spawn / exit), we find the first open cardinal direction
-        // and place the door prefab ON that wall edge, oriented to face the corridor.
-        //
-        // Position = center of the open wall edge (same formula as SpawnCardinalWall)
-        // Rotation = perpendicular to the wall normal so the door faces the passage
+        // 9 - Doors (uses MazeDoorSpawner module)
         // -------------------------------------------------------------------------
         private void SpawnDoors()
         {
-            if (doorPrefab == null) return;
-            if (_mazeData == null || _config == null)
-            {
-                Debug.LogError("[MazeBuilder8] SpawnDoors: _mazeData or _config is NULL!");
-                return;
-            }
-
-            SpawnDoorOnAccessWall(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, "Door_Entry");
-            SpawnDoorOnAccessWall(_mazeData.ExitCell.x,  _mazeData.ExitCell.z,  "Door_Exit");
-        }
-
-        private void SpawnDoorOnAccessWall(int cx, int cz, string doorName)
-        {
-            if (doorPrefab == null) return;
-            if (_config == null)
-            {
-                Debug.LogError("[MazeBuilder8] SpawnDoorOnAccessWall: _config is NULL!");
-                return;
-            }
-
-            float cs = _config.CellSize;
-            float wh = _config.WallHeight;
-
-            // Scan cardinal directions only - doors never on diagonals
-            Advanced.Direction8[] cardinals = { Advanced.Direction8.N, Advanced.Direction8.S, Advanced.Direction8.E, Advanced.Direction8.W };
-
-            foreach (var dir in cardinals)
-            {
-                // Skip if wall is present (door requires an open passage)
-                if (_mazeData.HasWall(cx, cz, dir)) continue;
-
-                var (dx, dz) = Advanced.Direction8Helper.ToOffset(dir);
-                int nx = cx + dx;
-                int nz = cz + dz;
-                if (!_mazeData.InBounds(nx, nz)) continue;
-
-                // Bottom-center of the open wall edge, y = 0
-                var wallEdgePos = new Vector3(
-                    (cx + 0.5f + dx * 0.5f) * cs,
-                    0f,
-                    (cz + 0.5f + dz * 0.5f) * cs
-                );
-
-                // Door faces the corridor: N/S doors rotate 0 deg, E/W doors rotate 90 deg
-                float rotY = (dir == Advanced.Direction8.E || dir == Advanced.Direction8.W) ? 90f : 0f;
-
-                var door = Instantiate(
-                    doorPrefab,
-                    wallEdgePos,
-                    Quaternion.Euler(0f, rotY, 0f));
-
-                if (door == null)
-                {
-                    Debug.LogError($"[MazeBuilder8] Failed to instantiate door at {wallEdgePos}");
-                    continue;
-                }
-
-                door.name                 = doorName;
-                door.transform.localScale = new Vector3(cs, wh, WallThickness);
-
-                // Same pivot fix as walls
-                if (wallPivotIsAtMeshCenter)
-                {
-                    var p = door.transform.position;
-                    door.transform.position = new Vector3(p.x, wh * 0.5f, p.z);
-                }
-
-                // One door per cell - stop after the first open direction
-                break;
-            }
+            MazeDoorSpawner.SpawnDoors(
+                _mazeData, doorPrefab,
+                _config.CellSize, _config.WallHeight,
+                WallThickness, wallPivotIsAtMeshCenter);
         }
 
         // -------------------------------------------------------------------------
-        // 10 - Torches
+        // 10 - Torches (uses MazeObjectSpawner module)
         // -------------------------------------------------------------------------
         private void SpawnTorches()
         {
-            if (torchPrefab == null) return;
-            if (_mazeData == null)
-            {
-                Debug.LogError("[MazeBuilder8] SpawnTorches: _mazeData is NULL!");
-                return;
-            }
-
             EnsureObjectsRoot();
-
-            for (int z = 0; z < _mazeData.Height; z++)
-            for (int x = 0; x < _mazeData.Width;  x++)
-                if ((_mazeData.GetCell(x, z) & Advanced.CellFlags8.HasTorch) != 0)
-                    PlaceAtCell(x, z, torchPrefab, $"Torch_{x}_{z}", _objectsRoot);
+            MazeObjectSpawner.SpawnTorches(
+                _mazeData, torchPrefab, _config.CellSize, _objectsRoot);
         }
 
-        // Chests + Enemies
+        // Chests + Enemies (uses MazeObjectSpawner module)
         private void SpawnObjects()
         {
-            if (_mazeData == null)
-            {
-                Debug.LogError("[MazeBuilder8] SpawnObjects: _mazeData is NULL!");
-                return;
-            }
-
             EnsureObjectsRoot();
-
-            for (int z = 0; z < _mazeData.Height; z++)
-            for (int x = 0; x < _mazeData.Width;  x++)
-            {
-                var cell = _mazeData.GetCell(x, z);
-
-                // Skip spawn cell and exit cell for enemy/chest spawning
-                bool isSpawnCell = (x == _mazeData.SpawnCell.x && z == _mazeData.SpawnCell.z);
-                bool isExitCell = (x == _mazeData.ExitCell.x && z == _mazeData.ExitCell.z);
-
-                // Chests - skip spawn/exit rooms (reserve for player safety)
-                if ((cell & Advanced.CellFlags8.HasChest) != 0 && chestPrefab != null)
-                {
-                    if (!isSpawnCell && !isExitCell)
-                        PlaceAtCell(x, z, chestPrefab, $"Chest_{x}_{z}", _objectsRoot);
-                }
-
-                // Enemies - NEVER spawn at player spawn or exit (critical bug fix)
-                if ((cell & Advanced.CellFlags8.HasEnemy) != 0 && enemyPrefab != null)
-                {
-                    if (!isSpawnCell && !isExitCell)
-                        PlaceAtCell(x, z, enemyPrefab, $"Enemy_{x}_{z}", _objectsRoot);
-                    else
-                        Debug.LogWarning($"[MazeBuilder8] Enemy flag at spawn/exit cell ({x},{z}) - skipped to prevent player damage");
-                }
-            }
+            MazeObjectSpawner.SpawnObjects(
+                _mazeData, chestPrefab, enemyPrefab, _config.CellSize, _objectsRoot);
         }
 
         // -------------------------------------------------------------------------
-        // 11b - Visual Markers (spawn/exit room indicators)
+        // 11b - Visual Markers (uses MazeMarkerSpawner module)
         // -------------------------------------------------------------------------
         private void SpawnRoomMarkers()
         {
-            if (_mazeData == null || _config == null)
-            {
-                Debug.LogError("[MazeBuilder8] SpawnRoomMarkers: _mazeData or _config is NULL!");
-                return;
-            }
-
-            EnsureObjectsRoot();
-
-            // Spawn room marker - Enhanced green cylinder with particles and ring
-            Vector3 spawnPos = CellCenter(_mazeData.SpawnCell.x, _mazeData.SpawnCell.z, 0.5f);
-            SpawnEnhancedMarker(spawnPos, Color.green, "Marker_SpawnRoom", isEntrance: true);
-
-            // Exit room marker - Enhanced red cube with particles and ring
-            Vector3 exitPos = CellCenter(_mazeData.ExitCell.x, _mazeData.ExitCell.z, 0.5f);
-            SpawnEnhancedMarker(exitPos, Color.red, "Marker_ExitRoom", isEntrance: false);
-
-            Debug.Log($"[MazeBuilder8] Room markers spawned: Spawn@{_mazeData.SpawnCell} Exit@{_mazeData.ExitCell}");
-        }
-
-        private void SpawnEnhancedMarker(Vector3 position, Color color, string name, bool isEntrance)
-        {
-            float cs = _config.CellSize;
-
-            // Create 8-bit pixel art style marker (cylinder with pixelated texture)
-            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            marker.name = name;
-            marker.transform.position = position;
-            marker.transform.localScale = new Vector3(cs * 0.3f, 2f, cs * 0.3f);
-
-            // Create 8-bit pixel art texture for marker
-            Texture2D pixelTex = Create8BitMarkerTexture(color, isEntrance);
-            
-            // Create emissive material with pixel art texture
-            Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            if (mat == null) mat = new Material(Shader.Find("Unlit/Color"));
-
-            mat.mainTexture = pixelTex;
-            mat.color = new Color(color.r, color.g, color.b, 1f);
-            mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", color * 3f);
-
-            var renderer = marker.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                renderer.material = mat;
-                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
-            }
-
-            // Add point light for glow effect
-            Light glowLight = marker.AddComponent<Light>();
-            if (glowLight != null)
-            {
-                glowLight.color = color;
-                glowLight.intensity = 2.5f;
-                glowLight.range = cs * 2f;
-                glowLight.shadows = LightShadows.None;
-                glowLight.bounceIntensity = 1.5f;
-            }
-
-            // Add floating ring effect around marker
-            SpawnFloatingRing(position, color, isEntrance);
-
-            if (_objectsRoot != null)
-                marker.transform.SetParent(_objectsRoot);
-        }
-
-        private void SpawnFloatingRing(Vector3 position, Color color, bool isEntrance)
-        {
-            // Create rotating ring around marker for extra visual flair
-            GameObject ringObj = new GameObject(isEntrance ? "EntranceRing" : "ExitRing");
-            ringObj.transform.position = position + Vector3.up * 1f;
-            ringObj.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
-
-            // Create ring mesh (torus approximation)
-            Mesh ringMesh = CreateRingMesh(0.6f, 0.05f, 32);
-            ringObj.AddComponent<MeshFilter>().mesh = ringMesh;
-
-            // Emissive material for ring
-            Material ringMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-            if (ringMat != null)
-            {
-                ringMat.color = color;
-                ringMat.EnableKeyword("_EMISSION");
-                ringMat.SetColor("_EmissionColor", color * 2f);
-                
-                var ringRenderer = ringObj.GetComponent<Renderer>();
-                if (ringRenderer != null)
-                    ringRenderer.material = ringMat;
-            }
-
-            // Add rotation animation component
-            RingRotator rotator = ringObj.AddComponent<RingRotator>();
-            rotator.rotationSpeed = isEntrance ? 30f : -20f;
-
-            if (_objectsRoot != null)
-                ringObj.transform.SetParent(_objectsRoot);
-        }
-
-        private Mesh CreateRingMesh(float radius, float thickness, int segments)
-        {
-            Mesh mesh = new Mesh();
-            mesh.name = "RingMesh";
-
-            Vector3[] vertices = new Vector3[segments * 4];
-            int[] triangles = new int[segments * 6];
-            Vector3[] normals = new Vector3[segments * 4];
-
-            float angleStep = 360f / segments;
-            float halfThickness = thickness * 0.5f;
-
-            for (int i = 0; i < segments; i++)
-            {
-                float angle1 = i * angleStep * Mathf.Deg2Rad;
-                float angle2 = (i + 1) * angleStep * Mathf.Deg2Rad;
-
-                Vector3 p1 = new Vector3(Mathf.Cos(angle1) * radius, 0, Mathf.Sin(angle1) * radius);
-                Vector3 p2 = new Vector3(Mathf.Cos(angle2) * radius, 0, Mathf.Sin(angle2) * radius);
-
-                int vIdx = i * 4;
-                vertices[vIdx] = p1 + Vector3.up * halfThickness;
-                vertices[vIdx + 1] = p1 + Vector3.down * halfThickness;
-                vertices[vIdx + 2] = p2 + Vector3.up * halfThickness;
-                vertices[vIdx + 3] = p2 + Vector3.down * halfThickness;
-
-                normals[vIdx] = Vector3.up;
-                normals[vIdx + 1] = Vector3.up;
-                normals[vIdx + 2] = Vector3.up;
-                normals[vIdx + 3] = Vector3.up;
-
-                int tIdx = i * 6;
-                triangles[tIdx] = vIdx;
-                triangles[tIdx + 1] = vIdx + 2;
-                triangles[tIdx + 2] = vIdx + 1;
-                triangles[tIdx + 3] = vIdx + 2;
-                triangles[tIdx + 4] = vIdx + 3;
-                triangles[tIdx + 5] = vIdx + 1;
-            }
-
-            mesh.vertices = vertices;
-            mesh.triangles = triangles;
-            mesh.normals = normals;
-            mesh.RecalculateBounds();
-
-            return mesh;
+            MazeMarkerSpawner.SpawnRoomMarkers(
+                _mazeData, _config.CellSize,
+                markerHeight: 2f, markerScale: 0.3f, markerLightIntensity: 2.5f);
         }
 
         // 12 - Player  (ALWAYS LAST)
