@@ -115,6 +115,60 @@ namespace Code.Lavos.Core
             return Mathf.Clamp01(baseDensity * mult);
         }
 
+        /// <summary>
+        /// Room count — scales from minimum to maximum rooms based on level.
+        /// Level 0: MinRooms (1-2 rooms)
+        /// Level 12: ~4-6 rooms
+        /// Level 20: ~6-8 rooms
+        /// Level 39: MaxRooms (10-14 rooms)
+        /// Formula: MinRooms + (MaxRooms - MinRooms) × t^RoomExponent
+        /// </summary>
+        public int RoomCount(int minRooms, int maxRooms, int level)
+        {
+            float t = NormalizedT(level);
+            // Use room exponent for smooth curve (default 1.5 for gradual ramp)
+            float curved = Mathf.Pow(t, 1.5f);
+            int rooms = minRooms + Mathf.RoundToInt((maxRooms - minRooms) * curved);
+            return Mathf.Clamp(rooms, minRooms, maxRooms);
+        }
+
+        /// <summary>
+        /// Room size — scales from small (5×5) to large (9×9) based on level.
+        /// Level 0-5: 5×5 rooms
+        /// Level 6-15: 7×7 rooms
+        /// Level 16-30: 9×9 rooms
+        /// Level 31-39: 11×11 rooms (boss rooms)
+        /// </summary>
+        public int RoomSize(int baseRoomSize, int level)
+        {
+            float t = NormalizedT(level);
+            // Scale room size in steps: 5, 7, 9, 11
+            int sizeStep = Mathf.RoundToInt(t * 3f); // 0, 1, 2, 3
+            return baseRoomSize + (sizeStep * 2); // +0, +2, +4, +6
+        }
+
+        /// <summary>
+        /// Door complexity — determines door types available at this level.
+        /// Level 0-5: Normal doors only
+        /// Level 6-15: + Locked doors (20% chance)
+        /// Level 16-30: + Secret doors (10% chance)
+        /// Level 31-39: All types (40% locked, 20% secret)
+        /// </summary>
+        public float LockedDoorChance(int level)
+        {
+            if (level < 6) return 0f;
+            if (level < 16) return 0.20f;
+            if (level < 31) return 0.30f;
+            return 0.40f;
+        }
+
+        public float SecretDoorChance(int level)
+        {
+            if (level < 16) return 0f;
+            if (level < 31) return 0.10f;
+            return 0.20f;
+        }
+
         // ── Debug / display ───────────────────────────────────────
 
         /// <summary>Human-readable snapshot of all scaled values at a given level.</summary>
@@ -129,8 +183,15 @@ namespace Code.Lavos.Core
             float torches   = TorchChance(cfg.TorchChance, level);
             int   wallPenalty = WallCrossPenalty(cfg.BaseWallPenalty, level);
             float deadEnds  = DeadEndDensity(cfg.DeadEndDensity, level);
+            int   rooms     = RoomCount(cfg.MinRooms, cfg.MaxRooms, level);
+            int   roomSize  = RoomSize(cfg.BaseRoomSize, level);
+            float lockedDoors = LockedDoorChance(level);
+            float secretDoors = SecretDoorChance(level);
 
-            return $"Level {level}  |  factor={f:F3}  |  size={size}  |  enemies={enemies:P1}  |  chests={chests:P1}  |  torches={torches:P1}  |  wallPenalty={wallPenalty}  |  deadEnds={deadEnds:P1}";
+            return $"Level {level} | factor={f:F3} | size={size} | rooms={rooms} (size={roomSize}) | " +
+                   $"enemies={enemies:P1} | chests={chests:P1} | torches={torches:P1} | " +
+                   $"lockedDoors={lockedDoors:P0} | secretDoors={secretDoors:P0} | " +
+                   $"wallPenalty={wallPenalty} | deadEnds={deadEnds:P1}";
         }
     }
 }
