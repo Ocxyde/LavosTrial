@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
@@ -98,6 +98,7 @@ namespace Code.Lavos.Core
             SpawnAllWalls();
             SpawnTorches();
             SpawnObjects();
+            SpawnEntranceExitMarkers();
 
             SpawnPlayer();
             lastGenMs = (Time.realtimeSinceStartup - t0) * 1000f;
@@ -253,6 +254,123 @@ namespace Code.Lavos.Core
             _playerInstance = Instantiate(playerPrefab, pos, Quaternion.identity);
             _playerInstance.name = "Player";
             Debug.Log($"[CorridorMazeBuilder] Player spawned at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2})");
+        }
+
+        private void SpawnEntranceExitMarkers()
+        {
+            if (_mazeData == null || _config == null) return;
+
+            // Entrance marker (GREEN - spawn point)
+            SpawnPixelArtMarker(
+                _mazeData.SpawnCell.x, 
+                _mazeData.SpawnCell.z, 
+                Color.green, 
+                "EntranceMarker", 
+                isEntrance: true
+            );
+
+            // Exit marker (RED - exit point)
+            SpawnPixelArtMarker(
+                _mazeData.ExitCell.x, 
+                _mazeData.ExitCell.z, 
+                Color.red, 
+                "ExitMarker", 
+                isEntrance: false
+            );
+
+            Debug.Log($"[CorridorMazeBuilder] Entrance/Exit markers spawned");
+        }
+
+        private void SpawnPixelArtMarker(int cx, int cz, Color color, string name, bool isEntrance)
+        {
+            if (_config == null) return;
+
+            float cs = _config.CellSize;
+            var pos = new Vector3((cx + 0.5f) * cs, 0.5f, (cz + 0.5f) * cs);
+
+            // Create 8-bit pixel art style marker (cylinder/cube with pixelated texture)
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            marker.name = name;
+            marker.transform.position = pos;
+            marker.transform.localScale = new Vector3(cs * 0.3f, 2f, cs * 0.3f);
+
+            // Create emissive pixel art material
+            Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            if (mat == null) mat = new Material(Shader.Find("Unlit/Color"));
+            
+            mat.color = new Color(color.r, color.g, color.b, 1f);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", color * 2f); // Emissive glow
+
+            var renderer = marker.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material = mat;
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
+            // Add 8-bit pixel particle effect
+            SpawnPixelParticles(pos, color, isEntrance);
+
+            // Add point light for glow effect
+            Light glowLight = marker.AddComponent<Light>();
+            if (glowLight != null)
+            {
+                glowLight.color = color;
+                glowLight.intensity = 2f;
+                glowLight.range = cs * 1.5f;
+                glowLight.shadows = LightShadows.None;
+            }
+
+            if (_objectsRoot != null)
+                marker.transform.SetParent(_objectsRoot);
+
+            Debug.Log($"[CorridorMazeBuilder] {name} spawned at grid ({cx},{cz})");
+        }
+
+        private void SpawnPixelParticles(Vector3 position, Color color, bool isEntrance)
+        {
+            // Create particle system for 8-bit pixel effect
+            GameObject particleObj = new GameObject(isEntrance ? "EntranceParticles" : "ExitParticles");
+            particleObj.transform.position = position + Vector3.up * 1f;
+
+            var particleSystem = particleObj.AddComponent<ParticleSystem>();
+            var main = particleSystem.main;
+            var emission = particleSystem.emission;
+            var shape = particleSystem.shape;
+            var colorOverLifetime = particleSystem.colorOverLifetime;
+
+            // 8-bit pixel style settings
+            main.duration = 1f;
+            main.loop = true;
+            main.startSize = 0.15f; // Pixel-sized
+            main.startSpeed = 0.5f;
+            main.startLifetime = 2f;
+            main.gravityModifier = 0f;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 20;
+
+            // Emission rate
+            emission.rateOverTime = 10f;
+
+            // Shape: emit from top
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.3f;
+
+            // Color gradient (fading pixel)
+            Gradient grad = new Gradient();
+            grad.SetKeys(
+                new GradientColorKey[] { new GradientColorKey(color, 0f), new GradientColorKey(color * 0.5f, 1f) },
+                new GradientAlphaKey[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) }
+            );
+            colorOverLifetime.color = grad;
+
+            // Rotate for dynamic effect
+            var rotationOverLifetime = particleSystem.rotationOverLifetime;
+            rotationOverLifetime.zMultiplier = 90f;
+
+            if (_objectsRoot != null)
+                particleObj.transform.SetParent(_objectsRoot);
         }
     }
 }

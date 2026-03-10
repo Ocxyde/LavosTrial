@@ -31,8 +31,9 @@ namespace Code.Lavos.Core
     /// Inherits from BehaviorEngine for ItemEngine integration.
     /// Uses PixelArtTextureFactory for procedural textures.
     /// Integrates with EventHandler for plug-in-out architecture.
+    /// Implements IInteractable for E-key interaction.
     /// </summary>
-    public class ChestBehavior : BehaviorEngine
+    public class ChestBehavior : BehaviorEngine, IInteractable
     {
         [Header("Chest Settings")]
         [SerializeField] private float chestWidth = 1.5f;
@@ -534,6 +535,53 @@ namespace Code.Lavos.Core
             Gizmos.color = _isOpen ? Color.yellow : Color.blue;
             Gizmos.DrawWireCube(transform.position + Vector3.up * chestHeight / 2f,
                 new Vector3(chestWidth, chestHeight, chestDepth));
+        }
+
+        // ── IInteractable Implementation ─────────────────────────────────
+        /// <summary>
+        /// Interaction prompt for chest (E-key).
+        /// </summary>
+        public string InteractionPrompt => "Open Chest";
+
+        /// <summary>
+        /// Check if player can interact with this chest.
+        /// </summary>
+        bool IInteractable.CanInteract(MonoBehaviour player) => !_isOpen;
+
+        /// <summary>
+        /// Open chest when player presses E.
+        /// </summary>
+        void IInteractable.OnInteract(MonoBehaviour player)
+        {
+            if (!((IInteractable)this).CanInteract(player)) return;
+            
+            Open();
+            GenerateLoot(player.gameObject);
+            Debug.Log($"[ChestBehavior] Player opened chest at {transform.position}");
+        }
+
+        /// <summary>
+        /// Highlight chest when player looks at it.
+        /// </summary>
+        void IInteractable.OnHighlightEnter(MonoBehaviour player)
+        {
+            // Optional: Add highlight effect
+            if (_glowLight != null)
+            {
+                _glowLight.intensity = glowIntensity * 1.5f;
+            }
+        }
+
+        /// <summary>
+        /// Remove highlight when player looks away.
+        /// </summary>
+        void IInteractable.OnHighlightExit(MonoBehaviour player)
+        {
+            // Restore normal glow
+            if (_glowLight != null)
+            {
+                _glowLight.intensity = glowIntensity;
+            }
         }
     }
 
