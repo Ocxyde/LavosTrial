@@ -305,7 +305,7 @@ namespace Code.Lavos.Core
         // Get wall thickness from config (no hardcoded values)
         // -------------------------------------------------------------------------
         private float WallThickness => _config?.WallThickness ?? 0.2f;
-        private float DiagonalWallThickness => _config?.defaultDiagonalWallThickness ?? 0.5f;
+        private float DiagonalWallThickness => _config?.DefaultDiagonalWallThickness ?? 0.5f;
 
         // -------------------------------------------------------------------------
         // 4 - Cleanup (override for custom container names)
