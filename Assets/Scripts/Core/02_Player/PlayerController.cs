@@ -181,20 +181,29 @@ namespace Code.Lavos.Core
             // For 2m tall CharacterController: eyes at ~1.6m (middle of head)
             // Camera local position: (0, 1.6, 0) - exactly at eye level
             Vector3 targetCamPos = new Vector3(0f, GameConstants.Player.EyeHeight, 0f);
-            
+
             // Validate camera local position matches expected eye height
             if (playerCamera.transform.localPosition != targetCamPos)
             {
                 Debug.Log($"[PlayerController] Setting FPS camera from {playerCamera.transform.localPosition} to {targetCamPos}");
                 playerCamera.transform.localPosition = targetCamPos;
             }
-            
-            // Disable any CameraFollow component (we want FPS, not third-person)
+
+            // CRITICAL FIX: Disable any CameraFollow component to prevent infinite spinning
+            // CameraFollow is for third-person, PlayerController is FPS - they conflict!
             CameraFollow camFollow = playerCamera.GetComponent<CameraFollow>();
             if (camFollow != null)
             {
                 camFollow.enabled = false;
-                Debug.Log("[PlayerController] Disabled CameraFollow for FPS view");
+                Debug.Log("[PlayerController] ✓ Disabled CameraFollow to prevent rotation conflict");
+            }
+
+            // Also disable CameraFollow on parent objects
+            CameraFollow parentCamFollow = playerCamera.transform.parent?.GetComponent<CameraFollow>();
+            if (parentCamFollow != null)
+            {
+                parentCamFollow.enabled = false;
+                Debug.Log("[PlayerController] ✓ Disabled parent CameraFollow to prevent rotation conflict");
             }
         }
         else
