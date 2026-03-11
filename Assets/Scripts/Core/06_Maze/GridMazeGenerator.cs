@@ -157,9 +157,19 @@ namespace Code.Lavos.Core
             EnsureSpawnExitInwardFacing(data, size);
 
             // ── Step 5: A* guaranteed path (cardinal only) ────────
-            //      Ensures passage even if DFS creates isolated sections
+            //      CRITICAL: This MUST succeed - ensures player can reach exit!
             //      Force INDIRECT path by adding intermediate waypoints
             CarveIndirectPath(data, rng, scaledWallPenalty);
+            
+            // ── Step 5.1: Validate A* path exists ─────────────────
+            //      NEW 2026-03-11: Ensure exit is actually reachable
+            //      If validation fails, force direct A* path
+            if (!ValidatePathExists(data, data.SpawnCell, data.ExitCell))
+            {
+                Debug.LogWarning("[GridMazeGenerator] WARNING: No valid path found! Forcing direct A* path...");
+                EnsurePathCardinal(data, data.SpawnCell.x, data.SpawnCell.z, data.ExitCell.x, data.ExitCell.z, 100);
+                Debug.Log("[GridMazeGenerator] Direct A* path forced - exit guaranteed!");
+            }
 
             // ── Step 5.5: Carve intermediate rooms with doors ─────
             //      NEW 2026-03-11: Difficulty-scaled room system
@@ -196,12 +206,9 @@ namespace Code.Lavos.Core
             }
 
             // ── Step 6.6: Add cross-corridors for confusion ───────
-            //      NEW 2026-03-11: Create intersections to disorient player
-            //      - Cross-corridors connect parallel passages
-            //      - Create T-junctions and 4-way intersections
-            //      - Makes maze more labyrinthine (harder to navigate)
-            //      - Rooms placed at some intersections (interlude rooms)
-            AddCrossCorridorsForConfusion(data, rng, cfg, level);
+            //      DISABLED 2026-03-11: Too buggy, causes never-ending mazes
+            //      TODO: Re-enable later after fixing path blocking issues
+            //      AddCrossCorridorsForConfusion(data, rng, cfg, level);
 
             // ── Step 7: torches ───────────────────────────────────
             //      CORRIDOR-ONLY lighting for gothic atmosphere
@@ -1275,6 +1282,58 @@ namespace Code.Lavos.Core
                 }
             }
             return count;
+        }
+
+        // ─────────────────────────────────────────────────────────
+        //  Validate Path Exists (BFS pathfinding check)
+        //
+        //  CRITICAL: Ensures spawn can reach exit
+        //  Returns true if valid path exists, false otherwise
+        // ─────────────────────────────────────────────────────────
+        private static bool ValidatePathExists(MazeData8 d, (int x, int z) start, (int x, int z) end)
+        {
+            var visited = new HashSet<(int, int)>();
+            var queue = new Queue<(int x, int z)>();
+            
+            queue.Enqueue(start);
+            visited.Add(start);
+            
+            var cardinalDirs = new[] { (0, 1), (0, -1), (1, 0), (-1, 0) };
+            
+            while (queue.Count > 0)
+            {
+                var (cx, cz) = queue.Dequeue();
+                
+                // Reached exit?
+                if (cx == end.x && cz == end.z)
+                    return true;
+                
+                // Check all 4 cardinal directions
+                foreach (var (dx, dz) in cardinalDirs)
+                {
+                    int nx = cx + dx;
+                    int nz = cz + dz;
+                    
+                    if (!d.InBounds(nx, nz))
+                        continue;
+                    
+                    if (visited.Contains((nx, nz)))
+                        continue;
+                    
+                    // Check if walkable (no walls)
+                    var cell = d.GetCell(nx, nz);
+                    bool isWalkable = (cell & CellFlags8.AllWalls) == CellFlags8.None;
+                    
+                    if (isWalkable)
+                    {
+                        visited.Add((nx, nz));
+                        queue.Enqueue((nx, nz));
+                    }
+                }
+            }
+            
+            // No path found
+            return false;
         }
 
         // ─────────────────────────────────────────────────────────
