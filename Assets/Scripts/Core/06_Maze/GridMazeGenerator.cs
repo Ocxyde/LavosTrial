@@ -201,7 +201,7 @@ namespace Code.Lavos.Core
             // ── Step 7: torches ───────────────────────────────────
             //      CORRIDOR-ONLY lighting for gothic atmosphere
             //      Rooms remain dark/foggy for ambiance
-            PlaceTorchesOnCorridorsOnly(data, rng, scaledTorchChance);
+            PlaceTorchesOnCorridorsOnly(data, rng, scaledTorchChance, level);
 
             // ── Step 7.5: Ceiling (corridors only) ────────────────
             //      NEW 2026-03-11: Corridor-only ceiling system
@@ -705,40 +705,8 @@ namespace Code.Lavos.Core
                 // Carve the room (clear N×N area)
                 CarveRoom(data, roomX, roomZ, roomSize);
 
-                // Create door openings on north and south walls (for north-south corridor flow)
-                // Or east-west depending on room orientation
-                bool northSouth = rng.NextDouble() > 0.5f;
-                
-                if (northSouth)
-                {
-                    // North door opening
-                    CreateDoorOpening(data, roomX, roomZ - roomSize / 2, doorOpeningWidth, Direction8.N);
-                    // South door opening
-                    CreateDoorOpening(data, roomX, roomZ + roomSize / 2, doorOpeningWidth, Direction8.S);
-                }
-                else
-                {
-                    // West door opening
-                    CreateDoorOpening(data, roomX - roomSize / 2, roomZ, doorOpeningWidth, Direction8.W);
-                    // East door opening
-                    CreateDoorOpening(data, roomX + roomSize / 2, roomZ, doorOpeningWidth, Direction8.E);
-                }
-
-                // Determine door type based on level
-                DoorType doorType = DoorType.Normal;
-                double doorRoll = rng.NextDouble();
-
-                if (doorRoll < (double)secretDoorChance)
-                {
-                    doorType = DoorType.Secret;
-                }
-                else if (doorRoll < (double)(secretDoorChance + lockedDoorChance))
-                {
-                    doorType = DoorType.Locked;
-                }
-
-                // Mark door positions for later spawning (store in cell flags or separate data)
-                MarkDoorPositions(data, roomX, roomZ, roomSize, northSouth, doorType);
+                // Mark room cell for door placement (1 entrance, 1 exit)
+                MarkRoomForDoors(data, roomX, roomZ, roomSize, rng);
 
                 roomsCarved++;
                 Debug.Log($"[GridMazeGenerator] Room #{roomsCarved} carved at ({roomX},{roomZ}), size={roomSize}×{roomSize}, doorType={doorType}");
@@ -818,22 +786,41 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Mark door positions in the maze data for later door prefab spawning
+        /// Mark room for door placement (1 entrance, 1 exit)
+        /// Simple doors on opposite sides of room
+        /// Door positions are logged for CompleteMazeBuilder to spawn
         /// </summary>
-        private static void MarkDoorPositions(MazeData8 data, int roomX, int roomZ, 
-            int roomSize, bool northSouth, DoorType doorType)
+        private static void MarkRoomForDoors(MazeData8 data, int roomX, int roomZ, int roomSize, System.Random rng)
         {
-            // Door positions are stored implicitly by room location
-            // The CompleteMazeBuilder will spawn doors based on room positions
-            // For now, we just log the door locations
+            // Mark room cell
+            data.AddFlag(roomX, roomZ, CellFlags8.IsRoom);
+            
+            // Choose orientation: N-S or E-W doors
+            bool northSouth = rng.NextDouble() > 0.5f;
             
             if (northSouth)
             {
-                Debug.Log($"[GridMazeGenerator]   Doors at: North({roomX},{roomZ - roomSize/2}), South({roomX},{roomZ + roomSize/2})");
+                // North door position (entrance)
+                int doorNorthX = roomX;
+                int doorNorthZ = roomZ - roomSize / 2;
+                
+                // South door position (exit)
+                int doorSouthX = roomX;
+                int doorSouthZ = roomZ + roomSize / 2;
+                
+                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): N-S doors at ({doorNorthX},{doorNorthZ}) and ({doorSouthX},{doorSouthZ})");
             }
             else
             {
-                Debug.Log($"[GridMazeGenerator]   Doors at: West({roomX - roomSize/2},{roomZ}), East({roomX + roomSize/2},{roomZ})");
+                // West door position (entrance)
+                int doorWestX = roomX - roomSize / 2;
+                int doorWestZ = roomZ;
+                
+                // East door position (exit)
+                int doorEastX = roomX + roomSize / 2;
+                int doorEastZ = roomZ;
+                
+                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): E-W doors at ({doorWestX},{doorWestZ}) and ({doorEastX},{doorEastZ})");
             }
         }
 
@@ -1082,17 +1069,23 @@ namespace Code.Lavos.Core
         //  - Offset: Slightly protruding from wall surface
         //  - Light: Warm orange (2700K), flickering
         // ─────────────────────────────────────────────────────────
-        private static void PlaceTorchesOnCorridorsOnly(MazeData8 d, System.Random rng, float chance)
+        private static void PlaceTorchesOnCorridorsOnly(MazeData8 d, System.Random rng, float chance, int level)
         {
+            // Scale torch chance by difficulty (fewer torches at higher levels)
+            float torchMultiplier = 1.0f - ((float)level / 39f * 0.75f); // 100% → 25%
+            float scaledChance = chance * torchMultiplier;
+            
+            Debug.Log($"[GridMazeGenerator] Torch density: Level {level} = {scaledChance:P1} (base={chance:P1} × mult={torchMultiplier:P1})");
+            
             for (int x = 0; x < d.Width; x++)
             for (int z = 0; z < d.Height; z++)
             {
                 var cell = d.GetCell(x, z);
-                
+
                 // Check if this is a corridor cell (has some walls but not all)
                 bool hasAnyWall = (cell & CellFlags8.AllWalls) != CellFlags8.None;
                 bool hasSomePassage = (cell & CellFlags8.AllWalls) != CellFlags8.AllWalls;
-                
+
                 // Check if NOT in a room
                 bool isNotRoom = (cell & CellFlags8.IsRoom) == CellFlags8.None;
                 bool isNotSpawn = (cell & CellFlags8.SpawnRoom) == CellFlags8.None;
@@ -1101,15 +1094,13 @@ namespace Code.Lavos.Core
                 // Place torch only on corridor walls (not in rooms)
                 if (hasAnyWall && hasSomePassage && isNotRoom && isNotSpawn && isNotExit)
                 {
-                    if (rng.NextDouble() < chance)
+                    if (rng.NextDouble() < scaledChance)
                         d.AddFlag(x, z, CellFlags8.HasTorch);
                 }
             }
 
             Debug.Log($"[GridMazeGenerator] Torches placed on corridors only (rooms stay dark)");
-            Debug.Log($"[GridMazeGenerator] Torch position: Mid-wall height (wallHeight/2)");
-            Debug.Log($"[GridMazeGenerator] Torch rotation: X=25° tilt, face INWARD toward walkable cell");
-            Debug.Log($"[GridMazeGenerator] Torch direction: Find walkable adjacent cell, face that way");
+            Debug.Log($"[GridMazeGenerator] Torch density multiplier: {torchMultiplier:P0} (harder = darker)");
         }
 
         // ─────────────────────────────────────────────────────────
