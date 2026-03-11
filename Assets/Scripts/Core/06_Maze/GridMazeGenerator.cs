@@ -1078,7 +1078,7 @@ namespace Code.Lavos.Core
         //
         //  TORCH PLACEMENT SPECIFICATIONS:
         //  - Position: Mid-height of wall (wallHeight / 2)
-        //  - Rotation: 25° inward (Z-axis rotation toward corridor)
+        //  - Rotation: X=25° inward (X-axis rotation toward corridor)
         //  - Offset: Slightly protruding from wall surface
         //  - Light: Warm orange (2700K), flickering
         // ─────────────────────────────────────────────────────────
@@ -1108,7 +1108,7 @@ namespace Code.Lavos.Core
 
             Debug.Log($"[GridMazeGenerator] Torches placed on corridors only (rooms stay dark)");
             Debug.Log($"[GridMazeGenerator] Torch position: Mid-wall height (wallHeight/2)");
-            Debug.Log($"[GridMazeGenerator] Torch rotation: Z=25° inward (toward corridor)");
+            Debug.Log($"[GridMazeGenerator] Torch rotation: X=25° inward (tilt toward corridor)");
         }
 
         // ─────────────────────────────────────────────────────────
@@ -1130,8 +1130,8 @@ namespace Code.Lavos.Core
         //  TORCH IMPLEMENTATION NOTES (for CompleteMazeBuilder):
         //  When spawning torches from TorchPool:
         //    1. Position: wallCenter + Vector3(0, wallHeight/2, 0)
-        //    2. Rotation: Quaternion.Euler(0, wallFacing, 25)
-        //       - 25° Z-rotation = inward tilt toward corridor
+        //    2. Rotation: Quaternion.Euler(25, wallFacing, 0)
+        //       - 25° X-rotation = inward tilt (torch points up into corridor)
         //       - wallFacing = 0/90/180/270 based on wall direction
         //    3. Offset: 0.3 units from wall surface (into corridor)
         //    4. Light: Point light, warm orange (1.0, 0.6, 0.2), intensity 2.0
