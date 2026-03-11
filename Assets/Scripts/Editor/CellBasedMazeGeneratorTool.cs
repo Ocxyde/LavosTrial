@@ -216,18 +216,17 @@ namespace Code.Lavos.Editor
                 }
                 _progress = 0.6f;
                 _statusMessage = "Spawning ground plane...";
-                
+
                 // Step 4: Auto-spawn ground plane
-                Transform groundRoot = null;
                 if (autoSpawnGround)
                 {
-                    groundRoot = GetOrCreateRoot("MazeGround");
-                    ClearChildren(groundRoot.transform);
-                    SpawnGroundPlane(groundRoot.transform, mazeWidth, mazeHeight);
+                    Transform groundRoot = GetOrCreateRoot("MazeGround").transform;
+                    ClearChildren(groundRoot);
+                    SpawnGroundPlane(groundRoot, mazeWidth, mazeHeight);
                 }
                 _progress = 0.7f;
                 _statusMessage = "Spawning walls and doors...";
-                
+
                 // Step 5: Auto-spawn walls and doors
                 Transform wallsRoot = null;
                 Transform doorsRoot = null;
