@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -370,24 +370,31 @@ namespace Code.Lavos.Core.Maze
             if (!room.doorsConnected)
             {
                 Debug.LogWarning($"[RoomSystem] Room at {room.center} has disconnected doors!");
-                
+
                 // Fix: carve corridors to connect doors
                 if (!entryConnected)
-                    CarveCorridorTo(room.entryDoor + Direction8Helper.ToOffset(room.entryDirection));
-                
+                {
+                    var entryOffset = Direction8Helper.ToOffset(room.entryDirection);
+                    CarveCorridorTo(room.entryDoor + new Vector2Int(entryOffset.dx, entryOffset.dz));
+                }
+
                 if (!exitConnected)
-                    CarveCorridorTo(room.exitDoor + Direction8Helper.ToOffset(room.exitDirection));
-                
+                {
+                    var exitOffset = Direction8Helper.ToOffset(room.exitDirection);
+                    CarveCorridorTo(room.exitDoor + new Vector2Int(exitOffset.dx, exitOffset.dz));
+                }
+
                 room.doorsConnected = true;
             }
         }
-        
+
         /// <summary>
         /// Check if door leads to walkable cell.
         /// </summary>
         private bool IsDoorConnected(Vector2Int doorPos, Direction8 direction)
         {
-            var neighbor = doorPos + Direction8Helper.ToOffset(direction);
+            var offset = Direction8Helper.ToOffset(direction);
+            var neighbor = doorPos + new Vector2Int(offset.dx, offset.dz);
             
             if (!IsValidCell(neighbor)) return false;
             
