@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEditor;
 using Code.Lavos.Core.Maze;
 using Code.Lavos.Core.Environment;
-using Code.Lavos.Core.Player;
 using System.Collections.Generic;
 
 namespace Code.Lavos.Editor
@@ -217,13 +216,14 @@ namespace Code.Lavos.Editor
                 }
                 _progress = 0.6f;
                 _statusMessage = "Spawning ground plane...";
-
+                
                 // Step 4: Auto-spawn ground plane
+                Transform groundRoot = null;
                 if (autoSpawnGround)
                 {
-                    Transform groundRoot = GetOrCreateRoot("MazeGround").transform;
-                    ClearChildren(groundRoot);
-                    SpawnGroundPlane(groundRoot, mazeWidth, mazeHeight);
+                    groundRoot = GetOrCreateRoot("MazeGround");
+                    ClearChildren(groundRoot.transform);
+                    SpawnGroundPlane(groundRoot.transform, mazeWidth, mazeHeight);
                 }
                 _progress = 0.7f;
                 _statusMessage = "Spawning walls and doors...";
@@ -231,21 +231,21 @@ namespace Code.Lavos.Editor
                 // Step 5: Auto-spawn walls and doors
                 Transform wallsRoot = null;
                 Transform doorsRoot = null;
-                
+
                 if (autoSpawnWalls || autoSpawnDoors)
                 {
                     // Auto-find prefabs if not assigned
                     if (wallPrefab == null) AutoFindPrefabs();
-                    
+
                     // Create root transforms
                     wallsRoot = GetOrCreateRoot("MazeWalls").transform;
                     doorsRoot = GetOrCreateRoot("MazeDoors").transform;
-                    
+
                     // Clear existing
                     if (autoSpawnWalls) ClearChildren(wallsRoot);
                     if (autoSpawnDoors) ClearChildren(doorsRoot);
-                    
-                    // Spawn
+
+                    // Spawn internal walls and doors
                     if (autoSpawnWalls && autoSpawnDoors)
                     {
                         _generator.SpawnWallsAndDoors(
@@ -254,14 +254,20 @@ namespace Code.Lavos.Editor
                             cellSize: 6f, wallHeight: 4f, wallThickness: 0.3f,
                             wallPivotIsAtMeshCenter: true);
                     }
-                    
-                    // Surround with perimeter walls
-                    if (surroundWithPerimeterWalls)
-                    {
-                        SpawnPerimeterWalls(wallsRoot, mazeWidth, mazeHeight);
-                    }
                 }
-                
+
+                // Surround with perimeter walls (independent of internal walls)
+                if (surroundWithPerimeterWalls)
+                {
+                    if (wallsRoot == null)
+                    {
+                        wallsRoot = GetOrCreateRoot("MazeWalls").transform;
+                        ClearChildren(wallsRoot);
+                    }
+                    if (wallPrefab == null) AutoFindPrefabs();
+                    SpawnPerimeterWalls(wallsRoot, mazeWidth, mazeHeight);
+                }
+
                 // Step 6: Mark entry/exit points
                 if (markEntryExitPoints)
                 {
@@ -547,8 +553,8 @@ namespace Code.Lavos.Editor
             {
                 rigidbody = player.AddComponent<Rigidbody>();
                 rigidbody.mass = 70f;
-                rigidbody.drag = 0.1f;
-                rigidbody.angularDrag = 0.5f;
+                rigidbody.linearDamping = 0.1f;
+                rigidbody.angularDamping = 0.5f;
                 rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
             }
             
