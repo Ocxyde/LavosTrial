@@ -647,30 +647,41 @@ namespace Code.Lavos.Core
             // Find positions for rooms along the path from spawn to exit
             // Place rooms at waypoints between spawn and exit
             int attempts = 0;
-            int maxAttempts = roomCount * 3; // Allow some failures
+            int maxAttempts = roomCount * 5; // Allow more attempts to find valid spots
 
             while (roomsCarved < roomCount && attempts < maxAttempts)
             {
                 attempts++;
 
                 // Generate random position between spawn and exit (avoiding edges)
-                int margin = roomSize / 2 + 2;
+                int margin = roomSize / 2 + 3;
                 int roomX = rng.Next(margin, data.Width - margin);
                 int roomZ = rng.Next(margin, data.Height - margin);
 
-                // Skip if too close to spawn or exit
+                // Skip if too close to spawn or exit (preserve spawn/exit rooms)
                 int distToSpawn = Mathf.Abs(roomX - data.SpawnCell.x) + Mathf.Abs(roomZ - data.SpawnCell.z);
                 int distToExit = Mathf.Abs(roomX - data.ExitCell.x) + Mathf.Abs(roomZ - data.ExitCell.z);
-                
-                if (distToSpawn < roomSize + 2 || distToExit < roomSize + 2)
+
+                if (distToSpawn < roomSize + 4 || distToExit < roomSize + 4)
                     continue;
 
                 // Check if position is in a wall area (not existing passage)
                 var centerCell = data.GetCell(roomX, roomZ);
                 bool isWall = (centerCell & CellFlags8.AllWalls) != CellFlags8.None;
-                
+
                 if (!isWall)
                     continue;
+
+                // CRITICAL: Check if room would block the guaranteed path
+                // Don't carve room if it would overwrite too many passage cells
+                int passageCellsInRoom = CountPassageCellsInArea(data, roomX, roomZ, roomSize);
+                int maxPassageOverlap = Mathf.Max(2, roomSize / 3); // Allow small overlap
+                
+                if (passageCellsInRoom > maxPassageOverlap)
+                {
+                    // This room would block too much of the existing path - skip it
+                    continue;
+                }
 
                 // Carve the room (clear N×N area)
                 CarveRoom(data, roomX, roomZ, roomSize);
@@ -962,6 +973,31 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
+        //  Helper: Count passage cells in a rectangular area (for room placement)
+        //  Used to ensure rooms don't block the guaranteed A* path
+        // ─────────────────────────────────────────────────────────
+        private static int CountPassageCellsInArea(MazeData8 d, int centerX, int centerZ, int size)
+        {
+            int count = 0;
+            int half = size / 2;
+            
+            for (int x = centerX - half; x <= centerX + half; x++)
+            {
+                for (int z = centerZ - half; z <= centerZ + half; z++)
+                {
+                    if (d.InBounds(x, z))
+                    {
+                        var cell = d.GetCell(x, z);
+                        // Count if this is a passage (no walls)
+                        if ((cell & CellFlags8.AllWalls) == CellFlags8.None)
+                            count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        // ─────────────────────────────────────────────────────────
         //  Fisher-Yates in-place shuffle
         // ─────────────────────────────────────────────────────────
         private static void Shuffle<T>(T[] arr, System.Random rng)
@@ -1094,10 +1130,10 @@ namespace Code.Lavos.Core
         public float DeadEndDensity  = 0.10f;  // Base chance for dead-end corridor spawn (10%)
         
         // Room System (2026-03-11)
-        // MANY SMALL ROOMS strategy: More rooms = more tactical gameplay
-        public int   MinRooms        = 6;      // Minimum rooms at level 0 (was 2) - many small rooms!
-        public int   MaxRooms        = 30;     // Maximum rooms at level 39 (was 12) - lots of chambers
-        public int   BaseRoomSize    = 5;      // Base room size (5×5 at low levels)
+        // SMALL ROOMS strategy: Smaller rooms = less empty space
+        public int   MinRooms        = 2;      // Minimum rooms at level 0 (keep original count)
+        public int   MaxRooms        = 12;     // Maximum rooms at level 39 (keep original count)
+        public int   BaseRoomSize    = 5;      // Base room size reference
         public int   DoorOpeningWidth = 3;     // Door opening width in wall units
         
         // DiagonalWalls removed 2026-03-09 - cardinal-only passages
