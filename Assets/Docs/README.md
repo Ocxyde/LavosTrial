@@ -1,4 +1,4 @@
-﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
+﻿﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
 
 **A Unity 6 First-Person Maze Roguelike Engine**
 
@@ -27,7 +27,9 @@
    | Look | Mouse |
    | Sprint | Shift (1% stamina/sec) |
    | Jump | Space (1% stamina/jump) |
-   | Interact | E |
+   | Interact | F |
+
+   **📝 Note:** Controls will be configurable in future update! See [KEYMAP_SYSTEM_PLANNED.md](KEYMAP_SYSTEM_PLANNED.md) for planned key binding system with keyboard, gamepad, and dodge mechanics.
 
 ---
 

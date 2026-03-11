@@ -827,40 +827,43 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Mark room for door placement (1 entrance, 1 exit)
-        /// Simple doors on opposite sides of room
+        /// Doors snap to WALL EDGES (not center) for clean architectural look
         /// Door positions are logged for CompleteMazeBuilder to spawn
         /// </summary>
         private static void MarkRoomForDoors(MazeData8 data, int roomX, int roomZ, int roomSize, System.Random rng)
         {
             // Mark room cell
             data.AddFlag(roomX, roomZ, CellFlags8.IsRoom);
-            
+
             // Choose orientation: N-S or E-W doors
+            // Doors are placed at WALL EDGES (corners), not center
             bool northSouth = rng.NextDouble() > 0.5f;
-            
+
             if (northSouth)
             {
-                // North door position (entrance)
-                int doorNorthX = roomX;
+                // North door position (entrance) - at NORTHWEST or NORTHEAST corner
+                bool westSide = rng.NextDouble() > 0.5f;
+                int doorNorthX = roomX + (westSide ? -roomSize / 2 : roomSize / 2);
                 int doorNorthZ = roomZ - roomSize / 2;
-                
-                // South door position (exit)
-                int doorSouthX = roomX;
+
+                // South door position (exit) - at opposite corner for diagonal flow
+                int doorSouthX = roomX + (westSide ? roomSize / 2 : -roomSize / 2);
                 int doorSouthZ = roomZ + roomSize / 2;
-                
-                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): N-S doors at ({doorNorthX},{doorNorthZ}) and ({doorSouthX},{doorSouthZ})");
+
+                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): N-S doors at EDGE ({doorNorthX},{doorNorthZ}) and ({doorSouthX},{doorSouthZ})");
             }
             else
             {
-                // West door position (entrance)
+                // West door position (entrance) - at NORTHWEST or SOUTHWEST corner
+                bool northSide = rng.NextDouble() > 0.5f;
                 int doorWestX = roomX - roomSize / 2;
-                int doorWestZ = roomZ;
-                
-                // East door position (exit)
+                int doorWestZ = roomZ + (northSide ? -roomSize / 2 : roomSize / 2);
+
+                // East door position (exit) - at opposite corner for diagonal flow
                 int doorEastX = roomX + roomSize / 2;
-                int doorEastZ = roomZ;
-                
-                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): E-W doors at ({doorWestX},{doorWestZ}) and ({doorEastX},{doorEastZ})");
+                int doorEastZ = roomZ + (northSide ? roomSize / 2 : -roomSize / 2);
+
+                Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): E-W doors at EDGE ({doorWestX},{doorWestZ}) and ({doorEastX},{doorEastZ})");
             }
         }
 
