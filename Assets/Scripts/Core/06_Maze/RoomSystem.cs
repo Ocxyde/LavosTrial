@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿// LavosTrial - CodeDotLavos
+﻿﻿﻿﻿﻿﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -110,45 +110,45 @@ namespace Code.Lavos.Core.Maze
         private bool CanFitRoom(Vector2Int center)
         {
             int half = _roomSize / 2;
-            
+
             // Check all room cells are in bounds
             for (int x = -half; x <= half; x++)
             {
-                for (int z = -half; z <= half; z++)
+                for (int y = -half; y <= half; y++)
                 {
-                    var pos = center + new Vector2Int(x, z);
-                    if (pos.x < 0 || pos.x >= _width || pos.z < 0 || pos.z >= _height)
+                    var pos = center + new Vector2Int(x, y);
+                    if (pos.x < 0 || pos.x >= _width || pos.y < 0 || pos.y >= _height)
                     {
                         return false;
                     }
                 }
             }
-            
+
             // Check no overlap with existing rooms
             foreach (var existingRoom in _rooms)
             {
                 int dx = Mathf.Abs(center.x - existingRoom.center.x);
-                int dz = Mathf.Abs(center.y - existingRoom.center.y);
-                
-                if (dx < _roomSize + 1 && dz < _roomSize + 1)
+                int dy = Mathf.Abs(center.y - existingRoom.center.y);
+
+                if (dx < _roomSize + 1 && dy < _roomSize + 1)
                 {
                     return false; // Too close to existing room
                 }
             }
-            
+
             return true;
         }
-        
+
         /// <summary>
         /// Clear room area (make all interior cells empty).
         /// </summary>
         private void ClearRoomArea(ref Room room)
         {
             var cells = room.GetRoomCells();
-            
+
             foreach (var cellPos in cells)
             {
-                if (cellPos.x >= 0 && cellPos.x < _width && cellPos.z >= 0 && cellPos.z < _height)
+                if (cellPos.x >= 0 && cellPos.x < _width && cellPos.y >= 0 && cellPos.y < _height)
                 {
                     var cell = _grid[cellPos.x, cellPos.y];
                     cell = MazeCell.CreateEmpty();

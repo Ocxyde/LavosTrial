@@ -495,7 +495,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 3456789012, guid: 90c98a35c1061ef4dae3f4d32f2484a6, type: 3}
   configResourcePath: Config/GameConfig8-default
   wallPivotIsAtMeshCenter: 1
-  currentLevel: 0
+  currentLevel: 1
   currentSeed: 0
   lastGenMs: 0
   currentDifficultyFactor: 0
@@ -509,7 +509,6 @@ MonoBehaviour:
   spawnChests: 1
   chestDensity: 0.05
   minEnemyDensity: 0.04
-  doorPrefab: {fileID: 1490457152090346199, guid: 0bec5b1d786e1b547b19ef419fdb032c, type: 3}
   lockedDoorPrefab: {fileID: 3873663596800242568, guid: d78157b69a540c340b617f0119522676, type: 3}
   secretDoorPrefab: {fileID: 8544803907652881422, guid: c655296b22f978c4db5ba8247646922c, type: 3}
   exitDoorPrefab: {fileID: 2535999292165175663, guid: 4226a3f19f7e67849b1cdda0a7704200, type: 3}
