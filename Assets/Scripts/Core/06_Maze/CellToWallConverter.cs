@@ -163,7 +163,7 @@ namespace Code.Lavos.Core.Maze
         /// </summary>
         private void EnsureWallCollider(GameObject wall)
         {
-            // Check if wall already has a collider
+            // Plug-in-Out: Find existing collider (never create)
             var collider = wall.GetComponent<Collider>();
             if (collider != null)
             {
@@ -171,19 +171,10 @@ namespace Code.Lavos.Core.Maze
                 return;
             }
 
-            // Add box collider if missing
-            var boxCollider = wall.AddComponent<BoxCollider>();
-            boxCollider.enabled = true;
-
-            // Adjust collider size to match wall
-            var renderer = wall.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                boxCollider.size = renderer.bounds.size;
-                boxCollider.center = renderer.bounds.center - wall.transform.position;
-            }
+            // No collider found - log warning (don't add!)
+            Debug.LogWarning($"[CellToWallConverter] Wall '{wall.name}' has no Collider! Add Collider to wall prefab.");
         }
-        
+
         /// <summary>
         /// Spawn all doors in doorways.
         /// </summary>
@@ -194,7 +185,7 @@ namespace Code.Lavos.Core.Maze
                 for (int y = 0; y < _height; y++)
                 {
                     var cell = _grid[x, y];
-                    
+
                     // Check if cell is a doorway
                     if (cell.agreement == CellAgreement.Doorway)
                     {
@@ -205,7 +196,7 @@ namespace Code.Lavos.Core.Maze
                 }
             }
         }
-        
+
         /// <summary>
         /// Determine door type from cell context.
         /// </summary>
@@ -219,10 +210,10 @@ namespace Code.Lavos.Core.Maze
                     return MazeDoorType.Exit;
                 }
             }
-            
+
             return MazeDoorType.Normal;
         }
-        
+
         /// <summary>
         /// Spawn door at position (with collider + DoorController).
         /// </summary>
@@ -255,6 +246,7 @@ namespace Code.Lavos.Core.Maze
         /// </summary>
         private void EnsureDoorCollider(GameObject door)
         {
+            // Plug-in-Out: Find existing collider (never create)
             var collider = door.GetComponent<Collider>();
             if (collider != null)
             {
@@ -262,15 +254,8 @@ namespace Code.Lavos.Core.Maze
                 return;
             }
 
-            var boxCollider = door.AddComponent<BoxCollider>();
-            boxCollider.enabled = true;
-
-            var renderer = door.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                boxCollider.size = renderer.bounds.size;
-                boxCollider.center = renderer.bounds.center - door.transform.position;
-            }
+            // No collider found - log warning (don't add!)
+            Debug.LogWarning($"[CellToWallConverter] Door '{door.name}' has no Collider! Add Collider to door prefab.");
         }
 
         /// <summary>
@@ -278,6 +263,7 @@ namespace Code.Lavos.Core.Maze
         /// </summary>
         private void EnsureDoorInteractable(GameObject door)
         {
+            // Plug-in-Out: Find existing DoorController (never create)
             var doorController = door.GetComponent<DoorController>();
             if (doorController != null)
             {
@@ -285,8 +271,8 @@ namespace Code.Lavos.Core.Maze
                 return;
             }
 
-            door.AddComponent<DoorController>();
-            Debug.Log($"[CellToWallConverter] Added DoorController to {door.name}");
+            // No DoorController found - log warning (don't add!)
+            Debug.LogWarning($"[CellToWallConverter] Door '{door.name}' has no DoorController! Add DoorController to door prefab.");
         }
         
         /// <summary>
