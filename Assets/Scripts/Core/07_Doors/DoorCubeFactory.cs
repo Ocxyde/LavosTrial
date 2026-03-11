@@ -15,17 +15,36 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // DoorCubeFactory.cs
-// Creates 3D cube doors with pixel art textures
+// ⚠️ DEPRECATED - Procedural door generation violates plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
+//
+// STATUS: DEPRECATED - Violates plug-in-out architecture (creates GameObjects at runtime)
+// REPLACEMENT: Use door prefabs from Assets/Prefabs/DoorPrefab.prefab
+// REASON: Factory creates GameObjects and components at runtime instead of using prefabs
+//
+// DO NOT USE IN NEW CODE - Use door prefabs instead.
+// This file is kept for reference only.
 
 using UnityEngine;
 
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// Generates 3D cube door meshes with pixel art textures.
-    /// Replaces old quad-based doors with proper 3D geometry.
+    /// ⚠️ DEPRECATED - DoorCubeFactory violates plug-in-out architecture.
+    /// 
+    /// This factory creates door GameObjects and components at runtime:
+    /// - new GameObject("DoorPanel") - VIOLATION
+    /// - AddComponent<MeshFilter>() - VIOLATION
+    /// - AddComponent<MeshRenderer>() - VIOLATION
+    /// - AddComponent<BoxCollider>() - VIOLATION
+    /// 
+    /// ✅ CORRECT APPROACH:
+    /// Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).
+    /// Instantiate prefabs at runtime, don't create from scratch.
+    /// 
+    /// This file is kept for reference only - DO NOT USE IN NEW CODE.
     /// </summary>
+    [System.Obsolete("DoorCubeFactory violates plug-in-out. Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).")]
     public static class DoorCubeFactory
     {
         // Door dimensions (in world units, scaled for pixel art)

@@ -15,24 +15,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // RealisticDoorFactory.cs
-// Creates realistic 3D door models with 8-bit pixel art textures
+// ⚠️ DEPRECATED - Procedural door generation violates plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Uses PixelArtDoorTextures for 8-bit textures with alpha
-// Uses DoorSFXManager for procedural 8-bit sound effects
-// Prefabs can be saved to Assets/Art/Doors/ for reuse
+// STATUS: DEPRECATED - Violates plug-in-out architecture (creates GameObjects at runtime)
+// REPLACEMENT: Use door prefabs from Assets/Prefabs/DoorPrefab.prefab
+// REASON: Factory creates GameObjects and components at runtime instead of using prefabs
+//
+// DO NOT USE IN NEW CODE - Use door prefabs instead.
+// This file is kept for reference only.
 
 using UnityEngine;
 
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// Realistic door factory - creates proper door models with 8-bit pixel art textures.
-    /// Doors have: Frame, panels, handle, hinges, proper proportions.
-    /// Textures: 8-bit pixel art style with alpha channel.
-    /// SFX: Procedural 8-bit sounds (no external files needed).
-    /// Prefabs saved to Assets/Art/Doors/ for reuse.
+    /// ⚠️ DEPRECATED - RealisticDoorFactory violates plug-in-out architecture.
+    /// 
+    /// This factory creates door GameObjects and components at runtime:
+    /// - new GameObject("Door") - VIOLATION
+    /// - AddComponent<DoorsEngine>() - VIOLATION
+    /// - AddComponent<DoorAnimation>() - VIOLATION
+    /// 
+    /// ✅ CORRECT APPROACH:
+    /// Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).
+    /// Instantiate prefabs at runtime, don't create from scratch.
+    /// 
+    /// This file is kept for reference only - DO NOT USE IN NEW CODE.
     /// </summary>
+    [System.Obsolete("RealisticDoorFactory violates plug-in-out. Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).")]
     public static class RealisticDoorFactory
     {
         #region Door Dimensions (Real-world proportions)

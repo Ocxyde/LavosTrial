@@ -2,6 +2,7 @@
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
+using System.Linq;
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
 using System.Collections.Generic;
@@ -190,7 +191,19 @@ namespace Code.Lavos.Core
         private void SpawnAllWalls()
         {
             if (wallPrefab == null || _mazeData == null || _config == null) return;
-            _wallsRoot = new GameObject("MazeWalls").transform;
+            
+            // Plug-in-Out: Find or create walls root
+            _wallsRoot = FindFirstObjectByType<Transform>();
+            if (_wallsRoot == null || _wallsRoot.name != "MazeWalls")
+            {
+                _wallsRoot = FindObjectsOfType<Transform>().FirstOrDefault(t => t.name == "MazeWalls");
+            }
+            if (_wallsRoot == null)
+            {
+                Debug.LogWarning("[CorridorMazeBuilder] MazeWalls not found! Creating new (assign in scene for Plug-in-Out compliance).");
+                _wallsRoot = new GameObject("MazeWalls").transform;
+            }
+            
             float cs = _config.CellSize, wh = _config.WallHeight;
             int count = 0;
             for (int z = 0; z < _mazeData.Height; z++)
