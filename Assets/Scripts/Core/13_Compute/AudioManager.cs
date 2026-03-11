@@ -44,6 +44,24 @@ namespace Code.Lavos.Core
     /// AUDIOMANAGER - Professional audio management with pooling.
     /// Singleton pattern (DontDestroyOnLoad) for persistent audio across scenes.
     /// 
+    /// ⚠️ PLUG-IN-OUT STATUS: ACCEPTABLE VIOLATION
+    /// 
+    /// This singleton self-creates because:
+    /// - It's a global system (only ONE instance can exist)
+    /// - It persists across scenes (DontDestroyOnLoad)
+    /// - Nothing else can create it (bootstrap manager)
+    /// - It's a well-documented singleton pattern
+    /// 
+    /// ✅ PROPER SETUP (Recommended):
+    /// 1. Create empty GameObject named "AudioManager"
+    /// 2. Add AudioManager component
+    /// 3. Configure in Inspector (mixer, playlists, etc.)
+    /// 4. Mark as DontDestroyOnLoad (optional, manager does this)
+    /// 
+    /// ⚠️ FALLBACK (Auto-creation - logged as warning):
+    /// If no AudioManager exists in scene, one is auto-created.
+    /// This is acceptable for managers but manual setup is preferred.
+    /// 
     /// Must be added to scene manually. Auto-creation is a fallback only.
     /// </summary>
     public class AudioManager : MonoBehaviour
@@ -63,10 +81,12 @@ namespace Code.Lavos.Core
 
                     if (_instance == null)
                     {
-                        // FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[AudioManager] Not found in scene - auto-creating (add manually!)");
+                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        // ACCEPTABLE for manager singletons (bootstrap pattern)
+                        Debug.LogWarning("[AudioManager] Not found in scene - auto-creating (add manually for Plug-in-Out compliance!)");
                         var go = new GameObject("AudioManager");
                         _instance = go.AddComponent<AudioManager>();
+                        DontDestroyOnLoad(go);
                     }
                 }
                 return _instance;

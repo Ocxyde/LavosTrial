@@ -43,8 +43,26 @@ namespace Code.Lavos.Core
     /// SFXVFXEngine - Special FX & Visual FX management.
     /// Handles particle effects, visual effects, screen effects.
     /// 
-    /// Must be added to scene manually. Auto-creation is a fallback only.
+    /// ⚠️ PLUG-IN-OUT STATUS: ACCEPTABLE VIOLATION
     /// 
+    /// This singleton self-creates because:
+    /// - It's a global system (only ONE instance can exist)
+    /// - It persists across scenes (DontDestroyOnLoad)
+    /// - Nothing else can create it (bootstrap manager)
+    /// - It's a well-documented singleton pattern
+    /// 
+    /// ✅ PROPER SETUP (Recommended):
+    /// 1. Create empty GameObject named "SFXVFXEngine"
+    /// 2. Add SFXVFXEngine component
+    /// 3. Configure in Inspector (particle prefabs, etc.)
+    /// 4. Mark as DontDestroyOnLoad (optional, manager does this)
+    /// 
+    /// ⚠️ FALLBACK (Auto-creation - logged as warning):
+    /// If no SFXVFXEngine exists in scene, one is auto-created.
+    /// This is acceptable for managers but manual setup is preferred.
+    /// 
+    /// Must be added to scene manually. Auto-creation is a fallback only.
+    ///
     /// NOT REDUNDANT with AudioManager:
     /// - AudioManager: Audio only (music, sound effects)
     /// - SFXVFXEngine: Visual effects (particles, flashes, shakes)
@@ -63,8 +81,9 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<SFXVFXEngine>();
                     if (_instance == null)
                     {
-                        // FALLBACK ONLY: Should be added to scene manually
-                        Debug.LogWarning("[SFXVFXEngine] Not found in scene - auto-creating (add manually!)");
+                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        // ACCEPTABLE for manager singletons (bootstrap pattern)
+                        Debug.LogWarning("[SFXVFXEngine] Not found in scene - auto-creating (add manually for Plug-in-Out compliance!)");
                         GameObject go = new GameObject("SFXVFXEngine");
                         _instance = go.AddComponent<SFXVFXEngine>();
                         DontDestroyOnLoad(go);
