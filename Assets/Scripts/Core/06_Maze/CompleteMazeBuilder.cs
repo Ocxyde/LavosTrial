@@ -3,6 +3,7 @@
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8  |  Locale: en_US
 
+using System.Linq;
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
 using Code.Lavos.Core.Environment;
@@ -605,14 +606,22 @@ namespace Code.Lavos.Core
             }
 
             // Plug-in-Out: Find or create root transforms
-            _wallsRoot = FindFirstObjectByType<Transform>("MazeWalls8");
+            _wallsRoot = FindFirstObjectByType<Transform>();
+            if (_wallsRoot == null || _wallsRoot.name != "MazeWalls8")
+            {
+                _wallsRoot = FindObjectsOfType<Transform>().FirstOrDefault(t => t.name == "MazeWalls8");
+            }
             if (_wallsRoot == null)
             {
                 Debug.LogWarning("[MazeBuilder8] MazeWalls8 not found! Creating new (assign in scene for Plug-in-Out compliance).");
                 _wallsRoot = new GameObject("MazeWalls8").transform;
             }
             
-            Transform doorsRoot = FindFirstObjectByType<Transform>("MazeDoors");
+            Transform doorsRoot = FindFirstObjectByType<Transform>();
+            if (doorsRoot == null || doorsRoot.name != "MazeDoors")
+            {
+                doorsRoot = FindObjectsOfType<Transform>().FirstOrDefault(t => t.name == "MazeDoors");
+            }
             if (doorsRoot == null)
             {
                 Debug.LogWarning("[MazeBuilder8] MazeDoors not found! Creating new (assign in scene for Plug-in-Out compliance).");
