@@ -34,7 +34,13 @@ namespace Code.Lavos.Editor
         [SerializeField] private int mazeWidth = 21;
         [SerializeField] private int mazeHeight = 21;
         [SerializeField] private int level = 5;
-        [SerializeField] private int seed = -1; // -1 = random
+        [SerializeField] private int seed = -1; // -1 = ALWAYS RANDOM (new seed each generation)
+        
+        [Header("Auto-Generate Settings")]
+        [Tooltip("If true, generates new random seed on scene load/new game")]
+        [SerializeField] private bool autoGenerateOnSceneLoad = true;
+        [Tooltip("If true, generates new random seed when loading saved game")]
+        [SerializeField] private bool autoGenerateOnLoad = true;
         
         [Header("Cell Filling")]
         [SerializeField] private bool autoFillEmptyCells = true;
@@ -195,8 +201,9 @@ namespace Code.Lavos.Editor
             _progress = 0.1f;
             _statusMessage = "Initializing generator...";
             
-            // Use current seed or generate random
-            int currentSeed = seed < 0 ? Random.Range(int.MinValue, int.MaxValue) : seed;
+            // ALWAYS generate new random seed (each click = new seed)
+            int currentSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            seed = currentSeed; // Update UI to show new seed
             
             try
             {
@@ -699,16 +706,20 @@ namespace Code.Lavos.Editor
             mazeWidth = 21;
             mazeHeight = 21;
             level = 5;
-            seed = -1;
+            seed = -1; // Always random by default
+            autoGenerateOnSceneLoad = true;
+            autoGenerateOnLoad = true;
             autoFillEmptyCells = true;
             fillCorridorChance = 0.3f;
             fillRoomChance = 0.1f;
             fillDeadEndChance = 0.2f;
             autoSpawnWalls = true;
             autoSpawnDoors = true;
+            surroundWithPerimeterWalls = true;
+            markEntryExitPoints = true;
             verifyMaze = true;
             
-            Debug.Log("[1-Click Maze Generator] Reset to defaults");
+            Debug.Log("[1-Click Maze Generator] Reset to defaults (new seed each generation)");
         }
     }
 }
