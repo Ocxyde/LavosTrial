@@ -749,7 +749,7 @@ namespace Code.Lavos.Core
                 MarkRoomForDoors(data, roomX, roomZ, roomSize, rng);
 
                 roomsCarved++;
-                Debug.Log($"[GridMazeGenerator] Room #{roomsCarved} carved at ({roomX},{roomZ}), size={roomSize}×{roomSize}, doorType={doorType}");
+                Debug.Log($"[GridMazeGenerator] Room #{roomsCarved} carved at ({roomX},{roomZ}), size={roomSize}×{roomSize}");
             }
 
             Debug.Log($"[GridMazeGenerator] Rooms carved: {roomsCarved}/{roomCount} (attempts={attempts})");
