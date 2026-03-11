@@ -229,14 +229,17 @@ namespace Code.Lavos.Editor
                 _statusMessage = "Spawning walls and doors...";
                 
                 // Step 5: Auto-spawn walls and doors
+                Transform wallsRoot = null;
+                Transform doorsRoot = null;
+                
                 if (autoSpawnWalls || autoSpawnDoors)
                 {
                     // Auto-find prefabs if not assigned
                     if (wallPrefab == null) AutoFindPrefabs();
                     
                     // Create root transforms
-                    Transform wallsRoot = GetOrCreateRoot("MazeWalls").transform;
-                    Transform doorsRoot = GetOrCreateRoot("MazeDoors").transform;
+                    wallsRoot = GetOrCreateRoot("MazeWalls").transform;
+                    doorsRoot = GetOrCreateRoot("MazeDoors").transform;
                     
                     // Clear existing
                     if (autoSpawnWalls) ClearChildren(wallsRoot);
@@ -257,13 +260,18 @@ namespace Code.Lavos.Editor
                     {
                         SpawnPerimeterWalls(wallsRoot, mazeWidth, mazeHeight);
                     }
-                    
-                    // Mark entry/exit points
-                    if (markEntryExitPoints)
-                    {
-                        MarkEntryExitPoints(mazeWidth, mazeHeight);
-                    }
                 }
+                
+                // Step 6: Mark entry/exit points
+                if (markEntryExitPoints)
+                {
+                    MarkEntryExitPoints(mazeWidth, mazeHeight);
+                }
+                
+                // Step 7: Spawn player LAST (beside entry point)
+                _progress = 0.9f;
+                _statusMessage = "Spawning player...";
+                SpawnPlayer(currentSeed);
                 
                 _progress = 1.0f;
                 _statusMessage = $"Maze generated successfully! Seed: {currentSeed}";
@@ -493,6 +501,107 @@ namespace Code.Lavos.Editor
             {
                 Object.DestroyImmediate(collider);
             }
+        }
+        
+        /// <summary>
+        /// Spawn player LAST (beside entry point, with movement/interaction).
+        /// </summary>
+        private void SpawnPlayer(int seed)
+        {
+            // Try to find player prefab
+            GameObject playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+            
+            if (playerPrefab == null)
+            {
+                Debug.LogWarning("[1-Click Maze Generator] No player prefab found! Creating basic player...");
+                playerPrefab = CreateBasicPlayerPrefab();
+            }
+            
+            if (playerPrefab == null) return;
+            
+            // Spawn player BESIDE entry point (not on it)
+            // Entry is at (1, 1), spawn at (1.5, 1.5) to be slightly offset
+            Vector3 spawnPos = new Vector3(
+                (1 + 0.5f) * 6f + 3f,  // X: 1.5 cells
+                0f,                     // Y: ground level
+                (1 + 0.5f) * 6f + 3f    // Z: 1.5 cells
+            );
+            
+            GameObject player = Object.Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+            player.name = "Player";
+            
+            // Ensure player has required components for movement/interaction
+            EnsurePlayerComponents(player);
+            
+            Debug.Log($"[1-Click Maze Generator] Spawned player at {spawnPos} (beside entry point)");
+        }
+        
+        /// <summary>
+        /// Ensure player has all required components for movement and interaction.
+        /// </summary>
+        private void EnsurePlayerComponents(GameObject player)
+        {
+            // Check/add Rigidbody for physics
+            var rigidbody = player.GetComponent<Rigidbody>();
+            if (rigidbody == null)
+            {
+                rigidbody = player.AddComponent<Rigidbody>();
+                rigidbody.mass = 70f;
+                rigidbody.drag = 0.1f;
+                rigidbody.angularDrag = 0.5f;
+                rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            }
+            
+            // Check/add CharacterController for movement
+            var characterController = player.GetComponent<CharacterController>();
+            if (characterController == null)
+            {
+                characterController = player.AddComponent<CharacterController>();
+                characterController.height = 2f;
+                characterController.radius = 0.5f;
+                characterController.stepOffset = 0.3f;
+            }
+            
+            // Check/add DoorInteractionHandler (door interaction with F key)
+            var doorInteraction = player.GetComponent<DoorInteractionHandler>();
+            if (doorInteraction == null)
+            {
+                doorInteraction = player.AddComponent<DoorInteractionHandler>();
+            }
+            
+            Debug.Log("[1-Click Maze Generator] Player components verified (movement + interaction ready)");
+        }
+        
+        /// <summary>
+        /// Create basic player prefab if none exists.
+        /// </summary>
+        private GameObject CreateBasicPlayerPrefab()
+        {
+            // Create player GameObject
+            GameObject player = new GameObject("Player");
+            player.tag = "Player";
+            
+            // Add capsule for visuals
+            GameObject capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            capsule.name = "Visuals";
+            capsule.transform.SetParent(player.transform, false);
+            var capsuleCollider = capsule.GetComponent<Collider>();
+            if (capsuleCollider != null) capsuleCollider.enabled = false;
+            
+            // Add components
+            EnsurePlayerComponents(player);
+            
+            // Save as prefab
+            string prefabPath = "Assets/Resources/Prefabs/Player.prefab";
+            if (!AssetDatabase.IsValidFolder("Assets/Resources/Prefabs"))
+            {
+                AssetDatabase.CreateFolder("Assets/Resources", "Prefabs");
+            }
+            
+            PrefabUtility.SaveAsPrefabAsset(player, prefabPath);
+            Debug.Log($"[1-Click Maze Generator] Created player prefab: {prefabPath}");
+            
+            return player;
         }
         
         /// <summary>
