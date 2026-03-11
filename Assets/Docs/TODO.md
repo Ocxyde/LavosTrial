@@ -2,8 +2,8 @@
 
 **Project:** CodeDotLavos
 **Unity:** 6000.3.10f1 | **License:** GPL-3.0
-**Last Updated:** 2026-03-11 (Session 2) | **Author:** Ocxyde
-**Project Health:** 97% 🟢
+**Last Updated:** 2026-03-11 (Session 3) | **Author:** Ocxyde
+**Project Health:** 96% 🟢
 
 ---
 
@@ -19,9 +19,9 @@
 │  Architecture   [████████████] 100% ✅  Plug-in-Out compliant   │
 │                                                                 │
 │  OVERALL PROGRESS                                               │
-│  Game Complete  [██████████████]  97% 🟢 Excellent              │
+│  Game Complete  [█████████████░]  96% 🟢 Excellent              │
 │                                                                 │
-│  📊 14 Systems Complete | 2 In Progress | 🐛 Critical Bugs: 0   │
+│  📊 14 Systems Complete | 3 In Progress | 🐛 Critical Bugs: 0   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -79,12 +79,21 @@
 
 ## 🎯 ACTIVE TASKS
 
+### ✅ COMPLETED TODAY (2026-03-11 - Session 3)
+
+| Task | Files | Status | Notes |
+|------|-------|--------|-------|
+| ✅ Torch Debug Logging | MazeObjectSpawner.cs | ✅ DONE | Logs position, rotation, direction |
+| ✅ Door System Docs | DOOR_SYSTEM_ONE_DOOR_PER_WALKABLE.md | ✅ DONE | One door per walkable adjacency |
+| ✅ Torch Wall Integration Docs | TORCH_SYSTEM_WALL_INTEGRATED.md | ✅ DONE | Torches as part of wall prefab |
+| ✅ Torch Texture/Mat Setup | TORCH_PREFAB_TEXTURE_MATERIAL_SETUP.md | ✅ DONE | 8-bit pixel art specs |
+
 ### ✅ COMPLETED TODAY (2026-03-11 - Session 2)
 
 | Task | Files | Status | Notes |
 |------|-------|--------|-------|
-| ✅ Cross-Corridor System | GridMazeGenerator.cs | ✅ DONE | Intersections for confusion |
-| ✅ Interlude Rooms | GridMazeGenerator.cs | ✅ DONE | Small rooms at intersections |
+| ✅ Cross-Corridor System | GridMazeGenerator.cs | ✅ REMOVED | Too buggy, deleted |
+| ✅ Interlude Rooms | GridMazeGenerator.cs | ✅ REMOVED | Deleted with cross-corridors |
 | ✅ Corridor-Only Lighting | GridMazeGenerator.cs | ✅ DONE | Rooms stay dark/gothic |
 | ✅ Corridor Ceiling System | GridMazeGenerator.cs | ✅ DONE | 0.5u thick, rooms open |
 | ✅ Torch Placement Specs | GridMazeGenerator.cs | ✅ DONE | Mid-wall, X=25° tilt |
@@ -104,9 +113,10 @@
 
 | Task | Status | Tester | Notes |
 |------|--------|--------|-------|
-| 🔴 Maze Generation Test | 🧪 TESTING | User | Verify rooms, corridors, cross-corridors |
-| 🔴 Gothic Atmosphere Test | 🧪 TESTING | User | Corridor lighting, dark rooms, ceilings |
+| 🔴 Torch Wall Snapping | 🧪 TESTING | User | Verify mid-wall position, inward face |
+| 🔴 Torch Texture/Material | ⏳ PENDING | User | Apply 8-bit pixel art tex/mat |
 | 🔴 Exit Path Verification | 🧪 TESTING | User | Ensure path always exists |
+| 🔴 Door System Implementation | ⏳ BACKLOG | - | One door per walkable adjacency |
 
 ### Priority 1 - After Testing 🔴
 
