@@ -59,6 +59,10 @@ namespace Code.Lavos.Core
         [Tooltip("Minimum enemies at low levels (ensures combat at lvl 0-3)")]
         [Range(0f, 1f)]
         [SerializeField] private float minEnemyDensity = 0.04f;
+        
+        [Header("Prefabs")]
+        [Tooltip("Exit door prefab (interactable)")]
+        [SerializeField] private GameObject exitDoorPrefab = null;
 
         // Runtime (specific to CompleteMazeBuilder8)
         private MazeData8 _mazeData;
@@ -308,6 +312,9 @@ namespace Code.Lavos.Core
 
             // Objects (chests + enemies)
             SpawnObjects();
+
+            // Exit Door (interactable door at exit)
+            SpawnExitDoor();
 
             // 11b - Visual Room Markers (spawn/exit indicators)
             SpawnRoomMarkers();
@@ -732,6 +739,34 @@ namespace Code.Lavos.Core
             EnsureObjectsRoot();
             MazeObjectSpawner.SpawnObjects(
                 _mazeData, chestPrefab, enemyPrefab, _config.CellSize, _objectsRoot);
+        }
+
+        // Exit Door (spawns at exit room)
+        private void SpawnExitDoor()
+        {
+            if (exitDoorPrefab == null)
+            {
+                Debug.LogWarning("[MazeBuilder8] exitDoorPrefab not set - skipping exit door spawn.");
+                return;
+            }
+
+            EnsureObjectsRoot();
+            
+            // Find exit cell and spawn door
+            var exitCell = _mazeData.ExitCell;
+            Vector3 pos = new Vector3(
+                (exitCell.x + 0.5f) * _config.CellSize,
+                0f,
+                (exitCell.z + 0.5f) * _config.CellSize
+            );
+
+            var exitDoor = Object.Instantiate(exitDoorPrefab, pos, Quaternion.identity);
+            if (exitDoor != null)
+            {
+                exitDoor.name = "ExitDoor";
+                exitDoor.transform.SetParent(_objectsRoot, false);
+                Debug.Log($"[MazeBuilder8] Exit door spawned at ({exitCell.x},{exitCell.z})");
+            }
         }
 
         // -------------------------------------------------------------------------

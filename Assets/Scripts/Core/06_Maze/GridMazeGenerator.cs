@@ -150,6 +150,9 @@ namespace Code.Lavos.Core
             int exitSize = MazeConfig.ExitRoomSize;
             CarveExitRoom(data, size - 2, size - 2, exitSize);
             data.SetExit(size - 2, size - 2);
+            
+            // Mark exit cell for door spawning
+            data.AddFlag(size - 2, size - 2, CellFlags8.IsExit);
 
             // ── Step 4.5: Ensure spawn/exit don't face outward ────
             //      CRITICAL: Spawn and exit must face INWARD toward maze center

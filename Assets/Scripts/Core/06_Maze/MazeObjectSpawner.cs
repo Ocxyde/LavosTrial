@@ -16,8 +16,7 @@ namespace Code.Lavos.Core
     {
         /// <summary>
         /// Spawn torches in the maze based on torch flags in maze data.
-        /// Torches face INWARD toward walkable corridor (not outward into wall!)
-        /// Snapped to wall surface (not floating in cell center)
+        /// Torches SNAP to wall surface at mid-position, facing INWARD toward walkable corridor.
         /// </summary>
         public static void SpawnTorches(
             MazeData8 mazeData,
@@ -39,7 +38,7 @@ namespace Code.Lavos.Core
 
             int torchCount = 0;
             float wallHeight = 3f; // Standard wall height
-            float torchOffset = 0.3f; // Distance from wall surface into corridor
+            float torchYOffset = 0.5f; // Slightly above mid-wall (better visibility)
 
             for (int x = 0; x < mazeData.Width; x++)
             {
@@ -59,15 +58,21 @@ namespace Code.Lavos.Core
                             continue;
                         }
 
-                        // Position at wall center, mid-height
+                        // Position: CENTER of wall cell, mid-height
+                        // Wall cell is BETWEEN current cell (x,z) and walkable neighbor
+                        int torchCellX = wallX;
+                        int torchCellZ = wallZ;
+                        
                         Vector3 pos = new Vector3(
-                            (wallX + 0.5f) * cellSize,
-                            wallHeight / 2f,  // Mid-wall height
-                            (wallZ + 0.5f) * cellSize
+                            (torchCellX + 0.5f) * cellSize,  // Mid-position X
+                            wallHeight / 2f + torchYOffset,   // Mid-height + offset
+                            (torchCellZ + 0.5f) * cellSize   // Mid-position Z
                         );
 
-                        // Offset torch from wall surface into corridor
-                        pos += dir * torchOffset;
+                        // Snap torch to wall surface (flush, not floating)
+                        // Offset slightly into corridor so it's visible
+                        float snapOffset = 0.15f; // Snap to wall surface
+                        pos += dir * snapOffset;
 
                         // Rotate torch to face INWARD toward walkable cell
                         // Y rotation: face the walkable direction
@@ -91,7 +96,7 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Find the walkable adjacent cell direction (N/S/E/W).
-        /// Returns direction vector AND the wall cell position.
+        /// Returns direction vector AND the wall cell position (between current and neighbor).
         /// </summary>
         private static (Vector3 dir, int x, int z) FindWalkableDirection(MazeData8 mazeData, int x, int z)
         {
@@ -117,7 +122,8 @@ namespace Code.Lavos.Core
 
                 if (isWalkable)
                 {
-                    return (dir, x, z); // Found walkable cell! Return wall position.
+                    // Return current cell position (torch spawns here, facing neighbor)
+                    return (dir, x, z);
                 }
             }
 
