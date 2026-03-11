@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // LightPlacementEngine.cs
+// DEPRECATED: Use MazeObjectSpawner.cs instead
+// 
+// This file is a LEGACY remnant of the old light placement system.
+// New system: MazeObjectSpawner.cs with TORCH.fbx prefab
+// - Simpler, direct instantiation
+// - No binary storage overhead
+// - TORCH.fbx snaps to walls automatically (no rotation needed)
+// - Places torches in walkable cells, facing inward
+//
 // Batch instantiation engine for light-emitting objects
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //

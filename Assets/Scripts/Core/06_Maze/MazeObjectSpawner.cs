@@ -70,15 +70,13 @@ namespace Code.Lavos.Core
                         );
 
                         // Snap torch to wall surface (flush, not floating)
-                        // Offset slightly into corridor so it's visible
+                        // TORCH.fbx is already oriented correctly - NO rotation needed!
+                        // Place in walkable cell, facing the wall (inward)
                         float snapOffset = 0.15f; // Snap to wall surface
                         pos += dir * snapOffset;
 
-                        // Rotate torch to face INWARD toward walkable cell
-                        // Y rotation: face the walkable direction
-                        // X rotation: 25° tilt upward (flame points up)
-                        Quaternion rotation = Quaternion.LookRotation(dir, Vector3.up);
-                        rotation *= Quaternion.Euler(25f, 0f, 0f); // 25° X tilt
+                        // NO ROTATION - TORCH.fbx is pre-oriented to face wall correctly
+                        Quaternion rotation = Quaternion.identity;
 
                         var torch = Object.Instantiate(torchPrefab, pos, rotation);
                         if (torch != null)
@@ -87,8 +85,8 @@ namespace Code.Lavos.Core
                             torch.transform.SetParent(objectsRoot, false);
                             torchCount++;
                             
-                            // Debug: Log torch position and rotation
-                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles:F0}");
+                            // Debug: Log torch position
+                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir} (INWARD, no rotation)");
                         }
                     }
                 }

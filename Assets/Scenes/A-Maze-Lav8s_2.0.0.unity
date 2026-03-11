@@ -755,6 +755,7 @@ MonoBehaviour:
   spawnChests: 1
   chestDensity: 0.05
   minEnemyDensity: 0.04
+  exitDoorPrefab: {fileID: 0}
 --- !u!4 &1747761301
 Transform:
   m_ObjectHideFlags: 0

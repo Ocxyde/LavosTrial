@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // TorchPlacer.cs
+// DEPRECATED: Use MazeObjectSpawner.cs instead
+//
+// This file is a LEGACY remnant of the old torch placement system.
+// New system: MazeObjectSpawner.cs with TORCH.fbx prefab
+// - Simpler, direct instantiation
+// - No binary storage overhead
+// - TORCH.fbx snaps to walls automatically (no rotation needed)
+// - Places torches in walkable cells, facing inward
+//
 // Specialized torch placement system
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
