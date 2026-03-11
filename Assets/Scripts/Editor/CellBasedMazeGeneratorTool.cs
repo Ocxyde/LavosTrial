@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -140,11 +140,12 @@ namespace Code.Lavos.Editor
             GUI.enabled = true;
             
             GUILayout.Space(10);
-            
+
             // Progress Bar
             if (_isGenerating)
             {
-                EditorGUILayout.ProgressBar(_progress, _statusMessage);
+                Rect progressRect = EditorGUILayout.GetControlRect(GUILayout.Height(20));
+                EditorGUI.ProgressBar(progressRect, _progress, _statusMessage);
                 Repaint();
             }
             else if (!string.IsNullOrEmpty(_statusMessage))

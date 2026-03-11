@@ -178,12 +178,12 @@ namespace Code.Lavos.Core.Maze
                 {
                     _issuesFound++;
                     Debug.LogWarning($"[MazeVerifier] Room at {room.center} has disconnected doors!");
-                    
+
                     // Auto-fix: carve corridors to doors
                     if (IsValidCell(room.entryDoor))
                     {
-                        var neighbor = room.entryDoor + Direction8Helper.ToOffset(room.entryDirection);
-                        neighbor = new Vector2Int(neighbor.x, neighbor.y);
+                        var offset = Direction8Helper.ToOffset(room.entryDirection);
+                        var neighbor = room.entryDoor + new Vector2Int(offset.dx, offset.dz);
                         if (IsValidCell(neighbor))
                         {
                             var cell = _grid[neighbor.x, neighbor.y];
@@ -191,11 +191,11 @@ namespace Code.Lavos.Core.Maze
                             _grid[neighbor.x, neighbor.y] = cell;
                         }
                     }
-                    
+
                     if (IsValidCell(room.exitDoor))
                     {
-                        var neighbor = room.exitDoor + Direction8Helper.ToOffset(room.exitDirection);
-                        neighbor = new Vector2Int(neighbor.x, neighbor.y);
+                        var offset = Direction8Helper.ToOffset(room.exitDirection);
+                        var neighbor = room.exitDoor + new Vector2Int(offset.dx, offset.dz);
                         if (IsValidCell(neighbor))
                         {
                             var cell = _grid[neighbor.x, neighbor.y];
@@ -203,9 +203,17 @@ namespace Code.Lavos.Core.Maze
                             _grid[neighbor.x, neighbor.y] = cell;
                         }
                     }
-                    
+
                     _issuesFixed++;
-                    room.doorsConnected = true;
+                    
+                    // Fix: modify room in list, not the foreach variable
+                    int roomIndex = _rooms.IndexOf(room);
+                    if (roomIndex >= 0)
+                    {
+                        var fixedRoom = _rooms[roomIndex];
+                        fixedRoom.doorsConnected = true;
+                        _rooms[roomIndex] = fixedRoom;
+                    }
                 }
             }
         }
