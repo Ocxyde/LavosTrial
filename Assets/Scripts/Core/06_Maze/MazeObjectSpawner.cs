@@ -70,13 +70,23 @@ namespace Code.Lavos.Core
                         );
 
                         // Snap torch to wall surface (flush, not floating)
-                        // TORCH.fbx is already oriented correctly - NO rotation needed!
                         // Place in walkable cell, facing the wall (inward)
                         float snapOffset = 0.15f; // Snap to wall surface
                         pos += dir * snapOffset;
 
-                        // NO ROTATION - TORCH.fbx is pre-oriented to face wall correctly
-                        Quaternion rotation = Quaternion.identity;
+                        // Rotate torch to face the wall it's mounted on
+                        // TORCH.fbx default forward (Z+) should face the wall
+                        Quaternion rotation;
+                        if (dir == Vector3.forward)      // North wall → face south
+                            rotation = Quaternion.Euler(0f, 180f, 0f);
+                        else if (dir == -Vector3.forward) // South wall → face north
+                            rotation = Quaternion.identity;
+                        else if (dir == Vector3.right)    // East wall → face west
+                            rotation = Quaternion.Euler(0f, -90f, 0f);
+                        else if (dir == -Vector3.right)   // West wall → face east
+                            rotation = Quaternion.Euler(0f, 90f, 0f);
+                        else
+                            rotation = Quaternion.identity;
 
                         var torch = Object.Instantiate(torchPrefab, pos, rotation);
                         if (torch != null)
@@ -85,8 +95,8 @@ namespace Code.Lavos.Core
                             torch.transform.SetParent(objectsRoot, false);
                             torchCount++;
                             
-                            // Debug: Log torch position
-                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir} (INWARD, no rotation)");
+                            // Debug: Log torch position and rotation
+                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles} (INWARD, facing wall)");
                         }
                     }
                 }
