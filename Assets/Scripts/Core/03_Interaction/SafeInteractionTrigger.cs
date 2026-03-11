@@ -49,16 +49,13 @@ namespace Code.Lavos.Interaction
 
         private void SetupTriggerCollider()
         {
+            // Plug-in-Out: Find existing collider (never create)
             Collider triggerCollider = GetComponent<Collider>();
 
             if (triggerCollider == null)
             {
-                BoxCollider newCollider = gameObject.AddComponent<BoxCollider>();
-                newCollider.isTrigger = true;
-                newCollider.size = new Vector3(interactionRange * 2f, 2f, interactionRange * 2f);
-
-                if (debugMode)
-                    Debug.Log("[SafeInteractionTrigger] Created trigger collider");
+                // No collider found - log warning (don't create!)
+                Debug.LogWarning("[SafeInteractionTrigger] No Collider found! Add a Collider component and set it as trigger.");
             }
             else if (!triggerCollider.isTrigger)
             {

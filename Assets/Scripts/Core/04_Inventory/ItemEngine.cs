@@ -50,20 +50,19 @@ namespace Code.Lavos.Core
                     Debug.LogWarning("[ItemEngine] Instance already destroyed, returning null");
                     return null;
                 }
-                
+
                 if (_instance != null) return _instance;
 
                 lock (_lock)
                 {
                     if (_instance != null) return _instance;
-                    
+
                     _instance = FindAnyObjectByType<ItemEngine>();
                     if (_instance == null)
                     {
-                        GameObject go = new GameObject("ItemEngine");
-                        _instance = go.AddComponent<ItemEngine>();
-                        DontDestroyOnLoad(go);
-                        Debug.Log("[ItemEngine] Auto-created instance");
+                        // No ItemEngine found - log warning (don't create!)
+                        Debug.LogWarning("[ItemEngine] No ItemEngine found! Add ItemEngine component to a GameObject in scene.");
+                        return null;
                     }
                 }
                 return _instance;
