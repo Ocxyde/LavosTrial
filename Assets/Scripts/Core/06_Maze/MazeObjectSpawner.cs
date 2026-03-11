@@ -86,6 +86,9 @@ namespace Code.Lavos.Core
                             torch.name = $"Torch_{x}_{z}";
                             torch.transform.SetParent(objectsRoot, false);
                             torchCount++;
+                            
+                            // Debug: Log torch position and rotation
+                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles:F0}");
                         }
                     }
                 }
