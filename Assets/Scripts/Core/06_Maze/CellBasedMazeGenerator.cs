@@ -55,9 +55,9 @@ namespace Code.Lavos.Core.Maze
         public Vector2Int Exit => _exit;
         
         /// <summary>
-        /// Generate complete cell-based maze.
+        /// Generate complete cell-based maze with verification.
         /// </summary>
-        public MazeCell[,] Generate(int width, int height, int level, int seed)
+        public MazeCell[,] Generate(int width, int height, int level, int seed, bool verify = true)
         {
             // Initialize
             _width = width;
@@ -94,7 +94,13 @@ namespace Code.Lavos.Core.Maze
             // Step 7: Verify primary path integrity
             VerifyPrimaryPath();
             
-            // Step 8: Log completion
+            // Step 8: Full maze verification
+            if (verify)
+            {
+                VerifyMaze();
+            }
+            
+            // Step 9: Log completion
             LogGenerationSummary();
             
             return _grid;
@@ -243,7 +249,22 @@ namespace Code.Lavos.Core.Maze
             }
         }
         
-        // Step 8: Convert to Walls/Doors (using CellToWallConverter)
+        // Step 8: Full Maze Verification (using MazeVerifier)
+        public bool VerifyMaze()
+        {
+            var verifier = new MazeVerifier();
+            verifier.Initialize(
+                _grid, _width, _height,
+                _primaryPath, _decoyPaths, new List<Room>(),
+                _spawn, _exit);
+            
+            bool isVerified = verifier.VerifyAll();
+            Debug.Log($"[CellBasedMazeGenerator] {verifier.Report}");
+            
+            return isVerified;
+        }
+        
+        // Step 9: Convert to Walls/Doors (using CellToWallConverter)
         public void SpawnWallsAndDoors(
             GameObject wallPrefab, GameObject doorPrefab,
             GameObject lockedDoorPrefab, GameObject secretDoorPrefab,
