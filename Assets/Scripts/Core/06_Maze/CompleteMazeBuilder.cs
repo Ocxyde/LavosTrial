@@ -604,8 +604,21 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            _wallsRoot = new GameObject("MazeWalls8").transform;
-            Transform doorsRoot = new GameObject("MazeDoors").transform;
+            // Plug-in-Out: Find or create root transforms
+            _wallsRoot = FindFirstObjectByType<Transform>("MazeWalls8");
+            if (_wallsRoot == null)
+            {
+                Debug.LogWarning("[MazeBuilder8] MazeWalls8 not found! Creating new (assign in scene for Plug-in-Out compliance).");
+                _wallsRoot = new GameObject("MazeWalls8").transform;
+            }
+            
+            Transform doorsRoot = FindFirstObjectByType<Transform>("MazeDoors");
+            if (doorsRoot == null)
+            {
+                Debug.LogWarning("[MazeBuilder8] MazeDoors not found! Creating new (assign in scene for Plug-in-Out compliance).");
+                doorsRoot = new GameObject("MazeDoors").transform;
+            }
+            
             doorsRoot.SetParent(_wallsRoot, false);
 
             float cs = _config.CellSize;
