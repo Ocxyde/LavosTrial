@@ -17,6 +17,7 @@ namespace Code.Lavos.Core
         /// <summary>
         /// Spawn torches in the maze based on torch flags in maze data.
         /// Torches face INWARD toward walkable corridor (not outward into wall!)
+        /// Snapped to wall surface (not floating in cell center)
         /// </summary>
         public static void SpawnTorches(
             MazeData8 mazeData,
@@ -38,6 +39,7 @@ namespace Code.Lavos.Core
 
             int torchCount = 0;
             float wallHeight = 3f; // Standard wall height
+            float torchOffset = 0.3f; // Distance from wall surface into corridor
 
             for (int x = 0; x < mazeData.Width; x++)
             {
@@ -47,27 +49,30 @@ namespace Code.Lavos.Core
 
                     if ((cell & CellFlags8.HasTorch) != 0)
                     {
-                        // Position at cell center
-                        Vector3 pos = new Vector3(
-                            (x + 0.5f) * cellSize,
-                            wallHeight / 2f,  // Mid-wall height
-                            (z + 0.5f) * cellSize
-                        );
-
                         // Find walkable adjacent cell (corridor side)
-                        Vector3 walkableDir = FindWalkableDirection(mazeData, x, z);
+                        (Vector3 dir, int wallX, int wallZ) = FindWalkableDirection(mazeData, x, z);
                         
                         // If no walkable direction found, skip this torch
-                        if (walkableDir == Vector3.zero)
+                        if (dir == Vector3.zero)
                         {
                             Debug.LogWarning($"[MazeObjectSpawner] Torch at ({x},{z}) has no walkable side - skipping!");
                             continue;
                         }
 
+                        // Position at wall center, mid-height
+                        Vector3 pos = new Vector3(
+                            (wallX + 0.5f) * cellSize,
+                            wallHeight / 2f,  // Mid-wall height
+                            (wallZ + 0.5f) * cellSize
+                        );
+
+                        // Offset torch from wall surface into corridor
+                        pos += dir * torchOffset;
+
                         // Rotate torch to face INWARD toward walkable cell
                         // Y rotation: face the walkable direction
                         // X rotation: 25° tilt upward (flame points up)
-                        Quaternion rotation = Quaternion.LookRotation(walkableDir, Vector3.up);
+                        Quaternion rotation = Quaternion.LookRotation(dir, Vector3.up);
                         rotation *= Quaternion.Euler(25f, 0f, 0f); // 25° X tilt
 
                         var torch = Object.Instantiate(torchPrefab, pos, rotation);
@@ -81,14 +86,14 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log($"[MazeObjectSpawner] Spawned {torchCount} torches (facing INWARD)");
+            Debug.Log($"[MazeObjectSpawner] Spawned {torchCount} torches (snapped to walls, facing INWARD)");
         }
 
         /// <summary>
         /// Find the walkable adjacent cell direction (N/S/E/W).
-        /// Returns normalized direction vector or Vector3.zero if none found.
+        /// Returns direction vector AND the wall cell position.
         /// </summary>
-        private static Vector3 FindWalkableDirection(MazeData8 mazeData, int x, int z)
+        private static (Vector3 dir, int x, int z) FindWalkableDirection(MazeData8 mazeData, int x, int z)
         {
             // Check all 4 cardinal directions
             var directions = new[]
@@ -112,11 +117,11 @@ namespace Code.Lavos.Core
 
                 if (isWalkable)
                 {
-                    return dir; // Found walkable cell!
+                    return (dir, x, z); // Found walkable cell! Return wall position.
                 }
             }
 
-            return Vector3.zero; // No walkable direction found
+            return (Vector3.zero, 0, 0); // No walkable direction found
         }
 
         /// <summary>
