@@ -1166,7 +1166,7 @@ namespace Code.Lavos.Core
 
             Debug.Log($"[GridMazeGenerator] Corridor ceiling marked: {ceilingCells} cells (rooms open to darkness)");
             Debug.Log($"[GridMazeGenerator] Ceiling material: Dark stone/brick pixel art 8-bit (#2A2A2A to #3D3D3D)");
-            Debug.Log($"[GridMazeGenerator] Ceiling thickness: 0.5 units at height {cfg.CellSize}m");
+            Debug.Log($"[GridMazeGenerator] Ceiling thickness: 0.5 units at wall height");
         }
 
         // ─────────────────────────────────────────────────────────

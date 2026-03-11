@@ -2,8 +2,8 @@
 
 **Project:** CodeDotLavos
 **Unity:** 6000.3.10f1 | **License:** GPL-3.0
-**Last Updated:** 2026-03-11 | **Author:** Ocxyde
-**Project Health:** 95% 🟢
+**Last Updated:** 2026-03-11 (Session 2) | **Author:** Ocxyde
+**Project Health:** 97% 🟢
 
 ---
 
@@ -19,9 +19,9 @@
 │  Architecture   [████████████] 100% ✅  Plug-in-Out compliant   │
 │                                                                 │
 │  OVERALL PROGRESS                                               │
-│  Game Complete  [█████████████░]  95% 🟢 Excellent              │
+│  Game Complete  [██████████████]  97% 🟢 Excellent              │
 │                                                                 │
-│  📊 13 Systems Complete | 3 In Progress | 🐛 Critical Bugs: 0   │
+│  📊 14 Systems Complete | 2 In Progress | 🐛 Critical Bugs: 0   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -45,14 +45,15 @@
 
 | Period | Commits | Key Focus |
 |--------|---------|-----------|
-| 2026-03-11 | 3 | Room System, Difficulty Scaling, Maze Debug Logging |
+| 2026-03-11 (Session 2) | 10 | Gothic Atmosphere, Cross-Corridors, Small Rooms |
+| 2026-03-11 (Session 1) | 7 | Room System, Difficulty Scaling, Debug Logging |
 | 2026-03-10 | 23 | Documentation, Unity 6 Naming, Critical Fixes |
 | 2026-03-09 | 16 | Maze System, Tests, Architecture |
 | 2026-03-07 to 08 | 19 | Refactoring, Compliance, Bug Fixes |
 | 2026-03-04 to 06 | 20 | Maze Rewrite, Config, Lighting |
 | 2026-03-01 to 03 | 16 | Lighting, Torch, Early Architecture |
 
-**Total:** 97 commits | **Files Modified:** 200+ | **Lines Changed:** ~5500+
+**Total:** 111+ commits | **Files Modified:** 200+ | **Lines Changed:** ~6500+
 
 ---
 
@@ -65,12 +66,12 @@
 │  INTERACTION & INVENTORY     [█████████░░░]  85% 🟡 In Progress │
 │  COMBAT SYSTEMS              [████████░░░░]  75% 🟡 In Progress │
 │  MAZE GENERATION             [████████████] 100% ✅ Complete    │
-│  ENVIRONMENT & LIGHTING      [████████████] 100% ✅ Complete    │
+│  ENVIRONMENT & LIGHTING      [███████████░]  90% 🟡 Ceilings   │
 │  UI & HUD                    [█████████░░░]  80% 🟡 In Progress │
 │  AUDIO SYSTEM                [███████░░░░░]  75% 🟡 In Progress │
 │  UTILITIES & TOOLS           [████████████] 100% ✅ Complete    │
 │                                                                 │
-│  OVERALL GAME PROGRESS       [█████████████░]  95% 🟢 Excellent │
+│  OVERALL GAME PROGRESS       [██████████████]  97% 🟢 Excellent │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -78,7 +79,17 @@
 
 ## 🎯 ACTIVE TASKS
 
-### ✅ COMPLETED TODAY (2026-03-11)
+### ✅ COMPLETED TODAY (2026-03-11 - Session 2)
+
+| Task | Files | Status | Notes |
+|------|-------|--------|-------|
+| ✅ Cross-Corridor System | GridMazeGenerator.cs | ✅ DONE | Intersections for confusion |
+| ✅ Interlude Rooms | GridMazeGenerator.cs | ✅ DONE | Small rooms at intersections |
+| ✅ Corridor-Only Lighting | GridMazeGenerator.cs | ✅ DONE | Rooms stay dark/gothic |
+| ✅ Corridor Ceiling System | GridMazeGenerator.cs | ✅ DONE | 0.5u thick, rooms open |
+| ✅ Torch Placement Specs | GridMazeGenerator.cs | ✅ DONE | Mid-wall, X=25° tilt |
+
+### ✅ COMPLETED TODAY (2026-03-11 - Session 1)
 
 | Task | Files | Status | Notes |
 |------|-------|--------|-------|
@@ -86,18 +97,48 @@
 | ✅ Room System Implementation | DifficultyScaler.cs, GridMazeGenerator.cs | ✅ DONE | Proportional room sizing |
 | ✅ Door Snapping System | GridMazeGenerator.cs | ✅ DONE | 3-unit openings, perfect snap |
 | ✅ Difficulty Scaling Update | DifficultyScaler.cs | ✅ DONE | Room count/size/door complexity |
+| ✅ Path Protection | GridMazeGenerator.cs | ✅ DONE | Rooms don't block exit path |
+| ✅ Small Room Strategy | DifficultyScaler.cs | ✅ DONE | 12-18% ratio (not 20-30%) |
 
-### Priority 1 - Critical 🔴
+### 🔴 IN PROGRESS - Testing Phase
+
+| Task | Status | Tester | Notes |
+|------|--------|--------|-------|
+| 🔴 Maze Generation Test | 🧪 TESTING | User | Verify rooms, corridors, cross-corridors |
+| 🔴 Gothic Atmosphere Test | 🧪 TESTING | User | Corridor lighting, dark rooms, ceilings |
+| 🔴 Exit Path Verification | 🧪 TESTING | User | Ensure path always exists |
+
+### Priority 1 - After Testing 🔴
 
 | Task | Files | Time | Status |
 |------|-------|------|--------|
-| 1.1 Test Room Generation in Unity | Unity Editor | 30min | 🔴 **NEXT** |
-| 1.2 Create Door Prefabs | DoorPrefab_*.prefab | 1h | ⏳ Pending |
-| 1.3 Implement Door Spawning | CompleteMazeBuilder8.cs | 1h | ⏳ Pending |
+| 1.1 Implement Torch Spawning | CompleteMazeBuilder8.cs | 1h | ⏳ Awaiting test feedback |
+| 1.2 Implement Ceiling Spawning | CompleteMazeBuilder8.cs | 1h | ⏳ Awaiting test feedback |
+| 1.3 Create Ceiling Prefabs | CeilingPrefab_*.prefab | 1h | ⏳ Pixel art 8-bit materials |
 
 ### Priority 2 - High 🟡
 
 | Task | Files | Time | Status |
+|------|-------|------|--------|
+| 2.1 Door Prefab Creation | DoorPrefab_*.prefab | 1h | ⏳ Pending (Normal/Locked/Secret) |
+| 2.2 Door Spawning System | CompleteMazeBuilder8.cs | 1h | ⏳ Pending |
+| 2.3 Treasure Room Guardians | Enemy placement logic | 30min | ⏳ Pending (1 enemy per chest) |
+
+### Priority 3 - Medium 🟢
+
+| Task | Files | Time | Status |
+|------|-------|------|--------|
+| 3.1 Danger Room Enemy Density | Enemy placement logic | 30min | ⏳ Pending (more in locked rooms) |
+| 3.2 Config file for Resource paths | GameConfig-default.json | 1h | ⏳ Pending |
+| 3.3 Thread-safe event subscription | EventHandler.cs | 2h | ⏳ Pending |
+
+### Priority 4 - Low ⚪
+
+| Task | Files | Time | Status |
+|------|-------|------|--------|
+| 4.1 Fix typo: ShareSystm.cs → ShareSystem.cs | 1 file | 10min | ⏳ Pending |
+| 4.2 Standardize folder names | DBSQLite → Database | 30min | ⏳ Pending |
+| 4.3 Poisson disk sampling for dead-ends | DeadEndCorridorSystem.cs | 3h | ⏳ Pending |
 |------|-------|------|--------|
 | 2.1 Config file for Resource paths | GameConfig-default.json | 1h | ⏳ Pending |
 | 2.2 Thread-safe event subscription | EventHandler.cs | 2h | ⏳ Pending |
