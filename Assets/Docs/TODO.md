@@ -51,11 +51,11 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 3.1 Create Room struct (3x3 cells) | Room.cs (new) | 🔴 P0 | ⏳ Pending |
-| 3.2 Room Wall Surround System | RoomSystem.cs (new) | 🔴 P0 | ⏳ Pending |
-| 3.3 Two Door Placement (Entry/Exit) | RoomSystem.cs | 🔴 P0 | ⏳ Pending |
-| 3.4 Door-to-Walkable Verification | RoomSystem.cs | 🔴 P0 | ⏳ Pending |
-| 3.5 Room Types (Normal/Treasure/Boss/Safe) | RoomType.cs (new) | 🟡 P1 | ⏳ Pending |
+| 3.1 Create Room struct (3x3 cells) | Room.cs | 🔴 P0 | ✅ DONE |
+| 3.2 Room Wall Surround System | RoomSystem.cs | 🔴 P0 | ✅ DONE |
+| 3.3 Two Door Placement (Entry/Exit) | RoomSystem.cs | 🔴 P0 | ✅ DONE |
+| 3.4 Door-to-Walkable Verification | RoomSystem.cs | 🔴 P0 | ✅ DONE |
+| 3.5 Room Types (Normal/Treasure/Boss/Safe) | Room.cs | 🟡 P1 | ✅ DONE |
 
 ### **Phase 4: Decoy Path System** 🟡
 
