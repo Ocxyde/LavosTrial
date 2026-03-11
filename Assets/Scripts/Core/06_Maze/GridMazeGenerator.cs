@@ -193,7 +193,6 @@ namespace Code.Lavos.Core
             //
             //      Use CorridorFlowSystem for better entrance→exit flow
             //      and mathematical dead-end distribution
-            //      CROSS-CORRIDOR ENHANCEMENT: Add intersections to confuse player
             if (cfg.UseCorridorFlowSystem)
             {
                 // NEW: Three-tier corridor hierarchy
@@ -204,11 +203,6 @@ namespace Code.Lavos.Core
                 // Legacy: Two-pass corridor filling
                 AddCorridorFillSystem(data, rng, cfg);
             }
-
-            // ── Step 6.6: Add cross-corridors for confusion ───────
-            //      DISABLED 2026-03-11: Too buggy, causes never-ending mazes
-            //      TODO: Re-enable later after fixing path blocking issues
-            //      AddCrossCorridorsForConfusion(data, rng, cfg, level);
 
             // ── Step 7: torches ───────────────────────────────────
             //      CORRIDOR-ONLY lighting for gothic atmosphere
@@ -872,137 +866,6 @@ namespace Code.Lavos.Core
 
                 Debug.Log($"[GridMazeGenerator] Room at ({roomX},{roomZ}): E-W doors at EDGE ({doorWestX},{doorWestZ}) and ({doorEastX},{doorEastZ})");
             }
-        }
-
-        // ─────────────────────────────────────────────────────────
-        //  Step 6.6 — Add Cross-Corridors for Confusion
-        //
-        //  NEW 2026-03-11: Create intersections to disorient player
-        //  - Cross-corridors connect parallel passages
-        //  - Create T-junctions and 4-way intersections
-        //  - Makes maze more labyrinthine (harder to navigate)
-        //  - Rooms placed at some intersections (interlude rooms)
-        //
-        //  ALGORITHM:
-        //  1. Find existing parallel corridors (2-4 cells apart)
-        //  2. Carve connecting corridor between them
-        //  3. Create intersection (T or 4-way)
-        //  4. Optionally place small room at intersection (20% chance)
-        //  5. Ensure path to exit is NEVER blocked
-        // ─────────────────────────────────────────────────────────
-        private static void AddCrossCorridorsForConfusion(MazeData8 data, System.Random rng,
-            MazeConfig cfg, int level)
-        {
-            int crossCorridorCount = 0;
-            int maxCrossCorridors = Mathf.RoundToInt(data.Width * 0.3f); // 30% of maze width
-            
-            // Difficulty scaling: more cross-corridors at higher levels
-            float difficultyT = (float)level / 39f;
-            maxCrossCorridors = Mathf.RoundToInt(maxCrossCorridors * Mathf.Lerp(0.5f, 1.5f, difficultyT));
-            
-            Debug.Log($"[GridMazeGenerator] Step 6.6: Adding up to {maxCrossCorridors} cross-corridors for confusion...");
-
-            // Try to add cross-corridors between existing passages
-            int attempts = 0;
-            int maxAttempts = maxCrossCorridors * 5;
-
-            while (crossCorridorCount < maxCrossCorridors && attempts < maxAttempts)
-            {
-                attempts++;
-
-                // Find a random passage cell
-                int px = rng.Next(2, data.Width - 2);
-                int pz = rng.Next(2, data.Height - 2);
-
-                var cell = data.GetCell(px, pz);
-                bool isPassage = (cell & CellFlags8.AllWalls) == CellFlags8.None;
-
-                if (!isPassage)
-                    continue;
-
-                // Try to carve a cross-corridor from this point
-                // Choose random direction (N-S or E-W)
-                bool horizontal = rng.NextDouble() > 0.5f;
-                int corridorLength = rng.Next(2, 5); // 2-4 cells long
-
-                int carvedLength = 0;
-                bool hitAnotherPassage = false;
-
-                for (int i = 0; i < corridorLength; i++)
-                {
-                    int cx = horizontal ? px + i : px;
-                    int cz = horizontal ? pz : pz + i;
-
-                    if (!data.InBounds(cx, cz))
-                        break;
-
-                    var checkCell = data.GetCell(cx, cz);
-                    bool isWall = (checkCell & CellFlags8.AllWalls) != CellFlags8.None;
-
-                    if (!isWall)
-                    {
-                        // Hit another passage - create intersection!
-                        hitAnotherPassage = true;
-                        carvedLength = i;
-                        break;
-                    }
-
-                    // Carve this cell
-                    data.SetCell(cx, cz, CellFlags8.None);
-                    carvedLength++;
-                }
-
-                // Only count if we created a meaningful cross-corridor
-                if (carvedLength >= 2 || hitAnotherPassage)
-                {
-                    crossCorridorCount++;
-
-                    // 20% chance to place a small room at the intersection (interlude room)
-                    if (hitAnotherPassage && rng.NextDouble() < 0.20f)
-                    {
-                        int roomX = horizontal ? px + carvedLength / 2 : px;
-                        int roomZ = horizontal ? pz : pz + carvedLength / 2;
-                        int roomSize = 3; // Small interlude room
-
-                        // Check if we can carve a small room here
-                        if (CanCarveRoom(data, roomX, roomZ, roomSize))
-                        {
-                            CarveRoom(data, roomX, roomZ, roomSize);
-                            Debug.Log($"[GridMazeGenerator] Interlude room carved at ({roomX},{roomZ})");
-                        }
-                    }
-                }
-            }
-
-            Debug.Log($"[GridMazeGenerator] Cross-corridors added: {crossCorridorCount}/{maxCrossCorridors}");
-        }
-
-        /// <summary>
-        /// Check if a room can be carved at this position without blocking critical paths
-        /// </summary>
-        private static bool CanCarveRoom(MazeData8 data, int centerX, int centerZ, int roomSize)
-        {
-            int half = roomSize / 2;
-            int passageCount = 0;
-            int wallCount = 0;
-
-            for (int x = centerX - half; x <= centerX + half; x++)
-            {
-                for (int z = centerZ - half; z <= centerZ + half; z++)
-                {
-                    if (!data.InBounds(x, z))
-                        return false;
-
-                    var cell = data.GetCell(x, z);
-                    if ((cell & CellFlags8.AllWalls) == CellFlags8.None)
-                        passageCount++;
-                    else
-                        wallCount++;
-                }
-            }
-
-            // Can carve if mostly walls (not blocking existing passages)
-            return wallCount > passageCount;
         }
 
         // ─────────────────────────────────────────────────────────
