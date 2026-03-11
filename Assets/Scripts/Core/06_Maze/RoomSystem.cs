@@ -1,4 +1,4 @@
-﻿﻿﻿// LavosTrial - CodeDotLavos
+﻿﻿﻿﻿﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -167,31 +167,31 @@ namespace Code.Lavos.Core.Maze
         private void SurroundWithWalls(ref Room room)
         {
             var boundary = room.GetBoundaryCells();
-            
+
             foreach (var boundaryPos in boundary)
             {
-                if (boundaryPos.x >= 0 && boundaryPos.x < _width && boundaryPos.z >= 0 && boundaryPos.z < _height)
+                if (boundaryPos.x >= 0 && boundaryPos.x < _width && boundaryPos.y >= 0 && boundaryPos.y < _height)
                 {
                     var cell = _grid[boundaryPos.x, boundaryPos.y];
-                    
+
                     // Determine which wall edge to set
                     int dx = boundaryPos.x - room.center.x;
-                    int dz = boundaryPos.y - room.center.y;
-                    
-                    if (dz > room.HalfHeight) // North boundary
+                    int dy = boundaryPos.y - room.center.y;
+
+                    if (dy > room.HalfHeight) // North boundary
                         cell.hasSouthWall = true;
-                    else if (dz < -room.HalfHeight) // South boundary
+                    else if (dy < -room.HalfHeight) // South boundary
                         cell.hasNorthWall = true;
                     else if (dx > room.HalfWidth) // East boundary
                         cell.hasWestWall = true;
                     else if (dx < -room.HalfWidth) // West boundary
                         cell.hasEastWall = true;
-                    
+
                     cell.cellType = CellType.Wall;
                     _grid[boundaryPos.x, boundaryPos.y] = cell;
                 }
             }
-            
+
             room.isSurrounded = true;
         }
         
@@ -228,32 +228,32 @@ namespace Code.Lavos.Core.Maze
         /// </summary>
         private List<(Vector2Int pos, Direction8 dir)> FindValidDoorPositions(Room room)
         {
-            var positions = new List<(Vector2Int, Direction8)>();
-            
+            var positions = new List<(Vector2Int pos, Direction8 dir)>();
+
             // Check North wall
             var northPos = room.center + new Vector2Int(0, room.HalfHeight);
             var northNeighbor = room.center + new Vector2Int(0, room.HalfHeight + 1);
             if (IsValidDoorPosition(northPos, northNeighbor, Direction8.N))
                 positions.Add((northPos, Direction8.N));
-            
+
             // Check South wall
             var southPos = room.center + new Vector2Int(0, -room.HalfHeight);
             var southNeighbor = room.center + new Vector2Int(0, -room.HalfHeight - 1);
             if (IsValidDoorPosition(southPos, southNeighbor, Direction8.S))
                 positions.Add((southPos, Direction8.S));
-            
+
             // Check East wall
             var eastPos = room.center + new Vector2Int(room.HalfWidth, 0);
             var eastNeighbor = room.center + new Vector2Int(room.HalfWidth + 1, 0);
             if (IsValidDoorPosition(eastPos, eastNeighbor, Direction8.E))
                 positions.Add((eastPos, Direction8.E));
-            
+
             // Check West wall
             var westPos = room.center + new Vector2Int(-room.HalfWidth, 0);
             var westNeighbor = room.center + new Vector2Int(-room.HalfWidth - 1, 0);
             if (IsValidDoorPosition(westPos, westNeighbor, Direction8.W))
                 positions.Add((westPos, Direction8.W));
-            
+
             return positions;
         }
         
@@ -297,7 +297,7 @@ namespace Code.Lavos.Core.Maze
                     return item;
                 }
             }
-            
+
             // Fallback: use entry (not ideal but works)
             return entry;
         }
