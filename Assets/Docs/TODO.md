@@ -61,10 +61,10 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 4.1 Create DecoyPath struct | DecoyPath.cs (new) | 🟡 P1 | ⏳ Pending |
-| 4.2 L-Shape Decoy Generator | DecoySystem.cs (new) | 🟡 P1 | ⏳ Pending |
-| 4.3 Spiral/Fork Decoy Types | DecoySystem.cs | 🟡 P1 | ⏳ Pending |
-| 4.4 Decoy-Reward Placement | DecoySystem.cs | 🟡 P1 | ⏳ Pending |
+| 4.1 Create DecoyPath struct | DecoyPath.cs | 🟡 P1 | ✅ DONE (in CellBasedMazeGenerator.cs) |
+| 4.2 L-Shape Decoy Generator | DecoySystem.cs | 🟡 P1 | ✅ DONE |
+| 4.3 Spiral/Fork Decoy Types | DecoySystem.cs | 🟡 P1 | ✅ DONE |
+| 4.4 Decoy-Reward Placement | DecoySystem.cs | 🟡 P1 | ✅ DONE |
 
 ### **Phase 5: Agreement System** 🟡
 
