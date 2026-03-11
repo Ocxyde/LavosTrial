@@ -1,0 +1,68 @@
+﻿{
+  "_comment": "Cell-Based Maze Generation Configuration",
+  "_author": "Ocxyde",
+  "_license": "GPL-3.0",
+  
+  "mazeSettings": {
+    "defaultWidth": 21,
+    "defaultHeight": 21,
+    "minSize": 12,
+    "maxSize": 51,
+    "cellSize": 6.0,
+    "wallHeight": 4.0,
+    "wallThickness": 0.3,
+    "wallPivotIsAtMeshCenter": true
+  },
+  
+  "difficultyScaling": {
+    "minLevel": 0,
+    "maxLevel": 39,
+    "decoyDensityMin": 0.20,
+    "decoyDensityMax": 0.75,
+    "chestDensityMin": 0.03,
+    "chestDensityMax": 0.08,
+    "enemyDensityMin": 0.02,
+    "enemyDensityMax": 0.06,
+    "trapDensityMin": 0.01,
+    "trapDensityMax": 0.04
+  },
+  
+  "roomSettings": {
+    "defaultSize": 3,
+    "minRooms": 1,
+    "maxRooms": 5,
+    "doorOpeningWidth": 3
+  },
+  
+  "decoySettings": {
+    "lShapePercentage": 0.50,
+    "spiralPercentage": 0.20,
+    "forkPercentage": 0.20,
+    "chamberPercentage": 0.10,
+    "minSegmentLength": 2,
+    "maxSegmentLength": 5,
+    "chestRewardChance": 0.50
+  },
+  
+  "agreementSettings": {
+    "fillCorridorChance": 0.30,
+    "fillRoomChance": 0.10,
+    "fillDeadEndChance": 0.20
+  },
+  
+  "playerSettings": {
+    "spawnOffsetX": 0.5,
+    "spawnOffsetZ": 0.5,
+    "playerMass": 70.0,
+    "playerDrag": 0.1,
+    "playerAngularDrag": 0.5,
+    "characterControllerHeight": 2.0,
+    "characterControllerRadius": 0.5,
+    "characterControllerStepOffset": 0.3
+  },
+  
+  "verificationSettings": {
+    "autoVerify": true,
+    "autoFix": true
+  }
+}

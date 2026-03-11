@@ -59,9 +59,12 @@ namespace Code.Lavos.Core.Maze
         /// </summary>
         public MazeCell[,] Generate(int width, int height, int level, int seed, bool verify = true)
         {
+            // Load config (Plug-in-Out: find, never create)
+            var config = CellBasedMazeConfig.Load();
+            
             // Initialize
-            _width = width;
-            _height = height;
+            _width = width > 0 ? width : config.defaultWidth;
+            _height = height > 0 ? height : config.defaultHeight;
             _level = level;
             _primaryPath = new List<Vector2Int>();
             _decoyPaths = new List<DecoyPath>();
@@ -219,10 +222,13 @@ namespace Code.Lavos.Core.Maze
             placer.Initialize(_grid, _width, _height, _level);
             placer.PlaceAllAgreements(_decoyPaths, new List<Room>());
         }
-
+        
         // Step 7: Verify Primary Path Integrity
         private void VerifyPrimaryPath()
         {
+            // Load config (Plug-in-Out: find, never create)
+            var config = CellBasedMazeConfig.Load();
+            
             bool allWalkable = true;
 
             foreach (var cellPos in _primaryPath)
@@ -270,15 +276,22 @@ namespace Code.Lavos.Core.Maze
             GameObject lockedDoorPrefab, GameObject secretDoorPrefab,
             GameObject exitDoorPrefab, Material wallMaterial,
             Transform wallsRoot, Transform doorsRoot,
-            float cellSize, float wallHeight, float wallThickness,
-            bool wallPivotIsAtMeshCenter)
+            float cellSize = 0, float wallHeight = 0, float wallThickness = 0,
+            bool wallPivotIsAtMeshCenter = true)
         {
+            // Load config if values not provided (Plug-in-Out: find, never create)
+            var config = CellBasedMazeConfig.Load();
+            
+            float finalCellSize = cellSize > 0 ? cellSize : config.cellSize;
+            float finalWallHeight = wallHeight > 0 ? wallHeight : config.wallHeight;
+            float finalWallThickness = wallThickness > 0 ? wallThickness : config.wallThickness;
+            
             var converter = new CellToWallConverter();
             converter.Initialize(
                 _grid, _width, _height,
                 wallPrefab, doorPrefab, lockedDoorPrefab, secretDoorPrefab, exitDoorPrefab, wallMaterial,
                 wallsRoot, doorsRoot,
-                cellSize, wallHeight, wallThickness, wallPivotIsAtMeshCenter);
+                finalCellSize, finalWallHeight, finalWallThickness, wallPivotIsAtMeshCenter);
             converter.ConvertAll();
             Debug.Log($"[CellBasedMazeGenerator] {converter.GetStatistics()}");
         }
