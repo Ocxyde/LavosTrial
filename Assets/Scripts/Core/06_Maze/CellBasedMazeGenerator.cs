@@ -218,7 +218,7 @@ namespace Code.Lavos.Core.Maze
         private void VerifyPrimaryPath()
         {
             bool allWalkable = true;
-            
+
             foreach (var cellPos in _primaryPath)
             {
                 var cell = _grid[cellPos.x, cellPos.y];
@@ -241,6 +241,25 @@ namespace Code.Lavos.Core.Maze
             {
                 Debug.LogWarning("[CellBasedMazeGenerator] Primary path had issues - fixed!");
             }
+        }
+        
+        // Step 8: Convert to Walls/Doors (using CellToWallConverter)
+        public void SpawnWallsAndDoors(
+            GameObject wallPrefab, GameObject doorPrefab,
+            GameObject lockedDoorPrefab, GameObject secretDoorPrefab,
+            GameObject exitDoorPrefab, Material wallMaterial,
+            Transform wallsRoot, Transform doorsRoot,
+            float cellSize, float wallHeight, float wallThickness,
+            bool wallPivotIsAtMeshCenter)
+        {
+            var converter = new CellToWallConverter();
+            converter.Initialize(
+                _grid, _width, _height,
+                wallPrefab, doorPrefab, lockedDoorPrefab, secretDoorPrefab, exitDoorPrefab, wallMaterial,
+                wallsRoot, doorsRoot,
+                cellSize, wallHeight, wallThickness, wallPivotIsAtMeshCenter);
+            converter.ConvertAll();
+            Debug.Log($"[CellBasedMazeGenerator] {converter.GetStatistics()}");
         }
         
         // Logging
