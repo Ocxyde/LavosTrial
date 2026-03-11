@@ -48,7 +48,7 @@ namespace Code.Lavos.Editor
 
         private DoorStyle selectedStyle = DoorStyle.WoodPlanks;
 
-        [MenuItem("Tools/Generate Door Pixel Art Textures")]
+        [MenuItem("Tools/Pixel Art/Generate Door Textures")]
         public static void ShowWindow()
         {
             var window = GetWindow<DoorPixelArtGenerator>("Door Pixel Art");

@@ -1,4 +1,4 @@
-// LavosTrial - CodeDotLavos
+﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -15,7 +15,7 @@ namespace Code.Lavos.Editor
     /// </summary>
     public class PixelArtGroundGenerator : EditorWindow
     {
-        [MenuItem("Tools/Generate Pixel Art Ground Texture")]
+        [MenuItem("Tools/Pixel Art/Generate Ground Texture")]
         public static void GenerateGroundTexture()
         {
             string folderPath = "Assets/Textures/Ground";

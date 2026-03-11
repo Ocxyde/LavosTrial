@@ -1,4 +1,4 @@
-// LavosTrial - CodeDotLavos
+﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8  |  Locale: en_US
@@ -35,7 +35,7 @@ namespace Code.Lavos.Editor
         private string doorName = "DoorPrefab";
         private Color doorColor = new Color(0.6f, 0.4f, 0.2f); // Brown wood
 
-        [MenuItem("Tools/Create Door Prefab")]
+        [MenuItem("Tools/Doors/Create Door Prefab")]
         public static void ShowWindow()
         {
             var window = GetWindow<CreateDoorPrefab>("Create Door Prefab");
