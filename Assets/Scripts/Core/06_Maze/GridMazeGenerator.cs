@@ -1072,9 +1072,15 @@ namespace Code.Lavos.Core
         //  Step 7 — Torch placement (CORRIDORS ONLY)
         //
         //  NEW 2026-03-11: Gothic atmosphere lighting
-        //  - Torches placed ONLY on corridor walls
+        //  - Torques placed ONLY on corridor walls
         //  - Rooms remain DARK (foggy, gothic ambiance)
         //  - Creates contrast: safe corridors vs dangerous dark rooms
+        //
+        //  TORCH PLACEMENT SPECIFICATIONS:
+        //  - Position: Mid-height of wall (wallHeight / 2)
+        //  - Rotation: 25° inward (Z-axis rotation toward corridor)
+        //  - Offset: Slightly protruding from wall surface
+        //  - Light: Warm orange (2700K), flickering
         // ─────────────────────────────────────────────────────────
         private static void PlaceTorchesOnCorridorsOnly(MazeData8 d, System.Random rng, float chance)
         {
@@ -1101,6 +1107,8 @@ namespace Code.Lavos.Core
             }
 
             Debug.Log($"[GridMazeGenerator] Torches placed on corridors only (rooms stay dark)");
+            Debug.Log($"[GridMazeGenerator] Torch position: Mid-wall height (wallHeight/2)");
+            Debug.Log($"[GridMazeGenerator] Torch rotation: Z=25° inward (toward corridor)");
         }
 
         // ─────────────────────────────────────────────────────────
@@ -1118,6 +1126,15 @@ namespace Code.Lavos.Core
         //  - Coverage: Only corridor cells (not rooms)
         //  - Material: DarkStone_Ceiling (8-bit pixel art)
         //  - Color: #2A2A2A to #3D3D3D (dark gray variations)
+        //
+        //  TORCH IMPLEMENTATION NOTES (for CompleteMazeBuilder):
+        //  When spawning torches from TorchPool:
+        //    1. Position: wallCenter + Vector3(0, wallHeight/2, 0)
+        //    2. Rotation: Quaternion.Euler(0, wallFacing, 25)
+        //       - 25° Z-rotation = inward tilt toward corridor
+        //       - wallFacing = 0/90/180/270 based on wall direction
+        //    3. Offset: 0.3 units from wall surface (into corridor)
+        //    4. Light: Point light, warm orange (1.0, 0.6, 0.2), intensity 2.0
         // ─────────────────────────────────────────────────────────
         private static void AddCorridorCeiling(MazeData8 data, System.Random rng, MazeConfig cfg)
         {
