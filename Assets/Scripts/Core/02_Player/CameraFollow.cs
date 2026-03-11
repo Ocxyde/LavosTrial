@@ -103,18 +103,19 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
+            // Plug-in-Out: Find existing camera (never create)
             _camera = Camera.main;
+            
             if (_camera == null)
             {
+                // Try to find camera in children
                 _camera = GetComponentInChildren<Camera>();
-                if (_camera == null)
-                {
-                    var cameraGO = new GameObject("Main Camera");
-                    cameraGO.transform.SetParent(transform);
-                    cameraGO.transform.localPosition = Vector3.zero;
-                    _camera = cameraGO.AddComponent<Camera>();
-                    _camera.tag = "MainCamera";
-                }
+            }
+            
+            if (_camera == null)
+            {
+                // No camera found - log warning (don't create!)
+                Debug.LogWarning("[CameraFollow] No Main Camera found! Add a Camera component to this GameObject or scene.");
             }
         }
 
