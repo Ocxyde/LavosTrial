@@ -42,10 +42,10 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 2.1 Compute Longest Snake Path | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
+| 2.1 Compute Longest Snake Path | CellBasedMazeGenerator.cs | 🔴 P0 | ✅ DONE |
 | 2.2 Min/Max Path Length Calculation | DifficultyCurve.cs | 🔴 P0 | ✅ DONE |
-| 2.3 Path Cell Marking (isOnPrimaryPath) | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
-| 2.4 Path Verification System | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
+| 2.3 Path Cell Marking (isOnPrimaryPath) | CellBasedMazeGenerator.cs | 🔴 P0 | ✅ DONE |
+| 2.4 Path Verification System | CellBasedMazeGenerator.cs | 🔴 P0 | ✅ DONE |
 
 ### **Phase 3: Room System** 🔴
 
