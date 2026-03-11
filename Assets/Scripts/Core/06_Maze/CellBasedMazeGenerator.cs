@@ -380,7 +380,7 @@ namespace Code.Lavos.Core.Maze
         // Helper Methods
         private bool IsValidCell(Vector2Int pos)
         {
-            return pos.x >= 0 && pos.x < _width && pos.z >= 0 && pos.z < _height;
+            return pos.x >= 0 && pos.x < _width && pos.y >= 0 && pos.y < _height;
         }
         
         private bool IsOnPrimaryPath(Vector2Int pos)
@@ -434,7 +434,9 @@ namespace Code.Lavos.Core.Maze
             int index = _primaryPath.IndexOf(pos);
             if (index > 0 && index < _primaryPath.Count - 1)
             {
-                return (_primaryPath[index + 1] - _primaryPath[index - 1]).normalized;
+                var dir = _primaryPath[index + 1] - _primaryPath[index - 1];
+                // Normalize manually for Vector2Int
+                return new Vector2Int(Mathf.Sign(dir.x), Mathf.Sign(dir.y));
             }
             return Vector2Int.right;
         }
