@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // RealisticDoorFactory.cs
-// ⚠️ DEPRECATED - Procedural door generation violates plug-in-out architecture
+//  DEPRECATED - Procedural door generation violates plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // STATUS: DEPRECATED - Violates plug-in-out architecture (creates GameObjects at runtime)
@@ -30,14 +30,14 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// ⚠️ DEPRECATED - RealisticDoorFactory violates plug-in-out architecture.
+    ///  DEPRECATED - RealisticDoorFactory violates plug-in-out architecture.
     /// 
     /// This factory creates door GameObjects and components at runtime:
     /// - new GameObject("Door") - VIOLATION
     /// - AddComponent<DoorsEngine>() - VIOLATION
     /// - AddComponent<DoorAnimation>() - VIOLATION
     /// 
-    /// ✅ CORRECT APPROACH:
+    ///  CORRECT APPROACH:
     /// Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).
     /// Instantiate prefabs at runtime, don't create from scratch.
     /// 

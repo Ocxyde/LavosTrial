@@ -43,7 +43,7 @@ namespace Code.Lavos.Core
     /// SFXVFXEngine - Special FX & Visual FX management.
     /// Handles particle effects, visual effects, screen effects.
     /// 
-    /// ⚠️ PLUG-IN-OUT STATUS: ACCEPTABLE VIOLATION
+    ///  PLUG-IN-OUT STATUS: ACCEPTABLE VIOLATION
     /// 
     /// This singleton self-creates because:
     /// - It's a global system (only ONE instance can exist)
@@ -51,13 +51,13 @@ namespace Code.Lavos.Core
     /// - Nothing else can create it (bootstrap manager)
     /// - It's a well-documented singleton pattern
     /// 
-    /// ✅ PROPER SETUP (Recommended):
+    ///  PROPER SETUP (Recommended):
     /// 1. Create empty GameObject named "SFXVFXEngine"
     /// 2. Add SFXVFXEngine component
     /// 3. Configure in Inspector (particle prefabs, etc.)
     /// 4. Mark as DontDestroyOnLoad (optional, manager does this)
     /// 
-    /// ⚠️ FALLBACK (Auto-creation - logged as warning):
+    ///  FALLBACK (Auto-creation - logged as warning):
     /// If no SFXVFXEngine exists in scene, one is auto-created.
     /// This is acceptable for managers but manual setup is preferred.
     /// 
@@ -81,7 +81,7 @@ namespace Code.Lavos.Core
                     _instance = FindFirstObjectByType<SFXVFXEngine>();
                     if (_instance == null)
                     {
-                        // ⚠️ FALLBACK ONLY: Should be added to scene manually
+                        //  FALLBACK ONLY: Should be added to scene manually
                         // ACCEPTABLE for manager singletons (bootstrap pattern)
                         Debug.LogWarning("[SFXVFXEngine] Not found in scene - auto-creating (add manually for Plug-in-Out compliance!)");
                         GameObject go = new GameObject("SFXVFXEngine");

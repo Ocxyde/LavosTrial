@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // DoorCubeFactory.cs
-// ⚠️ DEPRECATED - Procedural door generation violates plug-in-out architecture
+//  DEPRECATED - Procedural door generation violates plug-in-out architecture
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // STATUS: DEPRECATED - Violates plug-in-out architecture (creates GameObjects at runtime)
@@ -30,7 +30,7 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// ⚠️ DEPRECATED - DoorCubeFactory violates plug-in-out architecture.
+    ///  DEPRECATED - DoorCubeFactory violates plug-in-out architecture.
     /// 
     /// This factory creates door GameObjects and components at runtime:
     /// - new GameObject("DoorPanel") - VIOLATION
@@ -38,7 +38,7 @@ namespace Code.Lavos.Core
     /// - AddComponent<MeshRenderer>() - VIOLATION
     /// - AddComponent<BoxCollider>() - VIOLATION
     /// 
-    /// ✅ CORRECT APPROACH:
+    ///  CORRECT APPROACH:
     /// Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).
     /// Instantiate prefabs at runtime, don't create from scratch.
     /// 
