@@ -1,4 +1,4 @@
-﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // BaseMazeBuilder.cs - Common base class for maze builders to reduce duplication
 
@@ -15,9 +15,9 @@ namespace Code.Lavos.Core
         #region Common Fields
 
         [Header("Cardinal Prefabs")]
-        [SerializeField] public GameObject wallPrefab;
-        [SerializeField] public GameObject doorPrefab;
-        [SerializeField] public Material wallMaterial;
+        [SerializeField] protected GameObject wallPrefab;
+        [SerializeField] protected GameObject doorPrefab;
+        [SerializeField] protected Material wallMaterial;
 
         [Header("Object Prefabs")]
         [SerializeField] public GameObject torchPrefab;

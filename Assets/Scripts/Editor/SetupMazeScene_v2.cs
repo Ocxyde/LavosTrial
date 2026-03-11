@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // SetupMazeSceneV2.cs - Automated scene setup for A-Maze-Lav8s_2.0.0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
@@ -122,23 +122,31 @@ namespace Code.Lavos.Editor
             builder.UsePassageFirstGenerator = false;
 
             // Assign prefabs from Resources (Plug-in-Out compliant)
-            builder.wallPrefab = Resources.Load<GameObject>("Prefabs/WallPrefab");
-            builder.doorPrefab = Resources.Load<GameObject>("Prefabs/DoorPrefab");
+            // Use reflection for protected fields
+            var builderType = builder.GetType();
+            builderType.GetField("wallPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.SetValue(builder, Resources.Load<GameObject>("Prefabs/WallPrefab"));
+            builderType.GetField("doorPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.SetValue(builder, Resources.Load<GameObject>("Prefabs/DoorPrefab"));
             builder.torchPrefab = Resources.Load<GameObject>("Prefabs/TorchHandlePrefab");
             builder.chestPrefab = Resources.Load<GameObject>("Prefabs/ChestPrefab");
             builder.enemyPrefab = Resources.Load<GameObject>("Prefabs/EnemyPrefab");
             builder.floorPrefab = Resources.Load<GameObject>("Prefabs/FloorTilePrefab");
             builder.playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
 
-            // Assign wall material from GameConfig or Resources
+            // Assign wall material from GameConfig or Resources (use reflection for protected field)
+            Material wallMat = null;
             if (Application.isPlaying && GameConfig.Instance != null)
             {
-                builder.wallMaterial = Resources.Load<Material>(GameConfig.Instance.WallMaterial);
+                wallMat = Resources.Load<Material>(GameConfig.Instance.WallMaterial);
             }
-            builder.wallMaterial ??= Resources.Load<Material>("Materials/WallMaterial");
+            wallMat ??= Resources.Load<Material>("Materials/WallMaterial");
+            builderType.GetField("wallMaterial", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.SetValue(builder, wallMat);
 
-            // Validate assignments
-            if (builder.wallPrefab == null)
+            // Validate assignments (use reflection for protected fields)
+            if (builderType.GetField("wallPrefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.GetValue(builder) == null)
                 Debug.LogError("[SetupMazeSceneV2] WallPrefab not found in Resources!");
             if (builder.playerPrefab == null)
                 Debug.LogWarning("[SetupMazeSceneV2] Player prefab not found - will spawn from code");
