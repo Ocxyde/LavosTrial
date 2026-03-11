@@ -79,10 +79,10 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 6.1 Spawn Walls at Cell Edges | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
-| 6.2 Carve Door Openings in Walls | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
-| 6.3 Spawn DoorController Prefabs | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
-| 6.4 Verify Door Rotation (90° outward) | DoorController.cs | 🟢 P2 | ✅ DONE |
+| 6.1 Spawn Walls at Cell Edges | CellToWallConverter.cs | 🟢 P2 | ✅ DONE |
+| 6.2 Carve Door Openings in Walls | CellToWallConverter.cs | 🟢 P2 | ✅ DONE |
+| 6.3 Spawn DoorController Prefabs | CellToWallConverter.cs | 🟢 P2 | ✅ DONE |
+| 6.4 Verify Door Rotation (90° outward) | DoorController.cs | 🟢 P2 | ✅ DONE (Phase 3) |
 
 ### **Phase 7: Difficulty Curve** 🟢
 
