@@ -28,7 +28,7 @@ namespace Code.Lavos.Editor
 {
     public class BoundaryTestSceneSetup
     {
-        [MenuItem("Tools/Setup Boundary Test Scene")]
+        [MenuItem("Tools/Legacy/Setup Boundary Test Scene")]
         public static void SetupBoundaryTestScene()
         {
             Debug.Log("[BoundaryTest] Starting scene setup...");

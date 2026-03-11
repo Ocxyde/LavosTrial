@@ -45,7 +45,7 @@ namespace Code.Lavos.Tools.Advanced
 
         #region Menu Items
 
-        [MenuItem("Tools/Lavos/MazeMath Engine Generator")]
+        [MenuItem("Tools/Legacy/MazeMath Engine Generator")]
         public static void ShowWindow()
         {
             GetWindow<MazeMathEngineEditor>("MazeMath Engine");

@@ -84,7 +84,7 @@ namespace Code.Lavos.Editor
                 "OK");
         }
         
-        [MenuItem("Tools/Generate Level 10 Maze (Fixed Seed)", false, 2)]
+        [MenuItem("Tools/Legacy/Generate Level 10 Maze (Fixed Seed)", false, 2)]
         public static void GenerateLevel10FixedSeed()
         {
             // Find CompleteMazeBuilder8 in scene
@@ -127,7 +127,7 @@ namespace Code.Lavos.Editor
                 "OK");
         }
         
-        [MenuItem("Tools/Level 10 Maze Info", false, 10)]
+        [MenuItem("Tools/Legacy/Level 10 Maze Info", false, 10)]
         public static void ShowLevel10Info()
         {
             string info = @"Level 10 Maze Information

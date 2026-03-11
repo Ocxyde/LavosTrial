@@ -32,7 +32,7 @@ namespace Code.Lavos.Editor
 {
     public class CreateMazePrefabs
     {
-        [MenuItem("Tools/Create Maze Prefabs")]
+        [MenuItem("Tools/Legacy/Create Maze Prefabs")]
         public static void CreateAllPrefabs()
         {
             Debug.Log("[CreateMazePrefabs] ========================================");

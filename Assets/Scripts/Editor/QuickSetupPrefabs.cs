@@ -32,7 +32,7 @@ namespace Code.Lavos.Editor
 {
     public class QuickSetupPrefabs : MonoBehaviour
     {
-        [MenuItem("Tools/Quick Setup Prefabs (For Testing)")]
+        [MenuItem("Tools/Legacy/Quick Setup Prefabs (For Testing)")]
         public static void SetupMinimumPrefabs()
         {
             Debug.Log("");

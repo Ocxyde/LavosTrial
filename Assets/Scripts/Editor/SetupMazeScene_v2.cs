@@ -29,7 +29,7 @@ namespace Code.Lavos.Editor
         private const string SCENE_NAME = "A-Maze-Lav8s_2.0.0";
         private const string SCENE_PATH = "Assets/Scenes/" + SCENE_NAME + ".unity";
 
-        [MenuItem("Tools/Setup Maze Scene V2.0.0")]
+        [MenuItem("Tools/Legacy/Setup Maze Scene V2.0.0")]
         public static void SetupMazeScene()
         {
             // Check if scene already exists

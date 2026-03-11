@@ -60,7 +60,7 @@ namespace Code.Lavos.Editor
         private Material wallMaterial;
 
         // Menu item
-        [MenuItem("Tools/Generate Diagonal Walls & Corners")]
+        [MenuItem("Tools/Legacy/Generate Diagonal Walls & Corners")]
         public static void ShowWindow()
         {
             window = GetWindow<DiagonalWallGenerator>("Diagonal Wall Generator");

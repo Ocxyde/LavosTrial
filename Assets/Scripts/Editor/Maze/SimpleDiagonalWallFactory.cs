@@ -51,7 +51,7 @@ namespace Code.Lavos.Editor
         // Prefab name (fixed - matches CompleteMazeBuilder expectation)
         private const string PREFAB_NAME = "DiagonalWallPrefab";
 
-        [MenuItem("Tools/Create Simple Diagonal Wall Prefab")]
+        [MenuItem("Tools/Legacy/Create Simple Diagonal Wall Prefab")]
         public static void ShowWindow()
         {
             window = GetWindow<SimpleDiagonalWallFactory>("Simple Diagonal Wall");

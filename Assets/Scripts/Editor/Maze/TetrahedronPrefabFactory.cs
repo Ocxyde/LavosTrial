@@ -63,7 +63,7 @@ namespace Code.Lavos.Editor
         // Scroll position
         private Vector2 scrollPosition;
 
-        [MenuItem("Tools/Create Tetrahedron Prefabs (8-bit Pixel Art)")]
+        [MenuItem("Tools/Legacy/Create Tetrahedron Prefabs (8-bit Pixel Art)")]
         public static void ShowWindow()
         {
             window = GetWindow<TetrahedronPrefabFactory>("Tetrahedron Factory");
