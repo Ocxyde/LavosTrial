@@ -1,4 +1,4 @@
-// LavosTrial - CodeDotLavos
+﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -132,26 +132,55 @@ namespace Code.Lavos.Core.Maze
         }
         
         /// <summary>
-        /// Spawn wall at cell edge.
+        /// Spawn wall at cell edge (with collider).
         /// </summary>
         private void SpawnWallEdge(int x, int y, Direction8 direction)
         {
             // Calculate wall position
             Vector3 position = GetWallPosition(x, y, direction);
             Quaternion rotation = GetWallRotation(direction);
-            
+
             // Spawn wall prefab
             GameObject wall = Object.Instantiate(_wallPrefab, position, rotation, _wallsRoot);
             wall.name = $"Wall_{x}_{y}_{direction}";
-            
+
             // Apply material
             var renderer = wall.GetComponent<Renderer>();
             if (renderer != null && _wallMaterial != null)
             {
                 renderer.sharedMaterial = _wallMaterial;
             }
-            
+
+            // Ensure wall has collider (player collision)
+            EnsureWallCollider(wall);
+
             _wallsSpawned++;
+        }
+
+        /// <summary>
+        /// Ensure wall has a collider for player collision.
+        /// </summary>
+        private void EnsureWallCollider(GameObject wall)
+        {
+            // Check if wall already has a collider
+            var collider = wall.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = true;
+                return;
+            }
+
+            // Add box collider if missing
+            var boxCollider = wall.AddComponent<BoxCollider>();
+            boxCollider.enabled = true;
+
+            // Adjust collider size to match wall
+            var renderer = wall.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                boxCollider.size = renderer.bounds.size;
+                boxCollider.center = renderer.bounds.center - wall.transform.position;
+            }
         }
         
         /// <summary>

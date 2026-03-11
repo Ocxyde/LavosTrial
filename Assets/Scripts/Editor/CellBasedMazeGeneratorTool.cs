@@ -391,7 +391,7 @@ namespace Code.Lavos.Editor
         }
         
         /// <summary>
-        /// Spawn perimeter walls around entire grid.
+        /// Spawn perimeter walls around entire grid (with colliders).
         /// </summary>
         private void SpawnPerimeterWalls(Transform parent, int width, int height)
         {
@@ -416,6 +416,7 @@ namespace Code.Lavos.Editor
                 );
                 GameObject northWall = Object.Instantiate(wallPrefab, northPos, Quaternion.Euler(0f, 90f, 0f), parent);
                 northWall.name = $"PerimeterWall_N_{x}";
+                EnsureWallCollider(northWall);
                 perimeterWalls++;
                 
                 // South wall
@@ -426,6 +427,7 @@ namespace Code.Lavos.Editor
                 );
                 GameObject southWall = Object.Instantiate(wallPrefab, southPos, Quaternion.Euler(0f, 90f, 0f), parent);
                 southWall.name = $"PerimeterWall_S_{x}";
+                EnsureWallCollider(southWall);
                 perimeterWalls++;
             }
             
@@ -440,6 +442,7 @@ namespace Code.Lavos.Editor
                 );
                 GameObject eastWall = Object.Instantiate(wallPrefab, eastPos, Quaternion.identity, parent);
                 eastWall.name = $"PerimeterWall_E_{y}";
+                EnsureWallCollider(eastWall);
                 perimeterWalls++;
                 
                 // West wall
@@ -450,10 +453,37 @@ namespace Code.Lavos.Editor
                 );
                 GameObject westWall = Object.Instantiate(wallPrefab, westPos, Quaternion.identity, parent);
                 westWall.name = $"PerimeterWall_W_{y}";
+                EnsureWallCollider(westWall);
                 perimeterWalls++;
             }
             
-            Debug.Log($"[1-Click Maze Generator] Spawned {perimeterWalls} perimeter walls");
+            Debug.Log($"[1-Click Maze Generator] Spawned {perimeterWalls} perimeter walls (with colliders)");
+        }
+        
+        /// <summary>
+        /// Ensure wall has a collider for player collision.
+        /// </summary>
+        private void EnsureWallCollider(GameObject wall)
+        {
+            // Check if wall already has a collider
+            var collider = wall.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = true; // Ensure it's enabled
+                return;
+            }
+            
+            // Add box collider if missing
+            var boxCollider = wall.AddComponent<BoxCollider>();
+            boxCollider.enabled = true;
+            
+            // Adjust collider size to match wall
+            var renderer = wall.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                boxCollider.size = renderer.bounds.size;
+                boxCollider.center = renderer.bounds.center - wall.transform.position;
+            }
         }
         
         /// <summary>

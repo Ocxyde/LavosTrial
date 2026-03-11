@@ -280,7 +280,7 @@ Tools → Cell-Based Maze → Generate Maze (1-Click)
 | Task | Files | Time | Status |
 |------|-------|------|--------|
 | 2.1 Door Serialization Fix | BaseMazeBuilder.cs, CompleteMazeBuilder.cs | 1h | ✅ DONE (protected fields) |
-| 2.2 Door Prefab Creation | DoorPrefab_*.prefab | 1h | ⏳ MANUAL (create in Unity) |
+| 2.2 Door Prefab Creation | DoorPrefab_*.prefab | 1h | ✅ DONE (CreateDoorPrefab.cs tool) |
 | 2.3 Door Spawning System | CompleteMazeBuilder.cs | 1h | ✅ DONE (uses carved openings) |
 | 2.4 Treasure Room Guardians | Enemy placement logic | 30min | ⏳ Pending (1 enemy per chest) |
 
