@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -223,7 +223,7 @@ namespace Code.Lavos.Core.Maze
         }
         
         /// <summary>
-        /// Spawn door at position.
+        /// Spawn door at position (with collider + DoorController).
         /// </summary>
         private void SpawnDoor(int x, int y, MazeDoorType type)
         {
@@ -233,14 +233,59 @@ namespace Code.Lavos.Core.Maze
                 Debug.LogWarning($"[CellToWallConverter] No prefab for door type {type}");
                 return;
             }
-            
+
             Vector3 position = GetDoorPosition(x, y);
             Quaternion rotation = GetDoorRotation(x, y);
-            
+
             GameObject door = Object.Instantiate(doorPrefab, position, rotation, _doorsRoot);
             door.name = $"Door_{type}_{x}_{y}";
-            
+
+            // Ensure door has collider (player collision)
+            EnsureDoorCollider(door);
+
+            // Ensure door is interactable (DoorController)
+            EnsureDoorInteractable(door);
+
             _doorsSpawned++;
+        }
+
+        /// <summary>
+        /// Ensure door has a collider for player collision.
+        /// </summary>
+        private void EnsureDoorCollider(GameObject door)
+        {
+            var collider = door.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = true;
+                return;
+            }
+
+            var boxCollider = door.AddComponent<BoxCollider>();
+            boxCollider.enabled = true;
+
+            var renderer = door.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                boxCollider.size = renderer.bounds.size;
+                boxCollider.center = renderer.bounds.center - door.transform.position;
+            }
+        }
+
+        /// <summary>
+        /// Ensure door is interactable (has DoorController component).
+        /// </summary>
+        private void EnsureDoorInteractable(GameObject door)
+        {
+            var doorController = door.GetComponent<DoorController>();
+            if (doorController != null)
+            {
+                doorController.enabled = true;
+                return;
+            }
+
+            door.AddComponent<DoorController>();
+            Debug.Log($"[CellToWallConverter] Added DoorController to {door.name}");
         }
         
         /// <summary>
