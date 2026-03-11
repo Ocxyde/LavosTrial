@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -161,7 +161,7 @@ namespace Code.Lavos.Core.Maze
             }
             else
             {
-                Debug.Log("[MazeVerifier] Exit is reachable from spawn ✓");
+                Debug.Log("[MazeVerifier] Exit is reachable from spawn ");
             }
         }
         

@@ -91,3 +91,7 @@ maze_v0-*/
 # Temp diff & file storage (user-managed)
 diff_tmp/
 files/
+
+# Markdown files (track all .md in root, ignore README.md)
+!*.md
+README.md
