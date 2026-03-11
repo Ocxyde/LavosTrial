@@ -110,7 +110,7 @@ namespace Code.Lavos.Editor
             }
             
             // Use SeedManager for difficulty-based seeding (existing system, not duplicated)
-            var seedManager = FindFirstObjectByType<SeedManager>();
+            var seedManager = FindObjectOfType<SeedManager>();
             
             int newSeed;
             if (seedManager != null)
@@ -137,8 +137,8 @@ namespace Code.Lavos.Editor
         /// </summary>
         private int GenerateDifficultyBasedSeed(int level)
         {
-            int tickCount = System.Environment.TickCount;
-            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            int tickCount = Environment.TickCount;
+            long timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             float random = UnityEngine.Random.value;
             
             uint tick = (uint)tickCount;
