@@ -270,6 +270,113 @@ namespace Code.Lavos.Core.Maze
             return isVerified;
         }
         
+        // Step 8b: Save Maze to RAM/Storage (using existing MazeBinaryStorage8)
+        public bool SaveMazeToStorage()
+        {
+            // Convert MazeCell[,] to MazeData8 for compatibility with existing storage
+            var mazeData = ConvertToMazeData8();
+            
+            // Use existing MazeBinaryStorage8 (Plug-in-Out: reuse, don't duplicate)
+            bool saved = MazeBinaryStorage8.Save(mazeData);
+            
+            if (saved)
+            {
+                Debug.Log($"[CellBasedMazeGenerator] Maze saved to storage: Level {_level}, Seed {_seed}");
+            }
+            
+            return saved;
+        }
+        
+        // Step 8c: Load Maze from RAM/Storage (using existing MazeBinaryStorage8)
+        public static MazeCell[,] LoadMazeFromStorage(int level, int seed, out int width, out int height)
+        {
+            width = 0;
+            height = 0;
+            
+            // Use existing MazeBinaryStorage8 (Plug-in-Out: reuse, don't duplicate)
+            var mazeData = MazeBinaryStorage8.Load(level, seed);
+            
+            if (mazeData == null)
+            {
+                Debug.LogWarning($"[CellBasedMazeGenerator] No maze found in storage: Level {level}, Seed {seed}");
+                return null;
+            }
+            
+            // Convert MazeData8 to MazeCell[,]
+            var grid = ConvertFromMazeData8(mazeData, out width, out height);
+            
+            Debug.Log($"[CellBasedMazeGenerator] Maze loaded from storage: Level {level}, Seed {seed}");
+            return grid;
+        }
+        
+        /// <summary>
+        /// Convert MazeCell[,] to MazeData8 for storage compatibility.
+        /// </summary>
+        private MazeData8 ConvertToMazeData8()
+        {
+            var mazeData = new MazeData8(_width, _height, _seed, _level);
+            mazeData.SetSpawn(_spawn.x, _spawn.y);
+            mazeData.SetExit(_exit.x, _exit.y);
+            mazeData.DifficultyFactor = _difficulty.difficulty;
+            
+            // Convert cell flags
+            for (int x = 0; x < _width; x++)
+            {
+                for (int y = 0; y < _height; y++)
+                {
+                    var cell = _grid[x, y];
+                    CellFlags8 flags = CellFlags8.None;
+                    
+                    // Map edge walls to CellFlags8
+                    if (cell.hasNorthWall) flags |= CellFlags8.WallN;
+                    if (cell.hasSouthWall) flags |= CellFlags8.WallS;
+                    if (cell.hasEastWall) flags |= CellFlags8.WallE;
+                    if (cell.hasWestWall) flags |= CellFlags8.WallW;
+                    
+                    // Map cell types to flags
+                    if (cell.isOnPrimaryPath) flags |= CellFlags8.IsRoom;
+                    if (cell.isDeadEnd) flags |= CellFlags8.HasChest;
+                    
+                    mazeData.SetCell(x, y, flags);
+                }
+            }
+            
+            return mazeData;
+        }
+        
+        /// <summary>
+        /// Convert MazeData8 to MazeCell[,] for generation.
+        /// </summary>
+        private static MazeCell[,] ConvertFromMazeData8(MazeData8 mazeData, out int width, out int height)
+        {
+            width = mazeData.Width;
+            height = mazeData.Height;
+            var grid = new MazeCell[width, height];
+            
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var flags = mazeData.GetCell(x, y);
+                    var cell = new MazeCell();
+                    
+                    // Map CellFlags8 to edge walls
+                    cell.hasNorthWall = (flags & CellFlags8.WallN) != 0;
+                    cell.hasSouthWall = (flags & CellFlags8.WallS) != 0;
+                    cell.hasEastWall = (flags & CellFlags8.WallE) != 0;
+                    cell.hasWestWall = (flags & CellFlags8.WallW) != 0;
+                    
+                    // Map flags to cell properties
+                    cell.isOnPrimaryPath = (flags & CellFlags8.IsRoom) != 0;
+                    cell.isDeadEnd = (flags & CellFlags8.HasChest) != 0;
+                    
+                    grid[x, y] = cell;
+                }
+            }
+            
+            return grid;
+        }
+        
         // Step 9: Convert to Walls/Doors (using CellToWallConverter)
         public void SpawnWallsAndDoors(
             GameObject wallPrefab, GameObject doorPrefab,

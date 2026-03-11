@@ -278,10 +278,16 @@ namespace Code.Lavos.Editor
                 _progress = 0.9f;
                 _statusMessage = "Spawning player...";
                 SpawnPlayer(currentSeed);
-                
+
                 _progress = 1.0f;
                 _statusMessage = $"Maze generated successfully! Seed: {currentSeed}";
-                
+
+                // Step 8: Save maze to storage (RAM/Storage system - reuses existing MazeBinaryStorage8)
+                if (_generator != null)
+                {
+                    _generator.SaveMazeToStorage();
+                }
+
                 Debug.Log($"[1-Click Maze Generator] Complete! Seed: {currentSeed}, Size: {mazeWidth}x{mazeHeight}, Level: {level}");
             }
             catch (System.Exception e)
