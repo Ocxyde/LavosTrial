@@ -151,6 +151,11 @@ namespace Code.Lavos.Core
             CarveExitRoom(data, size - 2, size - 2, exitSize);
             data.SetExit(size - 2, size - 2);
 
+            // ── Step 4.5: Ensure spawn/exit don't face outward ────
+            //      CRITICAL: Spawn and exit must face INWARD toward maze center
+            //      Never allow outward facing (player would leave scene!)
+            EnsureSpawnExitInwardFacing(data, size);
+
             // ── Step 5: A* guaranteed path (cardinal only) ────────
             //      Ensures passage even if DFS creates isolated sections
             //      Force INDIRECT path by adding intermediate waypoints
@@ -326,8 +331,43 @@ namespace Code.Lavos.Core
         }
 
         // ─────────────────────────────────────────────────────────
-        //  Step 3 — Carve spawn room (square, centered on ox, oz)
+        //  Step 4.5 — Ensure Spawn/Exit Face INWARD
+        //
+        //  CRITICAL: Spawn and exit rooms must face INWARD toward maze center
+        //  This prevents player from walking out of scene bounds!
+        //
+        //  IMPLEMENTATION:
+        //  - Spawn room (at 1,1): Clear east wall (faces into maze)
+        //  - Exit room (at W-2,H-2): Clear west wall (faces into maze)
+        //  - NEVER clear outer boundary walls (player would escape!)
         // ─────────────────────────────────────────────────────────
+        private static void EnsureSpawnExitInwardFacing(MazeData8 data, int size)
+        {
+            // Spawn room at (1,1) - should face EAST (into maze)
+            int spawnX = 1, spawnZ = 1;
+            
+            // Clear east wall of spawn room (facing into maze)
+            if (data.InBounds(spawnX + 1, spawnZ))
+            {
+                data.ClearFlag(spawnX, spawnZ, CellFlags8.WallE);
+                data.ClearFlag(spawnX + 1, spawnZ, CellFlags8.WallW);
+            }
+            
+            Debug.Log($"[GridMazeGenerator] Spawn room at ({spawnX},{spawnZ}): Facing EAST (into maze)");
+
+            // Exit room at (size-2, size-2) - should face WEST (into maze)
+            int exitX = size - 2, exitZ = size - 2;
+            
+            // Clear west wall of exit room (facing into maze)
+            if (data.InBounds(exitX - 1, exitZ))
+            {
+                data.ClearFlag(exitX, exitZ, CellFlags8.WallW);
+                data.ClearFlag(exitX - 1, exitZ, CellFlags8.WallE);
+            }
+            
+            Debug.Log($"[GridMazeGenerator] Exit room at ({exitX},{exitZ}): Facing WEST (into maze)");
+            Debug.Log($"[GridMazeGenerator] Spawn/Exit protected: Outer boundary walls preserved (player cannot escape)");
+        }
         private static void CarveSpawnRoom(MazeData8 d, int ox, int oz, int roomSize)
         {
             int half = roomSize / 2;

@@ -36,7 +36,7 @@ namespace Code.Lavos.Core
     ///  3. Assigner playerCamera dans l'Inspector (caméra enfant du joueur)
     ///  4. La caméra sera auto-positionnée à hauteur des yeux — ne pas la bouger manuellement.
     ///
-    /// Contrôles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | E = interaction
+    /// Contrôles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | F = interaction
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
@@ -496,11 +496,11 @@ namespace Code.Lavos.Core
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    //  INTERACTION (E) - Legacy mode (when InteractionSystem not available)
+    //  INTERACTION (F) - Legacy mode (when InteractionSystem not available)
     // ─────────────────────────────────────────────────────────────────────────
     private void HandleInteraction()
     {
-        if (_kb.eKey.wasPressedThisFrame && _currentInteractable?.CanInteract(this) == true)
+        if (_kb.fKey.wasPressedThisFrame && _currentInteractable?.CanInteract(this) == true)
             _currentInteractable.OnInteract(this);
 
         CheckForInteractable();
