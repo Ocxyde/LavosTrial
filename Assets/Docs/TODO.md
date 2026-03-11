@@ -88,19 +88,19 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 7.1 Level-Based Difficulty Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
-| 7.2 Decoy Density Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
-| 7.3 Room Count Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
-| 7.4 Path Length Target Calculation | DifficultyCurve.cs | 🟢 P2 | ⏳ Pending |
+| 7.1 Level-Based Difficulty Scaling | DifficultyCurve.cs | 🟢 P2 | ✅ DONE (Phase 2) |
+| 7.2 Decoy Density Scaling | DecoySystem.cs | 🟢 P2 | ✅ DONE (Phase 4) |
+| 7.3 Room Count Scaling | DifficultyCurve.cs | 🟢 P2 | ✅ DONE (Phase 2) |
+| 7.4 Path Length Target Calculation | DifficultyCurve.cs | 🟢 P2 | ✅ DONE (Phase 2) |
 
 ### **Phase 8: Verification & Safety** 🟢
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 8.1 Primary Path Integrity Check | MazeVerifier.cs (new) | 🟢 P2 | ⏳ Pending |
-| 8.2 Room Door Connection Check | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
-| 8.3 Decoy Path Termination Check | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
-| 8.4 Exit Reachability Guarantee | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
+| 8.1 Primary Path Integrity Check | MazeVerifier.cs | 🟢 P2 | ✅ DONE |
+| 8.2 Room Door Connection Check | MazeVerifier.cs | 🟢 P2 | ✅ DONE |
+| 8.3 Decoy Path Termination Check | MazeVerifier.cs | 🟢 P2 | ✅ DONE |
+| 8.4 Exit Reachability Guarantee | MazeVerifier.cs | 🟢 P2 | ✅ DONE |
 
 ---
 
