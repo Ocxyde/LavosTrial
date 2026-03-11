@@ -206,64 +206,14 @@ namespace Code.Lavos.Core.Maze
             _decoyPaths = _decoySystem.GenerateDecoys();
         }
         
-        // Step 6: Place Agreements
+        // Step 6: Place Agreements (using AgreementPlacer)
         private void PlaceAgreements()
         {
-            PlaceRooms();
-            PlaceChestsOnDecoys();
-            MarkDeadEnds();
+            var placer = new AgreementPlacer();
+            placer.Initialize(_grid, _width, _height, _level);
+            placer.PlaceAllAgreements(_decoyPaths, new List<Room>());
         }
-        
-        private void PlaceRooms()
-        {
-            int roomCount = _difficulty.roomCount;
-            int step = _primaryPath.Count / (roomCount + 1);
-            
-            for (int i = 0; i < roomCount; i++)
-            {
-                int index = (i + 1) * step;
-                if (index < _primaryPath.Count)
-                {
-                    var center = _primaryPath[index];
-                    if (CanFitRoom(center))
-                    {
-                        MarkRoomArea(center);
-                    }
-                }
-            }
-            
-            Debug.Log($"[CellBasedMazeGenerator] Placed up to {roomCount} rooms");
-        }
-        
-        private void PlaceChestsOnDecoys()
-        {
-            foreach (var decoy in _decoyPaths)
-            {
-                if (decoy.cells.Count > 0 && UnityEngine.Random.value < 0.5f)
-                {
-                    var endCell = decoy.cells[decoy.cells.Count - 1];
-                    var cell = _grid[endCell.x, endCell.y];
-                    cell.cellType = CellType.Treasure;
-                    cell.agreement = CellAgreement.ChestLocation;
-                    _grid[endCell.x, endCell.y] = cell;
-                }
-            }
-        }
-        
-        private void MarkDeadEnds()
-        {
-            foreach (var decoy in _decoyPaths)
-            {
-                if (decoy.cells.Count > 0)
-                {
-                    var endCell = decoy.cells[decoy.cells.Count - 1];
-                    var cell = _grid[endCell.x, endCell.y];
-                    cell.MarkAsDeadEnd();
-                    _grid[endCell.x, endCell.y] = cell;
-                }
-            }
-        }
-        
+
         // Step 7: Verify Primary Path Integrity
         private void VerifyPrimaryPath()
         {
