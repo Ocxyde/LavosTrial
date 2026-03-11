@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -94,11 +94,11 @@ namespace Code.Lavos.Editor
         }
         
         /// <summary>
-        /// Generate new maze with new random seed.
+        /// Generate new maze with difficulty-based seed (uses existing SeedManager).
         /// </summary>
         private void GenerateNewMaze()
         {
-            // Find CompleteMazeBuilder8 in scene
+            // Find CompleteMazeBuilder8 in scene (Plug-in-Out: find, never create)
             var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             
             if (mazeBuilder == null)
@@ -107,14 +107,45 @@ namespace Code.Lavos.Editor
                 return;
             }
             
-            // Generate NEW random seed (always different)
-            int newSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            // Use SeedManager for difficulty-based seeding (existing system, not duplicated)
+            var seedManager = FindFirstObjectByType<SeedManager>();
+            
+            int newSeed;
+            if (seedManager != null)
+            {
+                newSeed = (int)seedManager.ComputeSeed;
+                Debug.Log($"[AutoGenerateMazeOnLoad] Using SeedManager compute seed: {newSeed}");
+            }
+            else
+            {
+                // Fallback: generate difficulty-based seed
+                newSeed = GenerateDifficultyBasedSeed(level);
+                Debug.Log($"[AutoGenerateMazeOnLoad] Generated difficulty-based seed: {newSeed}");
+            }
             
             // Set level and seed
             mazeBuilder.SetLevelAndSeed(level, newSeed);
             
             // Generate maze
-            Debug.Log($"[AutoGenerateMazeOnLoad] Generated new maze with seed: {newSeed}");
+            Debug.Log($"[AutoGenerateMazeOnLoad] Generated new maze: Level {level}, Seed: {newSeed}");
+        }
+        
+        /// <summary>
+        /// Generate difficulty-based seed (existing SeedManager method - reused).
+        /// </summary>
+        private int GenerateDifficultyBasedSeed(int level)
+        {
+            int tickCount = System.Environment.TickCount;
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            float random = UnityEngine.Random.value;
+            
+            uint tick = (uint)tickCount;
+            uint time = (uint)(timestamp & 0xFFFFFFFF);
+            uint rand = (uint)(random * uint.MaxValue);
+            uint levelFactor = (uint)(level * 1000);
+            
+            uint seed = tick ^ time ^ rand ^ levelFactor;
+            return (int)(seed & 0x7FFFFFFF);
         }
     }
 }

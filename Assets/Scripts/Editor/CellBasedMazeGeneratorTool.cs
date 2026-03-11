@@ -34,12 +34,12 @@ namespace Code.Lavos.Editor
         [SerializeField] private int mazeWidth = 21;
         [SerializeField] private int mazeHeight = 21;
         [SerializeField] private int level = 5;
-        [SerializeField] private int seed = -1; // -1 = ALWAYS RANDOM (new seed each generation)
+        [SerializeField] private int seed = -1; // -1 = use SeedManager difficulty-based seeding
         
         [Header("Auto-Generate Settings")]
-        [Tooltip("If true, generates new random seed on scene load/new game")]
+        [Tooltip("If true, generates new maze with difficulty-based seed on scene load/new game")]
         [SerializeField] private bool autoGenerateOnSceneLoad = true;
-        [Tooltip("If true, generates new random seed when loading saved game")]
+        [Tooltip("If true, generates new maze with difficulty-based seed when loading saved game")]
         [SerializeField] private bool autoGenerateOnLoad = true;
         
         [Header("Cell Filling")]
@@ -201,9 +201,31 @@ namespace Code.Lavos.Editor
             _progress = 0.1f;
             _statusMessage = "Initializing generator...";
             
-            // ALWAYS generate new random seed (each click = new seed)
-            int currentSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            seed = currentSeed; // Update UI to show new seed
+            // Use SeedManager difficulty-based seeding (existing system)
+            // Or generate random seed if seed is set manually
+            int currentSeed;
+            
+            if (seed < 0)
+            {
+                // Use SeedManager if available (Plug-in-Out: find, never create)
+                var seedManager = FindFirstObjectByType<SeedManager>();
+                if (seedManager != null)
+                {
+                    currentSeed = (int)seedManager.ComputeSeed;
+                    Debug.Log($"[1-Click Maze Generator] Using SeedManager compute seed: {currentSeed}");
+                }
+                else
+                {
+                    // Fallback: generate difficulty-based seed
+                    currentSeed = GenerateDifficultyBasedSeed(level);
+                    Debug.Log($"[1-Click Maze Generator] Generated difficulty-based seed: {currentSeed}");
+                }
+            }
+            else
+            {
+                currentSeed = seed;
+                Debug.Log($"[1-Click Maze Generator] Using manual seed: {currentSeed}");
+            }
             
             try
             {
@@ -699,6 +721,29 @@ namespace Code.Lavos.Editor
         }
         
         /// <summary>
+        /// Generate difficulty-based seed (existing SeedManager method).
+        /// Combines level, tick count, timestamp for entropy.
+        /// </summary>
+        private int GenerateDifficultyBasedSeed(int level)
+        {
+            // Existing SeedManager seeding method (reused, not duplicated)
+            int tickCount = System.Environment.TickCount;
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            float random = UnityEngine.Random.value;
+            
+            uint tick = (uint)tickCount;
+            uint time = (uint)(timestamp & 0xFFFFFFFF);
+            uint rand = (uint)(random * uint.MaxValue);
+            uint levelFactor = (uint)(level * 1000);
+            
+            // XOR all sources (existing SeedManager method)
+            uint seed = tick ^ time ^ rand ^ levelFactor;
+            
+            // Ensure positive int
+            return (int)(seed & 0x7FFFFFFF);
+        }
+        
+        /// <summary>
         /// Reset to default values.
         /// </summary>
         private void ResetToDefaults()
@@ -706,7 +751,7 @@ namespace Code.Lavos.Editor
             mazeWidth = 21;
             mazeHeight = 21;
             level = 5;
-            seed = -1; // Always random by default
+            seed = -1; // Use SeedManager difficulty-based seeding by default
             autoGenerateOnSceneLoad = true;
             autoGenerateOnLoad = true;
             autoFillEmptyCells = true;
@@ -719,7 +764,7 @@ namespace Code.Lavos.Editor
             markEntryExitPoints = true;
             verifyMaze = true;
             
-            Debug.Log("[1-Click Maze Generator] Reset to defaults (new seed each generation)");
+            Debug.Log("[1-Click Maze Generator] Reset to defaults (difficulty-based seeding)");
         }
     }
 }
