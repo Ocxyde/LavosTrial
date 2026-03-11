@@ -35,6 +35,7 @@ namespace Code.Lavos.Core.Maze
         // Path Tracking
         private List<Vector2Int> _primaryPath;
         private List<DecoyPath> _decoyPaths;
+        private DecoySystem _decoySystem;
         
         // Difficulty
         private DifficultyCurve _difficulty;
@@ -196,86 +197,13 @@ namespace Code.Lavos.Core.Maze
             Debug.Log($"[CellBasedMazeGenerator] Marked {_primaryPath.Count} primary path cells");
         }
         
-        // Step 5: Create Decoy Paths
+        // Step 5: Create Decoy Paths (using DecoySystem)
         private void CreateDecoyPaths()
         {
-            int decoyCount = Mathf.RoundToInt(_primaryPath.Count * _difficulty.decoyDensity * 0.3f);
-            
-            for (int i = 0; i < decoyCount; i++)
-            {
-                int branchIndex = UnityEngine.Random.Range(1, _primaryPath.Count - 2);
-                var branchPoint = _primaryPath[branchIndex];
-                
-                var decoy = CreateLShapeDecoy(branchPoint);
-                if (decoy.cells.Count > 0)
-                {
-                    _decoyPaths.Add(decoy);
-                    MarkDecoyCells(decoy);
-                }
-            }
-            
-            Debug.Log($"[CellBasedMazeGenerator] Created {_decoyPaths.Count} decoy paths");
-        }
-        
-        private DecoyPath CreateLShapeDecoy(Vector2Int branchPoint)
-        {
-            var decoy = new DecoyPath
-            {
-                type = DecoyType.LShape,
-                branchFrom = branchPoint,
-                cells = new List<Vector2Int>()
-            };
-            
-            Vector2Int primaryDir = GetPrimaryPathDirection(branchPoint);
-            Vector2Int segment1Dir = GetPerpendicularDirection(primaryDir);
-            int segment1Length = UnityEngine.Random.Range(2, 5);
-            
-            var current = branchPoint;
-            for (int i = 0; i < segment1Length; i++)
-            {
-                current += segment1Dir;
-                if (IsValidCell(current) && !IsOnPrimaryPath(current))
-                {
-                    decoy.cells.Add(current);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            
-            Vector2Int segment2Dir = Turn90Degrees(segment1Dir);
-            int segment2Length = UnityEngine.Random.Range(1, 3);
-            
-            for (int i = 0; i < segment2Length; i++)
-            {
-                current += segment2Dir;
-                if (IsValidCell(current) && !IsOnPrimaryPath(current))
-                {
-                    decoy.cells.Add(current);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            
-            if (decoy.cells.Count > 0)
-            {
-                decoy.reward = CellAgreement.DeadEndTerm;
-            }
-            
-            return decoy;
-        }
-        
-        private void MarkDecoyCells(DecoyPath decoy)
-        {
-            foreach (var cellPos in decoy.cells)
-            {
-                var cell = _grid[cellPos.x, cellPos.y];
-                cell.MarkAsDecoyPath();
-                _grid[cellPos.x, cellPos.y] = cell;
-            }
+            _decoySystem = new DecoySystem();
+            _decoySystem.Initialize(_grid, _width, _height, _primaryPath, 
+                                    _difficulty.decoyDensity, _level);
+            _decoyPaths = _decoySystem.GenerateDecoys();
         }
         
         // Step 6: Place Agreements
