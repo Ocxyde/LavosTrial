@@ -40,7 +40,8 @@ namespace Code.Lavos.Core.Maze
         // Difficulty
         private DifficultyCurve _difficulty;
         private int _level;
-        
+        private int _seed;
+
         // Spawn/Exit
         private Vector2Int _spawn;
         private Vector2Int _exit;
@@ -66,6 +67,7 @@ namespace Code.Lavos.Core.Maze
             _width = width > 0 ? width : config.defaultWidth;
             _height = height > 0 ? height : config.defaultHeight;
             _level = level;
+            _seed = seed;
             _primaryPath = new List<Vector2Int>();
             _decoyPaths = new List<DecoyPath>();
             
