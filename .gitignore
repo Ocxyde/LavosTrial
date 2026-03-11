@@ -92,6 +92,6 @@ maze_v0-*/
 diff_tmp/
 files/
 
-# Markdown files (track all .md in root, ignore README.md)
-!*.md
-README.md
+# Markdown files (ignore all .md in root, track README.md)
+*.md
+!README.md
