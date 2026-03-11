@@ -61,6 +61,12 @@ namespace Code.Lavos.Core
         [SerializeField] private float minEnemyDensity = 0.04f;
         
         [Header("Prefabs")]
+        [Tooltip("Normal door prefab for corridor passages")]
+        [SerializeField] private GameObject doorPrefab = null;
+        [Tooltip("Locked door prefab (requires key)")]
+        [SerializeField] private GameObject lockedDoorPrefab = null;
+        [Tooltip("Secret door prefab (hidden passages)")]
+        [SerializeField] private GameObject secretDoorPrefab = null;
         [Tooltip("Exit door prefab (interactable)")]
         [SerializeField] private GameObject exitDoorPrefab = null;
 
