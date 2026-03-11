@@ -70,10 +70,10 @@
 
 | Task | Files | Priority | Status |
 |------|-------|----------|--------|
-| 5.1 Chest Placement on Decoys | AgreementPlacer.cs (new) | 🟡 P1 | ⏳ Pending |
-| 5.2 Dead-End Wall Placement | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
-| 5.3 Empty Cell Marking | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
-| 5.4 Enemy Guard Placement | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
+| 5.1 Chest Placement on Decoys | AgreementPlacer.cs | 🟡 P1 | ✅ DONE |
+| 5.2 Dead-End Wall Placement | AgreementPlacer.cs | 🟡 P1 | ✅ DONE |
+| 5.3 Empty Cell Marking | AgreementPlacer.cs | 🟡 P1 | ✅ DONE |
+| 5.4 Enemy Guard Placement | AgreementPlacer.cs | 🟡 P1 | ✅ DONE |
 
 ### **Phase 6: Wall & Door Integration** 🟢
 
