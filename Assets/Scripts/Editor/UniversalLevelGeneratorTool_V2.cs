@@ -793,13 +793,13 @@ namespace Code.Lavos.Tools
 
 		/// <summary>
 		/// Calculate scaled dead-end density based on level difficulty.
-		/// Formula: BaseDensity × Lerp(1.0, DeadEndMaxMult, t)
+		/// Formula: BaseDensity  Lerp(1.0, DeadEndMaxMult, t)
 		/// Where t = level / MaxLevel (39)
 		/// </summary>
 		private float CalculateScaledDeadEndDensity(int level)
 		{
 			const float baseDensity = 0.15f;  // 15% base
-			const float deadEndMaxMult = 2.5f;  // 2.5× at max level
+			const float deadEndMaxMult = 2.5f;  // 2.5 at max level
 			const int maxLevel = 39;
 			
 			float t = Mathf.Clamp01((float)level / maxLevel);
@@ -809,7 +809,7 @@ namespace Code.Lavos.Tools
 
 		/// <summary>
 		/// Get difficulty factor for current level.
-		/// Formula: 1 + (MaxFactor - 1) × t^Exponent
+		/// Formula: 1 + (MaxFactor - 1)  t^Exponent
 		/// </summary>
 		private float CalculateDifficultyFactor(int level)
 		{

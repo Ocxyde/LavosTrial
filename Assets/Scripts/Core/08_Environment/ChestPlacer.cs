@@ -136,9 +136,9 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log($"[ChestPlacer]  Config loaded from JSON:");
-                Debug.Log($"  • Enable: {enableChestSpawning}");
-                Debug.Log($"  • Spawn Chance: {chestSpawnChance * 100f:F0}%");
-                Debug.Log($"  • Max Chests: {maxChests}");
+                Debug.Log($"   Enable: {enableChestSpawning}");
+                Debug.Log($"   Spawn Chance: {chestSpawnChance * 100f:F0}%");
+                Debug.Log($"   Max Chests: {maxChests}");
             }
         }
 

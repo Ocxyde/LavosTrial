@@ -50,9 +50,9 @@ namespace Code.Lavos.Core
         IsLocked = 5 << 4,    // 0101 0000
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // 
     //  Compatibility helpers for 8-axis system (CellFlags8)
-    // ─────────────────────────────────────────────────────────────
+    // 
     /// <summary>
     /// Extension methods for CellFlags8 to GridMazeCell compatibility.
     /// </summary>

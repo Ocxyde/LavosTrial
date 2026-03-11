@@ -36,7 +36,7 @@ namespace Code.Lavos.Core
     /// </summary>
     public class PlayerStats : MonoBehaviour, IPlayerStats
     {
-        // ─── Inspector Settings ────────────────────────────────────────────────
+        //  Inspector Settings 
         [Header("Base Stats")] [SerializeField]
         private float maxHealth = 1000f;
 
@@ -55,15 +55,15 @@ namespace Code.Lavos.Core
         [Header("Status Effects")] [SerializeField]
         private StatusEffectData[] startingEffects;
 
-        // ─── StatsEngine Core ──────────────────────────────────────────────────
+        //  StatsEngine Core 
         private StatsEngine _statsEngine;
 
-        // ─── State ─────────────────────────────────────────────────────────────
+        //  State 
         private float _lastDamageTime;
         private bool _isInvincible;
         private bool _isDead;
 
-        // ─── Properties ────────────────────────────────────────────────────────
+        //  Properties 
         public StatsEngine Engine => _statsEngine;
         public float CurrentHealth => _statsEngine.CurrentHealth;
         public float CurrentMana => _statsEngine.CurrentMana;
@@ -74,7 +74,7 @@ namespace Code.Lavos.Core
         public bool IsDead => _isDead;
         public System.Collections.Generic.IReadOnlyList<StatusEffectData> ActiveEffects => _statsEngine.ActiveEffects;
 
-        // ─── Events (static for health/death, instance for others) ─────────────
+        //  Events (static for health/death, instance for others) 
         public static event System.Action<float, float> OnHealthChanged;
         public static event System.Action OnPlayerDied;
         public static event System.Action<DamageInfo, float> OnPlayerDamaged;
@@ -84,13 +84,13 @@ namespace Code.Lavos.Core
         public event System.Action<StatusEffectData> OnEffectAdded;
         public event System.Action<StatusEffectData> OnEffectRemoved;
 
-        // ─── Singleton ────────────────────────────────────────────────────────────────
+        //  Singleton 
         public static PlayerStats Instance { get; private set; }
 
-        // ─── Unity Lifecycle ───────────────────────────────────────────────────
+        //  Unity Lifecycle 
         void Awake()
         {
-            // Singleton protection — destroy duplicate on scene reload
+            // Singleton protection  destroy duplicate on scene reload
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
@@ -173,7 +173,7 @@ namespace Code.Lavos.Core
             _statsEngine.ApplyRegeneration(Time.deltaTime);
         }
 
-        // ─── Damage System ─────────────────────────────────────────────────────
+        //  Damage System 
 
         /// <summary>
         /// Take damage with type and resistance calculation
@@ -204,7 +204,7 @@ namespace Code.Lavos.Core
             TakeDamage(new Status.DamageInfo(amount, type));
         }
 
-        // ─── Healing ───────────────────────────────────────────────────────────
+        //  Healing 
 
         public void Heal(float amount)
         {
@@ -230,7 +230,7 @@ namespace Code.Lavos.Core
             Debug.Log("[PlayerStats] Player revived.");
         }
 
-        // ─── Resource Management ───────────────────────────────────────────────
+        //  Resource Management 
 
         public bool UseHealth(float amount) => _statsEngine.UseHealth(amount);
         public bool UseMana(float amount) => _statsEngine.UseMana(amount);
@@ -239,7 +239,7 @@ namespace Code.Lavos.Core
         public void RestoreMana(float amount) => _statsEngine.RestoreMana(amount);
         public void RestoreStamina(float amount) => _statsEngine.RestoreStamina(amount);
 
-        // ─── Status Effects ────────────────────────────────────────────────────
+        //  Status Effects 
 
         public void AddEffect(StatusEffectData effect, string applierId = null)
         {
@@ -251,7 +251,7 @@ namespace Code.Lavos.Core
         public bool HasEffect(string effectId) => _statsEngine.HasEffect(effectId);
         public float GetEffectIntensity(string effectId) => _statsEngine.GetEffectIntensity(effectId);
 
-        // ─── Stat Modifiers ────────────────────────────────────────────────────
+        //  Stat Modifiers 
 
         public void AddModifier(string statName, string id, string sourceId, ModifierType type, float value,
             float duration = 0f)
@@ -261,7 +261,7 @@ namespace Code.Lavos.Core
 
         public void RemoveModifiersBySource(string sourceId) => _statsEngine.RemoveModifiersBySource(sourceId);
 
-        // ─── Resistances ───────────────────────────────────────────────────────
+        //  Resistances 
 
         public float GetResistanceMultiplier(DamageType type) => _statsEngine.GetResistanceMultiplier(type);
         public float GetResistancePercent(DamageType type) => _statsEngine.GetResistancePercent(type);
@@ -272,7 +272,7 @@ namespace Code.Lavos.Core
             _statsEngine.ModifyResistance(type, amount, modifierType, duration, sourceId);
         }
 
-        // ─── Utility ───────────────────────────────────────────────────────────
+        //  Utility 
 
         public bool CanAfford(float healthCost = 0f, float manaCost = 0f, float staminaCost = 0f)
         {
@@ -300,7 +300,7 @@ namespace Code.Lavos.Core
             if (controller != null) controller.enabled = false;
         }
 
-        // ─── UI Integration ────────────────────────────────────────────────────
+        //  UI Integration 
 
         // Note: HUD initialization moved to HUD assembly to avoid circular dependency
         // HUD system subscribes to PlayerStats events instead

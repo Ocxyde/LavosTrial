@@ -27,8 +27,8 @@
 //   - Unity 6 naming: _camelCase for private fields
 //
 // USAGE:
-//   Tools → Maze → Preview Maze (1-Click Render)
-//   OR: Select CompleteMazeBuilder → Right-click → "Preview Maze in Editor"
+//   Tools  Maze  Preview Maze (1-Click Render)
+//   OR: Select CompleteMazeBuilder  Right-click  "Preview Maze in Editor"
 //
 // NOTE: This is an EDITOR TOOL only. Runtime code remains plug-in-o
 #if UNITY_EDITOR
@@ -51,12 +51,12 @@ namespace Code.Lavos.Editor
     /// </summary>
     public class MazePreviewEditor : EditorWindow
     {
-        // ── Configuration (serialized for window persistence) ─────────────
+        //  Configuration (serialized for window persistence) 
         [SerializeField] private int _previewLevel = 0;
         [SerializeField] private int _previewSeed;
         [SerializeField] private bool _autoGenerate = true;
 
-        // ── Generated data ─────────────────────────────────────────────────
+        //  Generated data 
         private MazeData8 _previewData;
         private GameConfig _config;
         private DifficultyScaler _scaler;
@@ -64,15 +64,15 @@ namespace Code.Lavos.Editor
         private Transform _wallsRoot;
         private Transform _objectsRoot;
 
-        // ── Window instance ────────────────────────────────────────────────
+        //  Window instance 
         private static MazePreviewEditor _window;
 
-        // ── Scroll position ────────────────────────────────────────────────
+        //  Scroll position 
         private Vector2 _scrollPosition;
 
-        // ───────────────────────────────────────────────────────────────────
+        // 
         //  Menu Items
-        // ───────────────────────────────────────────────────────────────────
+        // 
 
         [MenuItem("Tools/Maze/Preview Maze (1-Click Render)")]
         public static void ShowWindow()
@@ -110,7 +110,7 @@ namespace Code.Lavos.Editor
                 EditorUtility.DisplayDialog(
                     "No CompleteMazeBuilder8 Selected",
                     "Please select a GameObject with CompleteMazeBuilder8 component.\n\n" +
-                    "Tip: Use Tools → Maze → Preview Maze (1-Click Render) instead.",
+                    "Tip: Use Tools  Maze  Preview Maze (1-Click Render) instead.",
                     "OK"
                 );
             }
@@ -122,9 +122,9 @@ namespace Code.Lavos.Editor
             return Selection.activeGameObject?.GetComponent<CompleteMazeBuilder8>() != null;
         }
 
-        // ───────────────────────────────────────────────────────────────────
+        // 
         //  GUI
-        // ───────────────────────────────────────────────────────────────────
+        // 
 
         private void OnGUI()
         {
@@ -292,13 +292,13 @@ namespace Code.Lavos.Editor
             EditorGUILayout.BeginVertical(infoStyle);
 
             // Basic info
-            EditorGUILayout.LabelField("<b>📊 General</b>", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("<b> General</b>", EditorStyles.boldLabel);
             EditorGUILayout.LabelField($"  Level: {_previewLevel}");
             EditorGUILayout.LabelField($"  Seed: {_previewData.Seed}");
-            EditorGUILayout.LabelField($"  Grid Size: {_previewData.Width}×{_previewData.Height}");
+            EditorGUILayout.LabelField($"  Grid Size: {_previewData.Width}{_previewData.Height}");
             EditorGUILayout.LabelField($"  Cell Size: {_config?.CellSize ?? 6.0f:F1}m");
             EditorGUILayout.LabelField(
-                $"  Total Maze: {_previewData.Width * (_config?.CellSize ?? 6.0f):F1}m × " +
+                $"  Total Maze: {_previewData.Width * (_config?.CellSize ?? 6.0f):F1}m  " +
                 $"{_previewData.Height * (_config?.CellSize ?? 6.0f):F1}m"
             );
 
@@ -416,9 +416,9 @@ namespace Code.Lavos.Editor
             );
         }
 
-        // ───────────────────────────────────────────────────────────────────
+        // 
         //  Generation
-        // ───────────────────────────────────────────────────────────────────
+        // 
 
         private void GeneratePreview()
         {
@@ -474,7 +474,7 @@ namespace Code.Lavos.Editor
                 "Maze Preview Generated!",
                 $"Maze preview created successfully!\n\n" +
                 $"Level: {_previewLevel}\n" +
-                $"Size: {_previewData.Width}×{_previewData.Height}\n" +
+                $"Size: {_previewData.Width}{_previewData.Height}\n" +
                 $"Seed: {_previewSeed}\n" +
                 $"Difficulty: {_previewData.DifficultyFactor:F3}\n\n" +
                 $"Preview object: {_previewRoot.name}\n" +
@@ -566,7 +566,7 @@ namespace Code.Lavos.Editor
             int diagonalCount = 0;
 
             // Load prefabs from Resources (Plug-in-Out: use existing, don't create)
-            // Path format in config: "Prefabs/WallPrefab.prefab" → Resources.Load expects without extension
+            // Path format in config: "Prefabs/WallPrefab.prefab"  Resources.Load expects without extension
             string wallPrefabPath = _config.WallPrefab.Replace(".prefab", "");
             string diagPrefabPath = "Prefabs/DiagonalWallPrefab";
 
@@ -582,12 +582,12 @@ namespace Code.Lavos.Editor
                 Debug.LogError(
                     $"[MazePreview] Wall prefab not found: {wallPrefabPath}\n" +
                     $"Please ensure the prefab exists at: Assets/Resources/{wallPrefabPath}.prefab\n" +
-                    "Use Tools → Quick Setup Prefabs to create required prefabs."
+                    "Use Tools  Quick Setup Prefabs to create required prefabs."
                 );
                 EditorUtility.DisplayDialog(
                     "Prefab Missing",
                     $"Wall prefab not found: {wallPrefabPath}\n\n" +
-                    "Please run: Tools → Quick Setup Prefabs (For Testing)\n\n" +
+                    "Please run: Tools  Quick Setup Prefabs (For Testing)\n\n" +
                     "Preview cannot be generated without wall prefab.",
                     "OK"
                 );

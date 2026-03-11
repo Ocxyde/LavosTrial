@@ -68,9 +68,9 @@ namespace Code.Lavos.Core
         /// </summary>
         public void ValidateAndFixSetup()
         {
-            Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log("");
             Log("MAZE SETUP VALIDATION STARTED");
-            Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log("");
 
             // Step 1: Validate prefabs exist
             ValidatePrefabs();
@@ -79,19 +79,19 @@ namespace Code.Lavos.Core
             var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder == null)
             {
-                Log("❌ CompleteMazeBuilder8 not found in scene");
+                Log(" CompleteMazeBuilder8 not found in scene");
                 Log("   You need to add it manually to the scene");
                 return;
             }
 
-            Log("✅ CompleteMazeBuilder8 found");
+            Log(" CompleteMazeBuilder8 found");
 
             // Step 3: Log current state
             LogMazeBuilderState(mazeBuilder);
 
-            Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log("");
             Log("MAZE SETUP VALIDATION COMPLETE");
-            Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Log("");
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Code.Lavos.Core
         private void ValidatePrefabs()
         {
             Log("\n[STEP 1] Validating Prefabs...");
-            Log("────────────────────────────────────────");
+            Log("");
 
             var requiredPrefabs = new Dictionary<string, string>
             {
@@ -122,12 +122,12 @@ namespace Code.Lavos.Core
                 var prefab = Resources.Load<GameObject>(kvp.Value);
                 if (prefab != null)
                 {
-                    Log($"  ✅ {kvp.Key}");
+                    Log($"   {kvp.Key}");
                     found++;
                 }
                 else
                 {
-                    Log($"  ❌ {kvp.Key} - NOT FOUND");
+                    Log($"   {kvp.Key} - NOT FOUND");
                     Log($"     Expected at: Assets/Resources/{kvp.Value}.prefab");
                     missing++;
                 }
@@ -142,7 +142,7 @@ namespace Code.Lavos.Core
         private void LogMazeBuilderState(CompleteMazeBuilder8 mazeBuilder)
         {
             Log("\n[STEP 2] MazeBuilder State Analysis...");
-            Log("────────────────────────────────────────");
+            Log("");
             Log("MazeBuilder8 is ready for maze generation");
             Log("Use: Tools > Generate Maze (or call GenerateMaze() in code)");
         }
@@ -200,7 +200,7 @@ namespace Code.Lavos.Core
         public static void ValidatePrefabs()
         {
             setupLog = "PREFAB VALIDATION REPORT\n";
-            setupLog += "═══════════════════════════════════════════════\n\n";
+            setupLog += "\n\n";
 
             var requiredPrefabs = new Dictionary<string, string>
             {
@@ -222,25 +222,25 @@ namespace Code.Lavos.Core
                 var prefab = Resources.Load<GameObject>(kvp.Value);
                 if (prefab != null)
                 {
-                    setupLog += $"✅ {kvp.Key}\n";
+                    setupLog += $" {kvp.Key}\n";
                     found++;
                 }
                 else
                 {
-                    setupLog += $"❌ {kvp.Key} (NOT FOUND)\n";
+                    setupLog += $" {kvp.Key} (NOT FOUND)\n";
                 }
             }
 
-            setupLog += $"\n═══════════════════════════════════════════════\n";
+            setupLog += $"\n\n";
             setupLog += $"Result: {found}/{requiredPrefabs.Count} prefabs found\n";
 
             if (found == requiredPrefabs.Count)
             {
-                setupLog += "✅ All prefabs are present!\n";
+                setupLog += " All prefabs are present!\n";
             }
             else
             {
-                setupLog += $"⚠️  Missing {requiredPrefabs.Count - found} prefabs\n";
+                setupLog += $"  Missing {requiredPrefabs.Count - found} prefabs\n";
             }
 
             Debug.Log(setupLog);

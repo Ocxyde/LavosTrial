@@ -18,7 +18,7 @@
 // Editor utility to auto-configure URP settings
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
-// Usage: Tools → URP Setup → Auto-Configure URP
+// Usage: Tools  URP Setup  Auto-Configure URP
 //
 // Location: Assets/Scripts/Editor/
 
@@ -184,7 +184,7 @@ namespace Code.Lavos.Editor
             // or use Unity's built-in URP wizard
             
             Debug.LogWarning("[URPSetup] Manual step required:");
-            Debug.LogWarning("1. Edit → Project Settings → Graphics");
+            Debug.LogWarning("1. Edit  Project Settings  Graphics");
             Debug.LogWarning($"2. Drag '{urpAsset.name}' to 'Scriptable Render Pipeline Asset'");
             
             // Try to set via GraphicsSettings API
@@ -202,7 +202,7 @@ namespace Code.Lavos.Editor
             // This is a reminder for the user
             
             Debug.LogWarning("[URPSetup] Manual step for Quality Settings:");
-            Debug.LogWarning("1. Edit → Project Settings → Quality");
+            Debug.LogWarning("1. Edit  Project Settings  Quality");
             Debug.LogWarning("2. For each quality level, assign URP asset");
         }
 
@@ -223,11 +223,11 @@ MANUAL SETUP (If auto-configure fails):
    - OR check: Assets/Settings/
    
 2. Assign to Graphics:
-   - Edit → Project Settings → Graphics
+   - Edit  Project Settings  Graphics
    - Drag URP asset to ""Scriptable Render Pipeline Asset""
    
 3. Configure Quality:
-   - Edit → Project Settings → Quality
+   - Edit  Project Settings  Quality
    - For each level (Low/Med/High):
      - Set ""Scriptable Render Pipeline Asset"" to URP asset
 
@@ -238,10 +238,10 @@ MANUAL SETUP (If auto-configure fails):
 
 === QUICK COMMANDS ===
 
-Tools → URP Setup → Auto-Configure URP
-Tools → URP Setup → Find URP Asset
-Tools → URP Setup → Check Current Settings
-Tools → URP Setup → Show Setup Guide
+Tools  URP Setup  Auto-Configure URP
+Tools  URP Setup  Find URP Asset
+Tools  URP Setup  Check Current Settings
+Tools  URP Setup  Show Setup Guide
 
 ";
             Debug.Log(guide);

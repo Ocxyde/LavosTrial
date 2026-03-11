@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &32102061
+--- !u!1 &142284700
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,416 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 32102064}
-  - component: {fileID: 32102063}
-  - component: {fileID: 32102062}
+  - component: {fileID: 142284702}
+  - component: {fileID: 142284701}
+  m_Layer: 0
+  m_Name: DoorsEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &142284701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 142284700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28993d237e8842a45b46d71f7cee4f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.DoorsEngine
+  ItemTypeValue: 0
+  CanInteractValue: 1
+  CanCollectValue: 0
+  DestroyOnCollectValue: 0
+  InteractionRangeValue: 3
+  InteractPrompt: {fileID: 0}
+  CollectedEffect: {fileID: 0}
+  InteractSound: {fileID: 0}
+  CollectSound: {fileID: 0}
+  doorVariant: 0
+  doorTrap: 0
+  trapDamage: 10
+  trapDuration: 3
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  lockedColor: {r: 1, g: 0, b: 0, a: 1}
+  trappedColor: {r: 1, g: 0.5, b: 0, a: 1}
+  secretColor: {r: 0.5, g: 0.5, b: 1, a: 1}
+  openSound: {fileID: 0}
+  closeSound: {fileID: 0}
+  lockedSound: {fileID: 0}
+  trapSound: {fileID: 0}
+  requireKey: 0
+  requiredKeyName: DoorKey
+  broadcastOnOpen: 1
+  broadcastOnClose: 1
+  broadcastOnTrapTrigger: 1
+--- !u!4 &142284702
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 142284700}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &250141254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 250141256}
+  - component: {fileID: 250141255}
+  m_Layer: 0
+  m_Name: EventHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &250141255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250141254}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f88446cf94b42eabc4a4c523e1d9bbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.EventHandler
+  dontDestroyOnLoad: 1
+  debugEvents: 0
+--- !u!4 &250141256
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250141254}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &464160684
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 464160686}
+  - component: {fileID: 464160685}
+  m_Layer: 0
+  m_Name: SpatialPlacer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &464160685
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 464160684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1c00badc639c4a4b874db234e77376c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.SpatialPlacer
+  completeMazeBuilder: {fileID: 0}
+  lightPlacementEngine: {fileID: 0}
+  chestPlacer: {fileID: 0}
+  enemyPlacer: {fileID: 0}
+  itemPlacer: {fileID: 0}
+  torchPlacer: {fileID: 0}
+  enableBinaryStorage: 1
+  usePersistentDataPath: 1
+  storageFolder: MazeStorage/
+  showDebugLogs: 1
+--- !u!4 &464160686
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 464160684}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &638350881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 638350883}
+  - component: {fileID: 638350882}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &638350882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 638350881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7a227e16dbf2ab48bc8d7f20888147e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.GameManager
+--- !u!4 &638350883
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 638350881}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &805122641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 805122643}
+  - component: {fileID: 805122642}
+  m_Layer: 0
+  m_Name: LightPlacementEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &805122642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805122641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02ac7971d9fd448ebb8c668a09b44f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.LightPlacementEngine
+  torchPrefab: {fileID: 0}
+  candlePrefab: {fileID: 0}
+  lampPrefab: {fileID: 0}
+  lanternPrefab: {fileID: 0}
+  brazierPrefab: {fileID: 0}
+  parentName: Lights
+  startOn: 0
+  showDebugInfo: 1
+--- !u!4 &805122643
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805122641}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &805165892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 805165894}
+  - component: {fileID: 805165893}
+  m_Layer: 0
+  m_Name: LightEngine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &805165893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805165892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8e9d0a1b2c3d4e5f6a7b8c9d0e1f2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.LightEngine
+  enableDynamicLights: 1
+  defaultLightRange: 8
+  defaultLightIntensity: 1.2
+  defaultLightColor: {r: 1, g: 0.9, b: 0.7, a: 1}
+  flickerSpeed: 2
+  flickerAmount: 0.15
+  enableFogOfWar: 1
+  darknessFalloff: 15
+  darknessTransitionSpeed: 0.5
+  enableLightning: 0
+  minLightningInterval: 30
+  maxLightningInterval: 120
+  lightningIntensityMult: 3
+  lightningDuration: 0.3
+  globalEmissionMultiplier: 1
+  enableEmissionFlicker: 1
+  emissionFlickerSpeed: 1.5
+  emissionFlickerAmount: 0.2
+  maxDynamicLights: 32
+  useBakedLighting: 0
+  enableAmbientControl: 1
+  ambientLightColor: {r: 0.3, g: 0.25, b: 0.2, a: 1}
+  ambientFollowsDarkness: 1
+  showGizmos: 1
+  verboseLogging: 0
+--- !u!4 &805165894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805165892}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1334712100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1334712102}
+  - component: {fileID: 1334712101}
+  m_Layer: 0
+  m_Name: GameConfig
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1334712101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334712100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d30bd55d144c4f919e6426e839e6f082, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.GameConfig
+  CellSize: 6
+  WallHeight: 4
+  WallThickness: 0.2
+  PlayerEyeHeight: 1.7
+  PlayerSpawnOffset: 0.5
+  MazeCfg:
+    BaseSize: 12
+    MinSize: 12
+    MaxSize: 51
+    SpawnRoomSize: 5
+    TorchChance: 0.3
+    ChestDensity: 0.03
+    EnemyDensity: 0.05
+    DeadEndDensity: 0.1
+    MinRooms: 2
+    MaxRooms: 12
+    BaseRoomSize: 5
+    DoorOpeningWidth: 3
+    BaseWallPenalty: 100
+    UseCorridorFlowSystem: 0
+  DifficultyCfg:
+    MaxLevel: 39
+    MaxFactor: 1.75
+    Exponent: 3.09
+    SizeRamp: 1.12
+    TorchMaxMult: 1.5
+    DeadEndMaxMult: 8.01
+  ShareSalt: LAVOS_SECRET_SALT_2026
+--- !u!4 &1334712102
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334712100}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1439054927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1439054930}
+  - component: {fileID: 1439054929}
+  - component: {fileID: 1439054928}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -137,13 +544,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &32102062
+--- !u!114 &1439054928
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 32102061}
+  m_GameObject: {fileID: 1439054927}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
@@ -166,13 +573,13 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!108 &32102063
+--- !u!108 &1439054929
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 32102061}
+  m_GameObject: {fileID: 1439054927}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
@@ -231,13 +638,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &32102064
+--- !u!4 &1439054930
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 32102061}
+  m_GameObject: {fileID: 1439054927}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821794, y: -0.23456973, z: 0.10938166, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -246,7 +653,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &140191177
+--- !u!1 &1590640071
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -254,135 +661,101 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 140191178}
-  - component: {fileID: 140191179}
+  - component: {fileID: 1590640075}
+  - component: {fileID: 1590640074}
+  - component: {fileID: 1590640073}
+  - component: {fileID: 1590640072}
   m_Layer: 0
-  m_Name: UIBarsSystem
+  m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &140191178
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140191177}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1710816175}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &140191179
+--- !u!114 &1590640072
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140191177}
+  m_GameObject: {fileID: 1590640071}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b137ca828a1dd640a0dd52e8fb20ad7, type: 3}
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.HUD::Code.Lavos.HUD.UIBarsSystem
-  barThickness: 25
-  barMargin: 20
-  barSizePercent: 0.75
-  healthColorHigh: {r: 0.2, g: 0.9, b: 0.3, a: 1}
-  healthColorLow: {r: 0.9, g: 0.7, b: 0.1, a: 1}
-  healthColorCritical: {r: 0.9, g: 0.1, b: 0.1, a: 1}
-  manaColor: {r: 0.2, g: 0.5, b: 1, a: 1}
-  manaColorLow: {r: 0.1, g: 0.25, b: 0.5, a: 1}
-  staminaColor: {r: 1, g: 0.8, b: 0.2, a: 1}
-  staminaColorLow: {r: 0.5, g: 0.4, b: 0.1, a: 1}
-  borderColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
-  backgroundColor: {r: 0.1, g: 0.1, b: 0.12, a: 1}
-  effectIconSize: 48
-  effectSpacing: 8
-  effectRowMargin: 15
-  barTextFontSize: 36
-  textColor: {r: 0, g: 0, b: 0, a: 1}
-  showTextOutline: 0
-  outlineColor: {r: 0, g: 0, b: 0, a: 1}
-  outlineWidth: 4
---- !u!1 &292451264
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 292451266}
-  - component: {fileID: 292451265}
-  m_Layer: 0
-  m_Name: GameConfig
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &292451265
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1590640073
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 292451264}
+  m_GameObject: {fileID: 1590640071}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d30bd55d144c4f919e6426e839e6f082, type: 3}
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.GameConfig
-  CellSize: 6
-  WallHeight: 4
-  WallThickness: 0.2
-  PlayerEyeHeight: 1.7
-  PlayerSpawnOffset: 0.5
-  MazeCfg:
-    BaseSize: 12
-    MinSize: 12
-    MaxSize: 51
-    SpawnRoomSize: 5
-    TorchChance: 0.3
-    ChestDensity: 0.03
-    EnemyDensity: 0.05
-    DeadEndDensity: 0.1
-    MinRooms: 2
-    MaxRooms: 12
-    BaseRoomSize: 5
-    DoorOpeningWidth: 3
-    BaseWallPenalty: 100
-    UseCorridorFlowSystem: 0
-  DifficultyCfg:
-    MaxLevel: 39
-    MaxFactor: 1.75
-    Exponent: 3.09
-    SizeRamp: 1.12
-    TorchMaxMult: 1.5
-    DeadEndMaxMult: 8.01
-  ShareSalt: LAVOS_SECRET_SALT_2026
---- !u!4 &292451266
-Transform:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
+  m_UiScaleMode: 1
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0.5
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
+--- !u!223 &1590640074
+Canvas:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 292451264}
-  serializedVersion: 2
+  m_GameObject: {fileID: 1590640071}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 0
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 1000
+  m_TargetDisplay: 0
+--- !u!224 &1590640075
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1590640071}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2126072642}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &758065692
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
+--- !u!1 &1775508304
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -390,343 +763,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 758065694}
-  - component: {fileID: 758065693}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &758065693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 758065692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7a227e16dbf2ab48bc8d7f20888147e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.GameManager
---- !u!4 &758065694
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 758065692}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &815083382
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 815083384}
-  - component: {fileID: 815083383}
-  m_Layer: 0
-  m_Name: EventHandler
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &815083383
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 815083382}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f88446cf94b42eabc4a4c523e1d9bbf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.EventHandler
-  dontDestroyOnLoad: 1
-  debugEvents: 0
---- !u!4 &815083384
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 815083382}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &823100234
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 823100236}
-  - component: {fileID: 823100235}
-  m_Layer: 0
-  m_Name: SpatialPlacer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &823100235
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 823100234}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1c00badc639c4a4b874db234e77376c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.SpatialPlacer
-  completeMazeBuilder: {fileID: 0}
-  lightPlacementEngine: {fileID: 0}
-  chestPlacer: {fileID: 0}
-  enemyPlacer: {fileID: 0}
-  itemPlacer: {fileID: 0}
-  torchPlacer: {fileID: 0}
-  enableBinaryStorage: 1
-  usePersistentDataPath: 1
-  storageFolder: MazeStorage/
-  showDebugLogs: 1
---- !u!4 &823100236
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 823100234}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1110182326
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1110182328}
-  - component: {fileID: 1110182327}
-  m_Layer: 0
-  m_Name: DoorsEngine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1110182327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1110182326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 28993d237e8842a45b46d71f7cee4f08, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.DoorsEngine
-  ItemTypeValue: 0
-  CanInteractValue: 1
-  CanCollectValue: 0
-  DestroyOnCollectValue: 0
-  InteractionRangeValue: 3
-  InteractPrompt: {fileID: 0}
-  CollectedEffect: {fileID: 0}
-  InteractSound: {fileID: 0}
-  CollectSound: {fileID: 0}
-  doorVariant: 0
-  doorTrap: 0
-  trapDamage: 10
-  trapDuration: 3
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
-  lockedColor: {r: 1, g: 0, b: 0, a: 1}
-  trappedColor: {r: 1, g: 0.5, b: 0, a: 1}
-  secretColor: {r: 0.5, g: 0.5, b: 1, a: 1}
-  openSound: {fileID: 0}
-  closeSound: {fileID: 0}
-  lockedSound: {fileID: 0}
-  trapSound: {fileID: 0}
-  requireKey: 0
-  requiredKeyName: DoorKey
-  broadcastOnOpen: 1
-  broadcastOnClose: 1
-  broadcastOnTrapTrigger: 1
---- !u!4 &1110182328
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1110182326}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1558163636
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1558163638}
-  - component: {fileID: 1558163637}
-  m_Layer: 0
-  m_Name: LightEngine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1558163637
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1558163636}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f8e9d0a1b2c3d4e5f6a7b8c9d0e1f2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.LightEngine
-  enableDynamicLights: 1
-  defaultLightRange: 8
-  defaultLightIntensity: 1.2
-  defaultLightColor: {r: 1, g: 0.9, b: 0.7, a: 1}
-  flickerSpeed: 2
-  flickerAmount: 0.15
-  enableFogOfWar: 1
-  darknessFalloff: 15
-  darknessTransitionSpeed: 0.5
-  enableLightning: 0
-  minLightningInterval: 30
-  maxLightningInterval: 120
-  lightningIntensityMult: 3
-  lightningDuration: 0.3
-  globalEmissionMultiplier: 1
-  enableEmissionFlicker: 1
-  emissionFlickerSpeed: 1.5
-  emissionFlickerAmount: 0.2
-  maxDynamicLights: 32
-  useBakedLighting: 0
-  enableAmbientControl: 1
-  ambientLightColor: {r: 0.3, g: 0.25, b: 0.2, a: 1}
-  ambientFollowsDarkness: 1
-  showGizmos: 1
-  verboseLogging: 0
---- !u!4 &1558163638
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1558163636}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1621858299
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1621858301}
-  - component: {fileID: 1621858300}
-  m_Layer: 0
-  m_Name: LightPlacementEngine
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1621858300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621858299}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02ac7971d9fd448ebb8c668a09b44f16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Code.Lavos.Core::Code.Lavos.Core.LightPlacementEngine
-  torchPrefab: {fileID: 0}
-  candlePrefab: {fileID: 0}
-  lampPrefab: {fileID: 0}
-  lanternPrefab: {fileID: 0}
-  brazierPrefab: {fileID: 0}
-  parentName: Lights
-  startOn: 0
-  showDebugInfo: 1
---- !u!4 &1621858301
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621858299}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1626857627
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1626857629}
-  - component: {fileID: 1626857628}
+  - component: {fileID: 1775508306}
+  - component: {fileID: 1775508305}
   m_Layer: 0
   m_Name: MazeGenerator
   m_TagString: Untagged
@@ -734,13 +772,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1626857628
+--- !u!114 &1775508305
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1626857627}
+  m_GameObject: {fileID: 1775508304}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 311f88d1ddfe66748bc12095cb6d21b4, type: 3}
@@ -773,13 +811,13 @@ MonoBehaviour:
   lockedDoorPrefab: {fileID: 0}
   secretDoorPrefab: {fileID: 0}
   exitDoorPrefab: {fileID: 0}
---- !u!4 &1626857629
+--- !u!4 &1775508306
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1626857627}
+  m_GameObject: {fileID: 1775508304}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -788,7 +826,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1710816171
+--- !u!1 &2126072641
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -796,101 +834,63 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1710816175}
-  - component: {fileID: 1710816174}
-  - component: {fileID: 1710816173}
-  - component: {fileID: 1710816172}
+  - component: {fileID: 2126072642}
+  - component: {fileID: 2126072643}
   m_Layer: 0
-  m_Name: Canvas
+  m_Name: UIBarsSystem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1710816172
-MonoBehaviour:
+--- !u!4 &2126072642
+Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1710816171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &1710816173
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1710816171}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 1
-  m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1920, y: 1080}
-  m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0.5
-  m_PhysicalUnit: 3
-  m_FallbackScreenDPI: 96
-  m_DefaultSpriteDPI: 96
-  m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
---- !u!223 &1710816174
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1710816171}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 1000
-  m_TargetDisplay: 0
---- !u!224 &1710816175
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1710816171}
+  m_GameObject: {fileID: 2126072641}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 140191178}
-  m_Father: {fileID: 0}
+  m_Children: []
+  m_Father: {fileID: 1590640075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
---- !u!1 &2115794808
+--- !u!114 &2126072643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126072641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b137ca828a1dd640a0dd52e8fb20ad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Code.Lavos.HUD::Code.Lavos.HUD.UIBarsSystem
+  barThickness: 25
+  barMargin: 20
+  barSizePercent: 0.75
+  healthColorHigh: {r: 0.2, g: 0.9, b: 0.3, a: 1}
+  healthColorLow: {r: 0.9, g: 0.7, b: 0.1, a: 1}
+  healthColorCritical: {r: 0.9, g: 0.1, b: 0.1, a: 1}
+  manaColor: {r: 0.2, g: 0.5, b: 1, a: 1}
+  manaColorLow: {r: 0.1, g: 0.25, b: 0.5, a: 1}
+  staminaColor: {r: 1, g: 0.8, b: 0.2, a: 1}
+  staminaColorLow: {r: 0.5, g: 0.4, b: 0.1, a: 1}
+  borderColor: {r: 0.3, g: 0.3, b: 0.35, a: 1}
+  backgroundColor: {r: 0.1, g: 0.1, b: 0.12, a: 1}
+  effectIconSize: 48
+  effectSpacing: 8
+  effectRowMargin: 15
+  barTextFontSize: 36
+  textColor: {r: 0, g: 0, b: 0, a: 1}
+  showTextOutline: 0
+  outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  outlineWidth: 4
+--- !u!1 &2146100434
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -898,8 +898,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2115794810}
-  - component: {fileID: 2115794809}
+  - component: {fileID: 2146100436}
+  - component: {fileID: 2146100435}
   m_Layer: 0
   m_Name: TorchPool
   m_TagString: Untagged
@@ -907,13 +907,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2115794809
+--- !u!114 &2146100435
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2115794808}
+  m_GameObject: {fileID: 2146100434}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 273fcc8e88eab8f4286914069a804fb9, type: 3}
@@ -924,13 +924,13 @@ MonoBehaviour:
   prewarmOnStart: 1
   torchHandlePrefab: {fileID: 0}
   useBraseroFlame: 1
---- !u!4 &2115794810
+--- !u!4 &2146100436
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2115794808}
+  m_GameObject: {fileID: 2146100434}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -943,14 +943,14 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 292451266}
-  - {fileID: 815083384}
-  - {fileID: 758065694}
-  - {fileID: 1626857629}
-  - {fileID: 1558163638}
-  - {fileID: 2115794810}
-  - {fileID: 823100236}
-  - {fileID: 1621858301}
-  - {fileID: 1110182328}
-  - {fileID: 32102064}
-  - {fileID: 1710816175}
+  - {fileID: 1334712102}
+  - {fileID: 250141256}
+  - {fileID: 638350883}
+  - {fileID: 1775508306}
+  - {fileID: 805165894}
+  - {fileID: 2146100436}
+  - {fileID: 464160686}
+  - {fileID: 805122643}
+  - {fileID: 142284702}
+  - {fileID: 1439054930}
+  - {fileID: 1590640075}

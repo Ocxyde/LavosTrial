@@ -38,7 +38,7 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Animate to an absolute target angle.
-        /// Handles angle wrapping correctly for doors that start at 180°.
+        /// Handles angle wrapping correctly for doors that start at 180.
         /// </summary>
         /// <param name="angle">Target angle in degrees</param>
         /// <param name="dur">Animation duration in seconds</param>
@@ -63,7 +63,7 @@ namespace Code.Lavos.Core
             elapsed = 0f;
             isAnimating = true;
 
-            Debug.Log($"[DoorAnimator] {name}: {startAngle:F1}° → {targetAngle:F1}° (diff={diff:F1}°) over {dur}s", this);
+            Debug.Log($"[DoorAnimator] {name}: {startAngle:F1}  {targetAngle:F1} (diff={diff:F1}) over {dur}s", this);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Code.Lavos.Core
             elapsed = 0f;
             isAnimating = true;
 
-            Debug.Log($"[DoorAnimator] Relative: {startAngle:F1}° → {targetAngle:F1}° (delta={angle:F1}°) over {dur}s", this);
+            Debug.Log($"[DoorAnimator] Relative: {startAngle:F1}  {targetAngle:F1} (delta={angle:F1}) over {dur}s", this);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Code.Lavos.Core
             if (t >= 1f)
             {
                 isAnimating = false;
-                Debug.Log($"[DoorAnimator] Complete at {currentY:F1}°", this);
+                Debug.Log($"[DoorAnimator] Complete at {currentY:F1}", this);
             }
         }
     }

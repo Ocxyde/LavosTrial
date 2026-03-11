@@ -24,12 +24,12 @@
 //   Then call XCom.Execute("command", args) from anywhere
 //
 // COMMANDS:
-//   maze.generate       → Generate new maze
-//   maze.status         → Show current maze status
-//   maze.export         → Export maze to shareable code
-//   maze.import [code]  → Import maze from code
-//   maze.share          → Share maze (code + QR)
-//   maze.help           → Show available commands
+//   maze.generate        Generate new maze
+//   maze.status          Show current maze status
+//   maze.export          Export maze to shareable code
+//   maze.import [code]   Import maze from code
+//   maze.share           Share maze (code + QR)
+//   maze.help            Show available commands
 //
 // LOCATION: Assets/Scripts/Core/11_Utilities/
 
@@ -178,9 +178,9 @@ namespace Code.Lavos.Core
             return cmds;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         //  COMMAND IMPLEMENTATIONS
-        // ─────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Command: maze.generate
@@ -219,13 +219,13 @@ namespace Code.Lavos.Core
                     cfg.MazeCfg.MaxSize
                 );
 
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log("  MAZE STATUS");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log($"  Level: {builder.CurrentLevel}");
                 Debug.Log($"  Maze Size: {mazeSize}x{mazeSize}");
                 Debug.Log($"  Seed: {builder.CurrentSeed}");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
             }
             else
             {
@@ -246,12 +246,12 @@ namespace Code.Lavos.Core
                 string code = ShareSystem.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
                 ShareSystem.CopyToClipboard(code);
 
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log("  MAZE EXPORTED");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log($"  Code: {code}");
                 Debug.Log("  Copied to clipboard!");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
             }
             else
             {
@@ -277,13 +277,13 @@ namespace Code.Lavos.Core
 
             if (ShareSystem.ImportCode(code, out uint seed, out int level))
             {
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log("  MAZE IMPORTED");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log($"  Seed: {seed}");
                 Debug.Log($"  Level: {level}");
                 Debug.Log("  Ready to generate maze");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
             }
             else
             {
@@ -305,13 +305,13 @@ namespace Code.Lavos.Core
                 string code = ShareSystem.ExportCode((uint)builder.CurrentSeed, builder.CurrentLevel);
                 string qrUrl = ShareSystem.GenerateQRDataUrl(code);
 
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log("  SHARE MAZE");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log($"  Code: {code}");
                 Debug.Log($"  QR Code: {qrUrl}");
                 Debug.Log("  Copied to clipboard!");
-                Debug.Log("═══════════════════════════════════════");
+                Debug.Log("");
 
                 ShareSystem.CopyToClipboard(code);
             }
@@ -327,16 +327,16 @@ namespace Code.Lavos.Core
         /// </summary>
         private static void ShowHelp(string[] args)
         {
-            Debug.Log("═══════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  MAZE CONSOLE COMMANDS");
-            Debug.Log("═══════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  maze.generate         - Generate new maze");
             Debug.Log("  maze.status           - Show current maze info");
             Debug.Log("  maze.export           - Export maze to shareable code");
             Debug.Log("  maze.import [code]    - Import maze from code");
             Debug.Log("  maze.share            - Share maze (code + QR)");
             Debug.Log("  maze.help             - Show this help");
-            Debug.Log("═══════════════════════════════════════");
+            Debug.Log("");
         }
     }
 }

@@ -478,7 +478,7 @@ namespace Code.Lavos.Core
 
             GUILayout.BeginArea(new UnityEngine.Rect(10, 10, 300, 400));
             GUILayout.BeginVertical("box");
-            GUILayout.Label("═══ Light Pool Stats ═══");
+            GUILayout.Label(" Light Pool Stats ");
 
             foreach (var kvp in _pools)
             {

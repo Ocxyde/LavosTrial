@@ -673,13 +673,13 @@ namespace Code.Lavos.Core
                 }
             }
 
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  COMPUTE GRID STATISTICS");
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log($"Grid Size: {gridSize}x{gridSize}");
             Debug.Log($"Total Cells: {gridSize * gridSize}");
             Debug.Log($"Memory Usage: {GetMemoryUsageKB()}KB");
-            Debug.Log("───────────────────────────────────────────────");
+            Debug.Log("");
             Debug.Log($"Floor: {cellCounts[(int)GridCell.Floor]}");
             Debug.Log($"Room: {cellCounts[(int)GridCell.Room]}");
             Debug.Log($"Corridor: {cellCounts[(int)GridCell.Corridor]}");
@@ -690,7 +690,7 @@ namespace Code.Lavos.Core
             Debug.Log($"Chest: {cellCounts[(int)GridCell.Chest]}");
             Debug.Log($"Enemy: {cellCounts[(int)GridCell.Enemy]}");
             Debug.Log($"Item: {cellCounts[(int)GridCell.Item]}");
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
         }
 
         #endregion

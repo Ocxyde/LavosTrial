@@ -33,9 +33,9 @@ namespace Code.Lavos.Core
     /// Algorithm Pipeline:
     /// 1. Fill all cells with walls (solid block)
     /// 2. DFS carving - 4 cardinal directions only (no diagonals)
-    /// 3. Carve 5×5 spawn room at (1,1)
+    /// 3. Carve 55 spawn room at (1,1)
     /// 4. Place exit room at (W-2, H-2)
-    /// 5. A* pathfinding from spawn → exit (guarantees passage)
+    /// 5. A* pathfinding from spawn  exit (guarantees passage)
     /// 6. Add dead-end corridors (branching paths with rewards)
     /// 7. Fill remaining space with corridors
     /// 8. Place torches (30% of wall-adjacent cells)
@@ -55,9 +55,9 @@ namespace Code.Lavos.Core
     /// </summary>
     public sealed class GridMazeGenerator
     {
-        // ─────────────────────────────────────────────────────────
+        // 
         //  A* node
-        // ─────────────────────────────────────────────────────────
+        // 
         private sealed class Node
         {
             public int   X, Z;
@@ -67,14 +67,14 @@ namespace Code.Lavos.Core
             public Node  Parent;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Generated maze data
-        // ─────────────────────────────────────────────────────────
+        // 
         private MazeData8 _generatedData;
 
-        // ─────────────────────────────────────────────────────────
-        //  PUBLIC — Generate with difficulty scaling
-        // ─────────────────────────────────────────────────────────
+        // 
+        //  PUBLIC  Generate with difficulty scaling
+        // 
         
         /// <summary>
         /// Generate a complete procedural maze with difficulty scaling.
@@ -90,9 +90,9 @@ namespace Code.Lavos.Core
         /// <list type="bullet">
         /// <item><description>Fill all walls (solid block initialization)</description></item>
         /// <item><description>DFS carving (4 cardinal directions only)</description></item>
-        /// <item><description>Carve spawn room (5×5 at position 1,1)</description></item>
+        /// <item><description>Carve spawn room (55 at position 1,1)</description></item>
         /// <item><description>Carve exit room at (Width-2, Height-2)</description></item>
-        /// <item><description>A* guaranteed path (spawn → exit)</description></item>
+        /// <item><description>A* guaranteed path (spawn  exit)</description></item>
         /// <item><description>Add dead-end corridors (difficulty-scaled)</description></item>
         /// <item><description>Fill remaining space with corridors</description></item>
         /// <item><description>Place torches on wall-adjacent cells</description></item>
@@ -101,7 +101,7 @@ namespace Code.Lavos.Core
         /// 
         /// <para><strong>Difficulty Scaling:</strong></para>
         /// <para>Level 0: Base size, 30% torch chance, 15% dead-end density</para>
-        /// <para>Level 39: 2.5× size, 75% torch chance, 37.5% dead-end density</para>
+        /// <para>Level 39: 2.5 size, 75% torch chance, 37.5% dead-end density</para>
         /// </remarks>
         public MazeData8 Generate(int seed, int level, MazeConfig cfg, DifficultyScaler scaler = null)
         {
@@ -120,7 +120,7 @@ namespace Code.Lavos.Core
             float scaledDeadEndDensity = scaler.DeadEndDensity(cfg.DeadEndDensity, level);
 
             Debug.Log($"[GridMazeGenerator] LEVEL {level} | factor={difficultyFactor:F3} | " +
-                      $"size={size}×{size} | torch={scaledTorchChance:P1} | " +
+                      $"size={size}{size} | torch={scaledTorchChance:P1} | " +
                       $"chest={scaledChestDensity:P1} | enemy={scaledEnemyDensity:P1} | " +
                       $"deadEnd={scaledDeadEndDensity:P1} | wallPenalty={scaledWallPenalty}");
 
@@ -130,10 +130,10 @@ namespace Code.Lavos.Core
             // Store difficulty factor in data for binary save
             data.DifficultyFactor = difficultyFactor;
 
-            // ── Step 1: fill all walls ────────────────────────────
+            //  Step 1: fill all walls 
             FillAllWalls(data);
 
-            // ── Step 2: DFS over 4 cardinal axes ONLY ─────────────
+            //  Step 2: DFS over 4 cardinal axes ONLY 
             //      No diagonal passages - ensures clean wall alignment
             //      FIXED 2026-03-11: Added debug logging to track DFS carving
             var visited = new bool[size, size];
@@ -142,11 +142,11 @@ namespace Code.Lavos.Core
             int cellsAfterDFS = CountPassageCells(data);
             Debug.Log($"[GridMazeGenerator] DFS carved {cellsAfterDFS - cellsBeforeDFS} passage cells");
 
-            // ── Step 3: spawn room ────────────────────────────────
+            //  Step 3: spawn room 
             CarveSpawnRoom(data, 1, 1, cfg.SpawnRoomSize);
             data.SetSpawn(1, 1);
 
-            // ── Step 4: exit room ─────────────────────────────────
+            //  Step 4: exit room 
             int exitSize = MazeConfig.ExitRoomSize;
             CarveExitRoom(data, size - 2, size - 2, exitSize);
             data.SetExit(size - 2, size - 2);
@@ -154,17 +154,17 @@ namespace Code.Lavos.Core
             // Mark exit cell for door spawning
             data.AddFlag(size - 2, size - 2, CellFlags8.IsExit);
 
-            // ── Step 4.5: Ensure spawn/exit don't face outward ────
+            //  Step 4.5: Ensure spawn/exit don't face outward 
             //      CRITICAL: Spawn and exit must face INWARD toward maze center
             //      Never allow outward facing (player would leave scene!)
             EnsureSpawnExitInwardFacing(data, size);
 
-            // ── Step 5: A* guaranteed path (cardinal only) ────────
+            //  Step 5: A* guaranteed path (cardinal only) 
             //      CRITICAL: This MUST succeed - ensures player can reach exit!
             //      Force INDIRECT path by adding intermediate waypoints
             CarveIndirectPath(data, rng, scaledWallPenalty);
             
-            // ── Step 5.1: Validate A* path exists ─────────────────
+            //  Step 5.1: Validate A* path exists 
             //      NEW 2026-03-11: Ensure exit is actually reachable
             //      If validation fails, force direct A* path
             if (!ValidatePathExists(data, data.SpawnCell, data.ExitCell))
@@ -174,15 +174,15 @@ namespace Code.Lavos.Core
                 Debug.Log("[GridMazeGenerator] Direct A* path forced - exit guaranteed!");
             }
 
-            // ── Step 5.5: Carve intermediate rooms with doors ─────
+            //  Step 5.5: Carve intermediate rooms with doors 
             //      NEW 2026-03-11: Difficulty-scaled room system
-            //      - Room count: MinRooms → MaxRooms (based on level)
-            //      - Room size: 5×5 → 11×11 (based on level)
+            //      - Room count: MinRooms  MaxRooms (based on level)
+            //      - Room size: 55  1111 (based on level)
             //      - Door openings: 3 units wide with perfect wall snap
             //      - Door types: Normal, Locked, Secret (level-based)
             CarveIntermediateRoomsWithDoors(data, rng, cfg, scaler, level);
 
-            // ── Step 6: Add dead-end corridors ────────────────────
+            //  Step 6: Add dead-end corridors 
             //      Uses DeadEndCorridorSystem with mathematical distribution
             //      - Difficulty-scaled density (level-based)
             //      - Poisson distribution for natural spacing
@@ -190,11 +190,11 @@ namespace Code.Lavos.Core
             //      - All values from JSON config
             AddDeadEndCorridorsSystem(data, rng, cfg, scaledDeadEndDensity, level);
 
-            // ── Step 6.5: Fill remaining space with corridors ─────
+            //  Step 6.5: Fill remaining space with corridors
             //      OPTION A: Two-pass corridor filling system (legacy)
             //      OPTION B: Three-tier corridor flow system (NEW - optimized)
             //
-            //      Use CorridorFlowSystem for better entrance→exit flow
+            //      Use CorridorFlowSystem for better entranceexit flow
             //      and mathematical dead-end distribution
             if (cfg.UseCorridorFlowSystem)
             {
@@ -207,12 +207,20 @@ namespace Code.Lavos.Core
                 AddCorridorFillSystem(data, rng, cfg);
             }
 
-            // ── Step 7: torches ───────────────────────────────────
+            //  Step 6.7: Carve door openings in walls
+            //      NEW 2026-03-11: Door carving system (Fill & Carve approach)
+            //      - Carve door openings directly into walls during generation
+            //      - Track all door positions for later prefab spawning
+            //      - Door types: Normal, Locked, Secret, Exit (difficulty-scaled)
+            //      - Perfect wall alignment (no clipping issues)
+            CarveDoorOpenings(data, rng, cfg, scaler, level);
+
+            //  Step 7: torches
             //      CORRIDOR-ONLY lighting for gothic atmosphere
             //      Rooms remain dark/foggy for ambiance
             PlaceTorchesOnCorridorsOnly(data, rng, scaledTorchChance, level);
 
-            // ── Step 7.5: Ceiling (corridors only) ────────────────
+            //  Step 7.5: Ceiling (corridors only) 
             //      NEW 2026-03-11: Corridor-only ceiling system
             //      - Rooms are open to darkness above (gothic feel)
             //      - Corridors have 0.5-unit thick ceiling
@@ -220,7 +228,7 @@ namespace Code.Lavos.Core
             //      - Creates claustrophobic corridor atmosphere
             AddCorridorCeiling(data, rng, cfg);
 
-            // ── Step 8: chests + enemies ──────────────────────────
+            //  Step 8: chests + enemies 
             PlaceObjects(data, rng, scaledChestDensity, scaledEnemyDensity);
 
             // Store for backward compatibility accessors
@@ -237,9 +245,9 @@ namespace Code.Lavos.Core
             return data;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Backward Compatibility API (for legacy code)
-        // ─────────────────────────────────────────────────────────
+        // 
         
         /// <summary>
         /// Get the generated maze width (grid size). Legacy API for backward compatibility.
@@ -259,9 +267,9 @@ namespace Code.Lavos.Core
             return _generatedData?.GetCell(x, z) ?? CellFlags8.AllWalls;
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 1 — Fill every cell with all 8 walls
-        // ─────────────────────────────────────────────────────────
+        // 
+        //  Step 1  Fill every cell with all 8 walls
+        // 
         private static void FillAllWalls(MazeData8 d)
         {
             if (d == null) throw new ArgumentNullException(nameof(d));
@@ -283,8 +291,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 2 — Recursive Backtracker (DFS), 4 CARDINAL directions ONLY
+        // 
+        //  Step 2  Recursive Backtracker (DFS), 4 CARDINAL directions ONLY
         //
         //  Cardinal directions only (N, S, E, W):
         //    step = 2 cells along one axis
@@ -295,7 +303,7 @@ namespace Code.Lavos.Core
         //    - Diagonals removed to ensure clean wall alignment
         //    - All corridors are straight (N-S or E-W)
         //    - Walls snap perfectly to grid boundaries
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void CarvePassagesCardinal(MazeData8 d, System.Random rng,
                                             bool[,] visited, int cx, int cz)
         {
@@ -309,19 +317,19 @@ namespace Code.Lavos.Core
             {
                 var (dx, dz) = Direction8Helper.ToOffset(dir);
 
-                // Destination cell — 2 steps away (cardinal only)
+                // Destination cell  2 steps away (cardinal only)
                 int nx = cx + dx * 2;
                 int nz = cz + dz * 2;
 
                 if (!d.InBounds(nx, nz) || visited[nx, nz]) continue;
 
-                // ── Remove wall between current and next ──────────
+                //  Remove wall between current and next 
                 // Clear wall flag in current cell (facing direction)
                 d.ClearFlag(cx, cz, Direction8Helper.ToWallFlag(dir));
                 // Clear opposite wall flag in next cell
                 d.ClearFlag(nx, nz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
 
-                // ── Clear the wall cell between ───────────────────
+                //  Clear the wall cell between 
                 // The cell between current and next becomes a passage
                 int wallX = cx + dx, wallZ = cz + dz;
                 if (d.InBounds(wallX, wallZ))
@@ -334,8 +342,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 4.5 — Ensure Spawn/Exit Face INWARD
+        // 
+        //  Step 4.5  Ensure Spawn/Exit Face INWARD
         //
         //  CRITICAL: Spawn and exit rooms must face INWARD toward maze center
         //  This prevents player from walking out of scene bounds!
@@ -344,7 +352,7 @@ namespace Code.Lavos.Core
         //  - Spawn room (at 1,1): Clear east wall (faces into maze)
         //  - Exit room (at W-2,H-2): Clear west wall (faces into maze)
         //  - NEVER clear outer boundary walls (player would escape!)
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void EnsureSpawnExitInwardFacing(MazeData8 data, int size)
         {
             // Spawn room at (1,1) - should face EAST (into maze)
@@ -383,7 +391,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void CarveExitRoom(MazeData8 d, int ox, int oz, int roomSize)
         {
             int half = roomSize / 2;
@@ -395,8 +403,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 5 — A* guaranteed path (CARDINAL 4-directional movement)
+        // 
+        //  Step 5  A* guaranteed path (CARDINAL 4-directional movement)
         //
         //  Cost model (cardinal A* only):
         //    Cardinal move   = 10
@@ -405,8 +413,8 @@ namespace Code.Lavos.Core
         //  GUARANTEES PASSAGE:
         //    - If DFS creates isolated sections, A* carves a path
         //    - Ensures player can always reach exit
-        // ─────────────────────────────────────────────────────────
-        //  Step 5 — A* guaranteed path (CARDINAL 4-directional movement)
+        // 
+        //  Step 5  A* guaranteed path (CARDINAL 4-directional movement)
         //
         //  Cost model (cardinal only):
         //    Cardinal move through passage = 10
@@ -423,20 +431,20 @@ namespace Code.Lavos.Core
         //    - Wall move = 10000 (1000x passage cost)
         //    - A* will explore 1000 passage cells before carving
         //    - Ensures A* fills gaps, never creates direct paths
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void EnsurePathCardinal(MazeData8 d,
                                         int sx, int sz, int ex, int ez,
                                         int wallPenalty = 10000)
         {
             Debug.Log($"[GridMazeGenerator] A*: Starting pathfind from ({sx},{sz}) to ({ex},{ez}) with wallPenalty={wallPenalty}");
 
-            // Open set — sorted by F cost; use list + linear min for simplicity
+            // Open set  sorted by F cost; use list + linear min for simplicity
             var open   = new List<Node>();
             var closed = new HashSet<int>();   // packed key = z*Width + x
 
             // Add iteration limit to prevent infinite loops on large mazes
             // FIXED 2026-03-11: Increased limit from 2x to 4x for larger mazes
-            // For 51x51 maze: 2601 cells × 4 = 10404 max iterations
+            // For 51x51 maze: 2601 cells  4 = 10404 max iterations
             int maxIterations = d.Width * d.Height * 4;
             int iterations = 0;
 
@@ -512,12 +520,12 @@ namespace Code.Lavos.Core
             }
         }
 
-        // Manhattan heuristic — correct for 4-directional (cardinal) movement
+        // Manhattan heuristic  correct for 4-directional (cardinal) movement
         private static int HeuristicCardinal(int ax, int az, int bx, int bz)
         {
             int dx = Math.Abs(ax - bx);
             int dz = Math.Abs(az - bz);
-            // Manhattan × 10 (matches movement cost scale)
+            // Manhattan  10 (matches movement cost scale)
             return 10 * (dx + dz);
         }
 
@@ -526,7 +534,7 @@ namespace Code.Lavos.Core
             int ddx = tx - fx;
             int ddz = tz - fz;
 
-            // Map delta → Direction8 (cardinal only)
+            // Map delta  Direction8 (cardinal only)
             Direction8 dir = (Math.Sign(ddx), Math.Sign(ddz)) switch
             {
                 ( 0,  1) => Direction8.N,
@@ -541,8 +549,8 @@ namespace Code.Lavos.Core
             d.ClearFlag(tx, tz, Direction8Helper.ToWallFlag(Direction8Helper.Opposite(dir)));
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 6 — Add Dead-End Corridors
+        // 
+        //  Step 6  Add Dead-End Corridors
         //
         //  Creates branching paths from existing corridors:
         //    1. Find all passage cells (no walls, not spawn, not exit)
@@ -559,9 +567,9 @@ namespace Code.Lavos.Core
         //    - Base density from MazeConfig.DeadEndDensity
         //    - Scaled by DifficultyScaler.DeadEndDensity()
         //    - Level 0: ~15% base chance (increased from 30% spawn rate)
-        //    - Level 39: ~37.5% (2.5× multiplier at max level)
+        //    - Level 39: ~37.5% (2.5 multiplier at max level)
         //    - More dead-ends = more complex maze, more choices
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void AddDeadEndCorridors(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity)
         {
             int deadEndCount = 0;
@@ -667,18 +675,18 @@ namespace Code.Lavos.Core
             Debug.Log($"[GridMazeGenerator] Total dead-end corridors added: {deadEndCount}");
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 5.5 — Carve Intermediate Rooms with Doors
+        // 
+        //  Step 5.5  Carve Intermediate Rooms with Doors
         //
         //  NEW 2026-03-11: Difficulty-scaled room system
-        //  - Room count scales from MinRooms → MaxRooms (level-based)
-        //  - Room size scales from 5×5 → 11×11 (level-based)
+        //  - Room count scales from MinRooms  MaxRooms (level-based)
+        //  - Room size scales from 55  1111 (level-based)
         //  - Door openings: 3 units wide, centered on room walls
         //  - Door types: Normal, Locked, Secret (level-based)
         //
         //  ROOM PLACEMENT STRATEGY:
         //  1. Find positions along A* path (guaranteed rooms)
-        //  2. Carve room (N×N cleared area)
+        //  2. Carve room (NN cleared area)
         //  3. Create door openings (3 units wide) on north/south walls
         //  4. Mark door positions for later spawning
         //
@@ -686,7 +694,7 @@ namespace Code.Lavos.Core
         //  - Door opening width = 3 units (configurable)
         //  - Leaves 1-unit wall on each side for clean snap
         //  - Door prefab pivots at bottom-center of opening
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void CarveIntermediateRoomsWithDoors(MazeData8 data, System.Random rng, 
             MazeConfig cfg, DifficultyScaler scaler, int level)
         {
@@ -700,7 +708,7 @@ namespace Code.Lavos.Core
             float lockedDoorChance = scaler.LockedDoorChance(level);
             float secretDoorChance = scaler.SecretDoorChance(level);
 
-            Debug.Log($"[GridMazeGenerator] Step 5.5: Carving {roomCount} rooms (size={roomSize}×{roomSize}) at Level {level}");
+            Debug.Log($"[GridMazeGenerator] Step 5.5: Carving {roomCount} rooms (size={roomSize}{roomSize}) at Level {level}");
             Debug.Log($"[GridMazeGenerator] Room size proportional to maze: {roomSize}/{data.Width} ({(float)roomSize/data.Width:P0})");
             Debug.Log($"[GridMazeGenerator] Door types: locked={lockedDoorChance:P0}, secret={secretDoorChance:P0}");
 
@@ -746,31 +754,21 @@ namespace Code.Lavos.Core
                     continue;
                 }
 
-                // Carve the room (clear N×N area)
+                // Carve the room (clear NN area)
                 CarveRoom(data, roomX, roomZ, roomSize);
 
                 // Mark room cell for door placement (1 entrance, 1 exit)
                 MarkRoomForDoors(data, roomX, roomZ, roomSize, rng);
 
                 roomsCarved++;
-                Debug.Log($"[GridMazeGenerator] Room #{roomsCarved} carved at ({roomX},{roomZ}), size={roomSize}×{roomSize}");
+                Debug.Log($"[GridMazeGenerator] Room #{roomsCarved} carved at ({roomX},{roomZ}), size={roomSize}{roomSize}");
             }
 
             Debug.Log($"[GridMazeGenerator] Rooms carved: {roomsCarved}/{roomCount} (attempts={attempts})");
         }
 
         /// <summary>
-        /// Door types for difficulty scaling
-        /// </summary>
-        private enum DoorType
-        {
-            Normal,     // Always open or simple door
-            Locked,     // Requires key to open
-            Secret      // Hidden door, blends with wall
-        }
-
-        /// <summary>
-        /// Carve a square room (clear all walls in N×N area)
+        /// Carve a square room (clear all walls in NN area)
         /// </summary>
         private static void CarveRoom(MazeData8 data, int centerX, int centerZ, int roomSize)
         {
@@ -789,23 +787,24 @@ namespace Code.Lavos.Core
             }
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         /// <summary>
-        /// Create a 3-unit wide door opening in a wall
-        /// Leaves 1-unit wall on each side for clean door frame snap
+        /// Create a door opening in a wall and track it for later prefab spawning.
+        /// Leaves 1-unit wall on each side for clean door frame snap.
         /// </summary>
-        private static void CreateDoorOpening(MazeData8 data, int wallX, int wallZ, 
-            int openingWidth, Direction8 direction)
+        private static void CreateDoorOpening(MazeData8 data, int wallX, int wallZ,
+            int openingWidth, Direction8 direction, MazeDoorType doorType = MazeDoorType.Normal)
         {
             if (!data.InBounds(wallX, wallZ))
                 return;
 
-            // Clear the opening (3 units wide)
+            // Clear the opening (3 units wide by default)
             int halfWidth = openingWidth / 2;
-            
+
             for (int i = -halfWidth; i <= halfWidth; i++)
             {
                 int openX, openZ;
-                
+
                 // Calculate opening position based on door direction
                 if (direction == Direction8.N || direction == Direction8.S)
                 {
@@ -825,8 +824,11 @@ namespace Code.Lavos.Core
                 }
             }
 
-            // Door positions are tracked by MarkDoorPositions - no flag needed
-            // data.AddFlag(wallX, wallZ, CellFlags8.HasDoor); // HasDoor doesn't exist
+            // Track door opening for later prefab spawning
+            // The door prefab will be spawned at this position during physical instantiation
+            data.AddDoorOpening(wallX, wallZ, direction, doorType);
+            
+            Debug.Log($"[GridMazeGenerator] Door opening carved: ({wallX},{wallZ}) facing {direction}, type={doorType}");
         }
 
         /// <summary>
@@ -871,8 +873,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 6 — Add Dead-End Corridors (NEW SYSTEM)
+        // 
+        //  Step 6  Add Dead-End Corridors (NEW SYSTEM)
         //
         //  Uses DeadEndCorridorSystem with mathematical distribution:
         //    - Difficulty-scaled density (level-based, power curve)
@@ -881,11 +883,11 @@ namespace Code.Lavos.Core
         //    - All values from JSON config (DeadEndCorridorConfig.json)
         //
         //  MATHEMATICAL FORMULA:
-        //    ScaledDensity = BaseDensity × Lerp(1.0, MaxMultiplier, t^Exponent)
+        //    ScaledDensity = BaseDensity  Lerp(1.0, MaxMultiplier, t^Exponent)
         //    Where t = level / MaxLevel (39)
         //
         //  CORRIDOR MATH:
-        //    - Length: MinLength → MaxLength (2-6 cells default)
+        //    - Length: MinLength  MaxLength (2-6 cells default)
         //    - Width: CorridorWidth (1 cell = 6m fixed)
         //    - Max Dead-Ends: Min(8% grid, grid/MinLength)
         //    - Spawn: Passage cells adjacent to walls
@@ -894,7 +896,7 @@ namespace Code.Lavos.Core
         //    Level 0:  30% base density, 1.0x multiplier
         //    Level 12: 34.3% density, 1.14x multiplier
         //    Level 39: 75% density, 2.5x multiplier
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void AddDeadEndCorridorsSystem(MazeData8 d, System.Random rng, MazeConfig cfg, float scaledDeadEndDensity, int level)
         {
             // Create dead-end corridor system with default config from JSON
@@ -903,7 +905,7 @@ namespace Code.Lavos.Core
             var config = DeadEndCorridorSystem.CreateDefaultConfig();
             
             // Let DeadEndCorridorSystem handle its own scaling with power curve
-            // This gives us 30% base → 34.3% at level 12 → 75% at level 39
+            // This gives us 30% base  34.3% at level 12  75% at level 39
             Debug.Log($"[GridMazeGenerator] Dead-End Config: BaseDensity={config.BaseDensity:P1} (from JSON), Level={level}");
             Debug.Log($"[GridMazeGenerator] Expected scaled density at L{level}: {deadEndSystem.CalculateScaledDensity(level):P1}");
 
@@ -923,8 +925,73 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 6.5 — Corridor Fill System (TWO-PASS)
+        //
+        //  Step 6.7  Carve Door Openings (NEW - Fill & Carve Approach)
+        //
+        //  Carves door openings directly into walls during generation:
+        //    - Finds all room-corridor boundaries
+        //    - Carves door openings (3 units wide by default)
+        //    - Tracks door positions for prefab spawning
+        //    - Door types: Normal, Locked, Secret, Exit (difficulty-scaled)
+        //    - Perfect wall alignment (no clipping issues)
+        //
+        //  DOOR CARVING STRATEGY:
+        //    1. Spawn room door (exit from spawn)
+        //    2. Exit room door (maze exit)
+        //    3. Intermediate room doors (from CarveIntermediateRoomsWithDoors)
+        //    4. Dead-end corridor doors (if applicable)
+        //
+        //  CONFIGURATION:
+        //    - DoorOpeningWidth: 3 units (default)
+        //    - LockedDoorChance: level-scaled
+        //    - SecretDoorChance: level-scaled
+        //
+        private static void CarveDoorOpenings(MazeData8 data, System.Random rng,
+            MazeConfig cfg, DifficultyScaler scaler, int level)
+        {
+            Debug.Log($"[GridMazeGenerator] Step 6.7: Carving door openings...");
+
+            int doorOpeningWidth = cfg.DoorOpeningWidth;
+            float lockedDoorChance = scaler.LockedDoorChance(level);
+            float secretDoorChance = scaler.SecretDoorChance(level);
+
+            int doorsCarved = 0;
+
+            // 1. Spawn room exit door (south wall of spawn room)
+            // Spawn room is at (1,1), so exit is on the south side
+            int spawnDoorX = data.SpawnCell.x;
+            int spawnDoorZ = data.SpawnCell.z + cfg.SpawnRoomSize / 2 + 1;
+            
+            if (data.InBounds(spawnDoorX, spawnDoorZ))
+            {
+                CreateDoorOpening(data, spawnDoorX, spawnDoorZ, doorOpeningWidth, Direction8.S, MazeDoorType.Normal);
+                doorsCarved++;
+                Debug.Log($"[GridMazeGenerator] Spawn room door carved at ({spawnDoorX},{spawnDoorZ})");
+            }
+
+            // 2. Exit room door (maze exit on south perimeter wall)
+            // Exit is at (W-2, H-2), door faces south to outside
+            int exitDoorX = data.ExitCell.x;
+            int exitDoorZ = data.ExitCell.z + 1;
+            
+            if (data.InBounds(exitDoorX, exitDoorZ))
+            {
+                CreateDoorOpening(data, exitDoorX, exitDoorZ, doorOpeningWidth, Direction8.S, MazeDoorType.Exit);
+                doorsCarved++;
+                Debug.Log($"[GridMazeGenerator] Exit door carved at ({exitDoorX},{exitDoorZ})");
+            }
+
+            // 3. Intermediate room doors (already carved in CarveIntermediateRoomsWithDoors)
+            // Just count them for logging
+            int roomDoors = data.DoorOpeningCount - 2; // Subtract spawn and exit doors
+
+            Debug.Log($"[GridMazeGenerator] Door carving complete: {doorsCarved + roomDoors} total doors " +
+                      $"(spawn=1, exit=1, rooms={roomDoors}), opening width={doorOpeningWidth}u");
+            Debug.Log($"[GridMazeGenerator] Door type chances: locked={lockedDoorChance:P0}, secret={secretDoorChance:P0}");
+        }
+
+        //
+        //  Step 6.5  Corridor Fill System (TWO-PASS)
         //
         //  Fills remaining wall space with short corridors:
         //    - Preserves original maze structure (main path + dead-ends)
@@ -944,7 +1011,7 @@ namespace Code.Lavos.Core
         //    - MinLength: 1 cell
         //    - MaxLength: 3 cells
         //    - MaxFillPercentage: 40% of grid
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void AddCorridorFillSystem(MazeData8 d, System.Random rng, MazeConfig cfg)
         {
             // Create corridor fill system with default config from JSON
@@ -971,8 +1038,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 7 — Torch placement (CORRIDORS ONLY)
+        // 
+        //  Step 7  Torch placement (CORRIDORS ONLY)
         //
         //  NEW 2026-03-11: Gothic atmosphere lighting
         //  - Torques placed ONLY on corridor walls
@@ -981,17 +1048,17 @@ namespace Code.Lavos.Core
         //
         //  TORCH PLACEMENT SPECIFICATIONS:
         //  - Position: Mid-height of wall (wallHeight / 2)
-        //  - Rotation: X=25° inward (X-axis rotation toward corridor)
+        //  - Rotation: X=25 inward (X-axis rotation toward corridor)
         //  - Offset: Slightly protruding from wall surface
         //  - Light: Warm orange (2700K), flickering
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void PlaceTorchesOnCorridorsOnly(MazeData8 d, System.Random rng, float chance, int level)
         {
             // Scale torch chance by difficulty (fewer torches at higher levels)
-            float torchMultiplier = 1.0f - ((float)level / 39f * 0.75f); // 100% → 25%
+            float torchMultiplier = 1.0f - ((float)level / 39f * 0.75f); // 100%  25%
             float scaledChance = chance * torchMultiplier;
             
-            Debug.Log($"[GridMazeGenerator] Torch density: Level {level} = {scaledChance:P1} (base={chance:P1} × mult={torchMultiplier:P1})");
+            Debug.Log($"[GridMazeGenerator] Torch density: Level {level} = {scaledChance:P1} (base={chance:P1}  mult={torchMultiplier:P1})");
             
             for (int x = 0; x < d.Width; x++)
             for (int z = 0; z < d.Height; z++)
@@ -1019,8 +1086,8 @@ namespace Code.Lavos.Core
             Debug.Log($"[GridMazeGenerator] Torch density multiplier: {torchMultiplier:P0} (harder = darker)");
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 7.5 — Corridor-Only Ceiling System
+        // 
+        //  Step 7.5  Corridor-Only Ceiling System
         //
         //  NEW 2026-03-11: Gothic atmosphere ceiling
         //  - Corridors get 0.5-unit thick ceiling
@@ -1042,7 +1109,7 @@ namespace Code.Lavos.Core
         //    3. Rotation: Face INWARD toward walkable cell
         //       - Check which adjacent cell is walkable (N/S/E/W)
         //       - Rotate torch to face that direction
-        //       - X-tilt: 25° upward for flame visibility
+        //       - X-tilt: 25 upward for flame visibility
         //    4. Offset: 0.3 units from wall surface (into corridor)
         //    5. Light: Point light, warm orange (1.0, 0.6, 0.2), intensity 2.0
         //
@@ -1054,7 +1121,7 @@ namespace Code.Lavos.Core
         //      - Torch faces EAST (toward corridor)
         //      - Rotation: Quaternion.Euler(25, 90, 0)
         //    NEVER face outward into solid wall!
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void AddCorridorCeiling(MazeData8 data, System.Random rng, MazeConfig cfg)
         {
             int ceilingCells = 0;
@@ -1088,9 +1155,9 @@ namespace Code.Lavos.Core
             Debug.Log($"[GridMazeGenerator] Ceiling thickness: 0.5 units at wall height");
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 8 — Chest + enemy placement
-        // ─────────────────────────────────────────────────────────
+        // 
+        //  Step 8  Chest + enemy placement
+        // 
         private static void PlaceObjects(MazeData8 d, System.Random rng,
                                           float chestDensity, float enemyDensity)
         {
@@ -1109,9 +1176,9 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Helper: Count passage cells (for debugging)
-        // ─────────────────────────────────────────────────────────
+        // 
         private static int CountPassageCells(MazeData8 d)
         {
             int count = 0;
@@ -1125,10 +1192,10 @@ namespace Code.Lavos.Core
             return count;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Helper: Count passage cells in a rectangular area (for room placement)
         //  Used to ensure rooms don't block the guaranteed A* path
-        // ─────────────────────────────────────────────────────────
+        // 
         private static int CountPassageCellsInArea(MazeData8 d, int centerX, int centerZ, int size)
         {
             int count = 0;
@@ -1150,12 +1217,12 @@ namespace Code.Lavos.Core
             return count;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Validate Path Exists (BFS pathfinding check)
         //
         //  CRITICAL: Ensures spawn can reach exit
         //  Returns true if valid path exists, false otherwise
-        // ─────────────────────────────────────────────────────────
+        // 
         private static bool ValidatePathExists(MazeData8 d, (int x, int z) start, (int x, int z) end)
         {
             var visited = new HashSet<(int, int)>();
@@ -1202,9 +1269,9 @@ namespace Code.Lavos.Core
             return false;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Fisher-Yates in-place shuffle
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void Shuffle<T>(T[] arr, System.Random rng)
         {
             for (int i = arr.Length - 1; i > 0; i--)
@@ -1214,8 +1281,8 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
-        //  Step 5.5 — Carve Indirect Path with Waypoints
+        // 
+        //  Step 5.5  Carve Indirect Path with Waypoints
         //
         //  Creates a winding, non-linear path from spawn to exit by:
         //  1. Adding 2-4 random intermediate waypoints
@@ -1223,7 +1290,7 @@ namespace Code.Lavos.Core
         //  3. Ensuring path doesn't go in straight lines
         //
         //  Result: Much more maze-like, less obvious route to exit
-        // ─────────────────────────────────────────────────────────
+        // 
         private static void CarveIndirectPath(MazeData8 data, System.Random rng, int wallPenalty)
         {
             Debug.Log($"[GridMazeGenerator] Carving indirect path with waypoints...");
@@ -1259,7 +1326,7 @@ namespace Code.Lavos.Core
 
             for (int i = 0; i < waypoints.Count - 1; i++)
             {
-                Debug.Log($"[GridMazeGenerator] Carving segment {i+1}/{waypoints.Count-1}: ({waypoints[i].x},{waypoints[i].z}) → ({waypoints[i+1].x},{waypoints[i+1].z})");
+                Debug.Log($"[GridMazeGenerator] Carving segment {i+1}/{waypoints.Count-1}: ({waypoints[i].x},{waypoints[i].z})  ({waypoints[i+1].x},{waypoints[i+1].z})");
                 EnsurePathCardinal(data,
                     waypoints[i].x, waypoints[i].z,
                     waypoints[i + 1].x, waypoints[i + 1].z,
@@ -1278,7 +1345,7 @@ namespace Code.Lavos.Core
             return Mathf.Abs(pz - expectedZ) < 2f;
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Step 6.5 (OPTION B): CORRIDOR FLOW SYSTEM (Three-tier hierarchy)
         //
         //  NEW 2026-03-09: Optimized corridor generation with:
@@ -1287,7 +1354,7 @@ namespace Code.Lavos.Core
         //  - Tertiary passages: Dead-ends with Poisson distribution
         //
         //  Performance: 21x21 in ~2-3ms, 51x51 in ~12-15ms
-        // ─────────────────────────────────────────────────────────
+        // 
         private void AddCorridorFlowSystemOptimized(MazeData8 data, System.Random rng, MazeConfig cfg)
         {
             Debug.Log("[GridMazeGenerator] Step 6.5: Using Corridor Flow System (three-tier hierarchy)...");
@@ -1301,8 +1368,8 @@ namespace Code.Lavos.Core
         }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  MazeConfig  —  all values loaded from JSON, no hardcodes
+    // 
+    //  MazeConfig    all values loaded from JSON, no hardcodes
     //
     //  UPDATED 2026-03-09:
     //  - DiagonalWalls removed (cardinal-only passages)
@@ -1314,13 +1381,13 @@ namespace Code.Lavos.Core
     //
     //  UPDATED 2026-03-09 (Corridor Flow System):
     //  - UseCorridorFlowSystem: Enable three-tier corridor hierarchy
-    //  - Main artery (entrance→exit), secondary branches, tertiary dead-ends
+    //  - Main artery (entranceexit), secondary branches, tertiary dead-ends
     //
     //  UPDATED 2026-03-11 (Room System):
     //  - MinRooms/MaxRooms: Room count range for difficulty scaling
     //  - BaseRoomSize: Starting room size (scales with level)
     //  - DoorOpeningWidth: Width of door openings in walls (3 units)
-    // ─────────────────────────────────────────────────────────────
+    // 
     [Serializable]
     public sealed class MazeConfig
     {

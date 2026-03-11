@@ -20,11 +20,11 @@
 //
 // CORE SYSTEM: All item behaviors plug into this central manager
 // - BehaviorEngine (base class in Core/Base/)
-//   ├── DoubleDoor
-//   ├── ChestBehavior
-//   ├── ItemPickup
-//   ├── SwitchBehavior
-//   └── Custom items...
+//    DoubleDoor
+//    ChestBehavior
+//    ItemPickup
+//    SwitchBehavior
+//    Custom items...
 
 using System.Collections.Generic;
 using UnityEngine;

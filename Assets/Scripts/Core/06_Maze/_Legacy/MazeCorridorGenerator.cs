@@ -1,4 +1,4 @@
-﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 // [DEPRECATED - 2026-03-09]
 // This file is LEGACY and should be archived or removed.
 //
@@ -27,7 +27,7 @@
 // Use DeadEndCorridorSystem.cs for cardinal-only dead-end corridor generation.
 //
 // DO NOT USE in new code. Migrate to DeadEndCorridorSystem.cs instead.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 // MazeCorridorGenerator.cs
 // OPTIMAL CORRIDOR GENERATION - Uses PathFinder A* algorithm

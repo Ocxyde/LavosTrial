@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -20,7 +20,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // ALGORITHM:
-//   Phase 1: Carve guaranteed path A→B (30% of maze)
+//   Phase 1: Carve guaranteed path AB (30% of maze)
 //   Phase 2: Add primary branches (40% of maze)
 //   Phase 3: Add dead-end corridors (20% of maze)
 //   Phase 4: Add secondary connections (10% of maze)
@@ -87,7 +87,7 @@ namespace Code.Lavos.Core
             FillAllWalls();
             Debug.Log($"[MinotaurMaze] Phase 1: All walls filled");
 
-            // === PHASE 2: Carve guaranteed path A→B ===
+            // === PHASE 2: Carve guaranteed path AB ===
             CarveGuaranteedPath();
             Debug.Log($"[MinotaurMaze] Phase 2: Main path carved ({_mainPath.Count} cells)");
 

@@ -39,7 +39,7 @@ namespace Code.Lavos.Core.Advanced
     /// 1. Initialize maze data structure
     /// 2. Fill all walls (solid block)
     /// 3. DFS carve main passages (8-directional)
-    /// 4. Carve spawn room (5×5 guaranteed safe area)
+    /// 4. Carve spawn room (55 guaranteed safe area)
     /// 5. Carve exit room (distant, difficult to reach)
     /// 6. Identify and expand dead-ends into chambers
     /// 7. Identify and expand crossroads into meeting halls
@@ -55,9 +55,9 @@ namespace Code.Lavos.Core.Advanced
     /// </summary>
     public sealed class DungeonMazeGenerator
     {
-        // ─────────────────────────────────────────────────────────────
+        // 
         // INTERNAL STATE
-        // ─────────────────────────────────────────────────────────────
+        // 
         private DungeonMazeData _mazeData;
         private System.Random _rng;
         private bool[,] _visited;
@@ -67,9 +67,9 @@ namespace Code.Lavos.Core.Advanced
         private List<(int x, int z)> _treasureRooms;
         private AIAdaptiveDifficulty _aiDifficulty;
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PUBLIC API - Generate complete dungeon
-        // ─────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Generate a complete advanced dungeon maze with all features.
@@ -85,12 +85,12 @@ namespace Code.Lavos.Core.Advanced
         /// <item><description><strong>Initialize:</strong> Create maze data structure with dimensions</description></item>
         /// <item><description><strong>Solid Block:</strong> Fill all cells with walls (8-axis)</description></item>
         /// <item><description><strong>DFS Carving:</strong> 8-directional depth-first search passages</description></item>
-        /// <item><description><strong>Spawn Room:</strong> 5×5 guaranteed safe area at start</description></item>
+        /// <item><description><strong>Spawn Room:</strong> 55 guaranteed safe area at start</description></item>
         /// <item><description><strong>Exit Room:</strong> Distant room, difficult to reach</description></item>
-        /// <item><description><strong>Chamber Expansion:</strong> Expand dead-ends and crossroads (25×25+ mazes only)</description></item>
+        /// <item><description><strong>Chamber Expansion:</strong> Expand dead-ends and crossroads (2525+ mazes only)</description></item>
         /// <item><description><strong>Trap Rooms:</strong> Place spike/lava/darkness traps strategically</description></item>
         /// <item><description><strong>Treasure Chambers:</strong> Place guarded treasure rooms</description></item>
-        /// <item><description><strong>Winding Corridors:</strong> Add labyrinthine paths for complexity (25×25+ only)</description></item>
+        /// <item><description><strong>Winding Corridors:</strong> Add labyrinthine paths for complexity (2525+ only)</description></item>
         /// <item><description><strong>AI Analysis:</strong> Calculate adaptive difficulty multiplier</description></item>
         /// <item><description><strong>Path Guarantee:</strong> Ensure A* path from spawn to exit</description></item>
         /// <item><description><strong>Object Placement:</strong> Torches, chests, enemies based on density</description></item>
@@ -98,11 +98,11 @@ namespace Code.Lavos.Core.Advanced
         /// </list>
         /// 
         /// <para><strong>Difficulty Scaling:</strong></para>
-        /// <para>Level 0: Base size, 1.0× difficulty, few traps/treasures</para>
-        /// <para>Level 39: 2.5× size, 3.0× AI difficulty, maximum traps/treasures</para>
+        /// <para>Level 0: Base size, 1.0 difficulty, few traps/treasures</para>
+        /// <para>Level 39: 2.5 size, 3.0 AI difficulty, maximum traps/treasures</para>
         /// 
         /// <para><strong>Special Features:</strong></para>
-        /// <para>- Chamber expansion skipped for mazes &lt; 25×25 (preserves wall structure)</para>
+        /// <para>- Chamber expansion skipped for mazes &lt; 2525 (preserves wall structure)</para>
         /// <para>- Treasure rooms marked but not cleared for small mazes</para>
         /// <para>- AI adaptive factor based on trap/treasure distribution and path complexity</para>
         /// </remarks>
@@ -152,7 +152,7 @@ namespace Code.Lavos.Core.Advanced
             }
             else
             {
-                Debug.Log("[DungeonGen] Phase 4: A* validated path exists (entrance → exit)");
+                Debug.Log("[DungeonGen] Phase 4: A* validated path exists (entrance  exit)");
             }
 
             // === PHASE 4: Chamber Expansion ===
@@ -219,9 +219,9 @@ namespace Code.Lavos.Core.Advanced
             return _mazeData;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 1: Initialize Walls
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void FillAllWalls()
         {
             int w = _mazeData.Width;
@@ -238,9 +238,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 2: Main Passages - 8-axis DFS
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void CarvePassages8(int startX, int startZ)
         {
             var stack = new Stack<(int, int)>();
@@ -345,9 +345,9 @@ namespace Code.Lavos.Core.Advanced
             return Direction8.N; // Default
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 3: Spawn & Exit Rooms
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void CarveSpawnRoom(int centerX, int centerZ, int radius)
         {
             ClearRoomAround(centerX, centerZ, radius);
@@ -415,9 +415,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // NEW: ENTRANCE/EXIT ROOMS WITH DOORS (4x4)
-        // ─────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Carve a 4x4 entrance room with an unlocked door to the maze.
@@ -487,9 +487,9 @@ namespace Code.Lavos.Core.Advanced
             Debug.Log($"[DungeonGen] Exit room: {roomSize}x{roomSize} at ({roomX},{roomZ}) with door at ({doorX},{doorZ})");
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 3: DFS MAZE CARVING (creates winding passages)
-        // ─────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// DFS maze carving that creates winding passages through solid block.
@@ -598,9 +598,9 @@ namespace Code.Lavos.Core.Advanced
             return Direction8.N;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 4: A* PATH GUARANTEE (carves maze-like paths)
-        // ─────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Use A* to find path from entrance to exit.
@@ -850,9 +850,9 @@ namespace Code.Lavos.Core.Advanced
             _mazeData.SetCell(x, z, cell);
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 4: Identify Chambers
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void IdentifyDeadEndsAndCrossroads()
         {
             for (int x = 0; x < _mazeData.Width; x++)
@@ -915,9 +915,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 5: Trap Rooms
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void PlaceTrapRooms(float density)
         {
             int targetCount = Mathf.Max(1, Mathf.RoundToInt(_deadEnds.Count * density));
@@ -938,9 +938,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 6: Treasure Rooms
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void PlaceTreasureRooms(float density)
         {
             int targetCount = Mathf.Max(1, Mathf.RoundToInt(_deadEnds.Count * density));
@@ -997,9 +997,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 7: Winding Corridors
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void CarveLabyrinthinePaths(float windingFactor)
         {
             // Add secondary passages for complexity
@@ -1028,13 +1028,13 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 8: AI Difficulty (already calculated)
-        // ─────────────────────────────────────────────────────────────
+        // 
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 9: Guarantee Path to Exit
-        // ─────────────────────────────────────────────────────────────
+        // 
         // ReSharper disable Unity.PerformanceAnalysis
         private void EnsurePathToExit()
         {
@@ -1199,9 +1199,9 @@ namespace Code.Lavos.Core.Advanced
             return null;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 10: Object Placement
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void PlaceTorches(float chance)
         {
             for (int x = 0; x < _mazeData.Width; x++)
@@ -1254,9 +1254,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Validation
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void ValidateConfig(DungeonMazeConfig cfg)
         {
             if (cfg == null)

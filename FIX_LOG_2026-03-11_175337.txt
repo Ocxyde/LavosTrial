@@ -1,0 +1,41 @@
+# FIX REPORT - 2026-03-11_175337
+Generated: 2026-03-11 17:53:37
+
+---
+## Emoji Fixes
+
+**Total files fixed:** 1
+**Total emojis removed:** 1
+
+### Fixed Files:
+
+| File | Emojis |
+|------|--------|
+| .\Assets\Scripts\Core\02_Player\DoorInteractionHandler.cs | 1 |
+
+## Encoding Fixes
+
+**Total files fixed:** 2
+**BOM issues fixed:** 2
+**CRLF issues fixed:** 2
+
+### Fixed Files:
+
+| File | Issues |
+|------|--------|
+| .\Assets\Scripts\Core\08_Environment\DoorController.cs | BOM, CRLF |
+| .\Assets\Scripts\Editor\CreateDoorPrefab.cs | BOM, CRLF |
+
+## Summary
+
+| Metric | Count |
+|--------|-------|
+| Files with emojis fixed | 1 |
+| Emojis removed | 1 |
+| Files with encoding fixed | 2 |
+| BOM issues fixed | 2 |
+| CRLF issues fixed | 2 |
+
+**Total files modified:** 3
+**Total issues fixed:** 5
+

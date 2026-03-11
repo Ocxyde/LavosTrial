@@ -30,9 +30,9 @@ namespace Code.Lavos.Core.Advanced
     [System.Serializable]
     public class DungeonMazeConfig
     {
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Core Maze Parameters
-        // ─────────────────────────────────────────────────────────────
+        // 
         public int BaseSize = 21;
 
         public int MinSize = 15;
@@ -43,18 +43,18 @@ namespace Code.Lavos.Core.Advanced
 
         public float WallHeight = 3.0f;
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Room Configuration
-        // ─────────────────────────────────────────────────────────────
+        // 
         public int SpawnRoomSize = 2;
 
         public int ExitRoomSize = 2;
 
         public int ChamberExpansionRadius = 1;
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Danger & Treasure Parameters
-        // ─────────────────────────────────────────────────────────────
+        // 
         public float TrapDensity = 0.25f;
 
         public string[] TrapTypes = { "spikes", "lava", "darkness", "poison" };
@@ -63,9 +63,9 @@ namespace Code.Lavos.Core.Advanced
 
         public Vector2Int TreasureValueRange = new Vector2Int(100, 500);
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Corridor & Complexity
-        // ─────────────────────────────────────────────────────────────
+        // 
         public float CorridorWindingFactor = 0.3f;
 
         public int CorridorWidth = 1;
@@ -74,9 +74,9 @@ namespace Code.Lavos.Core.Advanced
 
         public float CrossroadExpansionChance = 0.8f;
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Object Placement
-        // ─────────────────────────────────────────────────────────────
+        // 
         public float TorchChance = 0.25f;
 
         public float EnemyDensity = 0.03f;
@@ -87,19 +87,19 @@ namespace Code.Lavos.Core.Advanced
 
         public int BossRoomCount = 1;
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Difficulty Scaling
-        // ─────────────────────────────────────────────────────────────
+        // 
         public DifficultyScalerConfig Difficulty = new DifficultyScalerConfig();
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // AI Settings
-        // ─────────────────────────────────────────────────────────────
+        // 
         public AIAdaptiveSettings AISettings = new AIAdaptiveSettings();
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Advanced Features
-        // ─────────────────────────────────────────────────────────────
+        // 
         public bool MultiEntranceEnabled = true;
 
         public bool MultiExitEnabled = false;
@@ -115,9 +115,9 @@ namespace Code.Lavos.Core.Advanced
 
         public int BaseWallPenalty { get; }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Validation & Utilities
-        // ─────────────────────────────────────────────────────────────
+        // 
         public bool IsValid()
         {
             if (BaseSize < MinSize || BaseSize > MaxSize)

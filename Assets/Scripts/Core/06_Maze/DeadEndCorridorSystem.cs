@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -41,7 +41,7 @@ namespace Code.Lavos.Core
 
         [Header("Difficulty Scaling")]
         [Range(1f, 5f)]
-        public float MaxMultiplier = 3.0f;  // 3.0× at max level (was 2.5×) - MORE DEAD-ENDS!
+        public float MaxMultiplier = 3.0f;  // 3.0 at max level (was 2.5) - MORE DEAD-ENDS!
 
         [Range(1, 100)]
         public int MaxLevel = 39;
@@ -166,7 +166,7 @@ namespace Code.Lavos.Core
             return new DeadEndCorridorConfig
             {
                 BaseDensity = 0.30f,      // 30% base at level 0
-                MaxMultiplier = 2.5f,     // 2.5× at max level
+                MaxMultiplier = 2.5f,     // 2.5 at max level
                 MaxLevel = 39,            // Max level for scaling
                 Exponent = 2.0f,          // Power curve (quadratic)
                 MinLength = 3,            // Minimum 3 cells
@@ -200,7 +200,7 @@ namespace Code.Lavos.Core
             TotalCells = 0;
 
             // Calculate scaled density using power curve formula
-            // Formula: BaseDensity × Lerp(1.0, MaxMultiplier, t^Exponent)
+            // Formula: BaseDensity  Lerp(1.0, MaxMultiplier, t^Exponent)
             // Where t = level / MaxLevel (39)
             float spawnDensity = CalculateScaledDensity(level);
             int maxDeadEnds = CalculateMaxDeadEnds(mazeData);
@@ -224,7 +224,7 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Calculate scaled density based on level difficulty
-        /// Formula: BaseDensity × Lerp(1.0, MaxMultiplier, t^Exponent)
+        /// Formula: BaseDensity  Lerp(1.0, MaxMultiplier, t^Exponent)
         /// Where t = level / MaxLevel
         /// </summary>
         public float CalculateScaledDensity(int level)

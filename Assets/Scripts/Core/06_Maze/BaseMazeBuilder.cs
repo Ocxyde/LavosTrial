@@ -1,8 +1,10 @@
-﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // BaseMazeBuilder.cs - Common base class for maze builders to reduce duplication
 
+using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Code.Lavos.Core
 {
@@ -10,12 +12,15 @@ namespace Code.Lavos.Core
     /// Base class for maze builders with common functionality.
     /// Extracts duplicate code from CompleteMazeBuilder8 and CompleteCorridorMazeBuilder.
     /// </summary>
-    public abstract class BaseMazeBuilder : MonoBehaviour
-    {
-        #region Common Fields
+public abstract class BaseMazeBuilder : MonoBehaviour
+{
+    private static readonly Dictionary<string, UnityEngine.Object> _resourceCache = new(StringComparer.Ordinal);
+
+    #region Common Fields
 
         [Header("Cardinal Prefabs")]
         [SerializeField] protected GameObject wallPrefab;
+        [Tooltip("Base door prefab (for normal doors) - inherited by derived classes")]
         [SerializeField] protected GameObject doorPrefab;
         [SerializeField] protected Material wallMaterial;
 

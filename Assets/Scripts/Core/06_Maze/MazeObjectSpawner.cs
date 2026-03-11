@@ -50,7 +50,7 @@ namespace Code.Lavos.Core
                     {
                         // Find walkable adjacent cell (corridor side)
                         (Vector3 dir, int wallX, int wallZ) = FindWalkableDirection(mazeData, x, z);
-                        
+
                         // If no walkable direction found, skip this torch
                         if (dir == Vector3.zero)
                         {
@@ -58,10 +58,10 @@ namespace Code.Lavos.Core
                             continue;
                         }
 
+                        // FOR TESTING: Place torch directly ON the wall (in wall cell)
                         // Position: CENTER of wall cell, mid-height
-                        // Wall cell is BETWEEN current cell (x,z) and walkable neighbor
-                        int torchCellX = wallX;
-                        int torchCellZ = wallZ;
+                        int torchCellX = x;  // Use current cell (wall cell)
+                        int torchCellZ = z;
                         
                         Vector3 pos = new Vector3(
                             (torchCellX + 0.5f) * cellSize,  // Mid-position X
@@ -69,21 +69,17 @@ namespace Code.Lavos.Core
                             (torchCellZ + 0.5f) * cellSize   // Mid-position Z
                         );
 
-                        // Snap torch to wall surface (flush, not floating)
-                        // Place in wall cell, facing OUTWARD into corridor
-                        float snapOffset = 0.15f; // Snap to wall surface
-                        pos -= dir * snapOffset; // Move INTO wall cell (not walkable)
-
+                        // No snap offset for testing - torch is centered in wall cell
                         // Rotate torch to face OUTWARD into the corridor
                         // TORCH.fbx default forward (Z+) should face away from wall
                         Quaternion rotation;
-                        if (dir == Vector3.forward)      // North wall → face north (outward)
+                        if (dir == Vector3.forward)      // North wall  face north (outward)
                             rotation = Quaternion.identity;
-                        else if (dir == -Vector3.forward) // South wall → face south (outward)
+                        else if (dir == -Vector3.forward) // South wall  face south (outward)
                             rotation = Quaternion.Euler(0f, 180f, 0f);
-                        else if (dir == Vector3.right)    // East wall → face east (outward)
+                        else if (dir == Vector3.right)    // East wall  face east (outward)
                             rotation = Quaternion.Euler(0f, 90f, 0f);
-                        else if (dir == -Vector3.right)   // West wall → face west (outward)
+                        else if (dir == -Vector3.right)   // West wall  face west (outward)
                             rotation = Quaternion.Euler(0f, -90f, 0f);
                         else
                             rotation = Quaternion.identity;
@@ -96,7 +92,7 @@ namespace Code.Lavos.Core
                             torchCount++;
                             
                             // Debug: Log torch position and rotation
-                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles} (OUTWARD, facing corridor)");
+                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles} (ON WALL, facing corridor)");
                         }
                     }
                 }

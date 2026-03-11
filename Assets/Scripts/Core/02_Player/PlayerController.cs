@@ -28,92 +28,92 @@ using Code.Lavos.Core;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// PLAYERCONTROLLER — Mouvement 3D, regard souris, stamina, interaction, bob caméra.
+    /// PLAYERCONTROLLER  Mouvement 3D, regard souris, stamina, interaction, bob camra.
     ///
     /// SETUP Unity :
     ///  1. CharacterController sur le GameObject joueur
-    ///  2. Ce script sur le même GameObject
-    ///  3. Assigner playerCamera dans l'Inspector (caméra enfant du joueur)
-    ///  4. La caméra sera auto-positionnée à hauteur des yeux — ne pas la bouger manuellement.
+    ///  2. Ce script sur le mme GameObject
+    ///  3. Assigner playerCamera dans l'Inspector (camra enfant du joueur)
+    ///  4. La camra sera auto-positionne  hauteur des yeux  ne pas la bouger manuellement.
     ///
-    /// Contrôles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | F = interaction
+    /// Contrles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | F = interaction
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        // ─── Déplacement ─────────────────────────────────────────────────────────
-        [Header("Déplacement")]
+        //  Dplacement 
+        [Header("Dplacement")]
         [SerializeField] private float walkSpeed = GameConstants.Player.MoveSpeed;
         [SerializeField] private float sprintSpeed = 9f;
         [SerializeField] private float jumpHeight = 1.5f;
         [SerializeField] private float gravity = -19.81f;
 
-    // ─── Stamina Costs ───────────────────────────────────────────────────────
+    //  Stamina Costs 
     [Header("Stamina")]
     [SerializeField] private float sprintCostPerSecond = 2f; // Flat stamina drain per second while sprinting
     [SerializeField] private float jumpCost = 5f; // Flat stamina cost per jump
 
-    // ─── Caméra / Regard ─────────────────────────────────────────────────────
-    [Header("Caméra")]
+    //  Camra / Regard 
+    [Header("Camra")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float mouseSensitivity = GameConstants.Player.MouseSensitivity;
     [SerializeField] private float maxLookAngle = 80f;
-    [SerializeField] private float eyeHeightOffset = GameConstants.Player.EyeHeight; // hauteur yeux (mètres depuis pivot) - matches PlayerPrefab camera Y position
+    [SerializeField] private float eyeHeightOffset = GameConstants.Player.EyeHeight; // hauteur yeux (mtres depuis pivot) - matches PlayerPrefab camera Y position
 
-    // ─── Head Bob ────────────────────────────────────────────────────────────
+    //  Head Bob 
     [Header("Head Bob")]
     [SerializeField] private bool bobEnabled = true;
     [SerializeField] private float bobFreqWalk = 8f;    // cycles / seconde en marche
     [SerializeField] private float bobFreqSprint = 13f;   // cycles / seconde en sprint
     [SerializeField] private float bobAmplitudeY = 0.055f; // oscillation verticale (haut/bas)
-    [SerializeField] private float bobAmplitudeX = 0.025f; // oscillation latérale (tangage)
+    [SerializeField] private float bobAmplitudeX = 0.025f; // oscillation latrale (tangage)
     [SerializeField] private float bobSmoothing = 10f;   // lissage retour au repos
 
-    // ─── Interaction ─────────────────────────────────────────────────────────
+    //  Interaction 
     [Header("Interaction")]
     [SerializeField] private float interactionRange = 3f;
     [SerializeField] private LayerMask interactionLayer = ~0;
     [SerializeField] private LayerMask playerLayer = 0;
     // Note: interactionPromptText moved to HUD assembly to avoid circular dependency
 
-    // ─── Interaction System Reference ────────────────────────────────────────
+    //  Interaction System Reference 
     // Note: InteractionSystem is now in Core but referenced via interface
 
-    // ─── Composants ──────────────────────────────────────────────────────────
+    //  Composants 
     private CharacterController _controller;
     private PlayerStats _playerStats;
     private CombatSystem _combatSystem;
 
-    // ─── Input ───────────────────────────────────────────────────────────────
+    //  Input 
     private Keyboard _kb;
     private Mouse _mouse;
 
-    // ─── Game State (Plug-in-and-Out) ───────────────────────────────────────
+    //  Game State (Plug-in-and-Out) 
     private bool _isGamePaused = false;
 
-    // ─── État mouvement ──────────────────────────────────────────────────────
+    //  tat mouvement 
     private Vector3 _velocity;
     private float _xRotation;
     private bool _isGrounded;
     private bool _isMoving;
     private bool _isSprinting;
 
-    // ─── Head Bob interne ────────────────────────────────────────────────────
+    //  Head Bob interne 
     private float _bobTimer;                    // accumulateur de phase
-    private Vector3 _bobCurrentOffset;            // offset appliqué ce frame
-    private Vector3 _bobTargetOffset;             // offset cible (interpolé)
-    // Position de repos de la caméra (= eyeHeightOffset, sans bob)
+    private Vector3 _bobCurrentOffset;            // offset appliqu ce frame
+    private Vector3 _bobTargetOffset;             // offset cible (interpol)
+    // Position de repos de la camra (= eyeHeightOffset, sans bob)
     private Vector3 _camRestPosition;
 
-    // ─── Interaction ─────────────────────────────────────────────────────────
+    //  Interaction 
     private IInteractable _currentInteractable;
     private IInteractable _highlightedInteractable;
 
-    // ─── Événements ──────────────────────────────────────────────────────────
+    //  vnements 
     // Delegated to InteractionSystem
     public static event System.Action<string> OnInteractableChanged;
 
-    // ─── Propriétés ──────────────────────────────────────────────────────────
+    //  Proprits 
     // Note: PlayerInventory moved to Inventory assembly to avoid circular dependency
     // Delegate to InteractionSystem if available
     public IInteractable CurrentInteractable => _currentInteractable;
@@ -129,7 +129,7 @@ namespace Code.Lavos.Core
         return _playerStats.UseMana(manaCost);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // 
     void Awake()
     {
         _controller = GetComponent<CharacterController>();
@@ -160,7 +160,7 @@ namespace Code.Lavos.Core
             Debug.Log("[PlayerController] Input system initialized successfully");
         }
 
-        // ── Positionne la caméra à hauteur des yeux ──────────────────────────
+        //  Positionne la camra  hauteur des yeux 
         if (playerCamera == null)
             playerCamera = Camera.main;
 
@@ -180,7 +180,8 @@ namespace Code.Lavos.Core
             // FPS VIEW: Camera at middle of eyes (between eyes, not top of head)
             // For 2m tall CharacterController: eyes at ~1.6m (middle of head)
             // Camera local position: (0, 1.6, 0) - exactly at eye level
-            Vector3 targetCamPos = new Vector3(0f, GameConstants.Player.EyeHeight, 0f);
+            // FIX: Use lower eye height to prevent spinning
+            Vector3 targetCamPos = new Vector3(0f, 1.6f, 0f);
 
             // Validate camera local position matches expected eye height
             if (playerCamera.transform.localPosition != targetCamPos)
@@ -189,21 +190,50 @@ namespace Code.Lavos.Core
                 playerCamera.transform.localPosition = targetCamPos;
             }
 
-            // CRITICAL FIX: Disable any CameraFollow component to prevent infinite spinning
+            // CRITICAL: Initialize camera rest position for head bob
+            _camRestPosition = new Vector3(0f, 1.6f, 0f);
+
+            // CRITICAL FIX: Remove ALL CameraFollow components to prevent infinite spinning
             // CameraFollow is for third-person, PlayerController is FPS - they conflict!
+            
+            // 1. Disable on camera itself
             CameraFollow camFollow = playerCamera.GetComponent<CameraFollow>();
             if (camFollow != null)
             {
                 camFollow.enabled = false;
-                Debug.Log("[PlayerController] ✓ Disabled CameraFollow to prevent rotation conflict");
+                Debug.Log("[PlayerController]  Disabled CameraFollow on camera");
             }
 
-            // Also disable CameraFollow on parent objects
+            // 2. Disable on parent objects
             CameraFollow parentCamFollow = playerCamera.transform.parent?.GetComponent<CameraFollow>();
             if (parentCamFollow != null)
             {
                 parentCamFollow.enabled = false;
-                Debug.Log("[PlayerController] ✓ Disabled parent CameraFollow to prevent rotation conflict");
+                Debug.Log("[PlayerController]  Disabled CameraFollow on parent");
+            }
+
+            // 3. CRITICAL: Remove CameraFollow from player itself (THIS GameObject)
+            CameraFollow playerCamFollow = GetComponent<CameraFollow>();
+            if (playerCamFollow != null)
+            {
+                playerCamFollow.enabled = false;
+                Debug.LogWarning("[PlayerController]  DISABLED CameraFollow on PLAYER - this was causing spinning!");
+            }
+
+            // 4. Check for any other rotation scripts
+            var otherRotationScripts = GetComponents<MonoBehaviour>();
+            foreach (var script in otherRotationScripts)
+            {
+                if (script != null && script.GetType().Name.Contains("Camera") || 
+                    script.GetType().Name.Contains("Follow") ||
+                    script.GetType().Name.Contains("Look"))
+                {
+                    if (script != this && script.enabled)
+                    {
+                        script.enabled = false;
+                        Debug.LogWarning($"[PlayerController]  Disabled conflicting script: {script.GetType().Name}");
+                    }
+                }
             }
         }
         else
@@ -215,7 +245,7 @@ namespace Code.Lavos.Core
         Cursor.visible = false;
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
+    // 
     void Update()
     {
         RefreshInputReferences();
@@ -324,7 +354,7 @@ namespace Code.Lavos.Core
         // Cleanup handled by Unity
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     private void RefreshInputReferences()
     {
         if (_kb == null)
@@ -339,9 +369,9 @@ namespace Code.Lavos.Core
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     //  CURSEUR
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     private void HandleCursorInput()
     {
         if (_kb.escapeKey.wasPressedThisFrame) { UnlockCursor(); return; }
@@ -353,40 +383,46 @@ namespace Code.Lavos.Core
         if (!hasFocus && Cursor.lockState == CursorLockMode.Locked) UnlockCursor();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     //  REGARD (souris)
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     private void HandleMouseLook()
     {
         if (Cursor.lockState != CursorLockMode.Locked) return;
 
         Vector2 delta = _mouse.delta.ReadValue() * mouseSensitivity;
 
-        // Rotation horizontale → tout le joueur
+        // Rotation horizontale  tout le joueur
         transform.Rotate(Vector3.up * delta.x);
 
-        // Rotation verticale → caméra seulement
+        // Rotation verticale  camra seulement
         _xRotation = Mathf.Clamp(_xRotation - delta.y, -maxLookAngle, maxLookAngle);
 
         if (playerCamera != null)
             playerCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  DÉPLACEMENT + SAUT + GRAVITÉ
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
+    //  DPLACEMENT + SAUT + GRAVIT
+    // 
     private void HandleMovement()
     {
         // Lock cursor for FPS control
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        
+
         _isGrounded = _controller.isGrounded;
 
         // Debug: Log grounded state (less spam)
         if (Time.frameCount % 120 == 0 && !_isGrounded)
         {
-            Debug.Log($"[PlayerController] Grounded: {_isGrounded} | Position: {_controller.transform.position}");
+            Debug.Log($"[PlayerController] Grounded: {_isGrounded} | Position: {_controller.transform.position} | Velocity: {_velocity}");
+        }
+
+        // CRITICAL: Force grounded if very close to ground (prevents falling through floor)
+        if (_controller.isGrounded)
+        {
+            _isGrounded = true;
         }
 
         if (_isGrounded && _velocity.y < 0f) _velocity.y = -2f;
@@ -397,18 +433,25 @@ namespace Code.Lavos.Core
                 - (_kb.sKey.isPressed || _kb.downArrowKey.isPressed ? 1f : 0f);
 
         _isMoving = (h != 0f || v != 0f);
-        
-        // Debug: Log input
+
+        // Debug: Log input every second
         if (_isMoving && Time.frameCount % 60 == 0)
         {
-            Debug.Log($"[PlayerController] Input: h={h}, v={v} | Sprint: {_isSprinting}");
+            Debug.Log($"[PlayerController] Input: h={h}, v={v} | Sprint: {_isSprinting} | Player Rot: {transform.rotation.eulerAngles}");
         }
         
         // Check sprint condition: shift held + moving + grounded + has stamina
         _isSprinting = _kb.leftShiftKey.isPressed && _isMoving && _isGrounded &&
                        _playerStats != null && _playerStats.CurrentStamina > 1f;
 
+        // CRITICAL FIX: Calculate movement direction relative to player rotation
         Vector3 moveDir = (transform.right * h + transform.forward * v).normalized;
+        
+        // Debug: Show movement direction
+        if (_isMoving && Time.frameCount % 120 == 0)
+        {
+            Debug.Log($"[PlayerController] MoveDir: {moveDir} | Speed: {walkSpeed}");
+        }
 
         // Calculate speed with sprint bonus (+10% base movement speed when sprinting)
         float baseSpeed = _isSprinting ? sprintSpeed : walkSpeed;
@@ -419,7 +462,7 @@ namespace Code.Lavos.Core
         {
             // Always allow jump (fallback mode - no stamina check for now)
             _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            
+
             // Try to consume stamina if systems are available
             if (_combatSystem != null && _combatSystem.CanJump())
             {
@@ -434,6 +477,7 @@ namespace Code.Lavos.Core
 
         _velocity.y += gravity * Time.deltaTime;
 
+        // CRITICAL: Apply movement
         _controller.Move(moveDir * speed * Time.deltaTime + _velocity * Time.deltaTime);
 
         // Consume flat stamina while sprinting (use PlayerStats directly)
@@ -458,9 +502,9 @@ namespace Code.Lavos.Core
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     //  HEAD BOB
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     private void HandleHeadBob()
     {
         if (playerCamera == null) return;
@@ -469,17 +513,17 @@ namespace Code.Lavos.Core
 
         if (shouldBob)
         {
-            // Fréquence variable selon vitesse
+            // Frquence variable selon vitesse
             float freq = _isSprinting ? bobFreqSprint : bobFreqWalk;
             _bobTimer += Time.deltaTime * freq;
 
-            // Oscillation sinusoïdale :
-            //   Y  = sin(t)          → haut/bas (deux pas par cycle)
-            //   X  = sin(t/2)        → gauche/droite (un balancement par cycle)
+            // Oscillation sinusodale :
+            //   Y  = sin(t)           haut/bas (deux pas par cycle)
+            //   X  = sin(t/2)         gauche/droite (un balancement par cycle)
             float sinY = Mathf.Sin(_bobTimer);
             float sinX = Mathf.Sin(_bobTimer * 0.5f);
 
-            // Amplitude légèrement amplifiée en sprint
+            // Amplitude lgrement amplifie en sprint
             float ampScale = _isSprinting ? 1.4f : 1f;
             _bobTargetOffset = new Vector3(
                 sinX * bobAmplitudeX * ampScale,
@@ -489,8 +533,8 @@ namespace Code.Lavos.Core
         }
         else
         {
-            // Retour progressif à zéro quand arrêté ou en l'air
-            _bobTimer = 0f;           // réinitialise la phase → évite le saut de phase
+            // Retour progressif  zro quand arrt ou en l'air
+            _bobTimer = 0f;           // rinitialise la phase  vite le saut de phase
             _bobTargetOffset = Vector3.zero;
         }
 
@@ -504,9 +548,9 @@ namespace Code.Lavos.Core
         playerCamera.transform.localPosition = finalCamPos;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     //  INTERACTION (F) - Legacy mode (when InteractionSystem not available)
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     private void HandleInteraction()
     {
         if (_kb.fKey.wasPressedThisFrame && _currentInteractable?.CanInteract(this) == true)
@@ -540,7 +584,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        // Rien trouvé
+        // Rien trouv
         _highlightedInteractable?.OnHighlightExit(this);
         _highlightedInteractable = null;
         _currentInteractable = null;
@@ -567,9 +611,9 @@ namespace Code.Lavos.Core
         // UI handling moved to HUD assembly
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     //  UTILITAIRES PUBLICS
-    // ─────────────────────────────────────────────────────────────────────────
+    // 
     public void LockCursor() { Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false; }
     public void UnlockCursor() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     }

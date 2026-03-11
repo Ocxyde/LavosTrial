@@ -23,7 +23,7 @@
 // PLUG-IN-OUT: Finds components, assigns prefabs from config
 //
 // USAGE:
-//   Tools → Setup Maze Components
+//   Tools  Setup Maze Components
 //   Reads paths from Config/GameConfig-default.json
 //   Creates prefabs ONLY if missing at config paths
 //
@@ -44,9 +44,9 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Maze/Setup Maze Components")]
         public static void SetupMazeComponentsMenu()
         {
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  SETUP MAZE COMPONENTS (From JSON Config)");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             // Load config FIRST - all paths from here
             var config = GameConfig.Instance;
@@ -90,11 +90,11 @@ namespace Code.Lavos.Editor
             EnsureLightPlacementEngine();
             EnsureCompleteMazeBuilder8(config);
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  SETUP COMPLETE!");
             Debug.Log("  All prefabs/materials created from config paths");
             Debug.Log("  Press Ctrl+Alt+G to generate maze");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
         }
 
         private static void EnsureFolder(string path)
@@ -323,7 +323,7 @@ namespace Code.Lavos.Editor
             }
         }
 
-        // ─── Primitive Helpers ───────────────────────────────────────────────
+        //  Primitive Helpers 
 
         private static GameObject CreateWallPrimitive()
         {

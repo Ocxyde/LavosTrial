@@ -20,7 +20,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   Tools → Generate Maze (Ctrl+Alt+G)
+//   Tools  Generate Maze (Ctrl+Alt+G)
 //   Auto-creates ALL required components if missing
 //   Press Play to test
 //
@@ -44,9 +44,9 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Maze/Generate Maze %&G")]
         public static void GenerateMaze()
         {
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  MAZE GENERATOR - Auto-Setup & Generation");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             // Setup scene if needed (finds first, creates if missing)
             SetupScene();
@@ -70,12 +70,12 @@ namespace Code.Lavos.Editor
             // Generate maze
             mazeBuilder.GenerateMaze();
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("   MAZE GENERATED!");
             Debug.Log($"   Size: {mazeBuilder.MazeSize}x{mazeBuilder.MazeSize}");
             Debug.Log($"   Level: {mazeBuilder.CurrentLevel}");
             Debug.Log("   Press Play to test");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
         }
 
         [MenuItem("Tools/Maze/Setup Scene")]
@@ -95,7 +95,7 @@ namespace Code.Lavos.Editor
             }
             else
             {
-                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder8! Run: Tools → Generate Maze");
+                Debug.LogWarning("[MazeBuilderEditor]  No CompleteMazeBuilder8! Run: Tools  Generate Maze");
             }
         }
 
@@ -146,9 +146,9 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Maze/Clear Maze Objects")]
         public static void ClearMazeObjects()
         {
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  CLEARING MAZE OBJECTS...");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             CleanUpObject("MazeWalls");
             CleanUpObject("GroundFloor");
@@ -163,7 +163,7 @@ namespace Code.Lavos.Editor
             PlayerPrefs.Save();
 
             Debug.Log("  Maze objects cleared");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
         }
 
         #endregion
@@ -176,17 +176,17 @@ namespace Code.Lavos.Editor
         /// </summary>
         private static void SetupScene()
         {
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  SETTING UP SCENE (Find First, Create If Missing)...");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             EnsureMazeBuilder();
             EnsureEventHandler();
             EnsurePlayer();
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("   SCENE SETUP COMPLETE!");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
         }
 
         private static void EnsureMazeBuilder()
@@ -514,7 +514,7 @@ namespace Code.Lavos.Editor
                     Object.Destroy(obj);
                 else
                     Object.DestroyImmediate(obj);
-                Debug.Log($"  • Removed: {name}");
+                Debug.Log($"   Removed: {name}");
             }
         }
 
@@ -585,10 +585,10 @@ namespace Code.Lavos.Editor
 
             EditorGUILayout.HelpBox(
                 "Maze-First Generation:\n" +
-                "✓ Real maze walls (not hallways)\n" +
-                "✓ Chambers at intersections\n" +
-                "✓ Dead ends and loops\n" +
-                "✓ Proper dungeon structure\n\n" +
+                " Real maze walls (not hallways)\n" +
+                " Chambers at intersections\n" +
+                " Dead ends and loops\n" +
+                " Proper dungeon structure\n\n" +
                 "Level 0-2: 4-way (tutorial)\n" +
                 "Level 3+: 8-way (diagonal walls)",
                 MessageType.Info);

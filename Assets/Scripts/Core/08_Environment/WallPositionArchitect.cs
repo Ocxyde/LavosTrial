@@ -176,9 +176,9 @@ namespace Code.Lavos.Core
         /// <summary>Print complete blueprint to console.</summary>
         public static void PrintBlueprint()
         {
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  ARCHITECT'S BLUEPRINT (In RAM)");
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log($"Walls: {_wallRecords.Count}");
             Debug.Log($"Torches: {_torchRecords.Count}");
             Debug.Log($"Chests: {_chestRecords.Count}");
@@ -191,7 +191,7 @@ namespace Code.Lavos.Core
             // Show first 5 torches with GUIDs
             if (_torchRecords.Count > 0)
             {
-                Debug.Log("─── First 5 Torches ───");
+                Debug.Log(" First 5 Torches ");
                 for (int i = 0; i < Mathf.Min(5, _torchRecords.Count); i++)
                 {
                     var torch = _torchRecords[i];
@@ -199,7 +199,7 @@ namespace Code.Lavos.Core
                 }
             }
             
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
         }
     }
 }

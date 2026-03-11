@@ -117,7 +117,7 @@ namespace Code.Lavos.Geometry
 
         /// <summary>
         /// Calculate volume of tetrahedron using scalar triple product
-        /// V = |AB · (AC × AD)| / 6
+        /// V = |AB  (AC  AD)| / 6
         /// </summary>
         public double Volume()
         {
@@ -125,7 +125,7 @@ namespace Code.Lavos.Geometry
             Vector3d ac = C - A;
             Vector3d ad = D - A;
             
-            // Scalar triple product: AB · (AC × AD)
+            // Scalar triple product: AB  (AC  AD)
             Vector3d cross = Vector3d.Cross(ac, ad);
             double triple = Vector3d.Dot(ab, cross);
             
@@ -137,7 +137,7 @@ namespace Code.Lavos.Geometry
         /// </summary>
         public double SurfaceArea()
         {
-            // Area of triangle ABC = |AB × AC| / 2
+            // Area of triangle ABC = |AB  AC| / 2
             Vector3d ab = B - A;
             Vector3d ac = C - A;
             Vector3d ad = D - A;

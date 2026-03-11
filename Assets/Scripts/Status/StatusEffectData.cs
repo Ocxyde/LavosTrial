@@ -178,7 +178,7 @@ namespace Code.Lavos.Status
         public string GetDisplayName() => currentStacks > 1 ? $"{effectName} (x{currentStacks})" : effectName;
         public string GetDurationString()
         {
-            if (IsInfinite) return "∞";
+            if (IsInfinite) return "";
             return remainingTime >= 60 ? $"{(int)(remainingTime / 60)}:{(int)(remainingTime % 60):D2}" : $"{remainingTime:F1}s";
         }
     }

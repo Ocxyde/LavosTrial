@@ -1,7 +1,7 @@
-﻿// ClearShaderCache.cs
+// ClearShaderCache.cs
 // Unity Editor script to clear shader cache and fix compilation errors
 // Place in: Assets/Editor/ClearShaderCache.cs
-// Then: Tools → Clear Shader Cache
+// Then: Tools  Clear Shader Cache
 
 using UnityEngine;
 using UnityEditor;

@@ -266,7 +266,7 @@ namespace Code.Lavos.Core
         private uint GenerateComputeSeed()
         {
             // Combine multiple entropy sources
-            int tickCount = Environment.TickCount;
+            int tickCount = System.Environment.TickCount;
             int guidHash = Guid.NewGuid().GetHashCode();
             long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             float random = UnityEngine.Random.value;

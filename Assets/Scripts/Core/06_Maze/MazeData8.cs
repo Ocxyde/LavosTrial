@@ -4,6 +4,8 @@
 // Encoding: UTF-8  |  Locale: en_US
 
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
@@ -123,6 +125,41 @@ namespace Code.Lavos.Core
     }
 
     // -------------------------------------------------------------------------
+    // DoorOpening - represents a carved door opening in a wall
+    // -------------------------------------------------------------------------
+    public struct DoorOpening
+    {
+        public int X;                  // Grid X position
+        public int Z;                  // Grid Z position
+        public Direction8 Direction;   // Which direction the door faces
+        public MazeDoorType Type;      // Normal, Locked, Secret, Exit
+        public bool IsCarved;          // true = opening carved in wall
+
+        public DoorOpening(int x, int z, Direction8 dir, MazeDoorType type = MazeDoorType.Normal)
+        {
+            X = x;
+            Z = z;
+            Direction = dir;
+            Type = type;
+            IsCarved = false;
+        }
+
+        public override string ToString()
+            => $"DoorOpening({X},{Z} {Direction} {Type})";
+    }
+
+    // -------------------------------------------------------------------------
+    // DoorType - types of doors for maze generation
+    // -------------------------------------------------------------------------
+    public enum MazeDoorType
+    {
+        Normal = 0,   // Standard door
+        Locked = 1,   // Requires key
+        Secret = 2,   // Hidden door
+        Exit   = 3,   // Maze exit door
+    }
+
+    // -------------------------------------------------------------------------
     // MazeData8 - mutable data container for generated maze
     // -------------------------------------------------------------------------
     public sealed class MazeData8
@@ -141,6 +178,10 @@ namespace Code.Lavos.Core
         public (int x, int z) SpawnCell { get; private set; }
         public (int x, int z) ExitCell  { get; private set; }
 
+        // Door openings (carved during generation)
+        private readonly List<DoorOpening> _doorOpenings;
+        public IReadOnlyList<DoorOpening> DoorOpenings => _doorOpenings.AsReadOnly();
+
         // Grid - ushort[x, z]
         private readonly CellFlags8[,] _cells;
 
@@ -152,6 +193,7 @@ namespace Code.Lavos.Core
             Level     = level;
             Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             _cells    = new CellFlags8[width, height];
+            _doorOpenings = new List<DoorOpening>();
         }
 
         // Cell accessors
@@ -221,6 +263,46 @@ namespace Code.Lavos.Core
             // Marker for main path - using IsRoom flag as proxy
             AddFlag(x, z, CellFlags8.IsRoom);
         }
+
+        // -------------------------------------------------------------------------
+        // Door Opening Management
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// Add a door opening at the specified position.
+        /// </summary>
+        public void AddDoorOpening(int x, int z, Direction8 direction, MazeDoorType type = MazeDoorType.Normal)
+        {
+            var door = new DoorOpening(x, z, direction, type);
+            _doorOpenings.Add(door);
+            Debug.Log($"[MazeData8] Door opening added: {door}");
+        }
+
+        /// <summary>
+        /// Mark a door opening as carved (geometry removed).
+        /// </summary>
+        public void MarkDoorCarved(int index)
+        {
+            if (index >= 0 && index < _doorOpenings.Count)
+            {
+                var door = _doorOpenings[index];
+                door.IsCarved = true;
+                _doorOpenings[index] = door;
+            }
+        }
+
+        /// <summary>
+        /// Clear all door openings (for regeneration).
+        /// </summary>
+        public void ClearDoorOpenings()
+        {
+            _doorOpenings.Clear();
+        }
+
+        /// <summary>
+        /// Get the number of door openings.
+        /// </summary>
+        public int DoorOpeningCount => _doorOpenings.Count;
 
         // -------------------------------------------------------------------------
         // Binary file constants - LAV8S v3

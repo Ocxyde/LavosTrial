@@ -472,7 +472,7 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            string pathStr = string.Join(" → ", path.ConvertAll(p => $"({p.x},{p.y})"));
+            string pathStr = string.Join("  ", path.ConvertAll(p => $"({p.x},{p.y})"));
             Debug.Log($"[PathFinder] {label}: {path.Count} cells - {pathStr}");
         }
 

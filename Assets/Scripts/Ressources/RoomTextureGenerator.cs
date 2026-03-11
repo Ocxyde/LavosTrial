@@ -245,7 +245,7 @@ namespace Code.Lavos.Ressources
             for (int i = 0; i < pixels.Length; i++)
             {
                 // Slight color variation based on seed
-                float variation = (Random.value - 0.5f) * 0.15f; // ±7.5% variation
+                float variation = (Random.value - 0.5f) * 0.15f; // 7.5% variation
                 pixels[i].r = Mathf.Clamp01(pixels[i].r + variation);
                 pixels[i].g = Mathf.Clamp01(pixels[i].g + variation);
                 pixels[i].b = Mathf.Clamp01(pixels[i].b + variation);

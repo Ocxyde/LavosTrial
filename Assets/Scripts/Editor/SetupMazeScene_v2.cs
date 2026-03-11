@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // SetupMazeSceneV2.cs - Automated scene setup for A-Maze-Lav8s_2.0.0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings

@@ -111,15 +111,15 @@ namespace Code.Lavos.Core
             leftDoor.name = "LeftDoorPanel";
             // Flip the door so it extends to the left instead of right
             // Scale X by -1 to mirror it, but this causes BoxCollider issues...
-            // Instead, rotate 180° around Y and position correctly
+            // Instead, rotate 180 around Y and position correctly
             leftDoor.transform.localRotation = Quaternion.Euler(0, 180, 0);
-            // After 180° rotation, the left edge (hinge) is now on the right side of the mesh
+            // After 180 rotation, the left edge (hinge) is now on the right side of the mesh
             // Position so the hinge (now on right) is at center of doorway
             leftDoor.transform.localPosition = new Vector3(halfDoorWidth, 0, 0);
 
             Debug.Log($"[DoorCubeFactory] Double door created (both hinges at CENTER)");
             Debug.Log($"  Right door: pos={rightDoor.transform.localPosition:F3}, hinge on LEFT, extends RIGHT");
-            Debug.Log($"  Left door: pos={leftDoor.transform.localPosition:F3}, rot=180°Y, hinge on RIGHT, extends LEFT");
+            Debug.Log($"  Left door: pos={leftDoor.transform.localPosition:F3}, rot=180Y, hinge on RIGHT, extends LEFT");
             Debug.Log($"  Doorway spans from X={-halfDoorWidth:F2} to X={halfDoorWidth:F2}");
 
             return new[] { leftDoor, rightDoor };
@@ -303,7 +303,7 @@ namespace Code.Lavos.Core
             // Right door opens negative (clockwise)
             AnimateDoor(rightDoor, -targetAngle, duration);
             
-            Debug.Log($"[DoorCubeFactory] Double door animation: Left={targetAngle}°, Right={-targetAngle}°");
+            Debug.Log($"[DoorCubeFactory] Double door animation: Left={targetAngle}, Right={-targetAngle}");
         }
     }
 }

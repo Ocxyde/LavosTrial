@@ -39,7 +39,7 @@ namespace Code.Lavos.Status
     /// </summary>
     public class StatsEngine
     {
-        // ─── Base Stats ────────────────────────────────────────────────────────
+        //  Base Stats 
         private float _baseMaxHealth = 100f;
         private float _baseMaxMana = 50f;
         private float _baseMaxStamina = 100f;
@@ -49,17 +49,17 @@ namespace Code.Lavos.Status
         private float _baseCriticalChance = 0.05f;
         private float _baseCriticalDamage = 2f;
 
-        // ─── Current Resources ─────────────────────────────────────────────────
+        //  Current Resources 
         private float _currentHealth;
         private float _currentMana;
         private float _currentStamina;
 
-        // ─── Out of Combat Regeneration ────────────────────────────────────────
+        //  Out of Combat Regeneration 
         private float _lastStaminaUseTime = -10f; // Negative so OOC regen is active at start
         private const float OutOfCombatDelay = 5f; // Seconds without using stamina to get OOC regen (increased from 3f)
         private const float OutOfCombatMultiplier = 1.2f; // 1.2x regen when out of combat (reduced from 1.5f)
 
-        // ─── Stat Modifiers ────────────────────────────────────────────────────
+        //  Stat Modifiers 
         private readonly StatModifierCollection _healthModifiers = new();
         private readonly StatModifierCollection _manaModifiers = new();
         private readonly StatModifierCollection _staminaModifiers = new();
@@ -72,7 +72,7 @@ namespace Code.Lavos.Status
         private readonly StatModifierCollection _damageModifiers = new();
         private readonly StatModifierCollection _resistanceModifiers = new();
 
-        // ─── Resistances ───────────────────────────────────────────────────────
+        //  Resistances 
         private readonly Dictionary<DamageType, float> _resistances = new()
         {
             { DamageType.Physical, 0f },
@@ -88,11 +88,11 @@ namespace Code.Lavos.Status
             { DamageType.True, 0f }
         };
 
-        // ─── Status Effects ────────────────────────────────────────────────────
+        //  Status Effects 
         private readonly List<StatusEffectData> _activeEffects = new();
         private readonly Dictionary<string, StatusEffectData> _effectsById = new();
 
-        // ─── Events ────────────────────────────────────────────────────────────
+        //  Events 
         public event Action<float, float> OnHealthChanged;
         public event Action<float, float> OnManaChanged;
         public event Action<float, float> OnStaminaChanged;
@@ -103,7 +103,7 @@ namespace Code.Lavos.Status
 #pragma warning restore CS0067
         public event Action OnStatsRecalculated;
 
-        // ─── Properties ────────────────────────────────────────────────────────
+        //  Properties 
         public float CurrentHealth => _currentHealth;
         public float CurrentMana => _currentMana;
         public float CurrentStamina => _currentStamina;
@@ -123,7 +123,7 @@ namespace Code.Lavos.Status
         public float CriticalChance => _baseCriticalChance;
         public float CriticalDamage => _baseCriticalDamage;
 
-        // ─── Initialization ────────────────────────────────────────────────────
+        //  Initialization 
         public StatsEngine()
         {
             _currentHealth = MaxHealth;
@@ -144,7 +144,7 @@ namespace Code.Lavos.Status
             RecalculateAll();
         }
 
-        // ─── Stat Calculation ──────────────────────────────────────────────────
+        //  Stat Calculation 
 
         /// <summary>
         /// Calculate effective stat value after applying all modifiers
@@ -162,8 +162,8 @@ namespace Code.Lavos.Status
             if (!_resistances.TryGetValue(type, out float resistance))
                 return 1f;
 
-            // resistance = 0.5 → 50% damage reduction (multiplier = 0.5)
-            // resistance = -0.25 → 25% damage increase (multiplier = 1.25)
+            // resistance = 0.5  50% damage reduction (multiplier = 0.5)
+            // resistance = -0.25  25% damage increase (multiplier = 1.25)
             return Mathf.Max(0.1f, 1f - resistance);
         }
 
@@ -192,7 +192,7 @@ namespace Code.Lavos.Status
             OnStaminaChanged?.Invoke(_currentStamina, MaxStamina);
         }
 
-        // ─── Stat Modifiers ────────────────────────────────────────────────────
+        //  Stat Modifiers 
 
         /// <summary>
         /// Add a stat modifier
@@ -240,7 +240,7 @@ namespace Code.Lavos.Status
             _ => null
         };
 
-        // ─── Resistance Management ─────────────────────────────────────────────
+        //  Resistance Management 
 
         /// <summary>
         /// Modify resistance for a damage type
@@ -268,7 +268,7 @@ namespace Code.Lavos.Status
                 _resistances[type] = value;
         }
 
-        // ─── Status Effects Management ─────────────────────────────────────────
+        //  Status Effects Management 
 
         /// <summary>
         /// Apply a status effect (buff, debuff, etc.)
@@ -466,7 +466,7 @@ namespace Code.Lavos.Status
             }
         }
 
-        // ─── Resource Management ───────────────────────────────────────────────
+        //  Resource Management 
 
         /// <summary>
         /// Use health with cost modifiers applied (for abilities that cost health)
@@ -551,7 +551,7 @@ namespace Code.Lavos.Status
                    _currentStamina >= staminaCost * StaminaCostMultiplier;
         }
 
-        // ─── Damage Calculation ────────────────────────────────────────────────
+        //  Damage Calculation 
 
         /// <summary>
         /// Calculate final damage after resistances and modifiers
@@ -576,7 +576,7 @@ namespace Code.Lavos.Status
             return Mathf.Max(0f, damage);
         }
 
-        // ─── Regeneration ──────────────────────────────────────────────────────
+        //  Regeneration 
 
         /// <summary>
         /// Apply regeneration for all resources
@@ -610,7 +610,7 @@ namespace Code.Lavos.Status
             }
         }
 
-        // ─── Utility ───────────────────────────────────────────────────────────
+        //  Utility 
 
         /// <summary>
         /// Clear all status effects

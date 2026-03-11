@@ -101,7 +101,7 @@ namespace Code.Lavos.Status
 
     /// <summary>
     /// Collection of stat modifiers with calculation logic.
-    /// Applies modifiers in order: Base → Additive → Multiplicative → Override
+    /// Applies modifiers in order: Base  Additive  Multiplicative  Override
     /// </summary>
     [Serializable]
     public class StatModifierCollection
@@ -138,7 +138,7 @@ namespace Code.Lavos.Status
 
         /// <summary>
         /// Calculate final value after applying all valid modifiers
-        /// Order: Base → Additive → Multiplicative → Override
+        /// Order: Base  Additive  Multiplicative  Override
         /// </summary>
         /// <param name="baseValue">The base stat value</param>
         /// <param name="currentTime">Current game time for duration checks</param>

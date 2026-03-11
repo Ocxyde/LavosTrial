@@ -1,9 +1,9 @@
-﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 | Locale: en_US
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 // [DEPRECATED - 2026-03-09]
 // This file is LEGACY and should be archived or removed.
 //
@@ -17,7 +17,7 @@
 // - Inconsistent corridor geometry
 //
 // DO NOT USE in new code. Migrate to GridMazeGenerator.cs instead.
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 using System;
 using System.Collections.Generic;
@@ -53,9 +53,9 @@ namespace Code.Lavos.Core.Advanced
         private (int x, int z) _startPoint;
         private (int x, int z) _exitPoint;
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // CONSTANTS & CELL TYPE DEFINITIONS
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         public const byte CELL_WALL = 0xFF;      // All walls present
         public const byte CELL_PASSAGE = 0x00;   // No walls (carvedthrough)
@@ -87,9 +87,9 @@ namespace Code.Lavos.Core.Advanced
             { 7, 0x80 },  // SW - Wall SouthWest diagonal
         };
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // INITIALIZATION
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Initialize maze generator with dimensions and random seed
@@ -110,9 +110,9 @@ namespace Code.Lavos.Core.Advanced
                     _maze[x, z] = CELL_WALL;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // PUBLIC API - MAZE GENERATION
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Generate complete maze from Start A to Exit B
@@ -156,9 +156,9 @@ namespace Code.Lavos.Core.Advanced
             };
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // CORE ALGORITHMS - DEPTH-FIRST CARVING
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Depth-first search with 8-axis carving
@@ -235,9 +235,9 @@ namespace Code.Lavos.Core.Advanced
             _maze[x2, z2] &= (byte)~Direction8WallFlags[oppositeDir];
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // PATHFINDING & GUARANTEES
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Ensure guaranteed path from Start A to Exit B using A* pathfinding
@@ -317,9 +317,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // ANALYSIS & FEATURES
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Identify dead-ends and crossroads
@@ -384,9 +384,9 @@ namespace Code.Lavos.Core.Advanced
                         _corridors.Add((x, z));
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+        // 
         // UTILITY MATH FUNCTIONS
-        // ─────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Heuristic for A* - Chebyshev distance (8-axis)
@@ -496,9 +496,9 @@ namespace Code.Lavos.Core.Advanced
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────
+    // 
     // OUTPUT RESULT STRUCTURE
-    // ─────────────────────────────────────────────────────────────────────
+    // 
 
     /// <summary>
     /// Complete maze generation result with all computed data
@@ -539,7 +539,7 @@ namespace Code.Lavos.Core.Advanced
 
         /// <summary>
         /// Get wall prefab positions for a grid cell
-        /// Returns dictionary mapping direction → position offset
+        /// Returns dictionary mapping direction  position offset
         /// </summary>
         public Dictionary<string, (int dx, int dz)> GetWallPrefabPositions()
         {

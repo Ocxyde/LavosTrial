@@ -16,7 +16,7 @@
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 //
 // CorridorFlowSystem.cs
-// Three-tier corridor hierarchy with entrance→exit flow optimization
+// Three-tier corridor hierarchy with entranceexit flow optimization
 // UPDATED 2026-03-09: Performance optimized + mathematical correctness
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
@@ -37,7 +37,7 @@ namespace Code.Lavos.Core
     /// </summary>
     public enum CorridorTier
     {
-        Main,       // Entrance → Exit (wide, well-lit)
+        Main,       // Entrance  Exit (wide, well-lit)
         Secondary,  // Branches from main (medium)
         Tertiary    // Dead-ends, secrets (narrow)
     }
@@ -85,7 +85,7 @@ namespace Code.Lavos.Core
     }
 
     /// <summary>
-    /// Corridor Flow System - Three-tier hierarchy with entrance→exit optimization
+    /// Corridor Flow System - Three-tier hierarchy with entranceexit optimization
     ///
     /// FEATURES:
     /// - Main artery: Guaranteed wide path from entrance to exit
@@ -157,7 +157,7 @@ namespace Code.Lavos.Core
             Debug.Log("[CorridorFlowSystem] Starting three-tier corridor generation...");
             float startTime = Time.realtimeSinceStartup;
 
-            // Step 1: Main Artery (Entrance → Exit)
+            // Step 1: Main Artery (Entrance  Exit)
             CarveMainArtery();
 
             // Step 2: Secondary Corridors (Branches)
@@ -178,7 +178,7 @@ namespace Code.Lavos.Core
         /// </summary>
         private void CarveMainArtery()
         {
-            Debug.Log("[CorridorFlowSystem] Step 1: Carving main artery (entrance → exit)...");
+            Debug.Log("[CorridorFlowSystem] Step 1: Carving main artery (entrance  exit)...");
 
             var spawnTuple = _mazeData.SpawnCell;
             var exitTuple = _mazeData.ExitCell;

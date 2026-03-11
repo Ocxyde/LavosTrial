@@ -19,15 +19,15 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Generate Diagonal Walls & Corners
+//   1. Tools  Generate Diagonal Walls & Corners
 //   2. Prefabs created in Assets/Resources/Prefabs/
 //   3. Assign to CompleteMazeBuilder inspector
 //
 // FEATURES:
-//   - Diagonal walls (45° rotated, fits cell diagonal)
-//   - L-corner pieces (internal 90° corners)
-//   - Triangle corner pieces (external 45° corners)
-//   - All sized for 6m cells with 45° rotation
+//   - Diagonal walls (45 rotated, fits cell diagonal)
+//   - L-corner pieces (internal 90 corners)
+//   - Triangle corner pieces (external 45 corners)
+//   - All sized for 6m cells with 45 rotation
 
 #if UNITY_EDITOR
 using UnityEngine;
@@ -47,7 +47,7 @@ namespace Code.Lavos.Editor
         private const float WALL_HEIGHT = 4.0f;
         private const float WALL_THICKNESS = 0.5f;
 
-        // Diagonal math: diagonal of 6m cell = 6 * sqrt(2) ≈ 8.485m
+        // Diagonal math: diagonal of 6m cell = 6 * sqrt(2)  8.485m
         private static readonly float DIAGONAL_LENGTH = CELL_SIZE * Mathf.Sqrt(2f);
 
         // Window instance
@@ -110,7 +110,7 @@ namespace Code.Lavos.Editor
 
             EditorGUILayout.LabelField(
                 "Generates diagonal walls and corner pieces for 8-directional maze system.\n" +
-                "All prefabs sized for 6m cells with proper 45° rotation.",
+                "All prefabs sized for 6m cells with proper 45 rotation.",
                 subHeaderStyle
             );
         }
@@ -151,7 +151,7 @@ namespace Code.Lavos.Editor
 
             // Generate all button
             GUI.backgroundColor = new Color(0.4f, 0.8f, 1f);
-            if (GUILayout.Button("🎯 GENERATE ALL PREFABS", GUILayout.Height(40)))
+            if (GUILayout.Button(" GENERATE ALL PREFABS", GUILayout.Height(40)))
             {
                 GenerateAllPrefabs();
             }
@@ -193,7 +193,7 @@ namespace Code.Lavos.Editor
 
             // Cleanup button
             GUI.backgroundColor = new Color(1f, 0.4f, 0.4f);
-            if (GUILayout.Button("🗑️ Delete All Diagonal Prefabs", GUILayout.Height(30)))
+            if (GUILayout.Button(" Delete All Diagonal Prefabs", GUILayout.Height(30)))
             {
                 DeleteAllDiagonalPrefabs();
             }
@@ -212,30 +212,30 @@ namespace Code.Lavos.Editor
 
             EditorGUILayout.BeginVertical(infoStyle);
 
-            EditorGUILayout.LabelField("📐 DIAGONAL WALL SPECS:", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField($"  • Cell Size: {CELL_SIZE}m");
-            EditorGUILayout.LabelField($"  • Wall Height: {WALL_HEIGHT}m");
-            EditorGUILayout.LabelField($"  • Wall Thickness: {WALL_THICKNESS}m");
-            EditorGUILayout.LabelField($"  • Diagonal Length: {DIAGONAL_LENGTH:F3}m (6 × √2)");
-            EditorGUILayout.LabelField($"  • Rotation: 45°, 135°, 225°, 315°");
+            EditorGUILayout.LabelField(" DIAGONAL WALL SPECS:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"   Cell Size: {CELL_SIZE}m");
+            EditorGUILayout.LabelField($"   Wall Height: {WALL_HEIGHT}m");
+            EditorGUILayout.LabelField($"   Wall Thickness: {WALL_THICKNESS}m");
+            EditorGUILayout.LabelField($"   Diagonal Length: {DIAGONAL_LENGTH:F3}m (6  2)");
+            EditorGUILayout.LabelField($"   Rotation: 45, 135, 225, 315");
 
             GUILayout.Space(10);
 
-            EditorGUILayout.LabelField("🔷 L-CORNER SPECS:", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("  • Internal 90° corners");
-            EditorGUILayout.LabelField("  • Connects two cardinal walls");
-            EditorGUILayout.LabelField("  • 4 variants: NE, NW, SE, SW");
+            EditorGUILayout.LabelField(" L-CORNER SPECS:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("   Internal 90 corners");
+            EditorGUILayout.LabelField("   Connects two cardinal walls");
+            EditorGUILayout.LabelField("   4 variants: NE, NW, SE, SW");
 
             GUILayout.Space(10);
 
-            EditorGUILayout.LabelField("🔺 TRIANGLE CORNER SPECS:", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("  • External 45° corners");
-            EditorGUILayout.LabelField("  • Caps diagonal wall ends");
-            EditorGUILayout.LabelField("  • 8 variants for all diagonal directions");
+            EditorGUILayout.LabelField(" TRIANGLE CORNER SPECS:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("   External 45 corners");
+            EditorGUILayout.LabelField("   Caps diagonal wall ends");
+            EditorGUILayout.LabelField("   8 variants for all diagonal directions");
 
             GUILayout.Space(10);
 
-            EditorGUILayout.LabelField("📁 OUTPUT LOCATION:", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(" OUTPUT LOCATION:", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("  Assets/Resources/Prefabs/");
 
             EditorGUILayout.EndVertical();
@@ -252,8 +252,8 @@ namespace Code.Lavos.Editor
                 "All diagonal wall and corner prefabs have been generated!\n\n" +
                 "Location: Assets/Resources/Prefabs/\n\n" +
                 "Assign them to CompleteMazeBuilder:\n" +
-                "  • wallDiagPrefab → DiagonalWallPrefab.prefab\n" +
-                "  • wallCornerPrefab → LCornerPrefab.prefab (or TriangleCornerPrefab.prefab)",
+                "   wallDiagPrefab  DiagonalWallPrefab.prefab\n" +
+                "   wallCornerPrefab  LCornerPrefab.prefab (or TriangleCornerPrefab.prefab)",
                 "OK"
             );
         }
@@ -275,7 +275,7 @@ namespace Code.Lavos.Editor
 
             Debug.Log($"[DiagonalWallGenerator] Created: {prefabPath}");
             Debug.Log($"  - Size: {DIAGONAL_LENGTH:F3}m (diagonal) x {WALL_HEIGHT}m height");
-            Debug.Log($"  - Rotation: 45° (NE-SW diagonal)");
+            Debug.Log($"  - Rotation: 45 (NE-SW diagonal)");
 
             // Also create variants with different rotations
             CreateDiagonalVariant(prefabsFolder, "DiagonalWallPrefab_NE", 45f);
@@ -435,7 +435,7 @@ namespace Code.Lavos.Editor
             // Cleanup
             DestroyImmediate(variant);
 
-            Debug.Log($"[DiagonalWallGenerator] Created variant: {prefabPath} (rotation: {rotationY}°)");
+            Debug.Log($"[DiagonalWallGenerator] Created variant: {prefabPath} (rotation: {rotationY})");
         }
 
         private void GenerateLCorners()
@@ -443,7 +443,7 @@ namespace Code.Lavos.Editor
             string prefabsFolder = "Assets/Resources/Prefabs";
             EnsureFolderExists(prefabsFolder);
 
-            // Create 4 L-corner variants (internal 90° corners)
+            // Create 4 L-corner variants (internal 90 corners)
             CreateLCornerVariant(prefabsFolder, "LCorner_NW", new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0));
             CreateLCornerVariant(prefabsFolder, "LCorner_NE", new Vector3(0, 0, 0), Quaternion.Euler(0, 90, 0));
             CreateLCornerVariant(prefabsFolder, "LCorner_SE", new Vector3(0, 0, 0), Quaternion.Euler(0, 180, 0));
@@ -451,14 +451,14 @@ namespace Code.Lavos.Editor
 
             AssetDatabase.Refresh();
 
-            Debug.Log("[DiagonalWallGenerator] Created 4 L-Corner prefabs (internal 90° corners)");
+            Debug.Log("[DiagonalWallGenerator] Created 4 L-Corner prefabs (internal 90 corners)");
         }
 
         private void CreateLCornerVariant(string folder, string name, Vector3 position, Quaternion rotation)
         {
             GameObject corner = new GameObject(name);
 
-            // Create two wall segments at 90°
+            // Create two wall segments at 90
             GameObject wall1 = CreateWallSegment("Wall1", CELL_SIZE / 2f, WALL_HEIGHT, WALL_THICKNESS);
             GameObject wall2 = CreateWallSegment("Wall2", CELL_SIZE / 2f, WALL_HEIGHT, WALL_THICKNESS);
 
@@ -619,7 +619,7 @@ namespace Code.Lavos.Editor
             string prefabsFolder = "Assets/Resources/Prefabs";
             EnsureFolderExists(prefabsFolder);
 
-            // Create 8 triangle corner variants (external 45° corners)
+            // Create 8 triangle corner variants (external 45 corners)
             string[] names = { "TriangleCorner_N", "TriangleCorner_NE", "TriangleCorner_E", "TriangleCorner_SE",
                               "TriangleCorner_S", "TriangleCorner_SW", "TriangleCorner_W", "TriangleCorner_NW" };
             float[] rotations = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
@@ -631,14 +631,14 @@ namespace Code.Lavos.Editor
 
             AssetDatabase.Refresh();
 
-            Debug.Log("[DiagonalWallGenerator] Created 8 Triangle Corner prefabs (external 45° corners)");
+            Debug.Log("[DiagonalWallGenerator] Created 8 Triangle Corner prefabs (external 45 corners)");
         }
 
         private void CreateTriangleCornerVariant(string folder, string name, float rotationY)
         {
             GameObject corner = new GameObject(name);
 
-            // Create triangular prism mesh for 45° corner cap
+            // Create triangular prism mesh for 45 corner cap
             MeshFilter meshFilter = corner.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer = corner.AddComponent<MeshRenderer>();
 
@@ -671,7 +671,7 @@ namespace Code.Lavos.Editor
             // Cleanup
             DestroyImmediate(corner);
 
-            Debug.Log($"[DiagonalWallGenerator] Created Triangle Corner: {prefabPath} (rotation: {rotationY}°)");
+            Debug.Log($"[DiagonalWallGenerator] Created Triangle Corner: {prefabPath} (rotation: {rotationY})");
         }
 
         private Mesh CreateTriangleCornerMesh()

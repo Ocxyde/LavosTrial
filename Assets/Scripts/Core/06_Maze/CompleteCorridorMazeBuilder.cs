@@ -1,14 +1,18 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // CompleteCorridorMazeBuilder.cs - Pure corridor maze builder
 
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
+using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Code.Lavos.Core
 {
     public sealed class CompleteCorridorMazeBuilder : MonoBehaviour
     {
+        private static readonly Dictionary<string, GameObject> _prefabCache = new();
+
         [Header("Cardinal Prefabs")]
         [SerializeField] private GameObject wallPrefab;
         [SerializeField] private GameObject doorPrefab;

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // TorchPixelArtGenerator.cs - Editor tool to generate 8-bit pixel art torch textures
 
@@ -41,7 +41,7 @@ namespace Code.Lavos.Editor
             CreateTorchMaterials(handleTexture, flameTexture, baseTexture);
 
             AssetDatabase.Refresh();
-            Debug.Log("[TorchPixelArt] ✅ Generated 8-bit pixel art torch textures and materials!");
+            Debug.Log("[TorchPixelArt]  Generated 8-bit pixel art torch textures and materials!");
         }
 
         private static void EnsureFoldersExist()
@@ -249,7 +249,7 @@ namespace Code.Lavos.Editor
             Material baseMat = CreateMaterial(baseTexture, "Universal Render Pipeline/Lit", "Torch_Base");
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[TorchPixelArt] ✅ Created 3 torch materials!");
+            Debug.Log("[TorchPixelArt]  Created 3 torch materials!");
         }
 
         private static Material CreateMaterial(Texture2D texture, string shaderName, string materialName)

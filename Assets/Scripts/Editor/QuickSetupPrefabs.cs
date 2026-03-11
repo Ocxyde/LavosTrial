@@ -19,7 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Quick Setup Prefabs
+//   1. Tools  Quick Setup Prefabs
 //   2. Prefabs created in Assets/Resources/Prefabs/
 //   3. Test maze generation (Ctrl+Alt+G)
 
@@ -35,9 +35,9 @@ namespace Code.Lavos.Editor
         [MenuItem("Tools/Quick Setup Prefabs (For Testing)")]
         public static void SetupMinimumPrefabs()
         {
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  QUICK SETUP - Minimum Required Prefabs");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             // Create Resources/Prefabs folder
             string prefabsFolder = "Assets/Resources/Prefabs";
@@ -74,9 +74,9 @@ namespace Code.Lavos.Editor
             // Auto-assign prefabs to CompleteMazeBuilder8 if it exists in scene
             AutoAssignPrefabsToBuilder();
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("   QUICK SETUP COMPLETE!");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("");
             Debug.Log(" Prefabs created in: Assets/Resources/Prefabs/");
             Debug.Log(" Materials created in: Assets/Resources/Materials/");

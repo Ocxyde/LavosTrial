@@ -34,7 +34,7 @@ namespace Code.Lavos.HUD
 
         void Awake()
         {
-            // Singleton protection — destroy duplicate on scene reload
+            // Singleton protection  destroy duplicate on scene reload
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);

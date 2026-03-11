@@ -32,7 +32,7 @@ using Code.Lavos.Status;
 namespace Code.Lavos.Gameplay
 {
     /// <summary>
-    /// COLLECTIBLE — Pickable object (coin, potion, bonus...)
+    /// COLLECTIBLE  Pickable object (coin, potion, bonus...)
     ///
     /// SETUP in Unity:
     ///  1. Create a GameObject (e.g., a sphere)
@@ -104,7 +104,7 @@ namespace Code.Lavos.Gameplay
         if (collectVFX != null)
             Instantiate(collectVFX, transform.position, Quaternion.identity);
 
-        Debug.Log($"[Collectible] Ramassé : {type} +{value}");
+        Debug.Log($"[Collectible] Ramass : {type} +{value}");
         Destroy(gameObject);
     }
     }

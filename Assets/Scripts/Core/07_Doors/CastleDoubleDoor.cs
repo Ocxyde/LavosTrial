@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // CastleDoubleDoor.cs
-// Manor / castle style double door — scene MazeLav8s_v1-0_0_0
+// Manor / castle style double door  scene MazeLav8s_v1-0_0_0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Locale: en_US
 //
@@ -32,7 +32,7 @@
 //   Set wallFacing to the direction the door faces (world Y-angle).
 //   Toggle isOneWayExit for the final exit door.
 //
-// PLUG-IN-OUT: no DontDestroyOnLoad — local to maze scene.
+// PLUG-IN-OUT: no DontDestroyOnLoad  local to maze scene.
 // LOCATION: Assets/Scripts/Core/07_Doors/
 
 using UnityEngine;
@@ -40,14 +40,14 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// CastleDoubleDoor — procedural manor double door.
+    /// CastleDoubleDoor  procedural manor double door.
     /// Builds geometry at runtime; no prefab required beyond this MonoBehaviour.
     /// Interactable via DoorsEngine or direct IInteractable call.
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class CastleDoubleDoor : MonoBehaviour, IInteractable
     {
-        // ── Inspector ────────────────────────────────────────────────────────
+        //  Inspector 
         [Header("Geometry")]
         [SerializeField] private float doorWidth    = 2.8f;   // each panel width (m)
         [SerializeField] private float doorHeight   = 3.6f;   // panel height (m)
@@ -70,19 +70,19 @@ namespace Code.Lavos.Core
         [Range(0f, 1f)]
         [SerializeField] private float sfxVolume   = 0.75f;
 
-        // ── State ────────────────────────────────────────────────────────────
+        //  State 
         private bool   _isOpen        = false;
         private bool   _isAnimating   = false;
         private float  _targetAngle   = 0f;
         private float  _currentAngle  = 0f;
         private float  _autoCloseTimer= 0f;
 
-        // ── Scene objects ─────────────────────────────────────────────────
+        //  Scene objects 
         private Transform _leftPivot;
         private Transform _rightPivot;
         private AudioSource _audio;
 
-        // ── IInteractable Implementation ─────────────────────────────────
+        //  IInteractable Implementation 
         public string InteractionPrompt => _isOpen ? "Fermer" : "Ouvrir";
 
         bool IInteractable.CanInteract(MonoBehaviour player) => true;
@@ -103,8 +103,8 @@ namespace Code.Lavos.Core
                 // dot > 0 means player is on the "inside" (exit side)
                 if (Vector3.Dot(toDoor.normalized, doorFwd) < 0f)
                 {
-                    Debug.Log("[CastleDoubleDoor] Porte à sens unique — côté extérieur bloqué.");
-                    EventHandler.Instance?.InvokeShowHint("Sortie à sens unique — impossible d'entrer.");
+                    Debug.Log("[CastleDoubleDoor] Porte  sens unique  ct extrieur bloqu.");
+                    EventHandler.Instance?.InvokeShowHint("Sortie  sens unique  impossible d'entrer.");
                     return;
                 }
             }
@@ -122,7 +122,7 @@ namespace Code.Lavos.Core
             // Optional: Remove highlight effect
         }
 
-        // ── Unity lifecycle ───────────────────────────────────────────────
+        //  Unity lifecycle 
 
         private void Awake()
         {
@@ -156,7 +156,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ── Public API ────────────────────────────────────────────────────
+        //  Public API 
 
         public void Open()
         {
@@ -178,11 +178,11 @@ namespace Code.Lavos.Core
             PlaySfx(closeSfx);
         }
 
-        // ── Build geometry ─────────────────────────────────────────────────
+        //  Build geometry 
 
         private void BuildDoor()
         {
-            // ── Left panel ─────────────────────────────────────────────
+            //  Left panel 
             _leftPivot  = new GameObject("LeftPivot").transform;
             _leftPivot.SetParent(transform, false);
             _leftPivot.localPosition = new Vector3(-doorWidth * 0.5f, 0f, 0f);
@@ -195,7 +195,7 @@ namespace Code.Lavos.Core
             ApplyMaterial(leftPanel, CreateDoubleDoorMaterial());
             AddDoorCollider(leftPanel);
 
-            // ── Right panel ────────────────────────────────────────────
+            //  Right panel 
             _rightPivot = new GameObject("RightPivot").transform;
             _rightPivot.SetParent(transform, false);
             _rightPivot.localPosition = new Vector3(doorWidth * 0.5f, 0f, 0f);
@@ -207,7 +207,7 @@ namespace Code.Lavos.Core
             ApplyMaterial(rightPanel, CreateDoubleDoorMaterial());
             AddDoorCollider(rightPanel);
 
-            // ── Stone arch (trim above door) ───────────────────────────
+            //  Stone arch (trim above door) 
             GameObject arch = GameObject.CreatePrimitive(PrimitiveType.Cube);
             arch.name = "Arch";
             arch.transform.SetParent(transform, false);
@@ -217,7 +217,7 @@ namespace Code.Lavos.Core
             ApplyMaterial(arch, CreateCastleWallMaterial());
             Destroy(arch.GetComponent<Collider>());
 
-            // ── Left / right stone pillars ─────────────────────────────
+            //  Left / right stone pillars 
             BuildPillar(-doorWidth - doorThick * 0.5f);
             BuildPillar( doorWidth + doorThick * 0.5f);
 
@@ -271,7 +271,7 @@ namespace Code.Lavos.Core
                 _audio.PlayOneShot(clip, sfxVolume);
         }
 
-        // ── Material Creation (local, no external dependency) ────────────
+        //  Material Creation (local, no external dependency) 
 
         private static Material CreateDoubleDoorMaterial()
         {

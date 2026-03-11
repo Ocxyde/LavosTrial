@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -19,7 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Create Tetrahedron Prefabs (8-bit Pixel Art)
+//   1. Tools  Create Tetrahedron Prefabs (8-bit Pixel Art)
 //   2. Prefabs created at Assets/Resources/Prefabs/
 //   3. Both share same texture & material
 
@@ -152,11 +152,11 @@ namespace Code.Lavos.Editor
         {
             EditorGUILayout.HelpBox(
                 "Creates 2 tetrahedron prefabs:\n" +
-                $"  • {PREFAB_1_NAME} - At origin with rotation (-22.5, -180, -22.5)\n" +
-                $"  • {PREFAB_2_NAME} - Variant at (2, 0, 0)\n\n" +
+                $"   {PREFAB_1_NAME} - At origin with rotation (-22.5, -180, -22.5)\n" +
+                $"   {PREFAB_2_NAME} - Variant at (2, 0, 0)\n\n" +
                 "Both share:\n" +
-                "  • Same 8-bit pixel art texture (64x64)\n" +
-                "  • Same material (Standard shader)\n\n" +
+                "   Same 8-bit pixel art texture (64x64)\n" +
+                "   Same material (Standard shader)\n\n" +
                 "Output:\n" +
                 "  Assets/Resources/Prefabs/\n" +
                 "  Assets/Resources/Materials/\n" +
@@ -213,8 +213,8 @@ namespace Code.Lavos.Editor
                 "Tetrahedrons Created!",
                 $"2 tetrahedron prefabs created successfully!\n\n" +
                 $"Both share:\n" +
-                $"  • 8-bit pixel art texture ({textureSize}x{textureSize})\n" +
-                $"  • Same material\n\n" +
+                $"   8-bit pixel art texture ({textureSize}x{textureSize})\n" +
+                $"   Same material\n\n" +
                 $"Locations:\n" +
                 $"  {prefab1Path}\n" +
                 $"  {prefab2Path}",
@@ -254,7 +254,7 @@ namespace Code.Lavos.Editor
             mesh.name = "TetrahedronMesh";
 
             // Tetrahedron vertices (regular tetrahedron centered at origin)
-            // Edge length = sqrt(8/3) ≈ 1.633 for unit sphere inscribed
+            // Edge length = sqrt(8/3)  1.633 for unit sphere inscribed
             float size = 1f;
             float h = size * Mathf.Sqrt(2f / 3f); // Height from base to apex
             float r = size * Mathf.Sqrt(1f / 3f); // Radius of base

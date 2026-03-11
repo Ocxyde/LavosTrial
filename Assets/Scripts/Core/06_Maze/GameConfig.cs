@@ -23,8 +23,8 @@ using UnityEngine;
 
 namespace Code.Lavos.Core
 {
-    // ─────────────────────────────────────────────────────────────
-    //  GameConfig  —  runtime config for the 8-axis maze system
+    // 
+    //  GameConfig    runtime config for the 8-axis maze system
     //
     //  No hardcoded values. All fields sourced from:
     //    Config/GameConfig8-default.json
@@ -36,11 +36,11 @@ namespace Code.Lavos.Core
     //
     //  IMPORTANT: Must be added to scene manually.
     //  Do NOT rely on auto-creation (plug-in-out violation).
-    // ─────────────────────────────────────────────────────────────
+    // 
     [Serializable]
     public sealed class GameConfig : MonoBehaviour
     {
-        // ── Singleton pattern (scene-based) ───────────────────────
+        //  Singleton pattern (scene-based) 
         private static GameConfig _instance;
         public static GameConfig Instance
         {
@@ -63,7 +63,7 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ── Backward compatibility aliases (for legacy code) ──────
+        //  Backward compatibility aliases (for legacy code) 
         public float DefaultCellSize => CellSize;
         public float DefaultWallHeight => WallHeight;
         public float DefaultPlayerEyeHeight => PlayerEyeHeight;
@@ -124,16 +124,16 @@ namespace Code.Lavos.Core
         public float PlayerEyeHeight   = 1.7f;
         public float PlayerSpawnOffset = 0.5f;
 
-        [Header("Maze Generation — 8 Axis")]
+        [Header("Maze Generation  8 Axis")]
         public MazeConfig MazeCfg = new MazeConfig();
 
-        [Header("Difficulty Scaling — 8 Axis")]
+        [Header("Difficulty Scaling  8 Axis")]
         public DifficultyScaler DifficultyCfg = new DifficultyScaler();
 
         [Header("Share System")]
         public string ShareSalt = "LAVOS_SECRET_SALT_2026";  // Salt for maze code checksum
 
-        // ── JSON deserialization proxy ────────────────────────────
+        //  JSON deserialization proxy 
 #pragma warning disable CS0649  // Fields assigned via JsonUtility.FromJson
         [Serializable]
         private struct JsonProxy

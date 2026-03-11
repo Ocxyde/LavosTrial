@@ -152,9 +152,9 @@ namespace Code.Lavos.Core
             showDebugGizmos = config.ShowDebugGizmos;
 
             Debug.Log($"[DoorHolePlacer]  Config loaded from JSON:");
-            Debug.Log($"  • Door Size: {doorWidth}m x {doorHeight}m x {doorDepth}m");
-            Debug.Log($"  • Hole Depth: {holeDepth}m");
-            Debug.Log($"  • Door Spawn Chance: {doorSpawnChance * 100f:F0}%");
+            Debug.Log($"   Door Size: {doorWidth}m x {doorHeight}m x {doorDepth}m");
+            Debug.Log($"   Hole Depth: {holeDepth}m");
+            Debug.Log($"   Door Spawn Chance: {doorSpawnChance * 100f:F0}%");
         }
 
         #endregion

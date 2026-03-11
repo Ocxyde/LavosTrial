@@ -19,7 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Create Maze Prefabs
+//   1. Tools  Create Maze Prefabs
 //   2. All prefabs created in Assets/Prefabs/
 //   3. All materials created in Assets/Materials/
 //   4. Ready to use with CompleteMazeBuilder
@@ -96,7 +96,7 @@ namespace Code.Lavos.Editor
             door.name = "Door";
             door.transform.localScale = new Vector3(0.5f, 4f, 5.4f);
 
-            ApplyMaterial(door, "Assets/Materials/Door_PïxelArt.mat", new Color(0.5f, 0.35f, 0.2f));
+            ApplyMaterial(door, "Assets/Materials/Door_PxelArt.mat", new Color(0.5f, 0.35f, 0.2f));
             door.AddComponent<Code.Lavos.Core.DoorsEngine>();
 
             SavePrefab(door, prefabPath);
@@ -111,7 +111,7 @@ namespace Code.Lavos.Editor
             door.name = "LockedDoor";
             door.transform.localScale = new Vector3(0.5f, 4f, 5.4f);
 
-            ApplyMaterial(door, "Assets/Materials/Door_PïxelArt.mat", new Color(0.7f, 0.3f, 0.3f));
+            ApplyMaterial(door, "Assets/Materials/Door_PxelArt.mat", new Color(0.7f, 0.3f, 0.3f));
             door.AddComponent<Code.Lavos.Core.DoorsEngine>();
 
             SavePrefab(door, prefabPath);

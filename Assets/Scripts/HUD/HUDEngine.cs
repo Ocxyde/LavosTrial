@@ -20,14 +20,14 @@
 //
 // Architecture:
 //   HUDEngine (central manager)
-//   ├── HUDModule (base class for all HUD components)
-//   │   ├── BarsModule (health, mana, stamina bars)
-//   │   ├── StatusEffectsModule (buff/debuff icons)
-//   │   ├── HotbarModule (item slots)
-//   │   ├── PopupModule (damage numbers, notifications)
-//   │   ├── PauseMenuModule (pause UI)
-//   │   └── Custom modules...
-//   └── HUDCanvas (canvas management)
+//    HUDModule (base class for all HUD components)
+//       BarsModule (health, mana, stamina bars)
+//       StatusEffectsModule (buff/debuff icons)
+//       HotbarModule (item slots)
+//       PopupModule (damage numbers, notifications)
+//       PauseMenuModule (pause UI)
+//       Custom modules...
+//    HUDCanvas (canvas management)
 
 using System.Collections.Generic;
 using UnityEngine;

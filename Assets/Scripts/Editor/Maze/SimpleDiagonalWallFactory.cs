@@ -1,4 +1,4 @@
-﻿﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -19,7 +19,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   1. Tools → Create Simple Diagonal Wall Prefab
+//   1. Tools  Create Simple Diagonal Wall Prefab
 //   2. Prefab created at Assets/Resources/Prefabs/DiagonalWallPrefab.prefab
 //   3. CompleteMazeBuilder auto-loads it as wallDiagPrefab
 
@@ -33,7 +33,7 @@ namespace Code.Lavos.Editor
 {
     /// <summary>
     /// SimpleDiagonalWallFactory - Creates diagonal wall prefab using cube primitive.
-    /// Uses a simple cube rotated 45° with scale (1, 1, 0.5).
+    /// Uses a simple cube rotated 45 with scale (1, 1, 0.5).
     /// Output: DiagonalWallPrefab.prefab (replaces existing if present)
     /// </summary>
     public class SimpleDiagonalWallFactory : EditorWindow
@@ -99,7 +99,7 @@ namespace Code.Lavos.Editor
             // Info
             EditorGUILayout.HelpBox(
                 "This creates a simple diagonal wall prefab using a cube primitive.\n" +
-                "The cube is rotated 45° on Y axis and scaled to (1, 1, 0.5).\n" +
+                "The cube is rotated 45 on Y axis and scaled to (1, 1, 0.5).\n" +
                 "Output: Assets/Resources/Prefabs/SimpleDiagonalWallPrefab.prefab",
                 MessageType.Info);
         }
@@ -120,7 +120,7 @@ namespace Code.Lavos.Editor
             // Apply scale (1, 1, 0.5) as requested
             cube.transform.localScale = cubeScale;
 
-            // Apply rotation (45° on Y axis for diagonal)
+            // Apply rotation (45 on Y axis for diagonal)
             cube.transform.localRotation = Quaternion.Euler(0f, rotationY, 0f);
 
             // Apply material
@@ -194,7 +194,7 @@ namespace Code.Lavos.Editor
 
             Debug.Log($"[SimpleDiagonalWallFactory] Created: {prefabPath}");
             Debug.Log($"  - Cube Scale: {cubeScale}");
-            Debug.Log($"  - Rotation: {rotationY}° on Y axis");
+            Debug.Log($"  - Rotation: {rotationY} on Y axis");
             Debug.Log($"  - Uses cube primitive (not quad)");
             Debug.Log($"  - Name: {PREFAB_NAME} (ready for CompleteMazeBuilder)");
 

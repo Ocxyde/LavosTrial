@@ -135,9 +135,9 @@ namespace Code.Lavos.Core
             enableSecretDoors = config.EnableSecretDoors;
 
             Debug.Log($"[RoomDoorPlacer]  Config loaded from JSON:");
-            Debug.Log($"  • Trapped Doors: {enableTrappedDoors} ({trapChance * 100f:F0}% chance)");
-            Debug.Log($"  • Locked Doors: {enableLockedDoors}");
-            Debug.Log($"  • Secret Doors: {enableSecretDoors}");
+            Debug.Log($"   Trapped Doors: {enableTrappedDoors} ({trapChance * 100f:F0}% chance)");
+            Debug.Log($"   Locked Doors: {enableLockedDoors}");
+            Debug.Log($"   Secret Doors: {enableSecretDoors}");
         }
 
         #endregion

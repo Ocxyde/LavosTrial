@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // SetupTorchPrefab.cs - Editor tool to apply materials to TORCH.fbx prefab
 
@@ -109,14 +109,14 @@ namespace Code.Lavos.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[TorchSetup] ✅ Applied {materialsApplied}/{renderers.Length} materials to TORCH.fbx!");
-            Debug.Log($"[TorchSetup] ✅ Torch prefab is now ready for use!");
+            Debug.Log($"[TorchSetup]  Applied {materialsApplied}/{renderers.Length} materials to TORCH.fbx!");
+            Debug.Log($"[TorchSetup]  Torch prefab is now ready for use!");
         }
 
         [MenuItem("Tools/Lavos/Complete Torch Setup (Generate + Apply)")]
         public static void CompleteTorchSetup()
         {
-            Debug.Log("[TorchSetup] 🔄 Starting complete torch setup...");
+            Debug.Log("[TorchSetup]  Starting complete torch setup...");
             
             // Step 1: Generate textures and materials
             TorchPixelArtGenerator.GenerateTorchTextures();
@@ -124,7 +124,7 @@ namespace Code.Lavos.Editor
             // Step 2: Apply materials to prefab
             ApplyMaterialsToTorchPrefab();
 
-            Debug.Log("[TorchSetup] ✅ Complete torch setup finished!");
+            Debug.Log("[TorchSetup]  Complete torch setup finished!");
         }
     }
 }

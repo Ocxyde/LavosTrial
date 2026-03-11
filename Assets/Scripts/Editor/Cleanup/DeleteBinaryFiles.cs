@@ -91,10 +91,10 @@ public class DeleteBinaryFiles : EditorWindow
             }
         }
         
-        Debug.Log($"═══════════════════════════════════════════");
+        Debug.Log($"");
         Debug.Log($"[Clean]  Cleanup complete!");
         Debug.Log($"[Clean] Deleted {deletedCount} object(s)/file(s)");
-        Debug.Log($"═══════════════════════════════════════════");
+        Debug.Log($"");
         
         EditorUtility.DisplayDialog("Cleanup Complete", 
             $"Deleted {deletedCount} object(s)/file(s):\n\n" +

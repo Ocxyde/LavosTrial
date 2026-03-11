@@ -2,8 +2,8 @@
 
 **Project:** CodeDotLavos
 **Unity:** 6000.3.10f1 | **License:** GPL-3.0
-**Last Updated:** 2026-03-11 (Session 3) | **Author:** Ocxyde
-**Project Health:** 96% 🟢
+**Last Updated:** 2026-03-11 (Session 4) | **Author:** Ocxyde
+**Project Health:** 95% 🟢
 
 ---
 
@@ -14,20 +14,97 @@
 │                    CODEDOTLAVOS - MASTER DASHBOARD               │
 ├─────────────────────────────────────────────────────────────────┤
 │  BUILD STATUS                                                   │
-│  Compilation    [████████████] 100% ✅  0 errors, 0 warnings    │
+│  Compilation    [███████████░]  95% ⚠️  Door serialization fix  │
 │  Unit Tests     [████████████] 100% ✅  58 tests passing        │
 │  Architecture   [████████████] 100% ✅  Plug-in-Out compliant   │
 │                                                                 │
 │  OVERALL PROGRESS                                               │
-│  Game Complete  [█████████████░]  96% 🟢 Excellent              │
+│  Game Complete  [████████████░░]  92% 🟢 Excellent              │
 │                                                                 │
-│  📊 14 Systems Complete | 3 In Progress | 🐛 Critical Bugs: 0   │
+│  📊 14 Systems Complete | 4 In Progress | 🐛 Critical Bugs: 0   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📚 DOCUMENTATION HUB
+## 🎯 CELL-BASED MAZE GENERATION SYSTEM (NEW - Session 4)
+
+### **Phase 1: Core Cell System** 🔴
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 1.1 Create Cell Data Structure | MazeCell.cs (new) | 🔴 P0 | ⏳ Pending |
+| 1.2 Implement bool haveWallOnEdge | MazeCell.cs | 🔴 P0 | ⏳ Pending |
+| 1.3 Create CellType enum | MazeCell.cs | 🔴 P0 | ⏳ Pending |
+| 1.4 Create CellAgreement enum | MazeCell.cs | 🔴 P0 | ⏳ Pending |
+
+### **Phase 2: Primary Path System** 🔴
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 2.1 Compute Longest Snake Path | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
+| 2.2 Min/Max Path Length Calculation | DifficultyCurve.cs (new) | 🔴 P0 | ⏳ Pending |
+| 2.3 Path Cell Marking (isOnPrimaryPath) | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
+| 2.4 Path Verification System | CellBasedMazeGenerator.cs | 🔴 P0 | ⏳ Pending |
+
+### **Phase 3: Room System** 🔴
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 3.1 Create Room struct (3x3 cells) | Room.cs (new) | 🔴 P0 | ⏳ Pending |
+| 3.2 Room Wall Surround System | RoomSystem.cs (new) | 🔴 P0 | ⏳ Pending |
+| 3.3 Two Door Placement (Entry/Exit) | RoomSystem.cs | 🔴 P0 | ⏳ Pending |
+| 3.4 Door-to-Walkable Verification | RoomSystem.cs | 🔴 P0 | ⏳ Pending |
+| 3.5 Room Types (Normal/Treasure/Boss/Safe) | RoomType.cs (new) | 🟡 P1 | ⏳ Pending |
+
+### **Phase 4: Decoy Path System** 🟡
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 4.1 Create DecoyPath struct | DecoyPath.cs (new) | 🟡 P1 | ⏳ Pending |
+| 4.2 L-Shape Decoy Generator | DecoySystem.cs (new) | 🟡 P1 | ⏳ Pending |
+| 4.3 Spiral/Fork Decoy Types | DecoySystem.cs | 🟡 P1 | ⏳ Pending |
+| 4.4 Decoy-Reward Placement | DecoySystem.cs | 🟡 P1 | ⏳ Pending |
+
+### **Phase 5: Agreement System** 🟡
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 5.1 Chest Placement on Decoys | AgreementPlacer.cs (new) | 🟡 P1 | ⏳ Pending |
+| 5.2 Dead-End Wall Placement | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
+| 5.3 Empty Cell Marking | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
+| 5.4 Enemy Guard Placement | AgreementPlacer.cs | 🟡 P1 | ⏳ Pending |
+
+### **Phase 6: Wall & Door Integration** 🟢
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 6.1 Spawn Walls at Cell Edges | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
+| 6.2 Carve Door Openings in Walls | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
+| 6.3 Spawn DoorController Prefabs | WallWithDoorHandler.cs | 🟢 P2 | ⏳ Pending |
+| 6.4 Verify Door Rotation (90° outward) | DoorController.cs | 🟢 P2 | ✅ DONE |
+
+### **Phase 7: Difficulty Curve** 🟢
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 7.1 Level-Based Difficulty Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
+| 7.2 Decoy Density Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
+| 7.3 Room Count Scaling | DifficultyScaler.cs | 🟢 P2 | ⏳ Pending |
+| 7.4 Path Length Target Calculation | DifficultyCurve.cs | 🟢 P2 | ⏳ Pending |
+
+### **Phase 8: Verification & Safety** 🟢
+
+| Task | Files | Priority | Status |
+|------|-------|----------|--------|
+| 8.1 Primary Path Integrity Check | MazeVerifier.cs (new) | 🟢 P2 | ⏳ Pending |
+| 8.2 Room Door Connection Check | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
+| 8.3 Decoy Path Termination Check | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
+| 8.4 Exit Reachability Guarantee | MazeVerifier.cs | 🟢 P2 | ⏳ Pending |
+
+---
+
+## 🎯 ACTIVE TASKS
 
 | Document | Purpose |
 |----------|---------|
@@ -83,10 +160,10 @@
 
 | Task | Files | Status | Notes |
 |------|-------|--------|-------|
-| ✅ Torch Debug Logging | MazeObjectSpawner.cs | ✅ DONE | Logs position, rotation, direction |
-| ✅ Door System Docs | DOOR_SYSTEM_ONE_DOOR_PER_WALKABLE.md | ✅ DONE | One door per walkable adjacency |
-| ✅ Torch Wall Integration Docs | TORCH_SYSTEM_WALL_INTEGRATED.md | ✅ DONE | Torches as part of wall prefab |
-| ✅ Torch Texture/Mat Setup | TORCH_PREFAB_TEXTURE_MATERIAL_SETUP.md | ✅ DONE | 8-bit pixel art specs |
+| ✅ Door Carving Implementation | MazeData8.cs, GridMazeGenerator.cs, CompleteMazeBuilder.cs | ✅ DONE | Fill & Carve approach |
+| ✅ Door Serialization Fix | CompleteMazeBuilder.cs | ✅ DONE | Changed to protected fields |
+| ✅ Door Spawning System | CompleteMazeBuilder.cs | ✅ DONE | Uses carved door openings |
+| ⏸️ Door Prefab Creation | DoorPrefab_*.prefab | ⏸️ MANUAL | User must create in Unity Editor |
 
 ### ✅ COMPLETED TODAY (2026-03-11 - Session 2)
 
@@ -130,9 +207,10 @@
 
 | Task | Files | Time | Status |
 |------|-------|------|--------|
-| 2.1 Door Prefab Creation | DoorPrefab_*.prefab | 1h | ⏳ Pending (Normal/Locked/Secret) |
-| 2.2 Door Spawning System | CompleteMazeBuilder8.cs | 1h | ⏳ Pending |
-| 2.3 Treasure Room Guardians | Enemy placement logic | 30min | ⏳ Pending (1 enemy per chest) |
+| 2.1 Door Serialization Fix | BaseMazeBuilder.cs, CompleteMazeBuilder.cs | 1h | ✅ DONE (protected fields) |
+| 2.2 Door Prefab Creation | DoorPrefab_*.prefab | 1h | ⏳ MANUAL (create in Unity) |
+| 2.3 Door Spawning System | CompleteMazeBuilder.cs | 1h | ✅ DONE (uses carved openings) |
+| 2.4 Treasure Room Guardians | Enemy placement logic | 30min | ⏳ Pending (1 enemy per chest) |
 
 ### Priority 3 - Medium 🟢
 

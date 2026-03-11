@@ -152,10 +152,10 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log($"[TorchPlacer]  Config loaded from JSON:");
-                Debug.Log($"  • Enable: {enableTorchSpawning}");
-                Debug.Log($"  • Dynamic Lighting: {useDynamicLighting}");
-                Debug.Log($"  • Torch Count: {torchCount}");
-                Debug.Log($"  • Min Distance: {minDistanceBetweenTorches}m");
+                Debug.Log($"   Enable: {enableTorchSpawning}");
+                Debug.Log($"   Dynamic Lighting: {useDynamicLighting}");
+                Debug.Log($"   Torch Count: {torchCount}");
+                Debug.Log($"   Min Distance: {minDistanceBetweenTorches}m");
             }
         }
 

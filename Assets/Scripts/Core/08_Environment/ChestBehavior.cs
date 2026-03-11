@@ -540,7 +540,7 @@ namespace Code.Lavos.Core
                 new Vector3(chestWidth, chestHeight, chestDepth));
         }
 
-        // ── IInteractable Implementation ─────────────────────────────────
+        //  IInteractable Implementation 
         /// <summary>
         /// Interaction prompt for chest (E-key).
         /// </summary>

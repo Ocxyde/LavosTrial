@@ -217,9 +217,9 @@ namespace Code.Lavos.Core
         {
             if (showDebugLogs)
             {
-                Debug.Log("[SpatialPlacer] ════════════════════════════════════════");
+                Debug.Log("[SpatialPlacer] ");
                 Debug.Log("  PLACING ALL OBJECTS");
-                Debug.Log("═══════════════════════════════════════════");
+                Debug.Log("");
             }
 
             // Generate maze ID and seed
@@ -238,7 +238,7 @@ namespace Code.Lavos.Core
                 if (showDebugLogs)
                 {
                     Debug.Log("[SpatialPlacer]  Loaded all objects from binary storage (RAM)");
-                    Debug.Log("═══════════════════════════════════════════");
+                    Debug.Log("");
                 }
                 return;
             }
@@ -262,9 +262,9 @@ namespace Code.Lavos.Core
 
             if (showDebugLogs)
             {
-                Debug.Log("═══════════════════════════════════════════");
+                Debug.Log("");
                 Debug.Log($"   TOTAL OBJECTS PLACED: {TotalObjectsPlaced}");
-                Debug.Log("═══════════════════════════════════════════");
+                Debug.Log("");
             }
         }
 

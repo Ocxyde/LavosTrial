@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license - see COPYING
 // MazeWallSpawner.cs - Handles spawning of cardinal and diagonal walls
 // Part of modular CompleteMazeBuilder8 refactoring

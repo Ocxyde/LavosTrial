@@ -616,14 +616,14 @@ MonoBehaviour:
   wallPrefab: {fileID: 196268671326501477, guid: 4327c058d37de944bbf8e69984ad8b86, type: 3}
   doorPrefab: {fileID: 1639579625166358162, guid: 0bec5b1d786e1b547b19ef419fdb032c, type: 3}
   wallMaterial: {fileID: 2100000, guid: b5556023b2c64ce47aeb66e4a4fc4d15, type: 2}
-  torchPrefab: {fileID: 100000, guid: 3fda828d74eacbf4e81269e84614dd1a, type: 3}
+  torchPrefab: {fileID: 919132149155446097, guid: 5f276c531d6b77f48a701b570f5e289e, type: 3}
   chestPrefab: {fileID: 100000, guid: e4970c60856f96e4da060f850800e2df, type: 3}
   enemyPrefab: {fileID: 2206509324570317032, guid: d94487d72d6b5e448b8e0a6d9d61b792, type: 3}
   floorPrefab: {fileID: 6387627051471425154, guid: b0e89d943720d5d4085619d44ad8a999, type: 3}
   playerPrefab: {fileID: 3456789012, guid: 90c98a35c1061ef4dae3f4d32f2484a6, type: 3}
   configResourcePath: Config/GameConfig8-default
   wallPivotIsAtMeshCenter: 1
-  currentLevel: 0
+  currentLevel: 11
   currentSeed: 0
   lastGenMs: 0
   currentDifficultyFactor: 0
@@ -631,7 +631,7 @@ MonoBehaviour:
   UsePassageFirstGenerator: 0
   useFixedSeed: 0
   fixedSeed: 12345
-  randomizeSeed: 0
+  randomizeSeed: 1
   spawnEnemies: 1
   enemyDensity: 0.08
   spawnChests: 1

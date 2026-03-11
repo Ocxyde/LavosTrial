@@ -1,4 +1,4 @@
-﻿﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -55,7 +55,7 @@ namespace Code.Lavos.Core
             }
             else
             {
-                Debug.Log("✅ CONFIG CORRECT!");
+                Debug.Log(" CONFIG CORRECT!");
             }
 
             Debug.Log("=== END CHECK ===");

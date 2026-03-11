@@ -1,4 +1,4 @@
-﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 | Locale: en_US
@@ -110,9 +110,9 @@ namespace Code.Lavos.Tools.Advanced
             // Get maze size
             int size = _mazeSize;
 
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  MAZEMATH ENGINE - Pure Math Generation");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log($"[MazeMathEngine]  Generating {size}x{size} maze with seed {seed}...");
 
             float t0 = Time.realtimeSinceStartup;
@@ -128,7 +128,7 @@ namespace Code.Lavos.Tools.Advanced
             Debug.Log($"[MazeMathEngine]  Carved: {_lastResult.CarvedCells}/{_lastResult.TotalCells} ({_lastResult.ComplexityFactor * 100f:F1}%)");
             Debug.Log($"[MazeMathEngine]  Start: {_lastResult.StartPoint}, Exit: {_lastResult.ExitPoint}");
             Debug.Log($"[MazeMathEngine]  Dead-ends: {_lastResult.DeadEnds.Count}, Corridors: {_lastResult.Corridors.Count}");
-            Debug.Log("═══════════════════════════════════════════");
+            Debug.Log("");
 
             // Show success dialog
             EditorUtility.DisplayDialog(
@@ -252,9 +252,9 @@ namespace Code.Lavos.Tools.Advanced
             if (_lastResult == null) return;
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("═══════════════════════════════════════════");
+            sb.AppendLine("");
             sb.AppendLine($"  MAZE PREVIEW {_lastResult.Width}x{_lastResult.Height}");
-            sb.AppendLine("═══════════════════════════════════════════");
+            sb.AppendLine("");
 
             for (int z = _lastResult.Height - 1; z >= 0; z--)
             {
@@ -275,9 +275,9 @@ namespace Code.Lavos.Tools.Advanced
                 sb.AppendLine();
             }
 
-            sb.AppendLine("═══════════════════════════════════════════");
+            sb.AppendLine("");
             sb.AppendLine("  Legend: A=Start, B=Exit, #=Wall, .=Passage");
-            sb.AppendLine("═══════════════════════════════════════════");
+            sb.AppendLine("");
 
             Debug.Log(sb.ToString());
         }

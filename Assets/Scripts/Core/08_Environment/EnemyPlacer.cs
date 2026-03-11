@@ -129,9 +129,9 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log($"[EnemyPlacer]  Config loaded from JSON:");
-                Debug.Log($"  • Enable: {enableEnemySpawning}");
-                Debug.Log($"  • Spawn Chance: {enemySpawnChance * 100f:F0}%");
-                Debug.Log($"  • Max Enemies: {maxEnemies}");
+                Debug.Log($"   Enable: {enableEnemySpawning}");
+                Debug.Log($"   Spawn Chance: {enemySpawnChance * 100f:F0}%");
+                Debug.Log($"   Max Enemies: {maxEnemies}");
             }
         }
 

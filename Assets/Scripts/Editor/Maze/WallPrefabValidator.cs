@@ -49,7 +49,7 @@ namespace Code.Lavos.Editor
         private const float WALL_THICKNESS = 0.2f;
         private const float TOLERANCE = 0.01f;
 
-        // Diagonal wall length: 6 * sqrt(2) ≈ 8.485m
+        // Diagonal wall length: 6 * sqrt(2)  8.485m
         private static readonly float DIAGONAL_LENGTH = CELL_SIZE * Mathf.Sqrt(2f);
 
         [MenuItem("Assets/Validate Wall Prefab")]
@@ -93,9 +93,9 @@ namespace Code.Lavos.Editor
             else
             {
                 string message = $"Validated {validated} prefab(s)\n\n";
-                if (errors > 0) message += $"❌ {errors} error(s)\n";
-                if (warnings > 0) message += $"⚠️ {warnings} warning(s)\n";
-                if (errors == 0 && warnings == 0) message += "✅ All prefabs are valid!";
+                if (errors > 0) message += $" {errors} error(s)\n";
+                if (warnings > 0) message += $" {warnings} warning(s)\n";
+                if (errors == 0 && warnings == 0) message += " All prefabs are valid!";
 
                 EditorUtility.DisplayDialog("Validation Complete", message, "OK");
             }
@@ -168,7 +168,7 @@ namespace Code.Lavos.Editor
             GUILayout.Label("Expected Values Reference", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
                 $"Cardinal Wall Length: {CELL_SIZE}m\n" +
-                $"Diagonal Wall Length: {DIAGONAL_LENGTH:F3}m (6 × √2)\n" +
+                $"Diagonal Wall Length: {DIAGONAL_LENGTH:F3}m (6  2)\n" +
                 $"Wall Height: {WALL_HEIGHT}m\n" +
                 $"Wall Thickness: {WALL_THICKNESS}m\n" +
                 $"Pivot: Bottom center of wall",
@@ -184,7 +184,7 @@ namespace Code.Lavos.Editor
             GUILayout.Label($"Validation Report: {report.PrefabName}", EditorStyles.boldLabel);
 
             // Status
-            string status = report.IsValid ? "✅ VALID" : "❌ INVALID";
+            string status = report.IsValid ? " VALID" : " INVALID";
             GUIStyle statusStyle = new GUIStyle(EditorStyles.label);
             statusStyle.fontStyle = FontStyle.Bold;
             statusStyle.normal.textColor = report.IsValid ? Color.green : Color.red;
@@ -247,7 +247,7 @@ namespace Code.Lavos.Editor
             GUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
             
-            string icon = isValid ? "✅" : "❌";
+            string icon = isValid ? "" : "";
             GUILayout.Label($"{icon} {label}", GUILayout.Width(120));
             
             GUILayout.Label(message, EditorStyles.wordWrappedMiniLabel);
@@ -316,8 +316,8 @@ namespace Code.Lavos.Editor
                 Mathf.Abs(height - WALL_HEIGHT) < TOLERANCE;
 
             report.DimensionsMessage = report.DimensionsValid
-                ? $"Size: {length:F2}m × {height:F2}m × {thickness:F2}m"
-                : $"Size: {length:F2}m × {height:F2}m × {thickness:F2}m (expected {expectedLength:F2}m × {WALL_HEIGHT}m)";
+                ? $"Size: {length:F2}m  {height:F2}m  {thickness:F2}m"
+                : $"Size: {length:F2}m  {height:F2}m  {thickness:F2}m (expected {expectedLength:F2}m  {WALL_HEIGHT}m)";
 
             if (!report.DimensionsValid) report.Errors++;
 

@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // EnemyGuardedChest.cs
-// Chest locked until its guardian enemy is KO'd — scene MazeLav8s_v1-0_0_0
+// Chest locked until its guardian enemy is KO'd  scene MazeLav8s_v1-0_0_0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Locale: en_US
 //
 // BEHAVIOR:
-//   Locked state   : red pulsing glow, "Défaite le gardien d'abord !" hint.
-//   Unlocked state : gold glow, interactable → opens ChestBehavior.
+//   Locked state   : red pulsing glow, "Dfaite le gardien d'abord !" hint.
+//   Unlocked state : gold glow, interactable  opens ChestBehavior.
 //   Guardian KO    : detected via Ennemi.IsDead property polling (Update).
 //                    Fire EventHandler.OnChestUnlocked when state changes.
 //
@@ -38,20 +38,20 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// EnemyGuardedChest — chest that is locked until its guardian Ennemi is KO'd.
+    /// EnemyGuardedChest  chest that is locked until its guardian Ennemi is KO'd.
     /// Builds its own pixel-art mesh and glow light procedurally if none supplied.
     /// </summary>
     [RequireComponent(typeof(ChestBehavior))]
     [RequireComponent(typeof(AudioSource))]
     public class EnemyGuardedChest : MonoBehaviour, IInteractable
     {
-        // ── Inspector ────────────────────────────────────────────────────────
+        //  Inspector 
         [Header("Guardian")]
         [Tooltip("The enemy that guards this chest. Link via Inspector or runtime API.")]
         [SerializeField] private Ennemi guardianEnemy;
 
         [Header("Glow")]
-        [SerializeField] private Light  glowLight;          // optional — created if null
+        [SerializeField] private Light  glowLight;          // optional  created if null
         [SerializeField] private float  glowRadius    = 4f;
         [SerializeField] private float  pulseSpeed    = 1.8f;
 
@@ -65,12 +65,12 @@ namespace Code.Lavos.Core
         [SerializeField] private int    goldReward     = 80;
         [SerializeField] private int    xpReward       = 120;
 
-        // ── Colors ───────────────────────────────────────────────────────────
+        //  Colors 
         private static readonly Color COL_LOCKED   = new(0.9f, 0.05f, 0.05f, 1f);
         private static readonly Color COL_UNLOCKED = new(1.0f, 0.85f, 0.10f, 1f);
         private static readonly Color COL_OPEN     = new(0.4f, 1.0f,  0.20f, 1f);
 
-        // ── State ────────────────────────────────────────────────────────────
+        //  State 
         private bool          _isUnlocked  = false;
         private bool          _isOpened    = false;
         private ChestBehavior _chest;
@@ -78,10 +78,10 @@ namespace Code.Lavos.Core
         private float         _pulseT      = 0f;
         private Renderer      _bodyRenderer;
 
-        // ── IInteractable Implementation ─────────────────────────────────
+        //  IInteractable Implementation 
         public string InteractionPrompt => _isUnlocked
-            ? (_isOpened ? "Déjà ouvert" : "Ouvrir le coffre")
-            : "Défaite le gardien d'abord !";
+            ? (_isOpened ? "Dj ouvert" : "Ouvrir le coffre")
+            : "Dfaite le gardien d'abord !";
 
         bool IInteractable.CanInteract(MonoBehaviour player) => true;
 
@@ -93,7 +93,7 @@ namespace Code.Lavos.Core
             {
                 PlaySfx(lockedSfx);
                 EventHandler.Instance?.InvokeShowHint(
-                    "⚔ Vous devez vaincre le gardien pour ouvrir ce coffre !");
+                    " Vous devez vaincre le gardien pour ouvrir ce coffre !");
                 ShakeChest();
                 return;
             }
@@ -111,12 +111,12 @@ namespace Code.Lavos.Core
             // Optional: Remove highlight effect
         }
 
-        // ── Runtime API ───────────────────────────────────────────────────
+        //  Runtime API 
 
         /// <summary>Link guardian at runtime (called by SceneBuilder).</summary>
         public void SetGuardian(Ennemi enemy) => guardianEnemy = enemy;
 
-        // ── Unity lifecycle ───────────────────────────────────────────────
+        //  Unity lifecycle 
 
         private void Awake()
         {
@@ -148,7 +148,7 @@ namespace Code.Lavos.Core
             PulseGlow();
         }
 
-        // ── Private ───────────────────────────────────────────────────────
+        //  Private 
 
         private bool IsGuardianDefeated()
         {
@@ -190,7 +190,7 @@ namespace Code.Lavos.Core
             EventHandler.Instance?.InvokeItemPickup(
                 $"GuardedChest_{gameObject.name}", 1);
 
-            Debug.Log($"[EnemyGuardedChest] {gameObject.name} déverrouillé !");
+            Debug.Log($"[EnemyGuardedChest] {gameObject.name} dverrouill !");
         }
 
         private void OpenChest(GameObject interactor)
@@ -207,7 +207,7 @@ namespace Code.Lavos.Core
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.AddScore(goldReward + xpReward);
-                Debug.Log($"[EnemyGuardedChest] +{goldReward} or, +{xpReward} XP octroyés.");
+                Debug.Log($"[EnemyGuardedChest] +{goldReward} or, +{xpReward} XP octroys.");
             }
 
             EventHandler.Instance?.InvokeShowHint(
@@ -231,7 +231,7 @@ namespace Code.Lavos.Core
             // Simple positional shake coroutine-free
             Vector3 origin = transform.position;
             transform.position = origin + Random.insideUnitSphere * 0.04f;
-            // Restore next frame via a flag — simple enough without coroutine
+            // Restore next frame via a flag  simple enough without coroutine
             Invoke(nameof(ResetPosition), 0.08f);
             _shakeOrigin = origin;
         }
@@ -258,7 +258,7 @@ namespace Code.Lavos.Core
                 _audio.PlayOneShot(clip, sfxVolume);
         }
 
-        // ── Material Creation (local, no external dependency) ────────────
+        //  Material Creation (local, no external dependency) 
 
         private static Material CreateChestMaterial()
         {

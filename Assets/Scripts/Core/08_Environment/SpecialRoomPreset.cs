@@ -29,7 +29,7 @@ namespace Code.Lavos.Core
     /// SpecialRoomPreset - ScriptableObject for storing room configurations.
     /// 
     /// Create presets via:
-    /// Assets → Create → Special Room Preset
+    /// Assets  Create  Special Room Preset
     /// 
     /// Use presets to quickly configure SpecialRoom instances.
     /// Note: Uses RoomType enum from RoomGenerator.cs

@@ -5,6 +5,7 @@
 
 using UnityEngine;
 using Code.Lavos.Core.Advanced;
+using Code.Lavos.Core.Environment;
 
 namespace Code.Lavos.Core
 {
@@ -59,14 +60,15 @@ namespace Code.Lavos.Core
         [Tooltip("Minimum enemies at low levels (ensures combat at lvl 0-3)")]
         [Range(0f, 1f)]
         [SerializeField] private float minEnemyDensity = 0.04f;
-        
+
         [Header("Door Prefabs")]
         [Tooltip("Locked door prefab (requires key)")]
-        [SerializeField] private GameObject lockedDoorPrefab = null;
+        [SerializeField] protected GameObject lockedDoorPrefab = null;
         [Tooltip("Secret door prefab (hidden passages)")]
-        [SerializeField] private GameObject secretDoorPrefab = null;
+        [SerializeField] protected GameObject secretDoorPrefab = null;
         [Tooltip("Exit door prefab (interactable)")]
-        [SerializeField] private GameObject exitDoorPrefab = null;
+        [SerializeField] protected GameObject exitDoorPrefab = null;
+        // NOTE: doorPrefab is inherited from BaseMazeBuilder (do not redeclare!)
 
         // Runtime (specific to CompleteMazeBuilder8)
         private MazeData8 _mazeData;
@@ -308,8 +310,8 @@ namespace Code.Lavos.Core
             // 8 - Walls (cardinal only)
             SpawnAllWalls();
 
-            // 9 - Doors (on access wall, oriented)
-            SpawnDoors();
+            // 9 - Doors (NOW INTEGRATED WITH WALLS - WallWithDoorHandler spawns both)
+            // SpawnDoors() - Disabled 2026-03-11, doors spawned with walls
 
             // 10 - Torches
             SpawnTorches();
@@ -317,8 +319,8 @@ namespace Code.Lavos.Core
             // Objects (chests + enemies)
             SpawnObjects();
 
-            // Exit Door (interactable door at exit)
-            SpawnExitDoor();
+            // Exit Door (NOW INTEGRATED - spawned by WallWithDoorHandler)
+            // SpawnExitDoor() - Disabled 2026-03-11
 
             // 11b - Visual Room Markers (spawn/exit indicators)
             SpawnRoomMarkers();
@@ -586,7 +588,7 @@ namespace Code.Lavos.Core
         }
 
         // -------------------------------------------------------------------------
-        // SpawnAllWalls (override - uses MazeWallSpawner module)
+        // SpawnAllWalls (UPDATED 2026-03-11 - uses WallWithDoorHandler)
         // -------------------------------------------------------------------------
         protected override void SpawnAllWalls()
         {
@@ -603,71 +605,34 @@ namespace Code.Lavos.Core
             }
 
             _wallsRoot = new GameObject("MazeWalls8").transform;
+            Transform doorsRoot = new GameObject("MazeDoors").transform;
+            doorsRoot.SetParent(_wallsRoot, false);
 
             float cs = _config.CellSize;
             float wh = _config.WallHeight;
 
-            int cardinalCount = 0;
-
             Debug.Log(
-                $"[MazeBuilder8] Spawning walls for {_mazeData.Width}x{_mazeData.Height} maze " +
-                $"using modular MazeWallSpawner (cardinal-only passages)");
+                $"[MazeBuilder8] Spawning walls with integrated doors using WallWithDoorHandler");
 
-            // Spawn cardinal walls using modular spawner
-            for (int z = 0; z < _mazeData.Height; z++)
-            for (int x = 0; x < _mazeData.Width; x++)
-            {
-                var cell = _mazeData.GetCell(x, z);
-                bool isWalkable = IsCellWalkable(cell);
+            // Prepare door prefabs array
+            GameObject[] doorPrefabs = new GameObject[4];
+            doorPrefabs[0] = doorPrefab;          // Normal
+            doorPrefabs[1] = lockedDoorPrefab;    // Locked
+            doorPrefabs[2] = secretDoorPrefab;    // Secret
+            doorPrefabs[3] = exitDoorPrefab;      // Exit
 
-                if (isWalkable)
-                {
-                    // Cardinal walls only (N, S, E, W)
-                    if (ShouldSpawnWall(x, z, Direction8.N, out _))
-                    {
-                        MazeWallSpawner.SpawnCardinalWall(
-                            x, z, Direction8.N,
-                            wallPrefab, wallMaterial,
-                            cs, wh, WallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        cardinalCount++;
-                    }
-                    if (ShouldSpawnWall(x, z, Direction8.E, out _))
-                    {
-                        MazeWallSpawner.SpawnCardinalWall(
-                            x, z, Direction8.E,
-                            wallPrefab, wallMaterial,
-                            cs, wh, WallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        cardinalCount++;
-                    }
-                    if (ShouldSpawnWall(x, z, Direction8.S, out _))
-                    {
-                        MazeWallSpawner.SpawnCardinalWall(
-                            x, z, Direction8.S,
-                            wallPrefab, wallMaterial,
-                            cs, wh, WallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        cardinalCount++;
-                    }
-                    if (ShouldSpawnWall(x, z, Direction8.W, out _))
-                    {
-                        MazeWallSpawner.SpawnCardinalWall(
-                            x, z, Direction8.W,
-                            wallPrefab, wallMaterial,
-                            cs, wh, WallThickness,
-                            wallPivotIsAtMeshCenter, _wallsRoot);
-                        cardinalCount++;
-                    }
+            // Use WallWithDoorHandler to spawn walls with integrated doors
+            WallWithDoorHandler.SpawnWallsWithDoors(
+                _mazeData,
+                wallPrefab,
+                doorPrefabs,
+                wallMaterial,
+                _wallsRoot,
+                doorsRoot,
+                cs, wh, WallThickness,
+                wallPivotIsAtMeshCenter);
 
-                    // NOTE: Diagonal walls (NE, NW, SE, SW) removed 2026-03-09
-                    // MazeWallSpawner.SpawnDiagonalWall() is available for future use
-                }
-            }
-
-            Debug.Log(
-                $"[MazeBuilder8] Wall spawn complete: " +
-                $"{cardinalCount} cardinal walls (cardinal-only mode)");
+            Debug.Log($"[MazeBuilder8] Wall+Door spawning complete");
         }
 
         /// <summary>
@@ -681,17 +646,6 @@ namespace Code.Lavos.Core
 
         /// <summary>
         /// Determine if a wall should be spawned in the given direction.
-        /// 
-        /// A wall is spawned if:
-        /// 1. The neighbor is out of bounds (maze perimeter wall), OR
-        /// 2. The neighbor is NOT walkable (has wall flags = blocked cell)
-        ///
-        /// Parameters:
-        /// - cx, cz: Current cell coordinates
-        /// - dir: Direction to check
-        /// - isBoundary: Output true if wall is at maze perimeter edge
-        ///
-        /// Returns: true if wall should be spawned
         /// </summary>
         private bool ShouldSpawnWall(int cx, int cz, Direction8 dir, out bool isBoundary)
         {
@@ -705,32 +659,21 @@ namespace Code.Lavos.Core
             if (nx < 0 || nx >= _mazeData.Width || nz < 0 || nz >= _mazeData.Height)
             {
                 isBoundary = true;
-                return true; // Spawn wall at maze boundary
+                return true;
             }
 
-            // Check if neighbor is NOT walkable (has walls = blocked)
+            // Check if neighbor is NOT walkable
             var neighborCell = _mazeData.GetCell(nx, nz);
             bool neighborIsWalkable = IsCellWalkable(neighborCell);
 
-            // Spawn wall if neighbor is blocked (not walkable)
             return !neighborIsWalkable;
         }
 
         // -------------------------------------------------------------------------
-        // 9 - Doors (uses MazeDoorSpawner module)
+        // 9 - Doors (DISABLED 2026-03-11: Now integrated with walls)
         // -------------------------------------------------------------------------
-        private void SpawnDoors()
-        {
-            MazeDoorSpawner.SpawnAllDoors(
-                _mazeData,
-                doorPrefab,
-                lockedDoorPrefab,
-                secretDoorPrefab,
-                _config.CellSize, _config.WallHeight,
-                WallThickness, wallPivotIsAtMeshCenter,
-                lockedDoorChance: 0.3f,
-                secretDoorChance: 0.1f);
-        }
+        // NOTE: Door spawning is now handled by WallWithDoorHandler.SpawnWallsWithDoors()
+        // Old SpawnDoors(), SpawnExitDoor(), and DirectionToRotation() removed.
 
         // -------------------------------------------------------------------------
         // 10 - Torches (uses MazeObjectSpawner module)
@@ -750,33 +693,8 @@ namespace Code.Lavos.Core
                 _mazeData, chestPrefab, enemyPrefab, _config.CellSize, _objectsRoot);
         }
 
-        // Exit Door (spawns at exit room)
-        private void SpawnExitDoor()
-        {
-            if (exitDoorPrefab == null)
-            {
-                Debug.LogWarning("[MazeBuilder8] exitDoorPrefab not set - skipping exit door spawn.");
-                return;
-            }
-
-            EnsureObjectsRoot();
-            
-            // Find exit cell and spawn door
-            var exitCell = _mazeData.ExitCell;
-            Vector3 pos = new Vector3(
-                (exitCell.x + 0.5f) * _config.CellSize,
-                0f,
-                (exitCell.z + 0.5f) * _config.CellSize
-            );
-
-            var exitDoor = Object.Instantiate(exitDoorPrefab, pos, Quaternion.identity);
-            if (exitDoor != null)
-            {
-                exitDoor.name = "ExitDoor";
-                exitDoor.transform.SetParent(_objectsRoot, false);
-                Debug.Log($"[MazeBuilder8] Exit door spawned at ({exitCell.x},{exitCell.z})");
-            }
-        }
+        // Exit Door (NOW INTEGRATED - spawned by WallWithDoorHandler)
+        // NOTE: Exit door is now spawned as part of WallWithDoorHandler.SpawnWallsWithDoors()
 
         // -------------------------------------------------------------------------
         // 11b - Visual Markers (uses MazeMarkerSpawner module)

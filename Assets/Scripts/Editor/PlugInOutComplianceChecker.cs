@@ -20,7 +20,7 @@
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // USAGE:
-//   Tools → Check Plug-in-Out Compliance
+//   Tools  Check Plug-in-Out Compliance
 //   Reports violations in Console
 
 using UnityEngine;
@@ -244,7 +244,7 @@ namespace Code.Lavos.Editor
 
                     EditorGUILayout.BeginVertical("box");
                     EditorGUILayout.LabelField(
-                        $"{(v.isWarning ? "️" : "")} {v.violationType}",
+                        $"{(v.isWarning ? "" : "")} {v.violationType}",
                         EditorStyles.boldLabel
                     );
                     EditorGUILayout.LabelField($"File: {relativePath}({v.lineNumber})");

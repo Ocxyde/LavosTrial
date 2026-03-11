@@ -26,30 +26,30 @@ using UnityEngine.SceneManagement;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// GAMEMANAGER — Cerveau central du jeu
-    /// Attache ce script à un GameObject vide nommé "GameManager" dans ta scène.
-    /// Coche "Don't Destroy On Load" pour qu'il persiste entre les scènes.
+    /// GAMEMANAGER  Cerveau central du jeu
+    /// Attache ce script  un GameObject vide nomm "GameManager" dans ta scne.
+    /// Coche "Don't Destroy On Load" pour qu'il persiste entre les scnes.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
-    // ─── Singleton ────────────────────────────────────────────────────────────────
+    //  Singleton 
     public static GameManager Instance { get; private set; }
 
-    // ─── États du jeu ─────────────────────────────────────────────────────────────
+    //  tats du jeu 
     public enum GameState { Playing, Paused, GameOver, Victory }
     public GameState CurrentState { get; private set; }
 
-    // ─── Score ─────────────────────────────────────────────────────────────
+    //  Score 
     public int Score { get; private set; }
 
-    // ─── Événements (les autres scripts peuvent s'y abonner) ─────────────────────
+    //  vnements (les autres scripts peuvent s'y abonner) 
     public static event System.Action<int> OnScoreChanged;
     public static event System.Action<GameState> OnGameStateChanged;
 
-    // ─────────────────────────────────────────────────────────────────────────────
+    // 
     void Awake()
     {
-        // Singleton protection — destroy duplicate on scene reload
+        // Singleton protection  destroy duplicate on scene reload
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -64,9 +64,9 @@ namespace Code.Lavos.Core
         SetGameState(GameState.Playing);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    //  MÉTHODES PUBLIQUES
-    // ─────────────────────────────────────────────────────────────────────────────
+    // 
+    //  MTHODES PUBLIQUES
+    // 
 
     /// <summary>Ajoute des points au score.</summary>
     public void AddScore(int points)
@@ -76,7 +76,7 @@ namespace Code.Lavos.Core
         Debug.Log($"[GameManager] Score : {Score}");
     }
 
-    /// <summary>Change l'état global du jeu.</summary>
+    /// <summary>Change l'tat global du jeu.</summary>
     public void SetGameState(GameState newState)
     {
         CurrentState = newState;
@@ -98,10 +98,10 @@ namespace Code.Lavos.Core
 
         OnGameStateChanged?.Invoke(newState);
         Time.timeScale = (newState == GameState.Paused) ? 0f : 1f;
-        Debug.Log($"[GameManager] État du jeu : {newState}");
+        Debug.Log($"[GameManager] tat du jeu : {newState}");
     }
 
-    /// <summary>Active / désactive la pause.</summary>
+    /// <summary>Active / dsactive la pause.</summary>
     public void TogglePause()
     {
         if (CurrentState == GameState.Playing)
@@ -110,13 +110,13 @@ namespace Code.Lavos.Core
             SetGameState(GameState.Playing);
     }
 
-    /// <summary>Déclenche le Game Over.</summary>
+    /// <summary>Dclenche le Game Over.</summary>
     public void TriggerGameOver()
     {
         SetGameState(GameState.GameOver);
     }
 
-    /// <summary>Recharge la scène courante (recommencer).</summary>
+    /// <summary>Recharge la scne courante (recommencer).</summary>
     public void RestartGame()
     {
         Score = 0;
@@ -124,7 +124,7 @@ namespace Code.Lavos.Core
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    /// <summary>Déclenche la victoire.</summary>
+    /// <summary>Dclenche la victoire.</summary>
     public void TriggerVictory()
     {
         SetGameState(GameState.Victory);

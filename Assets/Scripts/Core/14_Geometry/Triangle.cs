@@ -46,9 +46,9 @@ namespace Code.Lavos.Geometry
     /// For Unity mesh representation, use Unity's Mesh class.
     ///
     /// IMPLEMENTED FEATURES:
-    /// ✅ Area calculation (Heron's formula and 3D cross product)
-    /// ✅ Centroid calculation
-    /// ✅ Circumcenter calculation
+    ///  Area calculation (Heron's formula and 3D cross product)
+    ///  Centroid calculation
+    ///  Circumcenter calculation
     ///
     /// FUTURE FEATURES:
     /// - Incenter calculation
@@ -336,7 +336,7 @@ namespace Code.Lavos.Geometry
         #region Intersection Tests
 
         /// <summary>
-        /// Test if ray intersects triangle using Möller–Trumbore algorithm
+        /// Test if ray intersects triangle using MllerTrumbore algorithm
         /// </summary>
         public bool IntersectsRay(Vector3d origin, Vector3d direction)
         {
@@ -475,7 +475,7 @@ namespace Code.Lavos.Geometry
             double[] edges = EdgeLengths();
             double a = edges[0], b = edges[1], c = edges[2];
             
-            // Check all permutations (a² + b² = c²)
+            // Check all permutations (a + b = c)
             return Math.Abs(a * a + b * b - c * c) < tolerance ||
                    Math.Abs(a * a + c * c - b * b) < tolerance ||
                    Math.Abs(b * b + c * c - a * a) < tolerance;

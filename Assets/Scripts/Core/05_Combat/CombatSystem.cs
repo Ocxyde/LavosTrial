@@ -95,12 +95,12 @@ namespace Code.Lavos.Core
 
         #region Unity Lifecycle
 
-        // ─── Singleton ────────────────────────────────────────────────────────────────
+        //  Singleton 
         public static CombatSystem Instance { get; private set; }
 
         void Awake()
         {
-            // Singleton protection — destroy duplicate on scene reload
+            // Singleton protection  destroy duplicate on scene reload
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);

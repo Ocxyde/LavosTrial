@@ -9,38 +9,38 @@ using Code.Lavos.Core.Advanced;
 
 namespace Code.Lavos.Core
 {
-    // ─────────────────────────────────────────────────────────────
+    // 
     //  DifficultyScaler
     //
     //  Computes a smooth progressive difficulty factor over the
-    //  full level range, scaling from 1.0 → MaxFactor (default 3.0).
+    //  full level range, scaling from 1.0  MaxFactor (default 3.0).
     //
     //  Curve formula (power curve):
     //    t      = Clamp01(level / MaxLevel)
     //    factor = 1 + (MaxFactor - 1) * t ^ Exponent
     //
     //  Exponent behaviour:
-    //    < 1.0  → fast early ramp, slow late (logarithmic feel)
-    //    = 1.0  → perfectly linear 1× → 3×
-    //    > 1.0  → slow early ramp, fast late (exponential feel)
-    //    = 2.0  → smooth quadratic acceleration (recommended)
+    //    < 1.0   fast early ramp, slow late (logarithmic feel)
+    //    = 1.0   perfectly linear 1  3
+    //    > 1.0   slow early ramp, fast late (exponential feel)
+    //    = 2.0   smooth quadratic acceleration (recommended)
     //
     //  At level 0   : factor = 1.00   (baseline)
-    //  At half way  : factor ≈ 1.75   (exponent 2.0)
+    //  At half way  : factor  1.75   (exponent 2.0)
     //  At MaxLevel  : factor = MaxFactor (always)
     //
     //  Scaled outputs (consumed by GridMazeGenerator8):
-    //    MazeSize        = BaseSize + (int)(level × SizeRamp × factor)
-    //    EnemyDensity    = BaseEnemyDensity    × factor
-    //    ChestDensity    = BaseChestDensity    × (1 / factor)  ← rarer at high level
-    //    TorchChance     = BaseTorchChance     × Lerp(1, TorchMaxMult, t)
-    //    WallPenalty     = BaseWallPenalty     × factor        ← A* harder paths
-    //    DeadEndDensity  = BaseDeadEndDensity  × Lerp(1, DeadEndMaxMult, t)
-    // ─────────────────────────────────────────────────────────────
+    //    MazeSize        = BaseSize + (int)(level  SizeRamp  factor)
+    //    EnemyDensity    = BaseEnemyDensity     factor
+    //    ChestDensity    = BaseChestDensity     (1 / factor)   rarer at high level
+    //    TorchChance     = BaseTorchChance      Lerp(1, TorchMaxMult, t)
+    //    WallPenalty     = BaseWallPenalty      factor         A* harder paths
+    //    DeadEndDensity  = BaseDeadEndDensity   Lerp(1, DeadEndMaxMult, t)
+    // 
     [Serializable]
     public sealed class DifficultyScaler
     {
-        // ── Tunable via JSON ──────────────────────────────────────
+        //  Tunable via JSON 
         public int   MaxLevel        = 39;
         public float MaxFactor       = 3.0f;
         public float Exponent        = 2.0f;   // power-curve shaping
@@ -48,7 +48,7 @@ namespace Code.Lavos.Core
         public float TorchMaxMult    = 1.5f;   // torch cap at max level
         public float DeadEndMaxMult  = 2.5f;   // dead-end density multiplier at max level
 
-        // ── Core factor ───────────────────────────────────────────
+        //  Core factor 
 
         /// <summary>
         /// Returns the difficulty factor for the given level.
@@ -68,7 +68,7 @@ namespace Code.Lavos.Core
         public float NormalizedT(int level)
             => Mathf.Clamp01((float)level / MaxLevel);
 
-        // ── Derived parameters ────────────────────────────────────
+        //  Derived parameters 
 
         /// <summary>Maze grid size for this level.</summary>
         public int MazeSize(int level, int baseSize, int minSize, int maxSize)
@@ -80,15 +80,15 @@ namespace Code.Lavos.Core
             return size;
         }
 
-        /// <summary>Enemy spawn probability — grows with difficulty.</summary>
+        /// <summary>Enemy spawn probability  grows with difficulty.</summary>
         public float EnemyDensity(float baseDensity, int level)
             => Mathf.Clamp01(baseDensity * Factor(level));
 
-        /// <summary>Chest spawn probability — shrinks with difficulty (rarer rewards).</summary>
+        /// <summary>Chest spawn probability  shrinks with difficulty (rarer rewards).</summary>
         public float ChestDensity(float baseDensity, int level)
             => Mathf.Clamp01(baseDensity / Factor(level));
 
-        /// <summary>Torch chance — grows moderately toward cap.</summary>
+        /// <summary>Torch chance  grows moderately toward cap.</summary>
         public float TorchChance(float baseChance, int level)
         {
             float t = NormalizedT(level);
@@ -97,16 +97,16 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// A* wall crossing penalty — higher difficulty means walls are
+        /// A* wall crossing penalty  higher difficulty means walls are
         /// more expensive to cross, forcing longer but more faithful paths.
         /// </summary>
         public int WallCrossPenalty(int basePenalty, int level)
             => Mathf.RoundToInt(basePenalty * Factor(level));
 
         /// <summary>
-        /// Dead-end corridor density — increases with level.
+        /// Dead-end corridor density  increases with level.
         /// Higher levels get more dead-end corridors for complexity.
-        /// Scales from base density → base × DeadEndMaxMult at max level.
+        /// Scales from base density  base  DeadEndMaxMult at max level.
         /// </summary>
         public float DeadEndDensity(float baseDensity, int level)
         {
@@ -116,7 +116,7 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Room count — scales from minimum to maximum rooms based on level.
+        /// Room count  scales from minimum to maximum rooms based on level.
         /// MANY SMALL ROOMS strategy: More rooms = more tactical gameplay
         /// 
         /// Level 0: MinRooms (4-6 small rooms)
@@ -125,7 +125,7 @@ namespace Code.Lavos.Core
         /// Level 20: ~16-20 rooms
         /// Level 39: MaxRooms (24-30 rooms - many small chambers)
         /// 
-        /// Formula: MinRooms + (MaxRooms - MinRooms) × t^RoomExponent
+        /// Formula: MinRooms + (MaxRooms - MinRooms)  t^RoomExponent
         /// Using exponent 1.2 for faster early ramp (many rooms from start)
         /// </summary>
         public int RoomCount(int minRooms, int maxRooms, int level)
@@ -138,15 +138,15 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Room size — SMALL rooms for tactical gameplay.
+        /// Room size  SMALL rooms for tactical gameplay.
         /// Many small rooms = more corridors, more doors, more tactical choices
         /// 
-        /// Level 0-5: 3×3 - 4×4 (tiny, cozy rooms)
-        /// Level 6-15: 4×4 - 5×5 (small rooms)
-        /// Level 16-30: 5×5 - 6×6 (medium-small)
-        /// Level 31-39: 6×6 - 7×7 (slightly larger, but still compact)
+        /// Level 0-5: 33 - 44 (tiny, cozy rooms)
+        /// Level 6-15: 44 - 55 (small rooms)
+        /// Level 16-30: 55 - 66 (medium-small)
+        /// Level 31-39: 66 - 77 (slightly larger, but still compact)
         /// 
-        /// Ratio: 12% → 18% of maze size (down from 20% → 30%)
+        /// Ratio: 12%  18% of maze size (down from 20%  30%)
         /// This creates MANY small rooms instead of few large ones
         /// </summary>
         public int RoomSize(int mazeSize, int level, int minRoomSize = 3, int maxRoomSize = 7)
@@ -175,7 +175,7 @@ namespace Code.Lavos.Core
         }
 
         /// <summary>
-        /// Door complexity — determines door types available at this level.
+        /// Door complexity  determines door types available at this level.
         /// Level 0-5: Normal doors only
         /// Level 6-15: + Locked doors (20% chance)
         /// Level 16-30: + Secret doors (10% chance)
@@ -196,7 +196,7 @@ namespace Code.Lavos.Core
             return 0.20f;
         }
 
-        // ── Debug / display ───────────────────────────────────────
+        //  Debug / display 
 
         /// <summary>Human-readable snapshot of all scaled values at a given level.</summary>
         public string Describe(int level, DungeonMazeConfig cfg)

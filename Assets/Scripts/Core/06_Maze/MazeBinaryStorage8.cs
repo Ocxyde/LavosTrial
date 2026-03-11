@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Code.Lavos.Core
 {
-    // ─────────────────────────────────────────────────────────────
+    // 
     //  MazeBinaryStorage8
     //
     //  Byte-exact binary persistence for MazeData8.
@@ -23,31 +23,31 @@ namespace Code.Lavos.Core
     //  File name: maze8_L{level:D3}_S{seed}.lvm
     //
     //  Binary layout (all fields little-endian):
-    //  ┌─────────┬────────┬────────────────────────────────────┐
-    //  │ Offset  │ Bytes  │ Field                              │
-    //  ├─────────┼────────┼────────────────────────────────────┤
-    //  │  0      │  5     │ Magic  "LAV8S"                     │
-    //  │  5      │  1     │ Version (2)                        │
-    //  │  6      │  2     │ Width   (int16)                    │
-    //  │  8      │  2     │ Height  (int16)                    │
-    //  │ 10      │  4     │ Seed    (int32)                    │
-    //  │ 14      │  4     │ Level   (int32)                    │
-    //  │ 18      │  8     │ Timestamp (int64, UTC unix secs)   │
-    //  │ 26      │  2     │ SpawnX  (int16)                    │
-    //  │ 28      │  2     │ SpawnZ  (int16)                    │
-    //  │ 30      │  2     │ ExitX   (int16)                    │
-    //  │ 32      │  2     │ ExitZ   (int16)                    │
-    //  │ 34      │  4     │ DifficultyFactor (float32)         │
-    //  │ 38      │ W×H×2  │ Cell data — ushort per cell (LE)   │
-    //  │ 38+W*H*2│  4     │ Checksum XOR-fold (uint32)         │
-    //  └─────────┴────────┴────────────────────────────────────┘
-    //  Total: 42 + (W × H × 2) bytes
-    //    Level  0 (12×12) →   330 bytes
-    //    Level 39 (51×51) → 5,244 bytes
-    // ─────────────────────────────────────────────────────────────
+    //  
+    //   Offset   Bytes   Field                              
+    //  
+    //    0        5      Magic  "LAV8S"                     
+    //    5        1      Version (2)                        
+    //    6        2      Width   (int16)                    
+    //    8        2      Height  (int16)                    
+    //   10        4      Seed    (int32)                    
+    //   14        4      Level   (int32)                    
+    //   18        8      Timestamp (int64, UTC unix secs)   
+    //   26        2      SpawnX  (int16)                    
+    //   28        2      SpawnZ  (int16)                    
+    //   30        2      ExitX   (int16)                    
+    //   32        2      ExitZ   (int16)                    
+    //   34        4      DifficultyFactor (float32)         
+    //   38       WH2   Cell data  ushort per cell (LE)   
+    //   38+W*H*2  4      Checksum XOR-fold (uint32)         
+    //  
+    //  Total: 42 + (W  H  2) bytes
+    //    Level  0 (1212)    330 bytes
+    //    Level 39 (5151)  5,244 bytes
+    // 
     public static class MazeBinaryStorage8
     {
-        // ── Directory ─────────────────────────────────────────────
+        //  Directory 
         private static string SaveDirectory
         {
             get
@@ -67,9 +67,9 @@ namespace Code.Lavos.Core
         public static string FullPath(int level, int seed)
             => Path.Combine(SaveDirectory, FileName(level, seed));
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  SAVE
-        // ─────────────────────────────────────────────────────────
+        // 
         public static bool Save(MazeData8 data)
         {
             try
@@ -81,7 +81,7 @@ namespace Code.Lavos.Core
                 using var bw = new BinaryWriter(ms,
                                    System.Text.Encoding.UTF8, leaveOpen: true);
 
-                // ── Header (38 bytes) ─────────────────────────────
+                //  Header (38 bytes) 
                 bw.Write(MazeData8.MAGIC);                   //  5  "LAV8S"
                 bw.Write(MazeData8.VERSION);                 //  1
                 bw.Write((short)data.Width);                 //  2
@@ -94,9 +94,9 @@ namespace Code.Lavos.Core
                 bw.Write((short)data.ExitCell.x);            //  2
                 bw.Write((short)data.ExitCell.z);            //  2
                 bw.Write(data.DifficultyFactor);             //  4  float32
-                // Header total: 38 bytes ✓
+                // Header total: 38 bytes 
 
-                // ── Cell payload (W × H × 2 bytes) ───────────────
+                //  Cell payload (W  H  2 bytes) 
                 uint checksum = 0;
                 for (int z = 0; z < data.Height; z++)
                 for (int x = 0; x < data.Width;  x++)
@@ -107,7 +107,7 @@ namespace Code.Lavos.Core
                     checksum ^= ((uint)((cell >> 8) & 0xFF)) << 8;
                 }
 
-                // ── Checksum ──────────────────────────────────────
+                //  Checksum 
                 checksum ^= (uint)(data.Width  * 0x1F);
                 checksum ^= (uint)(data.Height * 0x3D);
                 checksum ^= (uint) data.Seed;
@@ -116,7 +116,7 @@ namespace Code.Lavos.Core
 
                 bw.Flush();
                 File.WriteAllBytes(path, ms.ToArray());
-                Debug.Log($"[MazeBinaryStorage8] Saved → {path}  ({ms.Length} bytes)  " +
+                Debug.Log($"[MazeBinaryStorage8] Saved  {path}  ({ms.Length} bytes)  " +
                           $"factor={data.DifficultyFactor:F3}");
                 return true;
             }
@@ -127,9 +127,9 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  LOAD
-        // ─────────────────────────────────────────────────────────
+        // 
         public static MazeData8 Load(int level, int seed)
         {
             string path = FullPath(level, seed);
@@ -146,18 +146,18 @@ namespace Code.Lavos.Core
                 using var br = new BinaryReader(ms,
                                    System.Text.Encoding.UTF8, leaveOpen: true);
 
-                // ── Validate magic ────────────────────────────────
+                //  Validate magic 
                 byte[] magic = br.ReadBytes(5);
                 for (int i = 0; i < 5; i++)
                     if (magic[i] != MazeData8.MAGIC[i])
-                        throw new InvalidDataException("Bad magic — not a LAV8S file.");
+                        throw new InvalidDataException("Bad magic  not a LAV8S file.");
 
                 byte version = br.ReadByte();
                 if (version != MazeData8.VERSION)
                     throw new InvalidDataException(
                         $"Unsupported version {version} (expected {MazeData8.VERSION}).");
 
-                // ── Header ────────────────────────────────────────
+                //  Header 
                 int   width    = br.ReadInt16();
                 int   height   = br.ReadInt16();
                 int   fileSeed = br.ReadInt32();
@@ -172,7 +172,7 @@ namespace Code.Lavos.Core
                 if (fileSeed != seed || fileLvl != level)
                     Debug.LogWarning("[MazeBinaryStorage8] Header seed/level mismatch.");
 
-                // ── Cell payload ──────────────────────────────────
+                //  Cell payload 
                 var data = new MazeData8(width, height, fileSeed, fileLvl)
                 {
                     DifficultyFactor = factor,
@@ -190,7 +190,7 @@ namespace Code.Lavos.Core
                     checksum ^= ((uint)((cell >> 8) & 0xFF)) << 8;
                 }
 
-                // ── Verify checksum ───────────────────────────────
+                //  Verify checksum 
                 checksum ^= (uint)(width  * 0x1F);
                 checksum ^= (uint)(height * 0x3D);
                 checksum ^= (uint)fileSeed;
@@ -198,12 +198,12 @@ namespace Code.Lavos.Core
 
                 uint stored = br.ReadUInt32();
                 if (checksum != stored)
-                    Debug.LogWarning("[MazeBinaryStorage8] Checksum mismatch — file may be corrupt.");
+                    Debug.LogWarning("[MazeBinaryStorage8] Checksum mismatch  file may be corrupt.");
 
                 data.SetSpawn(spawnX, spawnZ);
                 data.SetExit(exitX, exitZ);
 
-                Debug.Log($"[MazeBinaryStorage8] Loaded ← {path}  ({raw.Length} bytes)  " +
+                Debug.Log($"[MazeBinaryStorage8] Loaded  {path}  ({raw.Length} bytes)  " +
                           $"factor={factor:F3}");
                 return data;
             }
@@ -214,9 +214,9 @@ namespace Code.Lavos.Core
             }
         }
 
-        // ─────────────────────────────────────────────────────────
+        // 
         //  Utility
-        // ─────────────────────────────────────────────────────────
+        // 
         public static bool   Exists(int level, int seed) => File.Exists(FullPath(level, seed));
 
         public static bool Delete(int level, int seed)

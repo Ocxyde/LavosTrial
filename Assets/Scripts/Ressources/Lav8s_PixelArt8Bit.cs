@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // Lav8s_PixelArt8Bit.cs
-// 8-bit pixel-art texture factory — scene MazeLav8s_v1-0_0_0
+// 8-bit pixel-art texture factory  scene MazeLav8s_v1-0_0_0
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 // Locale: en_US
 //
@@ -29,7 +29,7 @@
 // All textures are 16x16 px, FilterMode.Point, no mip-maps.
 // Cache is cleared automatically when the scene unloads.
 //
-// PLUG-IN-OUT: static utility — no MonoBehaviour required.
+// PLUG-IN-OUT: static utility  no MonoBehaviour required.
 // LOCATION: Assets/Scripts/Ressources/
 
 using UnityEngine;
@@ -39,26 +39,26 @@ namespace Code.Lavos.Ressources
 {
     /// <summary>
     /// 8-bit pixel-art texture and material factory for MazeLav8s v1.
-    /// Generates 16×16 textures with a strict dungeon palette.
+    /// Generates 1616 textures with a strict dungeon palette.
     /// Point-filtered (no anti-aliasing) for authentic 8-bit look.
     /// </summary>
     public static class Lav8s_PixelArt8Bit
     {
-        // ── Dungeon palette (NES-style 8-bit colors) ────────────────────────
-        //  Row 0 — Stone / Wall
+        //  Dungeon palette (NES-style 8-bit colors) 
+        //  Row 0  Stone / Wall
         private static readonly Color32 C_STONE_BLACK   = new(10,   8,   8, 255);
         private static readonly Color32 C_STONE_DARK    = new(38,  32,  28, 255);
         private static readonly Color32 C_STONE_MID     = new(62,  52,  45, 255);
         private static readonly Color32 C_STONE_LIGHT   = new(88,  74,  62, 255);
         private static readonly Color32 C_STONE_MORTAR  = new(22,  20,  18, 255);
 
-        //  Row 1 — Floor
+        //  Row 1  Floor
         private static readonly Color32 C_FLOOR_BLACK   = new(12,  10,   8, 255);
         private static readonly Color32 C_FLOOR_DARK    = new(30,  24,  18, 255);
         private static readonly Color32 C_FLOOR_MID     = new(50,  40,  30, 255);
         private static readonly Color32 C_FLOOR_CRACK   = new(18,  14,  10, 255);
 
-        //  Row 2 — Wood / Door
+        //  Row 2  Wood / Door
         private static readonly Color32 C_WOOD_DARK     = new(55,  32,  10, 255);
         private static readonly Color32 C_WOOD_MID      = new(88,  52,  18, 255);
         private static readonly Color32 C_WOOD_LIGHT    = new(118, 72,  28, 255);
@@ -66,23 +66,23 @@ namespace Code.Lavos.Ressources
         private static readonly Color32 C_IRON_MID      = new(65,  65,  70, 255);
         private static readonly Color32 C_IRON_LIGHT    = new(95,  95, 100, 255);
 
-        //  Row 3 — Chest / Gold
+        //  Row 3  Chest / Gold
         private static readonly Color32 C_GOLD_DARK     = new(130,  90,  10, 255);
         private static readonly Color32 C_GOLD_MID      = new(190, 145,  20, 255);
         private static readonly Color32 C_GOLD_LIGHT    = new(240, 200,  50, 255);
         private static readonly Color32 C_CHEST_BODY    = new(80,   50,  18, 255);
 
-        //  Row 4 — FX
+        //  Row 4  FX
         private static readonly Color32 C_TORCH_ORANGE  = new(255, 130,  20, 255);
         private static readonly Color32 C_TORCH_YELLOW  = new(255, 220,  60, 255);
         private static readonly Color32 C_MAGIC_BLUE    = new( 40,  80, 200, 255);
         private static readonly Color32 C_ACCENT_RED    = new(160,  20,  10, 255);
 
-        // ── Texture cache ────────────────────────────────────────────────────
+        //  Texture cache 
         private static Texture2D _wall, _wallCastle, _floor, _ceiling;
         private static Texture2D _doorWood, _doorIron, _chest, _stoneTrim;
 
-        // ── Public material factories ────────────────────────────────────────
+        //  Public material factories 
 
         public static Material CreateWallMaterial()
             => PixelMat(GetWallTex());
@@ -108,7 +108,7 @@ namespace Code.Lavos.Ressources
         public static Material CreateStoneTrimMaterial()
             => PixelMat(GetStoneTrimTex());
 
-        // ── Apply to renderer ────────────────────────────────────────────────
+        //  Apply to renderer 
 
         public static void ApplyWall(Renderer r)     => r.material = CreateWallMaterial();
         public static void ApplyCastleWall(Renderer r)=> r.material = CreateCastleWallMaterial();
@@ -118,7 +118,7 @@ namespace Code.Lavos.Ressources
         public static void ApplyDoubleDoor(Renderer r)=> r.material = CreateDoubleDoorMaterial();
         public static void ApplyChest(Renderer r)    => r.material = CreateChestMaterial();
 
-        // ── Cache management ─────────────────────────────────────────────────
+        //  Cache management 
 
         public static void ClearCache()
         {
@@ -128,7 +128,7 @@ namespace Code.Lavos.Ressources
             DestroyTex(ref _chest);   DestroyTex(ref _stoneTrim);
         }
 
-        // ── Texture getters (lazy) ───────────────────────────────────────────
+        //  Texture getters (lazy) 
 
         public static Texture2D GetWallTex()       => _wall       ??= BuildWall();
         public static Texture2D GetCastleWallTex() => _wallCastle ??= BuildCastleWall();
@@ -139,11 +139,11 @@ namespace Code.Lavos.Ressources
         public static Texture2D GetChestTex()      => _chest      ??= BuildChest();
         public static Texture2D GetStoneTrimTex()  => _stoneTrim  ??= BuildStoneTrim();
 
-        // ────────────────────────────────────────────────────────────────────
-        //  PRIVATE — texture builders
-        // ────────────────────────────────────────────────────────────────────
+        // 
+        //  PRIVATE  texture builders
+        // 
 
-        // 16×16 dungeon stone wall — horizontal brick courses
+        // 1616 dungeon stone wall  horizontal brick courses
         private static Texture2D BuildWall()
         {
             var t = Tex16();
@@ -177,12 +177,12 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 castle wall — large square blocks, arched detail
+        // 1616 castle wall  large square blocks, arched detail
         private static Texture2D BuildCastleWall()
         {
             var t = Tex16();
             FillAll(t, C_STONE_MID);
-            // Large block grid (8×8 blocks, mortar at 0,8)
+            // Large block grid (88 blocks, mortar at 0,8)
             DrawRow(t, 0,  C_STONE_BLACK);
             DrawRow(t, 8,  C_STONE_BLACK);
             DrawCol(t, 0,  C_STONE_BLACK);
@@ -201,12 +201,12 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 stone floor — cracked tiles
+        // 1616 stone floor  cracked tiles
         private static Texture2D BuildFloor()
         {
             var t = Tex16();
             FillAll(t, C_FLOOR_MID);
-            // Tile grid (8×8 tiles)
+            // Tile grid (88 tiles)
             DrawRow(t, 0,  C_FLOOR_BLACK);
             DrawRow(t, 8,  C_FLOOR_BLACK);
             DrawCol(t, 0,  C_FLOOR_BLACK);
@@ -223,7 +223,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 pitch black ceiling with subtle texture
+        // 1616 pitch black ceiling with subtle texture
         private static Texture2D BuildCeiling()
         {
             var t = Tex16();
@@ -238,7 +238,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 wooden door — plank + iron bolt pattern
+        // 1616 wooden door  plank + iron bolt pattern
         private static Texture2D BuildDoorWood()
         {
             var t = Tex16();
@@ -274,7 +274,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 castle double-door — heavy iron/stone (manor style)
+        // 1616 castle double-door  heavy iron/stone (manor style)
         private static Texture2D BuildDoorIron()
         {
             var t = Tex16();
@@ -301,7 +301,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 treasure chest — wood body + gold trim + lock
+        // 1616 treasure chest  wood body + gold trim + lock
         private static Texture2D BuildChest()
         {
             var t = Tex16();
@@ -327,7 +327,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // 16×16 stone trim / archway accents
+        // 1616 stone trim / archway accents
         private static Texture2D BuildStoneTrim()
         {
             var t = Tex16();
@@ -342,7 +342,7 @@ namespace Code.Lavos.Ressources
             return t;
         }
 
-        // ── Pixel helpers ────────────────────────────────────────────────────
+        //  Pixel helpers 
 
         private static Texture2D Tex16()
         {

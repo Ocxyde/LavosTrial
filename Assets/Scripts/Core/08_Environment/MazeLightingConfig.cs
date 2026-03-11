@@ -137,17 +137,17 @@ namespace Code.Lavos.Core
         /// </summary>
         public void PrintLightingProgression()
         {
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log("  MAZE LIGHTING PROGRESSION");
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
             Debug.Log($"Base Torch Count: {maxTorchCount}");
             Debug.Log($"Base Light Range: {maxLightRange}m");
             Debug.Log($"Base Intensity: {maxLightIntensity}");
             Debug.Log($"Difficulty Exponent: {difficultyExponent}");
             Debug.Log($"Minimum Ratio: {minimumLightingRatio:P0}");
-            Debug.Log("───────────────────────────────────────────────");
+            Debug.Log("");
             Debug.Log("Level | Ratio | Torches | Range  | Intensity");
-            Debug.Log("───────────────────────────────────────────────");
+            Debug.Log("");
             
             int[] exampleLevels = { 1, 3, 5, 10, 15, 20, 25, 30 };
             foreach (int level in exampleLevels)
@@ -160,7 +160,7 @@ namespace Code.Lavos.Core
                 Debug.Log($"L{level:D2}  | {ratio:P0}   | {torches:D3}     | {range:F1}m   | {intensity:F2}");
             }
             
-            Debug.Log("═══════════════════════════════════════════════");
+            Debug.Log("");
         }
         
         #endregion

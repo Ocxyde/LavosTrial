@@ -118,9 +118,9 @@ namespace Code.Lavos.Core
             if (showDebugLogs)
             {
                 Debug.Log($"[ItemPlacer]  Config loaded from JSON:");
-                Debug.Log($"  • Enable: {enableItemSpawning}");
-                Debug.Log($"  • Spawn Chance: {itemSpawnChance * 100f:F0}%");
-                Debug.Log($"  • Max Items: {maxItems}");
+                Debug.Log($"   Enable: {enableItemSpawning}");
+                Debug.Log($"   Spawn Chance: {itemSpawnChance * 100f:F0}%");
+                Debug.Log($"   Max Items: {maxItems}");
             }
         }
 

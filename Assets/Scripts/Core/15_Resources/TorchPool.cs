@@ -20,9 +20,9 @@
 //
 // PLUG-IN-AND-OUT:
 // - Pools torch objects for reuse (zero GC allocations)
-// - Get() → Activate from pool (or create if empty)
-// - Release() → Return to pool (disable, don't destroy)
-// - ReleaseAll() → Return all to pool (ready for reuse)
+// - Get()  Activate from pool (or create if empty)
+// - Release()  Return to pool (disable, don't destroy)
+// - ReleaseAll()  Return all to pool (ready for reuse)
 //
 // SETUP: Attach to the same GameObject as MazeRenderer.
 
@@ -38,7 +38,7 @@ namespace Code.Lavos.Core
     /// </summary>
     public class TorchPool : MonoBehaviour
     {
-        // ─── Pool Settings ─────────────────────────────────────────────────────
+        //  Pool Settings 
         [Header("Pool Settings")]
         [Tooltip("Pre-create this many torches at start (avoids runtime instantiation)")]
         [SerializeField] private int initialPoolSize = 60;
@@ -49,7 +49,7 @@ namespace Code.Lavos.Core
         [Tooltip("Pre-warm pool on Start (recommended for best performance)")]
         [SerializeField] private bool prewarmOnStart = true;
 
-        // ─── Torch Prefab ──────────────────────────────────────────────────────
+        //  Torch Prefab 
         [Header("Torch Prefab")]
         [Tooltip("Torch handle with EffectSocket + LightSocket inside")]
         [SerializeField] private GameObject torchHandlePrefab;
@@ -60,24 +60,24 @@ namespace Code.Lavos.Core
         [Tooltip("Use BraseroFlame particle system")]
         [SerializeField] private bool useBraseroFlame = true;
 
-        // ─── The Pool (inactive torches ready for reuse) ───────────────────────
+        //  The Pool (inactive torches ready for reuse) 
         private readonly Queue<GameObject> _pool = new Queue<GameObject>();
         private readonly List<GameObject> _activeTorches = new List<GameObject>();
 
-        // ─── Shared Materials ──────────────────────────────────────────────────
+        //  Shared Materials 
         private Material _sharedFlameMat;
         private Material _sharedHandleMat;
         private bool _materialsInitialized;
 
-        // ─── Stats ─────────────────────────────────────────────────────────────
+        //  Stats 
         public int PoolSize => _pool.Count;
         public int ActiveCount => _activeTorches.Count;
         public int TotalCreated => _activeTorches.Count + _pool.Count;
         public int PeakUsage { get; private set; }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  UNITY LIFECYCLE
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         void Start()
         {
@@ -100,9 +100,9 @@ namespace Code.Lavos.Core
             _activeTorches.Clear();
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  POOL INITIALIZATION
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Pre-create pool objects at start (avoids runtime instantiation).
@@ -121,9 +121,9 @@ namespace Code.Lavos.Core
             Debug.Log($"[TorchPool]  Pool pre-warmed: {count} torches ready");
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  GET TORCH FROM POOL (REAL POOLING)
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Get a torch from pool (reuse) or create new if pool empty.
@@ -213,9 +213,9 @@ namespace Code.Lavos.Core
             return ctrl;
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  RELEASE TORCH BACK TO POOL (REAL POOLING)
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Release single torch back to pool (disable, don't destroy).
@@ -242,9 +242,9 @@ namespace Code.Lavos.Core
             Debug.Log($"[TorchPool] Returned to pool (size: {_pool.Count})");
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  RELEASE ALL TORCHES TO POOL
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Release all active torches back to pool (ready for reuse).
@@ -270,9 +270,9 @@ namespace Code.Lavos.Core
             Debug.Log($"[TorchPool]  All torches returned to pool (pool size: {_pool.Count})");
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  DESTROY ALL (end of session only)
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Destroy all torches (pool + active). Only call at end of game session.
@@ -296,9 +296,9 @@ namespace Code.Lavos.Core
             Debug.Log("[TorchPool]  All torches destroyed");
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  INTERNAL HELPERS
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Creates a new torch object (called when pool is empty and canExpand=true).
@@ -365,15 +365,15 @@ namespace Code.Lavos.Core
             ctrl.Initialize(flameFrames, flameMR, light);
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  TORCH CONSTRUCTION (fallback if no prefab)
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         private GameObject BuildTorchObject()
         {
             var torchGO = new GameObject("Torch");
 
-            // ─── Handle (stick) ────────────────────────────────────────────────
+            //  Handle (stick) 
             var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
             handle.name = "Handle";
             handle.transform.SetParent(torchGO.transform);
@@ -392,7 +392,7 @@ namespace Code.Lavos.Core
 
             if (useBraseroFlame)
             {
-                // ─── Brasero Flame (Particle System) ───────────────────────────
+                //  Brasero Flame (Particle System) 
                 var flame = new GameObject("BraseroFlame");
                 flame.transform.SetParent(torchGO.transform);
                 flame.transform.localPosition = new Vector3(0f, 0.5f, 0f);
@@ -400,7 +400,7 @@ namespace Code.Lavos.Core
                 flame.transform.localScale = new Vector3(1f, 1f, 1f);
                 flame.AddComponent<BraseroFlame>();
 
-                // ─── Light ─────────────────────────────────────────────────────
+                //  Light 
                 var lightGO = new GameObject("FlameLight");
                 lightGO.transform.SetParent(torchGO.transform);
                 lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
@@ -414,14 +414,14 @@ namespace Code.Lavos.Core
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 
-                // ─── Controller ────────────────────────────────────────────────
+                //  Controller 
                 var ctrl = torchGO.AddComponent<TorchController>();
                 ctrl.InitializeBrasero(pointLight, flame.GetComponent<BraseroFlame>());
                 ctrl.TurnOn();
             }
             else
             {
-                // ─── Flame (billboard 2D pixel art) ────────────────────────────
+                //  Flame (billboard 2D pixel art) 
                 var flame = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 flame.name = "Flame";
                 flame.transform.SetParent(torchGO.transform);
@@ -438,7 +438,7 @@ namespace Code.Lavos.Core
 
                 Destroy(flame.GetComponent<MeshCollider>());
 
-                // ─── Light ─────────────────────────────────────────────────────
+                //  Light 
                 var lightGO = new GameObject("FlameLight");
                 lightGO.transform.SetParent(torchGO.transform);
                 lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
@@ -452,16 +452,16 @@ namespace Code.Lavos.Core
                 pointLight.enabled = true;
                 pointLight.bounceIntensity = 1.5f;
 
-                // ─── Controller ────────────────────────────────────────────────
+                //  Controller 
                 torchGO.AddComponent<TorchController>();
             }
 
             return torchGO;
         }
 
-        // ───────────────────────────────────────────────────────────────────────
+        // 
         //  DEBUG / STATS
-        // ───────────────────────────────────────────────────────────────────────
+        // 
 
         /// <summary>
         /// Get pool statistics for debugging.

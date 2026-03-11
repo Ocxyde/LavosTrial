@@ -294,7 +294,7 @@ namespace Code.Lavos.Core
             GUILayout.BeginArea(new Rect(10, 500, 300, 200));
             GUILayout.BeginVertical("box");
 
-            GUILayout.Label("═══ Camera Follow ═══");
+            GUILayout.Label(" Camera Follow ");
             GUILayout.Label($"Distance: {distance:F2}");
             GUILayout.Label($"Height: {heightOffset:F2}");
             GUILayout.Label($"V-Angle: {_verticalAngle:F1}");

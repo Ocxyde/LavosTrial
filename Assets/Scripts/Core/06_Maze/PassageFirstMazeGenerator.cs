@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2026 Ocxyde
+// Copyright (C) 2026 Ocxyde
 //
 // This file is part of Code.Lavos.
 //
@@ -114,9 +114,9 @@ namespace Code.Lavos.Core.Advanced
             return _mazeData;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 1: Initialize Walls
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void FillAllWalls()
         {
             int w = _mazeData.Width;
@@ -133,9 +133,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 2: Carve Main Passage (Entrance A to Exit B) with Variations
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void CarveMainPassageWithVariations(int baseWidth)
         {
             int startX = 1;
@@ -309,9 +309,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 3: Carve Branch Passages
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void CarveBranchPassages(float windingFactor)
         {
             // Pick random points along main passage to branch from
@@ -351,9 +351,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 4: Expand Chambers
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void ExpandChambers(int radius)
         {
             // Find dead-ends (branch endpoints)
@@ -376,9 +376,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 5: Add Corridor Decorations
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void AddCorridorDecorations()
         {
             // Add pillars at landmark cells (gates, junctions)
@@ -550,9 +550,9 @@ namespace Code.Lavos.Core.Advanced
             return null;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // PHASE 6: Object Placement
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void PlaceTorches(float chance)
         {
             int torchCount = 0;
@@ -605,9 +605,9 @@ namespace Code.Lavos.Core.Advanced
             }
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Helpers
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void ClearCellWithNeighbors(int x, int z)
         {
             // Clear this cell completely
@@ -660,9 +660,9 @@ namespace Code.Lavos.Core.Advanced
             return (cell & CellFlags8.Wall_All) == 0;
         }
 
-        // ─────────────────────────────────────────────────────────────
+        // 
         // Validation
-        // ─────────────────────────────────────────────────────────────
+        // 
         private void ValidateConfig(DungeonMazeConfig cfg)
         {
             if (cfg == null)
