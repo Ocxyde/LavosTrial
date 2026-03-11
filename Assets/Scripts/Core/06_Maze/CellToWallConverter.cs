@@ -1,4 +1,4 @@
-﻿﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using UnityEngine;
+using Code.Lavos.Core.Environment;
 
 namespace Code.Lavos.Core.Maze
 {
