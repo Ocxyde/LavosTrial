@@ -26,8 +26,9 @@ using UnityEngine;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// Auto-initializes the EventHandler system.
+    /// Auto-initializes the EventHandler system (Plug-in-Out compliant).
     /// Add this to any GameObject in your first scene.
+    /// Finds existing EventHandler, never creates new one.
     /// </summary>
     public class EventHandlerInitializer : MonoBehaviour
     {
@@ -37,34 +38,33 @@ namespace Code.Lavos.Core
 
         private void Awake()
         {
-            // Check if EventHandler already exists
-            if (EventHandler.Instance != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            // Create EventHandler GameObject
-            var handlerGO = new GameObject("EventHandler");
-            var handler = handlerGO.AddComponent<EventHandler>();
+            // Plug-in-Out: Find existing EventHandler (never create)
+            var handler = FindFirstObjectByType<EventHandler>();
             
-            // Set debug mode
-            handler.debugEvents = debugMode;
-
-            // Make persistent
-            DontDestroyOnLoad(handlerGO);
+            if (handler != null)
+            {
+                // EventHandler already exists - use it
+                handler.debugEvents = debugMode;
+                Debug.Log("[EventHandlerInitializer] Found existing EventHandler");
+            }
+            else
+            {
+                // No EventHandler found - log warning (don't create!)
+                Debug.LogWarning("[EventHandlerInitializer] No EventHandler found! Add EventHandler component to a GameObject in scene.");
+            }
 
             // Auto-subscribe to PlayerStats if available
             if (subscribeToPlayerStats)
             {
                 var playerStats = FindFirstObjectByType<Component>() as IPlayerStats;
-                if (playerStats != null)
+                if (playerStats != null && handler != null)
                 {
                     handler.SubscribeToPlayerStats(playerStats);
                 }
             }
 
-            Debug.Log("[EventHandlerInitializer] EventHandler created and initialized");
+            // Destroy this initializer (we only needed it to find/create handler)
+            Destroy(gameObject);
         }
     }
 }
