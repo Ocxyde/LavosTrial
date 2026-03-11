@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEditor;
 using Code.Lavos.Core.Maze;
 using Code.Lavos.Core.Environment;
+using Code.Lavos.Core.Player;
 using System.Collections.Generic;
 
 namespace Code.Lavos.Editor
