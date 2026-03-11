@@ -12,6 +12,8 @@ using Code.Lavos.Core.Player;
 using Code.Lavos.Core;
 using System;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace Code.Lavos.Editor
 {
