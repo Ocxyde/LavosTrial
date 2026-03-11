@@ -1,4 +1,4 @@
-﻿﻿// LavosTrial - CodeDotLavos
+﻿﻿﻿// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -274,27 +274,27 @@ namespace Code.Lavos.Core.Maze
         /// Select door position on opposite wall.
         /// </summary>
         private (Vector2Int pos, Direction8 dir) SelectOppositeWall(
-            (Vector2Int pos, Direction8 dir) entry, 
-            List<(Vector2Int, Direction8)> positions)
+            (Vector2Int pos, Direction8 dir) entry,
+            List<(Vector2Int pos, Direction8 dir)> positions)
         {
             // Find opposite direction
             Direction8 opposite = GetOppositeDirection(entry.dir);
-            
+
             // Look for position on opposite wall
-            foreach (var pos in positions)
+            foreach (var item in positions)
             {
-                if (pos.dir == opposite && pos.pos != entry.pos)
+                if (item.dir == opposite && item.pos != entry.pos)
                 {
-                    return pos;
+                    return item;
                 }
             }
-            
+
             // If no opposite, select any adjacent wall
-            foreach (var pos in positions)
+            foreach (var item in positions)
             {
-                if (pos.pos != entry.pos)
+                if (item.pos != entry.pos)
                 {
-                    return pos;
+                    return item;
                 }
             }
             

@@ -435,8 +435,8 @@ namespace Code.Lavos.Core.Maze
             if (index > 0 && index < _primaryPath.Count - 1)
             {
                 var dir = _primaryPath[index + 1] - _primaryPath[index - 1];
-                // Normalize manually for Vector2Int
-                return new Vector2Int(Mathf.Sign(dir.x), Mathf.Sign(dir.y));
+                // Normalize manually for Vector2Int (Mathf.Sign returns float, cast to int)
+                return new Vector2Int((int)Mathf.Sign(dir.x), (int)Mathf.Sign(dir.y));
             }
             return Vector2Int.right;
         }
