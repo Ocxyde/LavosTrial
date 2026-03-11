@@ -1108,7 +1108,8 @@ namespace Code.Lavos.Core
 
             Debug.Log($"[GridMazeGenerator] Torches placed on corridors only (rooms stay dark)");
             Debug.Log($"[GridMazeGenerator] Torch position: Mid-wall height (wallHeight/2)");
-            Debug.Log($"[GridMazeGenerator] Torch rotation: X=25° inward (tilt toward corridor)");
+            Debug.Log($"[GridMazeGenerator] Torch rotation: X=25° tilt, face INWARD toward walkable cell");
+            Debug.Log($"[GridMazeGenerator] Torch direction: Find walkable adjacent cell, face that way");
         }
 
         // ─────────────────────────────────────────────────────────
@@ -1130,11 +1131,22 @@ namespace Code.Lavos.Core
         //  TORCH IMPLEMENTATION NOTES (for CompleteMazeBuilder):
         //  When spawning torches from TorchPool:
         //    1. Position: wallCenter + Vector3(0, wallHeight/2, 0)
-        //    2. Rotation: Quaternion.Euler(25, wallFacing, 0)
-        //       - 25° X-rotation = inward tilt (torch points up into corridor)
-        //       - wallFacing = 0/90/180/270 based on wall direction
-        //    3. Offset: 0.3 units from wall surface (into corridor)
-        //    4. Light: Point light, warm orange (1.0, 0.6, 0.2), intensity 2.0
+        //    2. Find the WALKABLE side (corridor passage)
+        //    3. Rotation: Face INWARD toward walkable cell
+        //       - Check which adjacent cell is walkable (N/S/E/W)
+        //       - Rotate torch to face that direction
+        //       - X-tilt: 25° upward for flame visibility
+        //    4. Offset: 0.3 units from wall surface (into corridor)
+        //    5. Light: Point light, warm orange (1.0, 0.6, 0.2), intensity 2.0
+        //
+        //  EXAMPLE:
+        //    If wall has walkable cell to the NORTH:
+        //      - Torch faces NORTH (toward corridor)
+        //      - Rotation: Quaternion.Euler(25, 0, 0)
+        //    If wall has walkable cell to the EAST:
+        //      - Torch faces EAST (toward corridor)
+        //      - Rotation: Quaternion.Euler(25, 90, 0)
+        //    NEVER face outward into solid wall!
         // ─────────────────────────────────────────────────────────
         private static void AddCorridorCeiling(MazeData8 data, System.Random rng, MazeConfig cfg)
         {
