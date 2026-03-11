@@ -365,10 +365,13 @@ namespace Code.Lavos.Core
             ctrl.Initialize(flameFrames, flameMR, light);
         }
 
-        // 
-        //  TORCH CONSTRUCTION (fallback if no prefab)
-        // 
+        //
+        //  TORCH CONSTRUCTION (FALLBACK - DEPRECATED)
+        //  Plug-in-Out Violation: Creates GameObjects at runtime
+        //  TODO: Remove when torch prefab is always assigned
+        //
 
+        [System.Obsolete("BuildTorchObject violates plug-in-out. Assign torchPrefab instead.")]
         private GameObject BuildTorchObject()
         {
             var torchGO = new GameObject("Torch");
