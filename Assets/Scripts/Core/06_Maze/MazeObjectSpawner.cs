@@ -70,21 +70,21 @@ namespace Code.Lavos.Core
                         );
 
                         // Snap torch to wall surface (flush, not floating)
-                        // Place in walkable cell, facing the wall (inward)
+                        // Place in wall cell, facing OUTWARD into corridor
                         float snapOffset = 0.15f; // Snap to wall surface
-                        pos += dir * snapOffset;
+                        pos -= dir * snapOffset; // Move INTO wall cell (not walkable)
 
-                        // Rotate torch to face the wall it's mounted on
-                        // TORCH.fbx default forward (Z+) should face the wall
+                        // Rotate torch to face OUTWARD into the corridor
+                        // TORCH.fbx default forward (Z+) should face away from wall
                         Quaternion rotation;
-                        if (dir == Vector3.forward)      // North wall → face south
-                            rotation = Quaternion.Euler(0f, 180f, 0f);
-                        else if (dir == -Vector3.forward) // South wall → face north
+                        if (dir == Vector3.forward)      // North wall → face north (outward)
                             rotation = Quaternion.identity;
-                        else if (dir == Vector3.right)    // East wall → face west
-                            rotation = Quaternion.Euler(0f, -90f, 0f);
-                        else if (dir == -Vector3.right)   // West wall → face east
+                        else if (dir == -Vector3.forward) // South wall → face south (outward)
+                            rotation = Quaternion.Euler(0f, 180f, 0f);
+                        else if (dir == Vector3.right)    // East wall → face east (outward)
                             rotation = Quaternion.Euler(0f, 90f, 0f);
+                        else if (dir == -Vector3.right)   // West wall → face west (outward)
+                            rotation = Quaternion.Euler(0f, -90f, 0f);
                         else
                             rotation = Quaternion.identity;
 
@@ -96,7 +96,7 @@ namespace Code.Lavos.Core
                             torchCount++;
                             
                             // Debug: Log torch position and rotation
-                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles} (INWARD, facing wall)");
+                            Debug.Log($"[MazeObjectSpawner] Torch spawned at ({x},{z}): pos={pos:F2}, dir={dir}, rot={rotation.eulerAngles} (OUTWARD, facing corridor)");
                         }
                     }
                 }

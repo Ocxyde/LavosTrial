@@ -717,10 +717,15 @@ namespace Code.Lavos.Core
         // -------------------------------------------------------------------------
         private void SpawnDoors()
         {
-            MazeDoorSpawner.SpawnDoors(
-                _mazeData, doorPrefab,
+            MazeDoorSpawner.SpawnAllDoors(
+                _mazeData,
+                doorPrefab,
+                lockedDoorPrefab,
+                secretDoorPrefab,
                 _config.CellSize, _config.WallHeight,
-                WallThickness, wallPivotIsAtMeshCenter);
+                WallThickness, wallPivotIsAtMeshCenter,
+                lockedDoorChance: 0.3f,
+                secretDoorChance: 0.1f);
         }
 
         // -------------------------------------------------------------------------
