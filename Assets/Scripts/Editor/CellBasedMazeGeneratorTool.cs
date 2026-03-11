@@ -1,4 +1,4 @@
-﻿﻿// LavosTrial - CodeDotLavos
+// LavosTrial - CodeDotLavos
 // Copyright (C) 2026 CodeDotLavos
 // Licensed under GPL-3.0 - see COPYING for details
 // Encoding: UTF-8 (no BOM) | Line Endings: Unix LF
@@ -44,10 +44,14 @@ namespace Code.Lavos.Editor
         [Header("Wall/Door Spawning")]
         [SerializeField] private bool autoSpawnWalls = true;
         [SerializeField] private bool autoSpawnDoors = true;
+        [SerializeField] private bool autoSpawnGround = true;
+        [SerializeField] private bool surroundWithPerimeterWalls = true;
+        [SerializeField] private bool markEntryExitPoints = true;
         [SerializeField] private bool verifyMaze = true;
         
         // Prefab References (auto-find if not assigned)
         [Header("Prefabs (auto-find if empty)")]
+        [SerializeField] private GameObject groundPlanePrefab;
         [SerializeField] private GameObject wallPrefab;
         [SerializeField] private GameObject doorPrefab;
         [SerializeField] private GameObject lockedDoorPrefab;
@@ -112,14 +116,18 @@ namespace Code.Lavos.Editor
             
             // Wall/Door Spawning
             GUILayout.Label("Wall & Door Spawning", EditorStyles.boldLabel);
+            autoSpawnGround = EditorGUILayout.Toggle("Auto-Spawn Ground Plane", autoSpawnGround);
             autoSpawnWalls = EditorGUILayout.Toggle("Auto-Spawn Walls", autoSpawnWalls);
             autoSpawnDoors = EditorGUILayout.Toggle("Auto-Spawn Doors", autoSpawnDoors);
+            surroundWithPerimeterWalls = EditorGUILayout.Toggle("Surround with Perimeter Walls", surroundWithPerimeterWalls);
+            markEntryExitPoints = EditorGUILayout.Toggle("Mark Entry/Exit Points", markEntryExitPoints);
             verifyMaze = EditorGUILayout.Toggle("Verify Maze Integrity", verifyMaze);
             
             GUILayout.Space(10);
             
             // Prefabs
             GUILayout.Label("Prefabs", EditorStyles.boldLabel);
+            groundPlanePrefab = (GameObject)EditorGUILayout.ObjectField("Ground Plane Prefab", groundPlanePrefab, typeof(GameObject), false);
             wallPrefab = (GameObject)EditorGUILayout.ObjectField("Wall Prefab", wallPrefab, typeof(GameObject), false);
             doorPrefab = (GameObject)EditorGUILayout.ObjectField("Door Prefab", doorPrefab, typeof(GameObject), false);
             lockedDoorPrefab = (GameObject)EditorGUILayout.ObjectField("Locked Door Prefab", lockedDoorPrefab, typeof(GameObject), false);
@@ -206,10 +214,21 @@ namespace Code.Lavos.Editor
                 {
                     FillEmptyCells(grid);
                 }
+                _progress = 0.6f;
+                _statusMessage = "Spawning ground plane...";
+                
+                // Step 4: Auto-spawn ground plane
+                Transform groundRoot = null;
+                if (autoSpawnGround)
+                {
+                    groundRoot = GetOrCreateRoot("MazeGround");
+                    ClearChildren(groundRoot.transform);
+                    SpawnGroundPlane(groundRoot.transform, mazeWidth, mazeHeight);
+                }
                 _progress = 0.7f;
                 _statusMessage = "Spawning walls and doors...";
                 
-                // Step 4: Auto-spawn walls and doors
+                // Step 5: Auto-spawn walls and doors
                 if (autoSpawnWalls || autoSpawnDoors)
                 {
                     // Auto-find prefabs if not assigned
@@ -231,6 +250,18 @@ namespace Code.Lavos.Editor
                             wallMaterial, wallsRoot, doorsRoot,
                             cellSize: 6f, wallHeight: 4f, wallThickness: 0.3f,
                             wallPivotIsAtMeshCenter: true);
+                    }
+                    
+                    // Surround with perimeter walls
+                    if (surroundWithPerimeterWalls)
+                    {
+                        SpawnPerimeterWalls(wallsRoot, mazeWidth, mazeHeight);
+                    }
+                    
+                    // Mark entry/exit points
+                    if (markEntryExitPoints)
+                    {
+                        MarkEntryExitPoints(mazeWidth, mazeHeight);
                     }
                 }
                 
@@ -302,10 +333,174 @@ namespace Code.Lavos.Editor
         }
         
         /// <summary>
+        /// Spawn ground plane.
+        /// </summary>
+        private void SpawnGroundPlane(Transform parent, int width, int height)
+        {
+            // Try to find ground material
+            Material groundMat = groundPlanePrefab != null ? 
+                groundPlanePrefab.GetComponent<Renderer>()?.sharedMaterial : null;
+            
+            groundMat ??= Resources.Load<Material>("Materials/Ground_Stone_Mat");
+            
+            if (groundMat == null)
+            {
+                Debug.LogWarning("[1-Click Maze Generator] No ground material found!");
+                return;
+            }
+            
+            // Create ground plane
+            GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            ground.name = "GroundPlane";
+            ground.transform.SetParent(parent, false);
+            
+            // Scale to fit maze
+            float groundSize = Mathf.Max(width, height) * 6f; // 6m per cell
+            ground.transform.localScale = new Vector3(groundSize / 10f, 1f, groundSize / 10f);
+            ground.transform.position = new Vector3(width * 3f, 0f, height * 3f);
+            
+            // Assign material
+            var renderer = ground.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = groundMat;
+            }
+            
+            // Remove collider (optional, keeps scene cleaner)
+            var collider = ground.GetComponent<Collider>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+            
+            Debug.Log($"[1-Click Maze Generator] Spawned ground plane: {groundSize}x{groundSize}");
+        }
+        
+        /// <summary>
+        /// Spawn perimeter walls around entire grid.
+        /// </summary>
+        private void SpawnPerimeterWalls(Transform parent, int width, int height)
+        {
+            if (wallPrefab == null)
+            {
+                Debug.LogWarning("[1-Click Maze Generator] No wall prefab for perimeter!");
+                return;
+            }
+            
+            int perimeterWalls = 0;
+            float cellSize = 6f;
+            float wallHeight = 4f;
+            
+            // North and South walls
+            for (int x = 0; x < width; x++)
+            {
+                // North wall
+                Vector3 northPos = new Vector3(
+                    x * cellSize + cellSize / 2f,
+                    wallHeight / 2f,
+                    height * cellSize + cellSize / 2f
+                );
+                GameObject northWall = Object.Instantiate(wallPrefab, northPos, Quaternion.Euler(0f, 90f, 0f), parent);
+                northWall.name = $"PerimeterWall_N_{x}";
+                perimeterWalls++;
+                
+                // South wall
+                Vector3 southPos = new Vector3(
+                    x * cellSize + cellSize / 2f,
+                    wallHeight / 2f,
+                    -cellSize / 2f
+                );
+                GameObject southWall = Object.Instantiate(wallPrefab, southPos, Quaternion.Euler(0f, 90f, 0f), parent);
+                southWall.name = $"PerimeterWall_S_{x}";
+                perimeterWalls++;
+            }
+            
+            // East and West walls
+            for (int y = 0; y < height; y++)
+            {
+                // East wall
+                Vector3 eastPos = new Vector3(
+                    width * cellSize + cellSize / 2f,
+                    wallHeight / 2f,
+                    y * cellSize + cellSize / 2f
+                );
+                GameObject eastWall = Object.Instantiate(wallPrefab, eastPos, Quaternion.identity, parent);
+                eastWall.name = $"PerimeterWall_E_{y}";
+                perimeterWalls++;
+                
+                // West wall
+                Vector3 westPos = new Vector3(
+                    -cellSize / 2f,
+                    wallHeight / 2f,
+                    y * cellSize + cellSize / 2f
+                );
+                GameObject westWall = Object.Instantiate(wallPrefab, westPos, Quaternion.identity, parent);
+                westWall.name = $"PerimeterWall_W_{y}";
+                perimeterWalls++;
+            }
+            
+            Debug.Log($"[1-Click Maze Generator] Spawned {perimeterWalls} perimeter walls");
+        }
+        
+        /// <summary>
+        /// Mark entry and exit points with markers.
+        /// </summary>
+        private void MarkEntryExitPoints(int width, int height)
+        {
+            // Entry point (1, 1)
+            Vector3 entryPos = new Vector3(
+                1 * 6f + 3f,
+                0.5f,
+                1 * 6f + 3f
+            );
+            CreateMarker(entryPos, "ENTRY_POINT", Color.green);
+            
+            // Exit point (width-2, height-2)
+            Vector3 exitPos = new Vector3(
+                (width - 2) * 6f + 3f,
+                0.5f,
+                (height - 2) * 6f + 3f
+            );
+            CreateMarker(exitPos, "EXIT_POINT", Color.red);
+            
+            Debug.Log($"[1-Click Maze Generator] Marked entry ({entryPos}) and exit ({exitPos}) points");
+        }
+        
+        /// <summary>
+        /// Create marker sphere at position.
+        /// </summary>
+        private void CreateMarker(Vector3 position, string name, Color color)
+        {
+            GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = name;
+            marker.transform.position = position;
+            marker.transform.localScale = new Vector3(1f, 1f, 1f);
+            
+            // Make marker glow
+            var renderer = marker.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                Material emissiveMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                emissiveMat.color = color;
+                emissiveMat.EnableKeyword("_EMISSION");
+                emissiveMat.SetColor("_EmissionColor", color * 2f);
+                renderer.sharedMaterial = emissiveMat;
+            }
+            
+            // Remove collider
+            var collider = marker.GetComponent<Collider>();
+            if (collider != null)
+            {
+                Object.DestroyImmediate(collider);
+            }
+        }
+        
+        /// <summary>
         /// Auto-find prefabs in Resources folders.
         /// </summary>
         private void AutoFindPrefabs()
         {
+            groundPlanePrefab = Resources.Load<GameObject>("Prefabs/GroundPlane");
             wallPrefab ??= Resources.Load<GameObject>("Prefabs/WallPrefab");
             doorPrefab ??= Resources.Load<GameObject>("Prefabs/DoorPrefab");
             lockedDoorPrefab ??= Resources.Load<GameObject>("Prefabs/LockedDoorPrefab");
