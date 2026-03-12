@@ -92,10 +92,10 @@ maze_v0-*/
 diff_tmp/
 files/
 
-# Markdown files (ignore all .md in root, track README.md)
-*.md
+# Markdown files (ignore only root level .md, keep README.md and Assets/Docs/*.md)
+/*.md
 !README.md
 
 # Text and log files in root (keep Assets/Docs/*.md)
-*.txt
-*.log
+/*.txt
+/*.log
