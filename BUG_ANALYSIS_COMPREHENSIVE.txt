@@ -1,0 +1,293 @@
+# COMPREHENSIVE BUG ANALYSIS - CodeDotLavos
+# Total Bugs: 12 (MEDIUM) + 4 (LOW) + 10 (NEW) = 26 issues analyzed
+
+## QUICK SUMMARY
+- Existing MEDIUM bugs: 8 (2.1-2.8)
+- Existing LOW bugs: 4 (3.1-3.4)  
+- New bugs discovered: 10
+- Status: Ready for systematic fix
+- Estimated total fix time: 13-16 hours
+
+==============================================================================
+PART 1: MEDIUM PRIORITY BUGS (8 bugs)
+==============================================================================
+
+### 2.1 GameConfig Exposure
+Status: PARTIALLY FIXED | Type: ARCHITECTURE VIOLATION
+Current: Line 45 static Instance property uses FindFirstObjectByType (violates plug-in-out)
+Problem: Public singleton access, auto-creation in Awake
+Fix: Make Instance property [EditorBrowsable(Never)], force manual assignment only
+Lines: 41-65, 119-128
+Severity: MEDIUM | Real Issue: YES
+
+### 2.2 DoorsEngine Dependencies
+Status: UNFIXED | Type: TIGHT COUPLING
+Files: Assets/Scripts/Core/07_Doors/DoorsEngine.cs
+Problems:
+- Line 111: Hardcoded FindFirstObjectByType<EventHandler>()
+- Line 112: Direct PlayerStats dependency (should use interface)
+- Line 136: No null check before EventHandler use
+- Lines 37-63: 8 enums in one file (should be separate)
+Fix: Dependency injection, interface abstraction, extract enums
+Severity: MEDIUM | Real Issue: YES
+
+### 2.3 TorchPool IDisposable
+Status: PARTIALLY DONE | Type: DESIGN PATTERN
+File: Assets/Scripts/Core/15_Resources/TorchPool.cs (478 lines)
+Problems:
+- Line 39: No IDisposable implementation despite managing resources
+- Lines 91-101: OnDestroy cleanup not guaranteed
+- Line 374: [Obsolete] BuildTorchObject still fully implemented (250+ lines)
+Fix: Implement IDisposable, remove obsolete code, add lifecycle hooks
+Severity: MEDIUM | Real Issue: YES (design incomplete)
+
+### 2.4 Audio Source Cleanup
+Status: PARTIAL | Type: RESOURCE MANAGEMENT
+File: Assets/Scripts/Core/13_Compute/AudioManager.cs
+Problems:
+- PlaySFX3D creates AudioSources without guaranteed cleanup
+- PlayOneShot timing might miss Destroy() if clip plays long
+- Pool items not all tracked for destruction
+Fix: Wait for audio completion before destroy, track all sources
+Severity: MEDIUM | Real Issue: YES (memory leak edge case)
+
+### 2.5 Dead Code Removal
+Status: NOT DONE | Type: CODE QUALITY
+Multiple files - detected:
+- TorchPool.cs:374 [Obsolete] BuildTorchObject (250+ lines, full impl)
+- RealisticDoorFactory marked [Obsolete(error:true)] but not deleted
+- LightPlacementEngine has "TODO: Remove" comment
+- Multiple FUTURE FEATURES comments
+Fix: Delete [Obsolete(error:true)] code, move TODO items to separate classes
+Severity: MEDIUM | Real Issue: YES (maintenance burden)
+
+### 2.6 Input System Cleanup
+Status: PARTIALLY FIXED | Type: HYBRID SYSTEMS
+File: Assets/Scripts/Core/02_Player/PlayerController.cs
+Problems:
+- Multiple null checks for Keyboard.current each frame
+- Retry logic in Update() for keyboard initialization
+- No unified input abstraction (mixes systems)
+Fix: Create IInputProvider interface, InputManager singleton
+Severity: LOW-MEDIUM | Real Issue: YES (fragile but works)
+
+### 2.7 Scene Reference Config
+Status: TODO | Type: TEST INFRASTRUCTURE
+Files: Assets/Scripts/Tests/BoundaryTestSceneSetup.cs, etc.
+Problems:
+- Likely hardcoded scene names/paths
+- No scene configuration abstraction
+Fix: Create SceneConfig scriptable object, centralize scene references
+Severity: MEDIUM | Real Issue: YES (test fragility)
+
+### 2.8 Event Validation
+Status: MOSTLY FIXED | TYPE: ERROR HANDLING
+File: Assets/Scripts/Core/01_CoreSystems/EventHandler.cs
+Problems:
+- No subscriber count validation
+- No detection of orphaned subscribers
+- SafeItemContainer has event signature mismatch (comment at line ~40)
+Fix: Add ValidateEventSignature(), fix SafeItemContainer parameters
+Severity: LOW | Real Issue: YES (harder to debug)
+
+==============================================================================
+PART 2: LOW PRIORITY BUGS (4 bugs)
+==============================================================================
+
+### 3.1 Unused Variables
+Status: NOT ANALYZED | TYPE: CODE CLUTTER
+Problem: [SerializeField] marked but unused, dead loop variables
+Fix: Use Roslyn analyzer, mark obsolete, use _ prefix
+Severity: LOW | Real Issue: YES
+
+### 3.2 A* Optimization
+Status: NOT OPTIMIZED | TYPE: PERFORMANCE
+File: Assets/Scripts/Core/11_Utilities/PathFinder.cs
+Problem: No caching, O(n²) complexity, inefficient data structures
+Fix: Add result caching, use heap for open set, pre-allocate lists
+Severity: LOW | Real Issue: NO - Works correctly, just not optimized
+**NOT A BUG - OPTIMIZATION ONLY**
+
+### 3.3 Test Scene Config
+Status: NOT CONFIGURED | TYPE: TEST SETUP
+Problem: Hardcoded test scene references, no builder pattern
+Fix: SceneConfig ScriptableObject, TestSceneBuilder
+Severity: LOW | Real Issue: YES
+
+### 3.4 Input Migration
+Status: PARTIALLY DONE | TYPE: API MODERNIZATION
+File: Assets/Scripts/Core/02_Player/PlayerController.cs
+Problem: Old Input.* calls may still exist alongside new system
+Fix: Audit for Input.GetKey/GetKeyDown, verify only new system used
+Severity: LOW | Real Issue: YES
+
+==============================================================================
+PART 3: NEW BUGS DISCOVERED (10 found)
+==============================================================================
+
+### NEW #1: Hardcoded Magic Numbers (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: GameConfig.cs, TorchPool.cs, AudioManager.cs
+Examples:
+- GameConfig line 100: DefaultDoorWidth = 2.5f (no const)
+- TorchPool line 44: initialPoolSize = 60
+- Multiple crossfade durations, volume multipliers
+Impact: Hard to maintain, balance game, understand purpose
+Fix: Create GameConstants.cs with const fields
+Time: 1 hour
+
+### NEW #2: Missing Null Checks in Critical Paths (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: DoorsEngine.cs, HUDSystem.cs, DialogEngine.cs
+- DoorsEngine:136 FindFirstObjectByType() result not checked
+- DialogEngine.Instance assumed non-null in multiple calls
+- HUDSystem calls without null guard
+Impact: NullReferenceException in edge cases
+Fix: Add null checks with fallback behavior
+Time: 30 minutes
+
+### NEW #3: No Error Handling in Resource Loading (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: GameConfig.cs, prefab loaders
+- Resources.Load() without existence validation
+- No graceful degradation if prefabs missing
+- Hardcoded paths with no checks
+Impact: Silent failures or missing game objects
+Fix: Validate resources exist, create fallbacks
+Time: 1-2 hours
+
+### NEW #4: Insufficient Singleton Safety (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: EventHandler, AudioManager, ItemEngine, GameConfig
+- Instance returns null without logging
+- No thread-safety despite comments
+- FindFirstObjectByType can be slow
+Impact: Unpredictable behavior, silent failures
+Fix: Implement proper lazy initialization with validation
+Time: 2 hours
+
+### NEW #5: Obsolete Code Not Deleted (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: TorchPool.cs, RealisticDoorFactory.cs
+- [Obsolete] methods with full implementations (250+ lines)
+- Increases binary size, confuses developers
+Impact: Code bloat, maintenance confusion
+Fix: Delete methods marked error:true, move legacy code
+Time: 30 minutes
+
+### NEW #6: Resource Leak in LightEmittingPool (LOW-MEDIUM)
+Severity: LOW-MEDIUM | Real Issue: YES
+File: Assets/Scripts/Core/15_Resources/LightEmittingPool.cs
+- Similar structure to TorchPool but less cleanup
+- Material instances created but not tracked
+- No IDisposable pattern
+Impact: Minor memory leak over long sessions
+Fix: Add proper IDisposable, track materials
+Time: 1 hour
+
+### NEW #7: Event Signature Mismatch (LOW-MEDIUM)
+Severity: LOW-MEDIUM | Real Issue: YES
+File: Assets/Scripts/Core/03_Interaction/SafeItemContainer.cs
+- OnItemPickedUp expects (ItemData, int) but SafeItemContainer fires (string, int)
+- Comment at line ~40 documents the issue
+Impact: Runtime exception when safe item picked up
+Fix: Match event signature or create separate event
+Time: 30 minutes
+
+### NEW #8: Inefficient Loop in Maze Walls (LOW)
+Severity: LOW | Real Issue: YES
+File: Assets/Scripts/Core/08_Environment/WallPositionArchitect.cs
+- O(n²) complexity on maze iteration
+- No caching of calculated positions
+- Multiple iterations per frame
+Impact: Performance degradation on large mazes
+Fix: Cache positions, use spatial hashing
+Time: 2 hours
+
+### NEW #9: Inconsistent Naming Convention (LOW)
+Severity: LOW | Real Issue: YES
+Files: Multiple across codebase
+- Mix of snake_case, camelCase, PascalCase
+- Inconsistent _underscore prefix for private fields
+- Event naming inconsistency
+Impact: IDE autocomplete confusion, readability
+Fix: Enforce C# style guide via Roslyn
+Time: 2 hours
+
+### NEW #10: No Deprecation Path for Legacy Code (MEDIUM)
+Severity: MEDIUM | Real Issue: YES
+Files: Assets/Scripts/Core/06_Maze/_Legacy/*
+- Legacy folder has old code, no removal timeline
+- [Obsolete] warnings ignored
+- No migration guide
+Impact: Confusion, accidental use of deprecated APIs
+Fix: Create deprecation roadmap, move to separate namespace
+Time: 1 hour
+
+==============================================================================
+PRIORITIZED FIX ROADMAP
+==============================================================================
+
+IMMEDIATE (Quick Wins - 2-3 hours)
+1. Remove dead code (2.5): Delete 250-line obsolete method - 30m
+2. Extract magic numbers (NEW#1): Create GameConstants - 1h
+3. Fix event signature (NEW#7): SafeItemContainer - 30m
+4. Add null checks (NEW#2): Critical paths - 30m
+SUBTOTAL: 2.5 hours | IMPACT: High (code quality + stability)
+
+HIGH IMPACT (4-5 hours)
+5. Refactor DoorsEngine (2.2): Dependency injection - 2h
+6. Resource safety (NEW#3): Validation + fallback - 1.5h
+7. Fix singleton pattern (NEW#4): Proper lazy init - 1.5h
+SUBTOTAL: 5 hours | IMPACT: Very High (architecture)
+
+IMPORTANT (6-8 hours)
+8. Audio cleanup (2.4): Proper resource management - 1h
+9. TorchPool IDisposable (2.3): Implement pattern - 1h
+10. GameConfig exposure (2.1): Documentation + fixes - 30m
+11. Input migration (3.4): Audit and cleanup - 1h
+12. Test scene config (3.3): Centralize setup - 1h
+13. Light pool cleanup (NEW#6): IDisposable - 1h
+14. Naming convention (NEW#9): Roslyn pass - 2h
+15. Remove legacy code (NEW#10): Organize files - 1h
+SUBTOTAL: 10 hours
+
+OPTIONAL (Lower Priority)
+16. A* optimization (3.2): Performance only - 2h (NOT A BUG)
+17. Unused variables (3.1): Code cleanup - 2h
+18. Inefficient loops (NEW#8): Cache optimization - 2h
+
+TOTAL ESTIMATED: 13-16 hours for ALL issues
+
+==============================================================================
+FALSE POSITIVES / NOT REAL ISSUES
+==============================================================================
+
+✅ 2.1 GameConfig Exposure
+- Assessment: PARTIALLY FIXED, NOT CRITICAL
+- Reason: Works as designed, sealed class, manual setup documented
+- Action: Just improve docs, add EditorBrowsable (easy fix)
+
+✅ 3.2 A* Optimization  
+- Assessment: NOT A BUG, OPTIMIZATION ONLY
+- Reason: Code works correctly, just not optimized
+- Action: Only fix if profiler shows it's slow (benchmark first)
+
+==============================================================================
+RECOMMENDED FIX ORDER
+==============================================================================
+
+SESSION 1 (2-3 hours): Quick Wins
+[ ] 2.5 Dead Code Removal (30m)
+[ ] NEW#1 Magic Numbers (1h)
+[ ] NEW#7 Event Signature (30m)
+[ ] NEW#2 Null Checks (30m)
+
+SESSION 2 (5 hours): High Impact
+[ ] 2.2 DoorsEngine Refactor (2h)
+[ ] NEW#3 Resource Safety (1.5h)
+[ ] NEW#4 Singleton Pattern (1.5h)
+
+SESSION 3+ (Remaining issues based on priority)
+
+==============================================================================

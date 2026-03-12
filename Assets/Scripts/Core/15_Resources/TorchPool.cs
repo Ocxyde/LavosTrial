@@ -305,23 +305,18 @@ namespace Code.Lavos.Core
         /// </summary>
         private GameObject CreateNewTorch()
         {
-            GameObject go;
-
-            if (torchHandlePrefab != null)
+            if (torchHandlePrefab == null)
             {
-                // Instantiate from prefab
-                go = Instantiate(torchHandlePrefab, transform);
-                if (go == null)
-                {
-                    Debug.LogError("[TorchPool] Failed to instantiate torch handle prefab!");
-                    return null;
-                }
+                Debug.LogError("[TorchPool] torchHandlePrefab is not assigned! Cannot create new torch. Assign prefab in Inspector.");
+                return null;
             }
-            else
+
+            // Instantiate from prefab
+            GameObject go = Instantiate(torchHandlePrefab, transform);
+            if (go == null)
             {
-                // Build from scratch
-                go = BuildTorchObject();
-                go.transform.SetParent(transform);
+                Debug.LogError("[TorchPool] Failed to instantiate torch handle prefab! Ensure torchHandlePrefab is assigned in Inspector.");
+                return null;
             }
 
             go.name = "Torch_Pooled";
@@ -366,105 +361,8 @@ namespace Code.Lavos.Core
         }
 
         //
-        //  TORCH CONSTRUCTION (FALLBACK - DEPRECATED)
-        //  Plug-in-Out Violation: Creates GameObjects at runtime
-        //  TODO: Remove when torch prefab is always assigned
-        //
-
-        [System.Obsolete("BuildTorchObject violates plug-in-out. Assign torchPrefab instead.")]
-        private GameObject BuildTorchObject()
-        {
-            var torchGO = new GameObject("Torch");
-
-            //  Handle (stick) 
-            var handle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            handle.name = "Handle";
-            handle.transform.SetParent(torchGO.transform);
-            handle.transform.localPosition = new Vector3(0f, 0f, 0f);
-            handle.transform.localRotation = Quaternion.Euler(25f, 0f, 0f);
-            handle.transform.localScale = new Vector3(0.08f, 0.35f, 0.08f);
-
-            if (_sharedHandleMat != null)
-            {
-                var handleRenderer = handle.GetComponent<MeshRenderer>();
-                if (handleRenderer != null)
-                    handleRenderer.sharedMaterial = _sharedHandleMat;
-            }
-
-            Destroy(handle.GetComponent<BoxCollider>());
-
-            if (useBraseroFlame)
-            {
-                //  Brasero Flame (Particle System) 
-                var flame = new GameObject("BraseroFlame");
-                flame.transform.SetParent(torchGO.transform);
-                flame.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-                flame.transform.localRotation = Quaternion.identity;
-                flame.transform.localScale = new Vector3(1f, 1f, 1f);
-                flame.AddComponent<BraseroFlame>();
-
-                //  Light 
-                var lightGO = new GameObject("FlameLight");
-                lightGO.transform.SetParent(torchGO.transform);
-                lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
-
-                var pointLight = lightGO.AddComponent<Light>();
-                pointLight.type = LightType.Point;
-                pointLight.range = 15f;
-                pointLight.intensity = 5f;
-                pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
-                pointLight.enabled = true;
-                pointLight.bounceIntensity = 1.5f;
-
-                //  Controller 
-                var ctrl = torchGO.AddComponent<TorchController>();
-                ctrl.InitializeBrasero(pointLight, flame.GetComponent<BraseroFlame>());
-                ctrl.TurnOn();
-            }
-            else
-            {
-                //  Flame (billboard 2D pixel art) 
-                var flame = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                flame.name = "Flame";
-                flame.transform.SetParent(torchGO.transform);
-                flame.transform.localPosition = new Vector3(0f, 0.22f, 0.06f);
-                flame.transform.localRotation = Quaternion.Euler(25f, 0f, 0f);
-                flame.transform.localScale = new Vector3(0.3f, 0.45f, 1f);
-
-                if (_sharedFlameMat != null)
-                {
-                    var flameRenderer = flame.GetComponent<MeshRenderer>();
-                    if (flameRenderer != null)
-                        flameRenderer.sharedMaterial = _sharedFlameMat;
-                }
-
-                Destroy(flame.GetComponent<MeshCollider>());
-
-                //  Light 
-                var lightGO = new GameObject("FlameLight");
-                lightGO.transform.SetParent(torchGO.transform);
-                lightGO.transform.localPosition = new Vector3(0f, 0.35f, 0f);
-
-                var pointLight = lightGO.AddComponent<Light>();
-                pointLight.type = LightType.Point;
-                pointLight.range = 15f;
-                pointLight.intensity = 5f;
-                pointLight.color = new Color(1f, 0.7f, 0.3f);
-                pointLight.shadows = LightShadows.None;  //  OPTIMIZED: No shadows (performance)
-                pointLight.enabled = true;
-                pointLight.bounceIntensity = 1.5f;
-
-                //  Controller 
-                torchGO.AddComponent<TorchController>();
-            }
-
-            return torchGO;
-        }
-
-        // 
         //  DEBUG / STATS
-        // 
+        //
 
         /// <summary>
         /// Get pool statistics for debugging.

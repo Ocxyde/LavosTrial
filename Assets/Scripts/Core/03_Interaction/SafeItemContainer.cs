@@ -78,17 +78,26 @@ namespace Code.Lavos.Interaction
                 return;
             }
 
-            // TODO: Fix event signature - OnItemPickedUp expects (ItemData, int) not (string, int)
-            // if (_eventHandler.OnItemPickedUp != null)
-            // {
-            //     _eventHandler.OnItemPickedUp.Invoke(item.itemId, item.quantity);
-            //     if (_debugMode)
-            //         Debug.Log($"[SafeItemContainer] Distributed: {item.itemName} (x{item.quantity})");
-            // }
-            // else if (_debugMode)
-            // {
-            //     Debug.LogWarning("[SafeItemContainer] OnItemPickedUp event is null");
-            // }
+            // Create ItemData reference for the event
+            // Note: This requires the itemId to match a valid ItemData asset in Resources
+            ItemData itemData = Resources.Load<ItemData>($"Items/{item.itemId}");
+
+            if (itemData == null)
+            {
+                if (_debugMode)
+                    Debug.LogWarning($"[SafeItemContainer] ItemData not found for itemId: {item.itemId}. Creating temporary ItemData.");
+
+                // Fallback: create a minimal ItemData at runtime (not ideal but prevents crash)
+                itemData = ScriptableObject.CreateInstance<ItemData>();
+                itemData.id = item.itemId;
+                itemData.itemName = item.itemName;
+            }
+
+            // Use InvokeItemPickedUp method instead of directly invoking the event
+            _eventHandler.InvokeItemPickedUp(itemData, item.quantity);
+            
+            if (_debugMode)
+                Debug.Log($"[SafeItemContainer] Distributed: {item.itemName} (x{item.quantity})");
         }
 
         public void AddTreasureItem(string itemId, string itemName, int quantity, float rarity)

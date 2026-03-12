@@ -219,7 +219,7 @@ namespace Code.Lavos.Core
     /// 
     /// Root Cause: CameraFollow orbits the camera around the player (third-person).
     /// PlayerController rotates the player directly for FPS mouse look (first-person).
-    /// When both are enabled, they fight over rotation → infinite spinning.
+    /// When both are enabled, they fight over rotation  infinite spinning.
     /// 
     /// Solution: Disable CameraFollow everywhere on this player.
     /// This is correct because PlayerController implements FPS mode.
