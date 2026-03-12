@@ -1,4 +1,4 @@
-﻿﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license
 // QuickMazeTest.cs - 1-Click Maze Test with Prefab Validation
 // Unity 6 compatible - UTF-8 encoding - Unix LF
@@ -99,6 +99,19 @@ namespace Code.Lavos.Editor
                 Debug.Log("  ✓ Found EventHandler");
             }
 
+            // Find or create GameConfig (required for maze generation!)
+            var gameConfig = FindFirstObjectByType<GameConfig>();
+            if (gameConfig == null)
+            {
+                var go = new GameObject("GameConfig");
+                gameConfig = go.AddComponent<GameConfig>();
+                Debug.Log("  ✓ Created GameConfig");
+            }
+            else
+            {
+                Debug.Log("  ✓ Found GameConfig");
+            }
+
             // Find or create CompleteMazeBuilder8
             var mazeBuilder = FindFirstObjectByType<CompleteMazeBuilder8>();
             if (mazeBuilder == null)
@@ -130,16 +143,16 @@ namespace Code.Lavos.Editor
 
         private static void CountPlacedObjects(CompleteMazeBuilder8 mazeBuilder)
         {
-            // Count objects in scene by tag
-            int wallCount = GameObject.FindGameObjectsWithTag("Wall").Length;
-            int doorCount = GameObject.FindGameObjectsWithTag("Door").Length;
-            int torchCount = GameObject.FindGameObjectsWithTag("Torch").Length;
-            int chestCount = GameObject.FindGameObjectsWithTag("Chest").Length;
-            int enemyCount = GameObject.FindGameObjectsWithTag("Enemy").Length;
+            // Count objects in scene by finding all relevant components
+            int wallCount = FindObjectsOfType<WallFacade>().Length;
+            int doorCount = FindObjectsOfType<DoorsEngine>().Length;
+            int torchCount = FindObjectsOfType<TorchPool>().Length;
+            int chestCount = FindObjectsOfType<ChestBehavior>().Length;
+            int enemyCount = FindObjectsOfType<Ennemi>().Length;
 
             Debug.Log($"  ✓ Walls: {wallCount} segments");
             Debug.Log($"  ✓ Doors: {doorCount}");
-            Debug.Log($"  ✓ Torches: {torchCount}");
+            Debug.Log($"  ✓ Torches: {torchCount} (pooled)");
             Debug.Log($"  ✓ Chests: {chestCount}");
             Debug.Log($"  ✓ Enemies: {enemyCount}");
 
