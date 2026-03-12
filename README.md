@@ -1,442 +1,480 @@
-# CodeDotLavos - Procedural Maze Game
+﻿﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
 
-**Unity Version:** 6000.3.7f1  
-**Architecture:** Plug-in-Out (Find components, never create)  
-**Configuration:** JSON-driven (no hardcoded values)  
-**License:** GPL-3.0  
-**Status:** Production Ready - Cardinal-Only Maze System  
+**A Unity 6 First-Person Maze Roguelike Engine**
 
-**Codename:** BetsyBoop  
-**Last Updated:** 2026-03-09  
+**Unity Version:** 6000.3.10f1 | **License:** GPL-3.0 | **Author:** Ocxyde
 
 ---
 
-## Latest Updates - 2026-03-09
+## 🚀 Quick Start for Modders
 
-### Critical Bug Fixes Applied
+### 5-Minute Setup
 
-| Fix | Issue | Files Modified |
-|-----|-------|----------------|
-| NullReferenceException | `levelData.PopulationParams` null in `PopulateEnemies` | `ProceduralLevelGenerator.cs` |
-| Edit Mode Destroy | `Destroy()` used in editor mode | `CompleteMazeBuilder.cs` |
-| Null Checks | Missing null checks in level gen methods | `ProceduralLevelGenerator.cs` |
+1. **Open Project**
+   ```bash
+   # Open Unity Hub → Add → Select "D:\travaux_Unity\CodeDotLavos"
+   # Use Unity 6000.3.10f1 or compatible Unity 6 version
+   ```
 
-**Result:**
-- Level generation no longer crashes with NullReferenceException
-- No more "Destroy may not be called from edit mode" warnings
-- Batch level generation working in UniversalLevelGeneratorTool
+2. **Load Main Scene**
+   - Open `Assets/Scenes/MazeLav8s_v1-0_1_7.unity`
+   - Press **Play** to test
 
-### Maze System Update - Cardinal-Only Passages
+3. **Default Controls**
+   | Action | Key |
+   |--------|-----|
+   | Move | WASD |
+   | Look | Mouse |
+   | Sprint | Shift (1% stamina/sec) |
+   | Jump | Space (1% stamina/jump) |
+   | Interact | F |
 
-**Status:** Completed  
-**Impact:** Critical - Major maze generation improvement  
-
-| Feature | Before | After |
-|---------|--------|-------|
-| Passage Directions | 8 (diagonal + cardinal) | 4 (cardinal only: N, S, E, W) |
-| Wall Alignment | Mixed | Perfect grid snap |
-| Guaranteed Path | A* (8-axis) | A* (4-axis, Manhattan heuristic) |
-| Dead-Ends | None | Auto-generated (2-5 cells long) |
-| Corridor Choices | Limited | Multiple branches at intersections |
-
-**New Features:**
-- Cardinal-only passages (no diagonal walls)
-- Guaranteed A* path from spawn to exit
-- Dead-end corridors with 30% spawn chance
-- 50% chest or 30% enemy at dead-end termini
-- Multiple path choices at intersections
-
-**Performance:** 21x21 maze generates in ~8ms (60 FPS compliant)
-
-**Files Modified:**
-- `GridMazeGenerator.cs` - Complete rewrite
-- `Assets/Docs/MAZE_CARDINAL_UPDATE_2026-03-09.md` - New documentation
+   **📝 Note:** Controls will be configurable in future update! See [KEYMAP_SYSTEM_PLANNED.md](KEYMAP_SYSTEM_PLANNED.md) for planned key binding system with keyboard, gamepad, and dodge mechanics.
 
 ---
 
-## Known Issues (From Chat Logs 2026-03-09)
+## 📦 What You Can Mod
 
-| ID | Issue | Priority |
-|----|-------|----------|
-| CL1 | LightPlacementEngine - Missing Torch Prefab | Critical |
-| CL2 | PlayerSetup - No Camera Found | Critical |
-| CL3 | Door in Middle of Maze (No Room) | Critical |
-| CL4 | Player Disappears on Play Mode | Critical |
-| CL5 | Two Cameras on Scene Load | Critical |
-| CL6 | Stamina Regen Bug | Medium |
-| CL7 | Missing Unity Headers (31 files) | Medium |
+### ✅ Easy Mods (No Code)
 
-**See:** `Assets/Docs/TODO.md` for detailed descriptions and solutions.
+| What | How | Files |
+|------|-----|-------|
+| **Change maze seed** | Edit in Inspector | Scene → MazeBuilder |
+| **Adjust player stats** | Modify Health, Mana, Stamina | `PlayerStats` component |
+| **Swap textures** | Replace material assets | `Assets/Materials/` |
+| **Tweak colors** | Change material colors | Inspector |
+| **Adjust difficulty** | Modify enemy spawn rates | `ProceduralLevelGenerator` |
 
----
+### ⚙️ Medium Mods (Some Code)
 
-## Game Overview
+| What | How | Files |
+|------|-----|-------|
+| **Add new items** | Create item JSON + prefab | `Assets/Resources/Items/` |
+| **New enemy types** | Extend `EnemyController` | `Assets/Scripts/Ennemies/` |
+| **Custom doors** | Modify door factory | `DoorFactory.cs` |
+| **UI changes** | Edit HUD prefabs | `Assets/Prefabs/HUD/` |
+| **Sound effects** | Add audio clips | `Assets/Audio/` |
 
-Procedural maze generation game built with Unity 6 featuring:
+### 🔨 Advanced Mods (C# Required)
 
-- **Cardinal-only maze structure** - N, S, E, W passages only
-- **Perfect wall grid alignment** - No diagonal gaps
-- **Level progression** - 12x12 to 51x51 mazes
-- **Seed-based generation** - Consistent maze layouts
-- **FPS player controller** - WASD + mouse look
-- **Dynamic lighting** - Torch placement system
-- **Object placement** - Chests, enemies, items
-- **Binary storage** - Fast maze caching (.lvm format)
-- **Dead-end corridors** - Branching paths with rewards/challenges
-
----
-
-## Architecture
-
-### Core Principle: Plug-in-Out
-
-**Rule:** Find components, never create them.
-
-```csharp
-// CORRECT
-var component = FindFirstObjectByType<T>();
-
-// WRONG
-var component = gameObject.AddComponent<T>();
-```
-
-### Main Orchestrator
-
-**`CompleteMazeBuilder.cs`** - Central game orchestrator
-- Handles all maze generation
-- Manages game state (level, seed)
-- Spawns player LAST (after geometry)
-- All values from JSON config
-
-### Generation Order
-
-```
-1. Config         - Load from JSON
-2. Assets         - Prefabs, materials, textures
-3. Components     - Find (never create)
-4. Cleanup        - Destroy old objects
-5. Ground         - Spawn floor
-6. Grid           - Fill with walls (all solid)
-7. Boundary       - Mark outer perimeter (sealed)
-8. DFS Carve      - Carve corridors (cardinal-only, respects boundary)
-9. A* Path        - Ensure guaranteed path from spawn to exit
-10. Dead-Ends     - Add branching corridors (30% chance)
-11. Walls         - Render (snap to grid boundaries)
-12. Doors         - Place exit on south wall
-13. Save          - Binary storage (.lvm format)
-14. Player        - Spawn at spawn point (FPS camera)
-```
-
-**Performance:** ~8ms total generation time (60 FPS compliant)
+| What | How | Files |
+|------|-----|-------|
+| **New maze algorithms** | Extend `GridMazeGenerator8` | `GridMazeGenerator8.cs` |
+| **Custom room types** | Modify corridor system | `CorridorFillSystem.cs` |
+| **New status effects** | Add to `StatusEffectData` | `StatusEffectData.cs` |
+| **Combat mechanics** | Extend `CombatSystem` | `CombatSystem.cs` |
+| **Save system changes** | Modify `DatabaseManager` | `DatabaseManager.cs` |
 
 ---
 
-## Grid Math - Wall Snapping
-
-### Grid Structure
-
-```
-CELLS = WALKABLE SPACES (6m x 6m each)
-
-Legend:
-W = Wall (boundary)
-S = Spawn point
-C = Corridor (walkable)
-D = Dead-end corridor
-
-Example 5x5 (showing cell centers):
-+---+---+---+---+---+
-| W | W | W | W | W |  <- Boundary walls
-+---+---+---+---+---+
-| W | S | C | W | W |
-+---+---+---+---+---+
-| W | C | C | C | W |
-+---+---+---+---+---+
-| W | W | C | D | W |  <- Dead-end with chest/enemy
-+---+---+---+---+---+
-| W | W | W | W | W |  <- Boundary walls
-```
-
-### Key Specifications
-
-| Feature | Value |
-|---------|-------|
-| Cell Size | 6m x 6m (from GameConfig) |
-| Corridor Width | 1 cell (6m wide) |
-| Spawn Point | Single cell at (1, 1) |
-| Exit | South wall area (size-2, size-2) |
-| Dead-End Length | 2-5 cells (random) |
-| Dead-End Spawn Rate | 30% per passage cell |
-| Max Dead-Ends | 5% of grid cells |
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 Assets/
 ├── Scripts/
-│   ├── Core/
-│   │   ├── 06_Maze/
-│   │   │   ├── CompleteMazeBuilder.cs      <- MAIN ORCHESTRATOR
-│   │   │   ├── GridMazeGenerator.cs        <- Cardinal-only DFS + A*
-│   │   │   ├── ProceduralLevelGenerator.cs <- Level progression
-│   │   │   ├── MazeBinaryStorage8.cs       <- .lvm save/load
-│   │   │   ├── MazeConsoleCommands.cs      <- Console commands
-│   │   │   └── GameConfig.cs               <- JSON config loader
-│   │   ├── 08_Environment/
-│   │   │   ├── SpatialPlacer.cs            <- Object orchestrator
-│   │   │   ├── ChestPlacer.cs              <- Chest placement
-│   │   │   ├── EnemyPlacer.cs              <- Enemy placement
-│   │   │   └── ItemPlacer.cs               <- Item placement
-│   │   └── ... (other core systems)
-│   └── Editor/
-│       ├── QuickSetupPrefabs.cs            <- Auto-create prefabs
-│       └── UniversalLevelGeneratorTool_V2.cs <- Editor tools
-├── Config/
-│   └── GameConfig-default.json             <- Game configuration
+│   ├── Core/                    # Core systems - DO NOT MODIFY unless extending
+│   │   ├── 01_CoreSystems/      # GameManager, EventHandler (global state)
+│   │   ├── 02_Player/           # PlayerController, CameraFollow
+│   │   ├── 04_Inventory/        # Inventory management
+│   │   ├── 06_Maze/             # 🎯 MAZE GENERATION (mod this!)
+│   │   ├── 07_Doors/            # Door systems
+│   │   ├── 13_Compute/          # Lighting, audio, effects
+│   │   └── 15_Resources/        # Torch, chest, object behaviors
+│   ├── HUD/                     # UI systems (bars, dialogs, windows)
+│   ├── Status/                  # Buffs, debuffs, stats
+│   ├── Ennemies/                # Enemy AI behaviors
+│   └── Editor/                  # Unity editor tools
 ├── Resources/
-│   ├── Prefabs/
-│   │   ├── WallPrefab.prefab
-│   │   ├── DoorPrefab.prefab
-│   │   └── TorchHandlePrefab.prefab
-│   ├── Materials/
-│   │   └── WallMaterial.mat
-│   └── Textures/
-│       └── floor_texture.png
-├── Docs/
-│   ├── TODO.md                             <- Tasks & priorities
-│   ├── MAZE_CARDINAL_UPDATE_2026-03-09.md  <- Latest maze update
-│   ├── ADVANCED_CORRIDOR_SYSTEM.md         <- Corridor features
-│   └── ... (other documentation)
-└── Runtimes/
-    └── Mazes/                              <- Binary .lvm saves
+│   ├── Prefabs/                 # 🎯 Add your prefabs here
+│   ├── Items/                   # 🎯 Add item JSON definitions
+│   └── Config/                  # Game configuration files
+├── Materials/                   # Surface textures & colors
+├── Textures/                    # Image assets
+├── Audio/                       # Sound effects & music
+├── Scenes/                      # Game scenes
+└── Docs/                        # Documentation (you are here!)
 ```
+
+**🎯 = Good starting points for modding**
 
 ---
 
-## Quick Start
+## 🎯 Core Architecture
 
-### 1. Setup Prefabs
+### Plug-in-Out System (How Components Connect)
 
-**In Unity Editor:**
-```
-Tools -> Quick Setup Prefabs (For Testing)
-```
+This project uses a **loose-coupling architecture**: components find each other, they don't create each other.
 
-This auto-creates:
-- Wall, Door, Torch prefabs
-- Materials and textures
-- Auto-assigns to CompleteMazeBuilder
+**Why this matters for modders:**
+- ✅ You can add new scripts without breaking existing ones
+- ✅ Components auto-discover each other at runtime
+- ✅ Easy to test mods in isolation
 
-### 2. Create Player
-
-**In Unity Editor:**
-```
-Tools -> Create Player
-```
-
-This auto-creates:
-- "Player" GameObject
-- PlayerController component
-- "Main Camera" as child
-- Camera at eye height (1.7m)
-- Proper tags and rotation
-
-### 3. Generate Maze
-
-**In Unity Editor:**
-```
-Select MazeBuilder -> Right-click -> Generate Maze
-OR press Ctrl+Alt+G
-```
-
-### 4. Test
-
-**Press Play** - Player spawns inside maze at FPS eye level!
-
----
-
-## Controls
-
-| Key | Action |
-|-----|--------|
-| W | Move forward |
-| A | Move left |
-| S | Move backward |
-| D | Move right |
-| Shift | Sprint |
-| Space | Jump |
-| Mouse | Look around |
-| E | Interact |
-
----
-
-## Editor Tools
-
-### Tools Menu
-
-| Tool | Shortcut | Description |
-|------|----------|-------------|
-| Quick Setup Prefabs | - | Auto-create prefabs & materials |
-| Generate Maze | Ctrl+Alt+G | Generate maze |
-| Next Level (Harder) | - | Advance to next level |
-| Validate Paths | - | Check prefab paths |
-| Clear Maze Objects | - | Remove generated objects |
-
-### Console Commands
-
-Press `~` (tilde) to open console:
-
-| Command | Description |
-|---------|-------------|
-| maze.generate | Generate new maze |
-| maze.status | Show level, size, seed |
-| maze.help | Show all commands |
-
----
-
-## Game Progression
-
-| Level | Maze Size | Difficulty | Description |
-|-------|-----------|------------|-------------|
-| 0 | 12x12 | Easy | Tutorial maze |
-| 1 | 13x13 | Easy+ | Slightly harder |
-| 5 | 17x17 | Medium | Moderate challenge |
-| 10 | 22x22 | Hard | Serious maze |
-| 20 | 32x32 | Very Hard | Expert level |
-| 39 | 51x51 | Extreme | Maximum size |
-
-**Formula:** `MazeSize = 12 + Level` (clamped 12-51)
-
----
-
-## Configuration
-
-### Edit Config File
-
-**File:** `Config/GameConfig-default.json`
-
-```json
+```csharp
+// ✅ CORRECT - How to find other components
+private void Awake()
 {
-    "defaultGridSize": 21,
-    "defaultRoomSize": 5,
-    "defaultCorridorWidth": 2,
-    "defaultCellSize": 6.0,
-    "defaultWallHeight": 4.0,
-    "defaultPlayerEyeHeight": 1.7,
-    "defaultPlayerSpawnOffset": 0.5
+    // Find existing component (don't create new one!)
+    var player = FindFirstObjectByType<PlayerController>();
+}
+
+// ❌ WRONG - Don't do this
+private void Awake()
+{
+    var player = gameObject.AddComponent<PlayerController>(); // Creates duplicate!
 }
 ```
 
-**No code changes needed!** All values loaded at runtime.
+### Key Components
+
+| Component | Purpose | Modding Notes |
+|-----------|---------|---------------|
+| `GameManager` | Central game state | Singleton - extend, don't replace |
+| `EventHandler` | Global event hub | Subscribe to events, don't modify |
+| `PlayerController` | Player movement | Use New Input System |
+| `CompleteMazeBuilder` | Maze orchestrator | Main entry for maze mods |
+| `GridMazeGenerator8` | Maze algorithm | DFS + A* - extend for custom algos |
+| `SpatialPlacer` | Object placement | Handles spawning objects |
+| `LightPlacementEngine` | Torch lighting | Auto-registers light sources |
 
 ---
 
-## Testing Checklist
+## 🔧 Modding Tutorials
 
-### Pre-Test
-- [ ] Unity 6000.3.7f1 opened
-- [ ] Scene has required components
-- [ ] Console window open
-- [ ] No errors before testing
+### Tutorial 1: Add a New Item
 
-### Test 1: First Generation
-- [ ] Console shows: "LEVEL 0 - Maze 12x12"
-- [ ] Console shows: "DFS over 4 cardinal axes ONLY"
-- [ ] Console shows: "A*: Guaranteed path carved successfully"
-- [ ] Console shows: "Dead-end corridor #X carved at (x,z)"
-- [ ] NO errors (red messages)
+**Step 1:** Create item JSON in `Assets/Resources/Items/`
 
-### Test 2: Visual Inspection
-- [ ] All walls align to grid (no diagonal gaps)
-- [ ] Corridors are straight (N-S or E-W only)
-- [ ] Dead-end corridors visible (2-5 cells long)
-- [ ] Intersections have 2-4 path choices
-- [ ] Spawn room (5x5) clear at (1,1)
-- [ ] Exit reachable at (size-2, size-2)
-
-### Test 3: Player Test
-- [ ] Player spawns inside maze
-- [ ] Can walk to exit without clipping
-- [ ] Dead-ends contain chests or enemies
-- [ ] Multiple path choices at intersections
-
-### Test 4: Level Progression
-- [ ] Tools -> Next Level (Harder)
-- [ ] Console shows: "Level 1 - Maze 13x13"
-
----
-
-## Documentation
-
-| File | Description |
-|------|-------------|
-| `Assets/Docs/TODO.md` | Tasks, priorities, testing checklist |
-| `Assets/Docs/MAZE_CARDINAL_UPDATE_2026-03-09.md` | Cardinal-only maze details |
-| `Assets/Docs/ADVANCED_CORRIDOR_SYSTEM.md` | Corridor features |
-| `Assets/Docs/ARCHITECTURE_OVERVIEW.md` | Architecture details |
-| `Assets/Docs/TEST_CHECKLIST.md` | Testing procedures |
-
----
-
-## Compliance
-
-| Standard | Status |
-|----------|--------|
-| Unity 6 Naming | 100% |
-| Plug-in-Out Architecture | 100% |
-| No Hardcoded Values | 100% (all JSON) |
-| UTF-8 Encoding | 100% |
-| Unix LF Line Endings | 100% |
-| GPL-3.0 License | 100% |
-| No Emojis in C# Files | 100% |
-| Zero Compilation Errors | 0 errors |
-
----
-
-## Git Workflow
-
-**Reminder:** Use git for version control!
-
-```bash
-# Check status
-git status
-
-# Stage changes
-git add .
-
-# Commit with message
-git commit -m "feat: Cardinal-only maze with dead-end corridors"
-
-# Push to remote
-git push
+```json
+{
+  "id": "my_custom_potion",
+  "name": "Custom Healing Potion",
+  "description": "Restores 50 HP over 5 seconds",
+  "type": "Consumable",
+  "maxStack": 99,
+  "effects": [
+    {
+      "type": "HealOverTime",
+      "value": 10,
+      "duration": 5.0,
+      "tickRate": 1.0
+    }
+  ]
+}
 ```
 
-**See:** `GIT_INSTRUCTIONS.md` for detailed git workflow.
+**Step 2:** Create prefab (optional)
+- Right-click `Assets/Resources/Prefabs/` → Create → Prefab
+- Add `ItemBehavior` component
+- Configure properties
+
+**Step 3:** Test
+- Run game
+- Use console command or spawn in scene
 
 ---
 
-## License
+### Tutorial 2: Create Custom Maze Algorithm
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
+**Step 1:** Create new script `Assets/Scripts/Core/06_Maze/MyCustomMazeGenerator.cs`
 
-**License File:** `COPYING` - Full GPL-3.0 license text
+```csharp
+using UnityEngine;
+using Code.Lavos.Core;
 
-**Source Code Headers:** All C# source files include the GPL-3.0 header.
+namespace Code.Lavos.Core.Maze
+{
+    /// <summary>
+    /// Custom maze generator using your own algorithm.
+    /// </summary>
+    public class MyCustomMazeGenerator : GridMazeGenerator8
+    {
+        [Header("Custom Settings")]
+        [SerializeField] private float myCustomParameter = 0.5f;
 
-**Copyright (C) 2026 CodeDotLavos. All rights reserved.**
+        protected override void GenerateMazeInternal()
+        {
+            // Your algorithm here
+            Debug.Log($"[MyCustomMaze] Generating with param: {myCustomParameter}");
+
+            // Call base methods as needed
+            base.GenerateMazeInternal();
+        }
+    }
+}
+```
+
+**Step 2:** Assign in Inspector
+- Select `MazeBuilder` GameObject
+- Replace `GridMazeGenerator8` component with `MyCustomMazeGenerator`
+
+**Step 3:** Test
+- Press Play
+- Watch Console for your log messages
 
 ---
 
-## Credits
+### Tutorial 3: Add New Status Effect
 
-**Codename:** BetsyBoop  
-**Unity Version:** 6000.3.7f1  
-**Status:** Production Ready - Cardinal-Only Maze System  
+**Step 1:** Edit `Assets/Scripts/Status/StatusEffectData.cs`
+
+```csharp
+public enum StatusEffectType
+{
+    // Existing effects...
+    Burn,
+    Freeze,
+    Poison,
+
+    // Add your new effect
+    MyCustomBuff,      // ✅ Add here
+    MyCustomDebuff,    // ✅ Add here
+}
+```
+
+**Step 2:** Add effect logic in `StatusEffect.cs`
+
+```csharp
+public class StatusEffect : MonoBehaviour
+{
+    private void ApplyEffect(StatusEffectType type, float value)
+    {
+        switch (type)
+        {
+            case StatusEffectType.MyCustomBuff:
+                // Your effect logic
+                target.Stats.AddModifier("Damage", value);
+                break;
+
+            case StatusEffectType.MyCustomDebuff:
+                // Your debuff logic
+                target.Stats.AddModifier("Speed", -value);
+                break;
+        }
+    }
+}
+```
 
 ---
 
-*Generated: 2026-03-09 | Unity 6 Compatible | UTF-8 Encoding | Unix LF Line Endings*
+### Tutorial 4: Modify Player Stats
 
-*Happy coding, coder friend!*
+**In Unity Inspector:**
+
+1. Select `Player` GameObject
+2. Find `PlayerStats` component
+3. Modify values:
+   - **Base Health:** 100 → 200
+   - **Base Mana:** 50 → 100
+   - **Stamina Regen:** 5 → 10
+
+**Or via code:**
+
+```csharp
+// In a custom script
+var stats = FindFirstObjectByType<PlayerStats>();
+if (stats != null)
+{
+    stats.SetBaseHealth(200);
+    stats.SetBaseMana(100);
+    stats.SetStaminaRegenRate(10);
+}
+```
+
+---
+
+## 🎮 Game Systems Reference
+
+### Player Stats System
+
+| Stat | Default | Description | Modifiable |
+|------|---------|-------------|------------|
+| Health | 100 | Player HP | ✅ Yes |
+| Mana | 50 | Resource for abilities | ✅ Yes |
+| Stamina | 100 | Sprint/jump resource | ✅ Yes |
+| Strength | 10 | Physical damage | ✅ Yes |
+| Agility | 10 | Speed, crit chance | ✅ Yes |
+| Intelligence | 10 | Magic power | ✅ Yes |
+| Vitality | 10 | HP regen | ✅ Yes |
+| Dexterity | 10 | Accuracy, dodge | ✅ Yes |
+
+### Damage Types
+
+| Type | Effectiveness | Resistance |
+|------|---------------|------------|
+| Physical | Normal | Armor |
+| Fire | Strong vs Nature | Weak vs Water |
+| Ice | Strong vs Fire | Weak vs Lightning |
+| Lightning | Strong vs Ice | Weak vs Earth |
+| Nature | Strong vs Lightning | Weak vs Fire |
+| Water | Strong vs Fire | Weak vs Nature |
+| Holy | Strong vs Dark | Weak vs Dark |
+| Dark | Strong vs Holy | Weak vs Holy |
+
+### Status Effects
+
+| Effect | Type | Duration | Stackable |
+|--------|------|----------|-----------|
+| Burn | DoT | 5 sec | ✅ Yes |
+| Freeze | Debuff | 3 sec | ❌ No |
+| Poison | DoT | 10 sec | ✅ Yes |
+| Haste | Buff | 15 sec | ✅ Yes |
+| Slow | Debuff | 8 sec | ❌ No |
+| Shield | Buff | 20 sec | ❌ No |
+
+---
+
+## 🛠️ Development Tools
+
+### PowerShell Scripts
+
+Located in project root:
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `backup.ps1` | Smart backup | Runs automatically on git commit |
+| `cleanup_diff_tmp.ps1` | Clean old temp files | Run daily |
+| `git-commit.ps1` | Quick commit | `.\git-commit.ps1 "message"` |
+| `git-push.ps1` | Push to remote | `.\git-push.ps1` |
+
+### Git Workflow
+
+```bash
+# Make your changes, then:
+
+# 1. Stage all changes
+git add -A
+
+# 2. Commit (auto-backup)
+.\git-commit.ps1 "Added custom potion item"
+
+# 3. Push to remote
+.\git-push.ps1
+```
+
+---
+
+## 📖 Documentation Index
+
+| File | Purpose | For |
+|------|---------|-----|
+| [README.md](README.md) | This file - modder's guide | **Modders** |
+| [TODO.md](TODO.md) | Task list & roadmap | Developers |
+| [ARCHITECTURE_OVERVIEW.md](ARCHITECTURE_OVERVIEW.md) | System architecture | Advanced modders |
+| [PROJECT_STANDARDS.md](PROJECT_STANDARDS.md) | Coding standards | Developers |
+| [MAZE_TROUBLESHOOTING_GUIDE.md](MAZE_TROUBLESHOOTING_GUIDE.md) | Maze issues | Debugging |
+| [TEST_CHECKLIST.md](TEST_CHECKLIST.md) | Testing guide | QA |
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Unity won't compile:**
+```bash
+# Clear Unity cache
+.\clear-unity-cache.bat
+# Reopen Unity
+```
+
+**Maze not generating:**
+1. Check `CompleteMazeBuilder` has config assigned
+2. Verify seed is valid number
+3. Check Console for errors
+
+**Player falls through floor:**
+1. Check colliders on floor prefabs
+2. Verify player has Rigidbody
+3. Check layer collision matrix
+
+**UI not showing:**
+1. Check `Canvas` is enabled in scene
+2. Verify `UIBarsSystem` component exists
+3. Check sorting order (should be 100+)
+
+**Input not working:**
+1. Project Settings → Input Manager → Enable New Input System
+2. Check `InputSystem_Actions.inputactions` exists
+3. Restart Unity
+
+---
+
+## 📞 Getting Help
+
+### Before Asking
+
+1. ✅ Check Console for errors
+2. ✅ Run `.\scan-project-errors.ps1`
+3. ✅ Search existing documentation
+4. ✅ Check Unity Editor.log
+
+### Useful Commands
+
+```bash
+# Check project health
+.\scan-project-errors.ps1
+
+# View git status
+.\git-status.ps1
+
+# Clean temporary files
+.\cleanup_diff_tmp.ps1
+```
+
+### Resources
+
+- **Unity Docs:** https://docs.unity3d.com/
+- **New Input System:** https://docs.unity3d.com/Packages/com.unity.inputsystem@latest
+- **URP:** https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@latest
+
+---
+
+## 🎯 Next Steps
+
+### Beginner Path
+
+1. ✅ Run the game as-is
+2. ✅ Modify player stats in Inspector
+3. ✅ Change maze seed
+4. ✅ Swap textures/materials
+5. ✅ Add simple item
+
+### Intermediate Path
+
+1. ✅ Create custom enemy type
+2. ✅ Modify maze generation parameters
+3. ✅ Add new status effect
+4. ✅ Create custom UI panel
+5. ✅ Extend existing system
+
+### Advanced Path
+
+1. ✅ Write custom maze algorithm
+2. ✅ Implement new damage type
+3. ✅ Create multiplayer system
+4. ✅ Mod the save/load system
+5. ✅ Fork and maintain your own branch
+
+---
+
+## 📜 License
+
+**GPL-3.0** - You are free to:
+- ✅ Use for personal projects
+- ✅ Use for commercial projects
+- ✅ Modify and distribute
+- ✅ Fork and maintain
+
+**Requirements:**
+- 📄 Include GPL-3.0 license in derivatives
+- 🔓 Open source your modifications
+- 📝 Credit original authors
+
+See [COPYING](../../COPYING) for full license text.
+
+---
+
+**Happy Modding! 🎮✨**
+
+*Last Updated: 2026-03-10 | Unity 6000.3.10f1 | Author: Ocxyde*
