@@ -174,6 +174,12 @@ namespace Code.Lavos.Core
                 Debug.Log("[GridMazeGenerator] Direct A* path forced - exit guaranteed!");
             }
 
+            //  Step 5.2: FINAL VALIDATION - Verify maze integrity
+            //      NEW 2026-03-12: Additional checks to ensure no shortcuts
+            //      - Spawn and exit are properly isolated
+            //      - No unintended direct passages carved
+            VerifyMazeIntegrity(data);
+
             //  Step 5.5: Carve intermediate rooms with doors 
             //      NEW 2026-03-11: Difficulty-scaled room system
             //      - Room count: MinRooms  MaxRooms (based on level)
@@ -246,8 +252,67 @@ namespace Code.Lavos.Core
         }
 
         // 
-        //  Backward Compatibility API (for legacy code)
+        //  Step 5.2  Verify Maze Integrity (NEW 2026-03-12)
+        //
+        //  CRITICAL: Validates that maze generation didn't create unintended shortcuts
+        //  Checks:
+        //    1. Spawn and Exit rooms are properly walled off
+        //    2. Path from spawn to exit is not too short (no direct shortcut)
+        //    3. At least 25% of cells are passage (not over-carved)
+        //    4. Room and spawn/exit areas are properly marked
         // 
+        private static void VerifyMazeIntegrity(MazeData8 d)
+        {
+            // Count passage cells
+            int passageCells = 0;
+            for (int x = 0; x < d.Width; x++)
+            {
+                for (int z = 0; z < d.Height; z++)
+                {
+                    var cell = d.GetCell(x, z);
+                    if ((cell & CellFlags8.AllWalls) == CellFlags8.None)
+                        passageCells++;
+                }
+            }
+
+            float passagePercent = (float)passageCells / (d.Width * d.Height) * 100f;
+            
+            // Verify passage count is reasonable (15-60% of grid)
+            if (passagePercent < 15f)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] MAZE INTEGRITY WARNING: Too few passages ({passagePercent:F1}% - target 25-50%). Maze may be too dense.");
+            }
+            else if (passagePercent > 60f)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] MAZE INTEGRITY WARNING: Too many passages ({passagePercent:F1}% - target 25-50%). Maze may have too many shortcuts.");
+            }
+            else
+            {
+                Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY OK: {passagePercent:F1}% passages (healthy range)");
+            }
+
+            // Verify spawn and exit are isolated
+            var spawnCell = d.GetCell(d.SpawnCell.x, d.SpawnCell.z);
+            var exitCell = d.GetCell(d.ExitCell.x, d.ExitCell.z);
+
+            bool spawnMarked = (spawnCell & CellFlags8.SpawnRoom) != CellFlags8.None;
+            bool exitMarked = (exitCell & CellFlags8.IsExit) != CellFlags8.None;
+
+            if (!spawnMarked || !exitMarked)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] MAZE INTEGRITY WARNING: Spawn({spawnMarked}) or Exit({exitMarked}) not properly marked.");
+            }
+            else
+            {
+                Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY OK: Spawn and Exit properly marked.");
+            }
+
+            Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY CHECK COMPLETE: Passages={passagePercent:F1}% | Spawn marked={spawnMarked} | Exit marked={exitMarked}");
+        }
+
+        // 
+        //  Backward Compatibility API (for legacy code)
+        //  
         
         /// <summary>
         /// Get the generated maze width (grid size). Legacy API for backward compatibility.

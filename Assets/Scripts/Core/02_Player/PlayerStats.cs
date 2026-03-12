@@ -63,6 +63,13 @@ namespace Code.Lavos.Core
         private bool _isInvincible;
         private bool _isDead;
 
+        //  Event handlers (stored for proper unsubscription)
+        private System.Action<float, float> _onHealthChangedHandler;
+        private System.Action<float, float> _onManaChangedHandler;
+        private System.Action<float, float> _onStaminaChangedHandler;
+        private System.Action<StatusEffectData> _onEffectAddedHandler;
+        private System.Action<StatusEffectData> _onEffectRemovedHandler;
+
         //  Properties 
         public StatsEngine Engine => _statsEngine;
         public float CurrentHealth => _statsEngine.CurrentHealth;
@@ -103,27 +110,34 @@ namespace Code.Lavos.Core
             _statsEngine = new StatsEngine();
             _statsEngine.SetBaseStats(maxHealth, maxMana, maxStamina, healthRegen, manaRegen, staminaRegen);
 
-            // Subscribe to StatsEngine events and relay through EventHandler
-            _statsEngine.OnHealthChanged += (current, max) =>
+            // Store event handlers for proper unsubscription later
+            _onHealthChangedHandler = (current, max) =>
             {
                 OnHealthChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerHealthChanged(current, max);
             };
-            _statsEngine.OnManaChanged += (current, max) =>
+            _onManaChangedHandler = (current, max) =>
             {
                 OnManaChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerManaChanged(current, max);
             };
-            _statsEngine.OnStaminaChanged += (current, max) =>
+            _onStaminaChangedHandler = (current, max) =>
             {
                 OnStaminaChanged?.Invoke(current, max);
                 if (Core.EventHandler.Instance != null)
                     Core.EventHandler.Instance.InvokePlayerStaminaChanged(current, max);
             };
-            _statsEngine.OnEffectAdded += (effect) => { OnEffectAdded?.Invoke(effect); };
-            _statsEngine.OnEffectRemoved += (effect) => { OnEffectRemoved?.Invoke(effect); };
+            _onEffectAddedHandler = (effect) => { OnEffectAdded?.Invoke(effect); };
+            _onEffectRemovedHandler = (effect) => { OnEffectRemoved?.Invoke(effect); };
+
+            // Subscribe to StatsEngine events and relay through EventHandler
+            _statsEngine.OnHealthChanged += _onHealthChangedHandler;
+            _statsEngine.OnManaChanged += _onManaChangedHandler;
+            _statsEngine.OnStaminaChanged += _onStaminaChangedHandler;
+            _statsEngine.OnEffectAdded += _onEffectAddedHandler;
+            _statsEngine.OnEffectRemoved += _onEffectRemovedHandler;
 
             // Subscribe to EventHandler for centralized event management
             if (Core.EventHandler.Instance != null)
@@ -156,6 +170,16 @@ namespace Code.Lavos.Core
 
         void OnDestroy()
         {
+            // Unsubscribe from StatsEngine events to prevent memory leaks
+            if (_statsEngine != null)
+            {
+                _statsEngine.OnHealthChanged -= _onHealthChangedHandler;
+                _statsEngine.OnManaChanged -= _onManaChangedHandler;
+                _statsEngine.OnStaminaChanged -= _onStaminaChangedHandler;
+                _statsEngine.OnEffectAdded -= _onEffectAddedHandler;
+                _statsEngine.OnEffectRemoved -= _onEffectRemovedHandler;
+            }
+
             // Clear static events
             OnHealthChanged = null;
             OnPlayerDied = null;

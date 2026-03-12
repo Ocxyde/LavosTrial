@@ -201,7 +201,7 @@ namespace Code.Lavos.Core
         #region Door Placement
 
         /// <summary>
-        /// Place a single door in a reserved hole.
+        /// Place a single door in a reserved hole using prefabs (PLUG-IN-OUT compliant).
         /// </summary>
         private void PlaceDoorInHole(DoorHolePlacer.DoorHoleData hole)
         {
@@ -209,16 +209,29 @@ namespace Code.Lavos.Core
             DoorVariant variant = DetermineDoorVariant();
             DoorTrapType trap = DetermineDoorTrap(variant);
 
-            // Create door using RealisticDoorFactory
-            GameObject door = RealisticDoorFactory.CreateRealisticDoor(
-                hole.Position,
-                hole.Rotation,
-                variant,
-                trap,
-                hole.Width,
-                hole.Height,
-                hole.Depth
-            );
+            // Load door prefab based on variant (PLUG-IN-OUT compliant)
+            string prefabPath = GetDoorPrefabPath(variant);
+            GameObject doorPrefab = Resources.Load<GameObject>(prefabPath);
+            
+            if (doorPrefab == null)
+            {
+                Debug.LogError($"[RoomDoorPlacer] Failed to load door prefab at {prefabPath}");
+                return;
+            }
+
+            // Instantiate door from prefab
+            GameObject door = Instantiate(doorPrefab, hole.Position, hole.Rotation);
+            door.name = $"Door_{variant}_{trap}";
+
+            // Configure door components if trap is set
+            if (trap != DoorTrapType.None)
+            {
+                var doorsEngine = door.GetComponent<DoorsEngine>();
+                if (doorsEngine != null)
+                {
+                    doorsEngine.SetTrapType(trap);
+                }
+            }
 
             // Store reference
             _placedDoors.Add(door);
@@ -233,8 +246,21 @@ namespace Code.Lavos.Core
 
             if (showDebugGizmos)
             {
-                Debug.Log($"[RoomDoorPlacer]  Placed {variant} door{(trap != DoorTrapType.None ? $" with {trap} trap" : "")} at {hole.Position}");
+                Debug.Log($"[RoomDoorPlacer] Placed {variant} door{(trap != DoorTrapType.None ? $" with {trap} trap" : "")} at {hole.Position}");
             }
+        }
+
+        /// <summary>
+        /// Get prefab path for door variant.
+        /// </summary>
+        private string GetDoorPrefabPath(DoorVariant variant)
+        {
+            return variant switch
+            {
+                DoorVariant.Locked => "Prefabs/LockedDoorPrefab",
+                DoorVariant.Secret => "Prefabs/SecretDoorPrefab",
+                _ => "Prefabs/DoorPrefab"
+            };
         }
 
         /// <summary>

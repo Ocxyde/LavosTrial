@@ -43,7 +43,7 @@ namespace Code.Lavos.Core
     /// 
     /// This file is kept for reference only - DO NOT USE IN NEW CODE.
     /// </summary>
-    [System.Obsolete("RealisticDoorFactory violates plug-in-out. Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab).")]
+    [System.Obsolete("RealisticDoorFactory violates plug-in-out. Use door prefabs instead (Assets/Prefabs/DoorPrefab.prefab). DO NOT USE.", error: true)]
     public static class RealisticDoorFactory
     {
         #region Door Dimensions (Real-world proportions)

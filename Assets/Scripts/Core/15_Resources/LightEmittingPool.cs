@@ -103,7 +103,7 @@ namespace Code.Lavos.Core
 
         void Awake()
         {
-            // ⚠️ ACCEPTABLE: Create pool root for organization
+            //  ACCEPTABLE: Create pool root for organization
             // TODO (Future): Could find existing instead
             _poolRoot = new GameObject("LightEmittingPool_Inactive").transform;
             _poolRoot.SetParent(transform);
@@ -164,7 +164,7 @@ namespace Code.Lavos.Core
                 return;
             }
 
-            // ⚠️ ACCEPTABLE: Create pool parent for organization
+            //  ACCEPTABLE: Create pool parent for organization
             // TODO (Future): Could find existing instead
             var pool = new LightPool
             {

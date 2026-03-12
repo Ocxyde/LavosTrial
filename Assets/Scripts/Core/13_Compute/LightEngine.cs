@@ -289,7 +289,7 @@ namespace Code.Lavos.Core
             _lightPool.Clear();
             _activeLightCount = 0;
 
-            // ⚠️ ACCEPTABLE: Pre-create light pool for performance
+            //  ACCEPTABLE: Pre-create light pool for performance
             // This is object pooling, not runtime creation
             // TODO (Future): Could use light prefabs instead
             var lightRootGO = new GameObject("LightEngine_Lights");

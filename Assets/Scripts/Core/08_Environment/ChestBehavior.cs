@@ -305,7 +305,7 @@ namespace Code.Lavos.Core
 
         private void BuildChest()
         {
-            // ⚠️ ACCEPTABLE: Procedural chest geometry
+            //  ACCEPTABLE: Procedural chest geometry
             // TODO (Future): Could use chest prefabs instead
             var chestRoot = new GameObject("ChestGeometry").transform;
             chestRoot.SetParent(transform);
