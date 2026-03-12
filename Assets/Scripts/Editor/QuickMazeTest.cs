@@ -1,4 +1,4 @@
-﻿﻿// Copyright (C) 2026 Ocxyde
+﻿﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license
 // QuickMazeTest.cs - 1-Click Maze Test with Prefab Validation
 // Unity 6 compatible - UTF-8 encoding - Unix LF
@@ -146,8 +146,9 @@ namespace Code.Lavos.Editor
             // Get maze data if available
             if (mazeBuilder.MazeData != null)
             {
-                int gridSize = mazeBuilder.MazeData.GridSize;
-                Debug.Log($"  ✓ Maze size: {gridSize}x{gridSize}");
+                int width = mazeBuilder.MazeData.Width;
+                int height = mazeBuilder.MazeData.Height;
+                Debug.Log($"  ✓ Maze size: {width}x{height}");
             }
         }
 
