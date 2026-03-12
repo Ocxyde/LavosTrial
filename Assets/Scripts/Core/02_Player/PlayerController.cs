@@ -93,6 +93,7 @@ namespace Code.Lavos.Core
     //  Input 
     private Keyboard _kb;
     private Mouse _mouse;
+    private bool _inputSystemWarningLogged = false;  // Prevent spam logging
 
     //  Game State (Plug-in-and-Out) 
     private bool _isGamePaused = false;
@@ -385,10 +386,11 @@ namespace Code.Lavos.Core
         if (_mouse == null)
             _mouse = Mouse.current;
             
-        // Debug: Log if input is still null after refresh
-        if (_kb == null && Time.frameCount % 180 == 0)
+        // Log only once per session if input system is unavailable
+        if (_kb == null && !_inputSystemWarningLogged)
         {
-            Debug.LogWarning("[PlayerController] Keyboard.current is null - New Input System issue?");
+            Debug.LogWarning("[PlayerController] Keyboard.current is null - New Input System may not be initialized. Input disabled until available.");
+            _inputSystemWarningLogged = true;
         }
     }
 
@@ -397,6 +399,8 @@ namespace Code.Lavos.Core
     // 
     private void HandleCursorInput()
     {
+        if (_kb == null || _mouse == null) return;
+        
         if (_kb.escapeKey.wasPressedThisFrame) { UnlockCursor(); return; }
         if (Cursor.visible && _mouse.leftButton.wasPressedThisFrame) LockCursor();
     }
@@ -411,6 +415,7 @@ namespace Code.Lavos.Core
     // 
     private void HandleMouseLook()
     {
+        if (_kb == null || _mouse == null) return;
         if (Cursor.lockState != CursorLockMode.Locked) return;
 
         Vector2 delta = _mouse.delta.ReadValue() * mouseSensitivity;

@@ -34,6 +34,21 @@ namespace Code.Lavos.Core
     /// <summary>
     /// Central item management engine.
     /// All items plug into this system via BehaviorEngine base class.
+    ///
+    /// NULL HANDLING (Plug-in-Out Pattern):
+    /// The Instance property returns null if:
+    /// 1. ItemEngine component not found in scene
+    /// 2. Application is quitting (OnDestroy was called)
+    ///
+    /// Usage Pattern:
+    ///   ItemEngine.Instance?.RegisterItem(item);    // Safe - null coalescing
+    ///   ItemEngine.Instance?.GetItemsOfType<T>();  // Safe - null coalescing
+    ///
+    /// Do NOT write:
+    ///   ItemEngine.Instance.RegisterItem(item);     // UNSAFE - may NullRef
+    ///
+    /// This ensures the game gracefully continues even if ItemEngine
+    /// is missing (useful for level editors, scene-only tests, etc.).
     /// </summary>
     public class ItemEngine : MonoBehaviour
     {
