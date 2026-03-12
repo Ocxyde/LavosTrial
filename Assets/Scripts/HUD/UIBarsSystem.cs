@@ -345,7 +345,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Vertical,
                 healthColorHigh
             );
-            _healthFill = _healthBarRoot.Find("Fill").GetComponent<Image>();
+            var healthFillTransform = _healthBarRoot.Find("Fill");
+            if (healthFillTransform != null)
+                _healthFill = healthFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[UIBarsSystem] Health bar Fill child not found!");
             _healthText = CreateBarText(_healthBarRoot, "HealthText");
             Debug.Log($"[UIBarsSystem] BuildBars - HealthBar created: {_healthBarRoot != null}");
 
@@ -355,7 +359,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Vertical,
                 manaColor
             );
-            _manaFill = _manaBarRoot.Find("Fill").GetComponent<Image>();
+            var manaFillTransform = _manaBarRoot.Find("Fill");
+            if (manaFillTransform != null)
+                _manaFill = manaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[UIBarsSystem] Mana bar Fill child not found!");
             _manaText = CreateBarText(_manaBarRoot, "ManaText");
             Debug.Log($"[UIBarsSystem] BuildBars - ManaBar created: {_manaBarRoot != null}");
 
@@ -365,7 +373,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Horizontal,
                 staminaColor
             );
-            _staminaFill = _staminaBarRoot.Find("Fill").GetComponent<Image>();
+            var staminaFillTransform = _staminaBarRoot.Find("Fill");
+            if (staminaFillTransform != null)
+                _staminaFill = staminaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[UIBarsSystem] Stamina bar Fill child not found!");
             _staminaText = CreateBarText(_staminaBarRoot, "StaminaText");
             Debug.Log($"[UIBarsSystem] BuildBars - StaminaBar created: {_staminaBarRoot != null}");
 

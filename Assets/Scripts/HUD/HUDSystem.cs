@@ -414,7 +414,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Vertical, healthCol,
                 BarPosition.LeftEdge
             );
-            _healthFill = _healthBarRoot.Find("Fill").GetComponent<Image>();
+            var healthFillTransform = _healthBarRoot.Find("Fill");
+            if (healthFillTransform != null)
+                _healthFill = healthFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDSystem] Health bar Fill child not found!");
             _healthText = CreateBarText(_healthBarRoot, "HealthText");
             Debug.Log($"[HUDSystem] Health bar created: {_healthBarRoot != null}");
 
@@ -424,7 +428,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Vertical, manaCol,
                 BarPosition.RightEdge
             );
-            _manaFill = _manaBarRoot.Find("Fill").GetComponent<Image>();
+            var manaFillTransform = _manaBarRoot.Find("Fill");
+            if (manaFillTransform != null)
+                _manaFill = manaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDSystem] Mana bar Fill child not found!");
             _manaText = CreateBarText(_manaBarRoot, "ManaText");
             Debug.Log($"[HUDSystem] Mana bar created: {_manaBarRoot != null}");
 
@@ -434,7 +442,11 @@ namespace Code.Lavos.HUD
                 Image.FillMethod.Horizontal, staminaCol,
                 BarPosition.BottomEdge
             );
-            _staminaFill = _staminaBarRoot.Find("Fill").GetComponent<Image>();
+            var staminaFillTransform = _staminaBarRoot.Find("Fill");
+            if (staminaFillTransform != null)
+                _staminaFill = staminaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDSystem] Stamina bar Fill child not found!");
             _staminaText = CreateBarText(_staminaBarRoot, "StaminaText");
             Debug.Log($"[HUDSystem] Stamina bar created: {_staminaBarRoot != null}");
 

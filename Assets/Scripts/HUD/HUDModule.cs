@@ -166,17 +166,29 @@ namespace Code.Lavos.HUD
 
             // Health Bar (Left - Vertical)
             healthBarRoot = CreateBarContainer("HealthBar", canvasTransform, Image.FillMethod.Vertical, Color.green);
-            healthFill = healthBarRoot.Find("Fill").GetComponent<Image>();
+            var healthFillTransform = healthBarRoot.Find("Fill");
+            if (healthFillTransform != null)
+                healthFill = healthFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDModule] Health bar Fill child not found!");
             healthText = CreateBarText(healthBarRoot, "HealthText");
 
             // Mana Bar (Right - Vertical)
             manaBarRoot = CreateBarContainer("ManaBar", canvasTransform, Image.FillMethod.Vertical, Color.blue);
-            manaFill = manaBarRoot.Find("Fill").GetComponent<Image>();
+            var manaFillTransform = manaBarRoot.Find("Fill");
+            if (manaFillTransform != null)
+                manaFill = manaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDModule] Mana bar Fill child not found!");
             manaText = CreateBarText(manaBarRoot, "ManaText");
 
             // Stamina Bar (Bottom - Horizontal)
             staminaBarRoot = CreateBarContainer("StaminaBar", canvasTransform, Image.FillMethod.Horizontal, Color.yellow);
-            staminaFill = staminaBarRoot.Find("Fill").GetComponent<Image>();
+            var staminaFillTransform = staminaBarRoot.Find("Fill");
+            if (staminaFillTransform != null)
+                staminaFill = staminaFillTransform.GetComponent<Image>();
+            else
+                Debug.LogError("[HUDModule] Stamina bar Fill child not found!");
             staminaText = CreateBarText(staminaBarRoot, "StaminaText");
         }
 
