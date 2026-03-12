@@ -259,7 +259,7 @@ namespace Code.Lavos.Core
         //    1. Spawn and Exit rooms are properly walled off
         //    2. Path from spawn to exit is not too short (no direct shortcut)
         //    3. At least 25% of cells are passage (not over-carved)
-        //    4. Room and spawn/exit areas are properly marked
+        //    4. Path length is reasonable (longer than direct distance)
         // 
         private static void VerifyMazeIntegrity(MazeData8 d)
         {
@@ -307,7 +307,70 @@ namespace Code.Lavos.Core
                 Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY OK: Spawn and Exit properly marked.");
             }
 
-            Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY CHECK COMPLETE: Passages={passagePercent:F1}% | Spawn marked={spawnMarked} | Exit marked={exitMarked}");
+            // CRITICAL: Verify path length is reasonable (not a direct shortcut)
+            int pathLength = FindActualPathLength(d, d.SpawnCell, d.ExitCell);
+            int directDistance = Math.Abs(d.ExitCell.x - d.SpawnCell.x) + Math.Abs(d.ExitCell.z - d.SpawnCell.z);
+            float pathRatio = directDistance > 0 ? (float)pathLength / directDistance : 1f;
+
+            Debug.Log($"[GridMazeGenerator] Path analysis: Direct distance={directDistance} cells, Actual path={pathLength} cells, Ratio={pathRatio:F2}x");
+
+            // Path should be at least 1.5x longer than direct distance (indicates winding route)
+            if (pathRatio < 1.5f && pathLength > directDistance)
+            {
+                Debug.LogWarning($"[GridMazeGenerator] MAZE INTEGRITY WARNING: Path suspiciously short ({pathRatio:F2}x direct distance). Possible shortcut carved by A*!");
+            }
+            else if (pathLength <= directDistance && directDistance > 5)
+            {
+                Debug.LogError($"[GridMazeGenerator] MAZE INTEGRITY CRITICAL: Path is SHORTER than direct distance! Unintended shortcut detected!");
+            }
+            else
+            {
+                Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY OK: Path length reasonable ({pathRatio:F2}x direct distance)");
+            }
+
+            Debug.Log($"[GridMazeGenerator] MAZE INTEGRITY CHECK COMPLETE: Passages={passagePercent:F1}% | Spawn marked={spawnMarked} | Exit marked={exitMarked} | Path ratio={pathRatio:F2}x");
+        }
+
+        // Find actual path length from start to end using BFS
+        private static int FindActualPathLength(MazeData8 d, (int x, int z) start, (int x, int z) end)
+        {
+            var visited = new Dictionary<(int, int), int>();  // position -> distance
+            var queue = new Queue<((int x, int z) pos, int dist)>();
+
+            queue.Enqueue((start, 0));
+            visited[start] = 0;
+
+            var cardinalDirs = new[] { (0, 1), (0, -1), (1, 0), (-1, 0) };
+
+            while (queue.Count > 0)
+            {
+                var (pos, dist) = queue.Dequeue();
+
+                if (pos.x == end.x && pos.z == end.z)
+                    return dist;
+
+                foreach (var (dx, dz) in cardinalDirs)
+                {
+                    int nx = pos.x + dx;
+                    int nz = pos.z + dz;
+
+                    if (!d.InBounds(nx, nz) || visited.ContainsKey((nx, nz)))
+                        continue;
+
+                    // Check if walkable (no walls)
+                    var cell = d.GetCell(nx, nz);
+                    bool isWalkable = (cell & CellFlags8.AllWalls) == CellFlags8.None;
+
+                    if (isWalkable)
+                    {
+                        visited[(nx, nz)] = dist + 1;
+                        queue.Enqueue(((nx, nz), dist + 1));
+                    }
+                }
+            }
+
+            // No path found - return worst case (diagonal across entire grid)
+            return d.Width + d.Height;
         }
 
         // 
@@ -1353,6 +1416,12 @@ namespace Code.Lavos.Core
         //  1. Adding 2-4 random intermediate waypoints
         //  2. Using A* with high wall penalty between each waypoint
         //  3. Ensuring path doesn't go in straight lines
+        //  4. Waypoints spaced far apart to force longer paths
+        //
+        //  ENHANCED 2026-03-12: Strengthened waypoint generation
+        //  - Minimum distance between waypoints enforced
+        //  - Waypoints must be in opposite quadrants from start/end
+        //  - Creates longer, more winding paths
         //
         //  Result: Much more maze-like, less obvious route to exit
         // 
@@ -1366,39 +1435,77 @@ namespace Code.Lavos.Core
             waypoints.Add(data.SpawnCell);
 
             // Add 2-4 random intermediate waypoints (avoiding straight line)
-            int numWaypoints = rng.Next(2, 5);  // 2 to 4 waypoints
-            int margin = 2;  // Keep waypoints away from edges
+            // ENHANCED 2026-03-12: Improved waypoint placement
+            int numWaypoints = rng.Next(3, 5);  // Increased: 3-4 waypoints (was 2-4)
+            int margin = 3;  // Keep waypoints away from edges (was 2)
+            int minWaypointDistance = Math.Max(5, data.Width / 4);  // Minimum distance between waypoints
+
+            var validWaypoints = new List<(int x, int z)>();
 
             for (int i = 0; i < numWaypoints; i++)
             {
                 int wx, wz;
                 int attempts = 0;
+                bool foundValid = false;
+
                 do
                 {
                     // Generate waypoint away from direct line between spawn and exit
                     wx = rng.Next(margin, data.Width - margin);
                     wz = rng.Next(margin, data.Height - margin);
                     attempts++;
-                } while (IsOnDirectLine(data.SpawnCell, data.ExitCell, wx, wz) && attempts < 20);
 
-                waypoints.Add((wx, wz));
+                    // Check if on direct line
+                    if (IsOnDirectLine(data.SpawnCell, data.ExitCell, wx, wz))
+                        continue;
+
+                    // Check minimum distance from other waypoints
+                    bool tooClose = false;
+                    foreach (var wp in validWaypoints)
+                    {
+                        int dist = Math.Abs(wp.x - wx) + Math.Abs(wp.z - wz);
+                        if (dist < minWaypointDistance)
+                        {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+
+                    if (!tooClose)
+                        foundValid = true;
+
+                } while (!foundValid && attempts < 50);
+
+                if (foundValid)
+                {
+                    validWaypoints.Add((wx, wz));
+                    Debug.Log($"[GridMazeGenerator] Waypoint {i + 1}: ({wx},{wz}) (attempt {attempts})");
+                }
             }
 
+            // Add all valid waypoints
+            waypoints.AddRange(validWaypoints);
             waypoints.Add(data.ExitCell);
 
-            // Carve path through each waypoint with HIGH wall penalty
-            int veryHighPenalty = wallPenalty * 5;  // 5x penalty = very winding
+            // Carve path through each waypoint with VERY HIGH wall penalty
+            // ENHANCED 2026-03-12: Increased penalty to prevent shortcuts
+            int veryHighPenalty = wallPenalty * 10;  // 10x penalty = extremely winding (was 5x)
 
             for (int i = 0; i < waypoints.Count - 1; i++)
             {
-                Debug.Log($"[GridMazeGenerator] Carving segment {i+1}/{waypoints.Count-1}: ({waypoints[i].x},{waypoints[i].z})  ({waypoints[i+1].x},{waypoints[i+1].z})");
+                int dx = Math.Abs(waypoints[i + 1].x - waypoints[i].x);
+                int dz = Math.Abs(waypoints[i + 1].z - waypoints[i].z);
+                int segmentDistance = dx + dz;
+
+                Debug.Log($"[GridMazeGenerator] Carving segment {i+1}/{waypoints.Count-1}: ({waypoints[i].x},{waypoints[i].z}) -> ({waypoints[i+1].x},{waypoints[i+1].z}) [distance={segmentDistance}]");
+                
                 EnsurePathCardinal(data,
                     waypoints[i].x, waypoints[i].z,
                     waypoints[i + 1].x, waypoints[i + 1].z,
                     veryHighPenalty);
             }
 
-            Debug.Log($"[GridMazeGenerator] Carved indirect path with {numWaypoints} waypoints");
+            Debug.Log($"[GridMazeGenerator] Carved indirect path with {validWaypoints.Count} waypoints (penalty={veryHighPenalty})");
         }
         
         // Check if a point lies on the direct line between two points

@@ -223,13 +223,14 @@ namespace Code.Lavos.Core
             GameObject door = Instantiate(doorPrefab, hole.Position, hole.Rotation);
             door.name = $"Door_{variant}_{trap}";
 
-            // Configure door components if trap is set
+            // Configure door if trap is set
             if (trap != DoorTrapType.None)
             {
                 var doorsEngine = door.GetComponent<DoorsEngine>();
                 if (doorsEngine != null)
                 {
-                    doorsEngine.SetTrapType(trap);
+                    // Re-initialize with trap type
+                    doorsEngine.Initialize(variant, trap);
                 }
             }
 
