@@ -28,15 +28,21 @@ using Code.Lavos.Core;
 namespace Code.Lavos.Core
 {
     /// <summary>
-    /// PLAYERCONTROLLER  Mouvement 3D, regard souris, stamina, interaction, bob camra.
+    /// PLAYERCONTROLLER - FPS movement, camera, and input.
+    /// 
+    /// CAMERA MODE:
+    /// This controller implements FIRST-PERSON camera control.
+    /// If CameraFollow (third-person) is on the player or camera, it will be automatically disabled
+    /// because FPS mode requires direct mouse look control of the player rotation.
     ///
-    /// SETUP Unity :
-    ///  1. CharacterController sur le GameObject joueur
-    ///  2. Ce script sur le mme GameObject
-    ///  3. Assigner playerCamera dans l'Inspector (camra enfant du joueur)
-    ///  4. La camra sera auto-positionne  hauteur des yeux  ne pas la bouger manuellement.
+    /// SETUP Unity:
+    ///  1. CharacterController on the player GameObject
+    ///  2. This script on the same GameObject
+    ///  3. Assign playerCamera in the Inspector (camera child of player)
+    ///  4. Camera will be auto-positioned at eye height - do not move it manually
+    ///  5. Remove CameraFollow script if present (incompatible with FPS)
     ///
-    /// Contrles : WASD = marche | Shift = sprint | Espace = saut | Souris = regard | F = interaction
+    /// Controls: WASD = walk | Shift = sprint | Space = jump | Mouse = look | F = interact
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
@@ -190,51 +196,13 @@ namespace Code.Lavos.Core
                 playerCamera.transform.localPosition = targetCamPos;
             }
 
-            // CRITICAL: Initialize camera rest position for head bob
-            _camRestPosition = new Vector3(0f, 1.6f, 0f);
-
-            // CRITICAL FIX: Remove ALL CameraFollow components to prevent infinite spinning
-            // CameraFollow is for third-person, PlayerController is FPS - they conflict!
+            // CRITICAL FIX: Ensure CameraFollow is disabled (2026-03-12)
+            // CameraFollow is for third-person camera orbiting
+            // PlayerController implements FPS camera (first-person mouse look)
+            // They conflict and cause infinite spinning - disable CameraFollow for FPS mode
             
-            // 1. Disable on camera itself
-            CameraFollow camFollow = playerCamera.GetComponent<CameraFollow>();
-            if (camFollow != null)
-            {
-                camFollow.enabled = false;
-                Debug.Log("[PlayerController]  Disabled CameraFollow on camera");
-            }
+            DisableCameraFollowConflicts();
 
-            // 2. Disable on parent objects
-            CameraFollow parentCamFollow = playerCamera.transform.parent?.GetComponent<CameraFollow>();
-            if (parentCamFollow != null)
-            {
-                parentCamFollow.enabled = false;
-                Debug.Log("[PlayerController]  Disabled CameraFollow on parent");
-            }
-
-            // 3. CRITICAL: Remove CameraFollow from player itself (THIS GameObject)
-            CameraFollow playerCamFollow = GetComponent<CameraFollow>();
-            if (playerCamFollow != null)
-            {
-                playerCamFollow.enabled = false;
-                Debug.LogWarning("[PlayerController]  DISABLED CameraFollow on PLAYER - this was causing spinning!");
-            }
-
-            // 4. Check for any other rotation scripts
-            var otherRotationScripts = GetComponents<MonoBehaviour>();
-            foreach (var script in otherRotationScripts)
-            {
-                if (script != null && script.GetType().Name.Contains("Camera") || 
-                    script.GetType().Name.Contains("Follow") ||
-                    script.GetType().Name.Contains("Look"))
-                {
-                    if (script != this && script.enabled)
-                    {
-                        script.enabled = false;
-                        Debug.LogWarning($"[PlayerController]  Disabled conflicting script: {script.GetType().Name}");
-                    }
-                }
-            }
         }
         else
         {
@@ -243,6 +211,61 @@ namespace Code.Lavos.Core
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    /// <summary>
+    /// CRITICAL FIX (2026-03-12): Disable CameraFollow to prevent FPS spinning.
+    /// 
+    /// Root Cause: CameraFollow orbits the camera around the player (third-person).
+    /// PlayerController rotates the player directly for FPS mouse look (first-person).
+    /// When both are enabled, they fight over rotation → infinite spinning.
+    /// 
+    /// Solution: Disable CameraFollow everywhere on this player.
+    /// This is correct because PlayerController implements FPS mode.
+    /// </summary>
+    private void DisableCameraFollowConflicts()
+    {
+        // 1. Disable on camera itself
+        CameraFollow camFollow = playerCamera.GetComponent<CameraFollow>();
+        if (camFollow != null)
+        {
+            camFollow.enabled = false;
+            Debug.Log("[PlayerController] Disabled CameraFollow on camera (FPS mode active)");
+        }
+
+        // 2. Disable on camera's parent (pivot)
+        CameraFollow parentCamFollow = playerCamera.transform.parent?.GetComponent<CameraFollow>();
+        if (parentCamFollow != null)
+        {
+            parentCamFollow.enabled = false;
+            Debug.Log("[PlayerController] Disabled CameraFollow on camera parent");
+        }
+
+        // 3. Disable on player itself
+        CameraFollow playerCamFollow = GetComponent<CameraFollow>();
+        if (playerCamFollow != null)
+        {
+            playerCamFollow.enabled = false;
+            Debug.Log("[PlayerController] Disabled CameraFollow on player (FPS mode active)");
+        }
+
+        // 4. Safety check: Warn about other camera control scripts
+        var allScripts = GetComponents<MonoBehaviour>();
+        foreach (var script in allScripts)
+        {
+            if (script == null || script == this) continue;
+            
+            string scriptType = script.GetType().Name;
+            bool isConflicting = scriptType.Contains("Camera") && 
+                                scriptType.Contains("Follow") ||
+                                scriptType.Contains("Look") ||
+                                scriptType.Contains("Orbit");
+            
+            if (isConflicting && script.enabled)
+            {
+                Debug.LogWarning($"[PlayerController] Found conflicting camera script '{scriptType}' - consider removing for clean FPS mode");
+            }
+        }
     }
 
     // 
