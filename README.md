@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
+﻿﻿﻿﻿﻿﻿# CodeDotLavos - Modder's Guide
 
 **A Unity 6 First-Person Maze Roguelike Engine**
 
@@ -12,7 +12,7 @@
 
 1. **Open Project**
    ```bash
-   # Open Unity Hub → Add → Select "D:\travaux_Unity\CodeDotLavos"
+   # Open Unity Hub → Add → Select project folder
    # Use Unity 6000.3.10f1 or compatible Unity 6 version
    ```
 
