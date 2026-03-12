@@ -95,3 +95,7 @@ files/
 # Markdown files (ignore all .md in root, track README.md)
 *.md
 !README.md
+
+# Text and log files in root (keep Assets/Docs/*.md)
+*.txt
+*.log
