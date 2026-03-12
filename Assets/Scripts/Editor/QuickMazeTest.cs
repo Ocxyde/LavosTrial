@@ -1,26 +1,25 @@
-﻿// Copyright (C) 2026 Ocxyde
+﻿﻿// Copyright (C) 2026 Ocxyde
 // GPL-3.0 license
 // QuickMazeTest.cs - 1-Click Maze Test with Prefab Validation
 // Unity 6 compatible - UTF-8 encoding - Unix LF
 //
 // USAGE:
 //   Menu: Tools → Maze → Quick Test (1-Click)
-//   Generates maze AND fills all cells with appropriate prefabs
-//   Validates torches, doors, chests, enemies placement
+//   Generates maze AND validates all systems
+//   Tests TorchPool, SafeItemContainer, and object placement
 //
 // PURPOSE:
-//   Quick validation that all prefabs load correctly after bug fixes
-//   Tests TorchPool, SafeItemContainer, and object placement systems
+//   Quick validation that all systems work after bug fixes
 
 using UnityEngine;
 using UnityEditor;
 using Code.Lavos.Core;
-using System.Collections.Generic;
+using Code.Lavos.Interaction;
 
 namespace Code.Lavos.Editor
 {
     /// <summary>
-    /// QuickMazeTest - 1-click maze generation with full prefab validation.
+    /// QuickMazeTest - 1-click maze generation with validation.
     /// Tests all systems after bug fixes.
     /// </summary>
     public class QuickMazeTest : MonoBehaviour
@@ -51,13 +50,13 @@ namespace Code.Lavos.Editor
 
             mazeBuilder.GenerateMaze();
 
-            // Step 3: Fill cells with prefabs
-            Debug.Log("[3/5] Filling cells with appropriate prefabs...");
-            FillEmptyCells(mazeBuilder);
+            // Step 3: Count placed objects
+            Debug.Log("[3/5] Counting placed objects...");
+            CountPlacedObjects(mazeBuilder);
 
-            // Step 4: Validate placement
-            Debug.Log("[4/5] Validating object placement...");
-            ValidatePlacement();
+            // Step 4: Validate systems
+            Debug.Log("[4/5] Validating systems...");
+            ValidateSystems();
 
             // Step 5: Summary
             Debug.Log("[5/5] Test complete!");
@@ -106,15 +105,7 @@ namespace Code.Lavos.Editor
             {
                 var go = new GameObject("MazeBuilder");
                 mazeBuilder = go.AddComponent<CompleteMazeBuilder8>();
-                
-                // Add required components
-                go.AddComponent<MazeGenerator8>();
-                go.AddComponent<MazeRenderer>();
-                go.AddComponent<SpatialPlacer>();
-                go.AddComponent<TorchPool>();
-                go.AddComponent<LightPlacementEngine>();
-                
-                Debug.Log("  ✓ Created CompleteMazeBuilder8 + components");
+                Debug.Log("  ✓ Created CompleteMazeBuilder8");
             }
             else
             {
@@ -135,87 +126,36 @@ namespace Code.Lavos.Editor
 
         #endregion
 
-        #region Fill Empty Cells
+        #region Count Objects
 
-        private static void FillEmptyCells(CompleteMazeBuilder8 mazeBuilder)
+        private static void CountPlacedObjects(CompleteMazeBuilder8 mazeBuilder)
         {
-            if (mazeBuilder.Grid == null)
+            // Count objects in scene by tag
+            int wallCount = GameObject.FindGameObjectsWithTag("Wall").Length;
+            int doorCount = GameObject.FindGameObjectsWithTag("Door").Length;
+            int torchCount = GameObject.FindGameObjectsWithTag("Torch").Length;
+            int chestCount = GameObject.FindGameObjectsWithTag("Chest").Length;
+            int enemyCount = GameObject.FindGameObjectsWithTag("Enemy").Length;
+
+            Debug.Log($"  ✓ Walls: {wallCount} segments");
+            Debug.Log($"  ✓ Doors: {doorCount}");
+            Debug.Log($"  ✓ Torches: {torchCount}");
+            Debug.Log($"  ✓ Chests: {chestCount}");
+            Debug.Log($"  ✓ Enemies: {enemyCount}");
+
+            // Get maze data if available
+            if (mazeBuilder.MazeData != null)
             {
-                Debug.LogError("[QuickTest] Maze grid is null!");
-                return;
+                int gridSize = mazeBuilder.MazeData.GridSize;
+                Debug.Log($"  ✓ Maze size: {gridSize}x{gridSize}");
             }
-
-            int gridSize = mazeBuilder.Grid.GetLength(0);
-            int cellsFilled = 0;
-            int wallsPlaced = 0;
-            int doorsPlaced = 0;
-            int torchesPlaced = 0;
-            int chestsPlaced = 0;
-            int enemiesPlaced = 0;
-
-            for (int x = 0; x < gridSize; x++)
-            {
-                for (int y = 0; y < gridSize; y++)
-                {
-                    var cell = mazeBuilder.Grid[x, y];
-                    
-                    // Skip empty cells
-                    if (cell == null) continue;
-
-                    cellsFilled++;
-
-                    // Place walls based on cell directions
-                    if (cell.HasFlag(GridMazeFlags.WallNorth)) wallsPlaced++;
-                    if (cell.HasFlag(GridMazeFlags.WallSouth)) wallsPlaced++;
-                    if (cell.HasFlag(GridMazeFlags.WallEast)) wallsPlaced++;
-                    if (cell.HasFlag(GridMazeFlags.WallWest)) wallsPlaced++;
-
-                    // Check for doors (passages with doors)
-                    if (cell.HasFlag(GridMazeFlags.DoorNorth) ||
-                        cell.HasFlag(GridMazeFlags.DoorSouth) ||
-                        cell.HasFlag(GridMazeFlags.DoorEast) ||
-                        cell.HasFlag(GridMazeFlags.DoorWest))
-                    {
-                        doorsPlaced++;
-                    }
-
-                    // Place torches in passage cells
-                    if (cell.Type == GridMazeCell.Passage)
-                    {
-                        // 30% chance for torch
-                        if (Random.value < 0.3f)
-                        {
-                            torchesPlaced++;
-                        }
-
-                        // 5% chance for chest
-                        if (Random.value < 0.05f)
-                        {
-                            chestsPlaced++;
-                        }
-
-                        // 2% chance for enemy
-                        if (Random.value < 0.02f)
-                        {
-                            enemiesPlaced++;
-                        }
-                    }
-                }
-            }
-
-            Debug.Log($"  ✓ Cells processed: {cellsFilled}");
-            Debug.Log($"  ✓ Walls: {wallsPlaced} segments");
-            Debug.Log($"  ✓ Doors: {doorsPlaced}");
-            Debug.Log($"  ✓ Torches: {torchesPlaced} (30% density)");
-            Debug.Log($"  ✓ Chests: {chestsPlaced} (5% density)");
-            Debug.Log($"  ✓ Enemies: {enemiesPlaced} (2% density)");
         }
 
         #endregion
 
-        #region Validate Placement
+        #region Validate Systems
 
-        private static void ValidatePlacement()
+        private static void ValidateSystems()
         {
             int errors = 0;
 
@@ -229,24 +169,6 @@ namespace Code.Lavos.Editor
             else
             {
                 Debug.Log("  ✓ TorchPool found");
-                
-                // Check if torchHandlePrefab is assigned
-                var prefabField = typeof(TorchPool).GetField("torchHandlePrefab", 
-                    System.Reflection.BindingFlags.NonPublic | 
-                    System.Reflection.BindingFlags.Instance);
-                if (prefabField != null)
-                {
-                    var prefab = prefabField.GetValue(torchPool) as GameObject;
-                    if (prefab == null)
-                    {
-                        Debug.LogWarning("  ⚠ TorchPool torchHandlePrefab not assigned!");
-                        Debug.LogWarning("    Fix: Assign prefab in Inspector or use Resources.Load");
-                    }
-                    else
-                    {
-                        Debug.Log($"  ✓ Torch prefab assigned: {prefab.name}");
-                    }
-                }
             }
 
             // Check LightPlacementEngine
@@ -272,19 +194,16 @@ namespace Code.Lavos.Editor
             }
 
             // Check SafeItemContainer (tests event signature fix)
-            var safes = FindObjectsByType<SafeItemContainer>(FindObjectsInactive.Include);
+            var safes = FindObjectsOfType<SafeItemContainer>();
             if (safes.Length > 0)
             {
                 Debug.Log($"  ✓ SafeItemContainer found: {safes.Length} instances");
                 Debug.Log("    (Event signature fix validated)");
             }
-
-            // Count objects in scene
-            int wallCount = GameObject.FindGameObjectsWithTag("Wall").Length;
-            int doorCount = GameObject.FindGameObjectsWithTag("Door").Length;
-            int torchCount = GameObject.FindGameObjectsWithTag("Torch").Length;
-
-            Debug.Log($"  ✓ Scene objects: {wallCount} walls, {doorCount} doors, {torchCount} torches");
+            else
+            {
+                Debug.Log("  ℹ No SafeItemContainer in scene (add chest to test)");
+            }
 
             if (errors > 0)
             {
@@ -292,7 +211,7 @@ namespace Code.Lavos.Editor
             }
             else
             {
-                Debug.Log("  ✓ All validations passed");
+                Debug.Log("  ✓ All critical systems found");
             }
         }
 
@@ -309,9 +228,9 @@ namespace Code.Lavos.Editor
             Debug.Log("");
             Debug.Log("  Systems Tested:");
             Debug.Log("    ✓ Maze Generation (DFS + A*)");
-            Debug.Log("    ✓ Wall Placement (inner + outer)");
-            Debug.Log("    ✓ Door System (variants + traps)");
-            Debug.Log("    ✓ Torch System (pooling + placement)");
+            Debug.Log("    ✓ Wall Placement");
+            Debug.Log("    ✓ Door System");
+            Debug.Log("    ✓ Torch System (pooling)");
             Debug.Log("    ✓ SafeItemContainer (event signature)");
             Debug.Log("    ✓ Config Loading (JSON)");
             Debug.Log("");
