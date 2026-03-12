@@ -15,16 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Code.Lavos.  If not, see <https://www.gnu.org/licenses/>.
 // LightPlacementEngine.cs
-// DEPRECATED: Use MazeObjectSpawner.cs instead
+// MIGRATION IN PROGRESS: Torch system moving to TorchPool.cs + TorchPlacer.cs
 // 
-// This file is a LEGACY remnant of the old light placement system.
-// New system: MazeObjectSpawner.cs with TORCH.fbx prefab
-// - Simpler, direct instantiation
-// - No binary storage overhead
-// - TORCH.fbx snaps to walls automatically (no rotation needed)
-// - Places torches in walkable cells, facing inward
+// STATUS (2026-03-12):
+// This file is still REQUIRED for torch binary storage serialization.
+// It has not been fully migrated to MazeObjectSpawner yet because:
+// 1. SpatialPlacer.cs depends on this for binary persistence
+// 2. TorchPlacer.cs depends on this for SetStorageReference()
+// 3. ProceduralLevelGenerator.cs uses this for torch placement data
 //
-// Batch instantiation engine for light-emitting objects
+// PLANNED REPLACEMENT: MazeObjectSpawner.cs
+// - Once binary storage is refactored to not use this class
+// - Once TorchPool.cs takes over all torch instantiation
+// - Then this file can be safely deleted
+//
+// DO NOT DELETE without completing the torch system refactor!
+//
+// Current system: Light-emitting objects batch instantiation
 // Unity 6 compatible - UTF-8 encoding - Unix line endings
 //
 // PLUG-IN-AND-OUT ARCHITECTURE:
@@ -58,7 +65,18 @@ namespace Code.Lavos.Core
 {
     /// <summary>
     /// LightPlacementEngine - Batch instantiation and management of light-emitting objects.
-    /// Loads positions from encrypted binary storage and instantiates all lights at once.
+    /// 
+    /// STATUS: Still required for torch binary storage (2026-03-12)
+    /// This class is scheduled for deprecation but is still actively used by:
+    /// - SpatialPlacer.cs (binary torch storage)
+    /// - TorchPlacer.cs (torch placement data)
+    /// - ProceduralLevelGenerator.cs (torch instantiation)
+    ///
+    /// Do NOT delete this class without refactoring the torch persistence system!
+    /// The new TorchPool.cs handles runtime torch behavior, but the binary storage
+    /// layer still depends on this for serialization/deserialization.
+    ///
+    /// TODO: Complete migration to remove this dependency (future session).
     /// </summary>
     public class LightPlacementEngine : MonoBehaviour
     {
