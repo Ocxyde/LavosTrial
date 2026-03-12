@@ -5,10 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MainScene_Maze.unity
     guid: 7595b508e76c6dd40968bbed8e156321
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/FpsMazeTest_Fresh.unity
     guid: 65f78ee8adc1b1443a82b3809e3a61e6
   m_configObjects:
